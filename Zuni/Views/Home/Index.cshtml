@@ -1,8 +1,15 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@if (TempData["Success"] is string message) { <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">@message<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div> }
+<div class="hero text-center mx-auto">
+    <span class="badge rounded-pill text-bg-light border mb-4">Una experiencia simple y segura</span>
+    <h1 class="display-3 fw-bold">Bienvenido a <span class="text-zuni">ZUNI</span></h1>
+    @if (User.Identity?.IsAuthenticated == true)
+    { <p class="lead text-secondary mx-auto">Tu sesión está activa, @User.Identity.Name. Ya puedes disfrutar de todas las herramientas de tu cuenta.</p> }
+    else
+    {
+        <p class="lead text-secondary mx-auto">Crea tu cuenta para comenzar o inicia sesión para continuar donde lo dejaste.</p>
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4"><a asp-controller="Cuenta" asp-action="Registro" class="btn btn-zuni btn-lg px-5">Comenzar ahora</a><a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-outline-dark btn-lg px-5">Ya tengo cuenta</a></div>
+    }
 </div>

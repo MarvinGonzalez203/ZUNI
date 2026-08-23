@@ -1,0 +1,17 @@
+@model RegisterViewModel
+@{ ViewData["Title"] = "Crear cuenta"; Layout = "_AuthLayout"; }
+
+<a asp-controller="Home" asp-action="Index" class="d-inline-flex text-secondary text-decoration-none small mb-4">← Volver al inicio</a>
+<h1 class="h2 fw-bold mb-2">Crea tu cuenta</h1>
+<p class="text-secondary mb-4">Solo tomará un minuto.</p>
+<form method="post" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+    <div class="form-floating mb-3"><input asp-for="FullName" class="form-control" placeholder="Nombre" autocomplete="name" /><label asp-for="FullName"></label><span asp-validation-for="FullName" class="text-danger small"></span></div>
+    <div class="form-floating mb-3"><input asp-for="Email" class="form-control" placeholder="Correo" autocomplete="email" /><label asp-for="Email"></label><span asp-validation-for="Email" class="text-danger small"></span></div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-6"><div class="form-floating"><input asp-for="Password" class="form-control" placeholder="Contraseña" autocomplete="new-password" /><label asp-for="Password"></label></div><span asp-validation-for="Password" class="text-danger small"></span></div>
+        <div class="col-md-6"><div class="form-floating"><input asp-for="ConfirmPassword" class="form-control" placeholder="Confirmar" autocomplete="new-password" /><label asp-for="ConfirmPassword"></label></div><span asp-validation-for="ConfirmPassword" class="text-danger small"></span></div>
+    </div>
+    <button class="btn btn-zuni w-100 btn-lg" type="submit">Crear mi cuenta</button>
+</form>
+<p class="text-center text-secondary mt-4 mb-0">¿Ya tienes una cuenta? <a asp-action="IniciarSesion" class="link-success fw-semibold">Iniciar sesión</a></p>

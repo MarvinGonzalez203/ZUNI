@@ -1,3 +1,7 @@
 /Zuni/.vs
 /Zuni/obj
 /Zuni/bin
+.build-appdata/
+Zuni/App_Data/
+Zuni/bin/
+Zuni/obj/

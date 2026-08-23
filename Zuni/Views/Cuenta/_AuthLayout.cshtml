@@ -1,0 +1,24 @@
+@{
+    Layout = "_Layout";
+}
+<div class="auth-shell row g-0 overflow-hidden shadow-lg">
+    <div class="col-lg-5 auth-brand d-none d-lg-flex flex-column justify-content-between p-5 text-white">
+        <a asp-controller="Home" asp-action="Index" class="brand text-white text-decoration-none">ZUNI<span>.</span></a>
+        <div>
+            <span class="badge rounded-pill bg-light text-success mb-3">Tu espacio, a tu manera</span>
+            <h2 class="display-6 fw-bold">Todo comienza con una cuenta segura.</h2>
+            <p class="mb-0 opacity-75">Accede a tus herramientas y mantén tu información disponible cuando la necesites.</p>
+        </div>
+        <small class="opacity-75">© @DateTime.Now.Year ZUNI</small>
+    </div>
+    <div class="col-lg-7 bg-white p-4 p-md-5 d-flex align-items-center">
+        <div class="auth-form mx-auto w-100">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @await RenderSectionAsync("PageScripts", required: false)
+}

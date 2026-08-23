@@ -1,0 +1,22 @@
+@model ForgotPasswordViewModel
+@{ ViewData["Title"] = "Recuperar contraseña"; Layout = "_AuthLayout"; }
+
+<a asp-action="IniciarSesion" class="d-inline-flex text-secondary text-decoration-none small mb-4">← Volver a iniciar sesión</a>
+<div class="auth-icon mb-4">✉</div>
+<h1 class="h2 fw-bold mb-2">Recupera tu contraseña</h1>
+<p class="text-secondary mb-4">Escribe el correo asociado a tu cuenta y te enviaremos las instrucciones.</p>
+@if (ViewBag.Sent == true)
+{
+    <div class="alert alert-success">Si el correo está registrado, recibirás un enlace de recuperación. Revisa también tu carpeta de spam.</div>
+    @if (ViewBag.ResetUrl is not null)
+    {
+        <div class="alert alert-warning small"><strong>Modo desarrollo:</strong> el envío de correo aún no está configurado. <a href="@ViewBag.ResetUrl" class="alert-link">Usar enlace de recuperación</a>.</div>
+    }
+}
+else
+{
+    <form method="post" novalidate>
+        <div class="form-floating mb-4"><input asp-for="Email" class="form-control" placeholder="Correo" autocomplete="email" /><label asp-for="Email"></label><span asp-validation-for="Email" class="text-danger small"></span></div>
+        <button class="btn btn-zuni w-100 btn-lg" type="submit">Enviar instrucciones</button>
+    </form>
+}
