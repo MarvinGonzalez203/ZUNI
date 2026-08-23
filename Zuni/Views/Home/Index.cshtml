@@ -1,15 +1,44 @@
-﻿@{
+@{
     ViewData["Title"] = "Inicio";
 }
-@if (TempData["Success"] is string message) { <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">@message<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div> }
-<div class="hero text-center mx-auto">
-    <span class="badge rounded-pill text-bg-light border mb-4">Una experiencia simple y segura</span>
-    <h1 class="display-3 fw-bold">Bienvenido a <span class="text-zuni">ZUNI</span></h1>
-    @if (User.Identity?.IsAuthenticated == true)
-    { <p class="lead text-secondary mx-auto">Tu sesión está activa, @User.Identity.Name. Ya puedes disfrutar de todas las herramientas de tu cuenta.</p> }
-    else
-    {
-        <p class="lead text-secondary mx-auto">Crea tu cuenta para comenzar o inicia sesión para continuar donde lo dejaste.</p>
-        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4"><a asp-controller="Cuenta" asp-action="Registro" class="btn btn-zuni btn-lg px-5">Comenzar ahora</a><a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-outline-dark btn-lg px-5">Ya tengo cuenta</a></div>
-    }
-</div>
+@if (TempData["Success"] is string message)
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">@message<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
+}
+
+<section class="home-hero" aria-labelledby="hero-title">
+    <div class="hero-orb hero-orb-one" aria-hidden="true"></div><div class="hero-orb hero-orb-two" aria-hidden="true"></div>
+    <div class="row align-items-center g-5 position-relative">
+        <div class="col-lg-6 hero-copy">
+            <div class="eyebrow"><span></span> Bienestar y acompañamiento estudiantil</div>
+            <h1 id="hero-title">Bienvenido a <span>ZUNI</span></h1>
+            <p class="hero-subtitle">Un espacio de apoyo, conexión y bienestar para tu desarrollo estudiantil.</p>
+            <p class="hero-description">Accede de forma segura a tus herramientas de seguimiento, citas y acompañamiento dentro de una comunidad educativa que prioriza tu bienestar.</p>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="welcome-card d-flex align-items-center gap-3"><span class="welcome-icon" aria-hidden="true">✓</span><div><small>Sesión activa</small><strong>Qué gusto verte, @User.Identity.Name</strong></div></div>
+            }
+            else
+            {
+                <div class="hero-actions d-flex flex-column flex-sm-row gap-3"><a asp-controller="Cuenta" asp-action="Registro" class="btn btn-zuni btn-lg">Crear mi cuenta <span aria-hidden="true">→</span></a><a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-zuni-outline btn-lg">Iniciar sesión</a></div>
+            }
+            <div class="trust-row" aria-label="Características de ZUNI"><span><i aria-hidden="true">●</i> Privado</span><span><i aria-hidden="true">●</i> Humano</span><span><i aria-hidden="true">●</i> Seguro</span></div>
+        </div>
+        <div class="col-lg-6">
+            <div class="hero-visual" aria-label="Ilustración abstracta de conexión y acompañamiento estudiantil">
+                <svg viewBox="0 0 620 570" role="img" aria-labelledby="visual-title visual-desc">
+                    <title id="visual-title">Red de acompañamiento ZUNI</title><desc id="visual-desc">Una trayectoria conecta estudiantes, apoyo, bienestar y crecimiento en un entorno protegido.</desc>
+                    <defs><linearGradient id="zuniPath" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#B69CE0"/><stop offset="1" stop-color="#65459B"/></linearGradient><filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#281B38" flood-opacity=".12"/></filter></defs>
+                    <path class="visual-blob" d="M115 108C192 24 371 22 486 104c104 74 128 232 63 334-61 96-194 120-310 91C119 499 35 410 44 291c5-70 27-132 71-183Z"/>
+                    <path class="connection-path" d="M115 395C174 338 164 236 247 210c76-24 109 61 183 26 42-20 61-63 81-110"/><path class="connection-path connection-path-soft" d="M127 435c89 31 149 5 195-42 55-57 72-114 168-122"/>
+                    <g class="node" transform="translate(105 384)"><circle r="23"/><circle r="7" class="node-core"/></g><g class="node" transform="translate(249 210)"><circle r="15"/><circle r="5" class="node-core"/></g><g class="node" transform="translate(430 236)"><circle r="18"/><circle r="6" class="node-core"/></g><g class="node node-end" transform="translate(511 126)"><circle r="25"/><path d="m-9 1 6 6L10-8"/></g>
+                    <g class="student-card" filter="url(#softShadow)" transform="translate(172 278)"><rect width="245" height="154" rx="28"/><circle cx="62" cy="58" r="28" class="avatar-bg"/><circle cx="62" cy="51" r="10" class="avatar"/><path d="M44 77c4-13 32-13 36 0" class="avatar"/><rect x="105" y="43" width="96" height="10" rx="5" class="line-dark"/><rect x="105" y="64" width="70" height="8" rx="4" class="line-light"/><rect x="40" y="111" width="165" height="9" rx="4.5" class="line-light"/><rect x="40" y="111" width="112" height="9" rx="4.5" class="progress-line"/></g>
+                    <g class="privacy-badge" filter="url(#softShadow)" transform="translate(393 381)"><circle r="56"/><path d="M0-27 25-17v19c0 18-11 31-25 38C-14 33-25 20-25 2v-19L0-27Z"/><path d="m-12 4 8 8L14-9" class="shield-check"/></g>
+                    <g class="growth-mark" transform="translate(94 157)"><path d="M0 48C2 20 19 6 45 0 45 26 34 44 0 48Z"/><path d="M2 47 37 10"/></g><circle cx="476" cy="466" r="7" class="accent-dot"/><circle cx="113" cy="119" r="5" class="accent-dot"/>
+                </svg>
+                <div class="visual-caption"><span aria-hidden="true">✦</span><div><strong>Acompañamiento cercano</strong><small>Avanza a tu propio ritmo</small></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="purpose-strip" aria-label="Servicios de la plataforma"><div><span class="purpose-number">01</span><p><strong>Organiza</strong> tus citas y actividades.</p></div><div><span class="purpose-number">02</span><p><strong>Conecta</strong> con tu red de apoyo.</p></div><div><span class="purpose-number">03</span><p><strong>Avanza</strong> con seguimiento seguro.</p></div></section>

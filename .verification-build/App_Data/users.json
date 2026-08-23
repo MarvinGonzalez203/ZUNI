@@ -1,0 +1,20 @@
+[
+  {
+    "Id": "41f769ef-b798-4de8-9d1d-a636b362ed8a",
+    "FullName": "Marvin David Cristobal Ramirez Gonzalez",
+    "Email": "marvinramirez873@gmail.com",
+    "PasswordHash": "AQAAAAIAAYagAAAAEH8QDoYd9YWbv1GVZWo8HuQYZDo2eiZsVbI\u002ByZMqeGVsDdVg4TQCG7hGRQ/hLiEkkQ==",
+    "CreatedAtUtc": "2026-08-23T21:54:29.1494495Z",
+    "ResetTokenHash": null,
+    "ResetTokenExpiresAtUtc": null
+  },
+  {
+    "Id": "99418bcd-3729-42f5-a9d9-6d542c62580c",
+    "FullName": "MARVIN DAVID RAMIREZ GONZALEZ",
+    "Email": "mramirezg49@miumg.edu.gt",
+    "PasswordHash": "AQAAAAIAAYagAAAAEMxS5xddBhk2qcQ\u002BQXibkiu4OA5gtzF9VBh8aD/idfg/9OxGbNXyehclefPGMi7nJQ==",
+    "CreatedAtUtc": "2026-08-23T22:48:38.6083469Z",
+    "ResetTokenHash": null,
+    "ResetTokenExpiresAtUtc": null
+  }
+]
