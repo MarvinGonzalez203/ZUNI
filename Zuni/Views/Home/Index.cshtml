@@ -1,6 +1,12 @@
 @{
     ViewData["Title"] = "Inicio";
     ViewData["BodyClass"] = "home-page";
+
+    var fullName = User.Identity?.Name?.Trim() ?? string.Empty;
+    var firstName = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Usuario";
+    var displayName = firstName.Length == 0
+        ? "Usuario"
+        : char.ToUpper(firstName[0], System.Globalization.CultureInfo.CurrentCulture) + firstName[1..].ToLower(System.Globalization.CultureInfo.CurrentCulture);
 }
 @if (TempData["Success"] is string message)
 {
@@ -16,7 +22,7 @@
         <p class="hero-lead">Un espacio de apoyo, conexión y bienestar para tu desarrollo estudiantil.</p>
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <div class="session-pill"><span>✓</span><div><small>Sesión activa</small><strong>Qué gusto verte, @User.Identity.Name</strong></div></div>
+                <div class="session-pill"><span>✓</span><div><small>Sesión activa</small><strong>Qué gusto verte, @displayName</strong></div></div>
         }
         else
         {
