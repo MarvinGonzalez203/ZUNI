@@ -2,6 +2,8 @@
 /Zuni/obj
 /Zuni/bin
 .build-appdata/
+.visual-check/
+.clean-check/
 Zuni/App_Data/
 Zuni/bin/
 Zuni/obj/
