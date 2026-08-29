@@ -24,7 +24,12 @@
                     <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <span class="text-secondary small me-2">Hola, <strong class="text-dark">@User.Identity.Name</strong></span>
+                            var fullName = User.Identity.Name?.Trim() ?? string.Empty;
+                            var firstName = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Usuario";
+                            var displayName = firstName.Length == 0
+                                ? "Usuario"
+                                : char.ToUpper(firstName[0], System.Globalization.CultureInfo.CurrentCulture) + firstName[1..].ToLower(System.Globalization.CultureInfo.CurrentCulture);
+                            <span class="text-secondary small me-2">Hola, <strong class="text-dark">@displayName</strong></span>
                             <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="btn btn-outline-secondary" type="submit">Cerrar sesión</button></form>
                         }
                         else

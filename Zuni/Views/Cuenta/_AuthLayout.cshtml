@@ -1,18 +1,24 @@
 @{
     Layout = "_Layout";
+    ViewData["BodyClass"] = "auth-page";
 }
-<div class="auth-shell row g-0 overflow-hidden shadow-lg">
-    <div class="col-lg-5 auth-brand d-none d-lg-flex flex-column justify-content-between p-5 text-white">
-        <a asp-controller="Home" asp-action="Index" class="brand text-white text-decoration-none">ZUNI<span>.</span></a>
-        <div>
-            <span class="badge rounded-pill bg-light text-success mb-3">Tu espacio, a tu manera</span>
-            <h2 class="display-6 fw-bold">Todo comienza con una cuenta segura.</h2>
-            <p class="mb-0 opacity-75">Accede a tus herramientas y mantén tu información disponible cuando la necesites.</p>
+<div class="auth-shell row g-0 overflow-hidden">
+    <aside class="col-lg-5 auth-brand d-none d-lg-flex flex-column justify-content-between p-5 text-white">
+        <span class="auth-liquid auth-liquid-one" aria-hidden="true"></span>
+        <span class="auth-liquid auth-liquid-two" aria-hidden="true"></span>
+        <div class="auth-network" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <a asp-controller="Home" asp-action="Index" class="auth-logo text-white text-decoration-none"><img src="~/images/zuni-logo-transparent.png" alt="" /><span>ZUNI</span></a>
+        <div class="auth-brand-copy">
+            <span class="auth-eyebrow">Tu espacio, a tu manera</span>
+            <h2>Todo comienza con una cuenta segura.</h2>
+            <p>Accede a tus herramientas y mantén tu información disponible cuando la necesites.</p>
+            <div class="auth-trust"><span>Privado</span><span>Humano</span><span>Seguro</span></div>
         </div>
-        <small class="opacity-75">© @DateTime.Now.Year ZUNI</small>
-    </div>
-    <div class="col-lg-7 bg-white p-4 p-md-5 d-flex align-items-center">
+        <small class="auth-copyright">© @DateTime.Now.Year ZUNI</small>
+    </aside>
+    <div class="col-lg-7 auth-panel p-4 p-md-5 d-flex align-items-center">
         <div class="auth-form mx-auto w-100">
+            <a asp-controller="Home" asp-action="Index" class="auth-mobile-logo d-lg-none"><img src="~/images/zuni-logo-transparent.png" alt="" />ZUNI</a>
             @RenderBody()
         </div>
     </div>

@@ -12,12 +12,17 @@ namespace Zuni.Controllers;
 public sealed class CuentaController(IUserStore users, IWebHostEnvironment environment) : Controller
 {
     [HttpGet("IniciarSesion")]
-    public IActionResult IniciarSesion(string? returnUrl = null) => View(new LoginViewModel { ReturnUrl = returnUrl });
+    public IActionResult IniciarSesion(string? returnUrl = null)
+    {
+        if (User.Identity?.IsAuthenticated == true) return RedirectToAuthenticatedHome();
+        return View(new LoginViewModel { ReturnUrl = returnUrl });
+    }
 
     [HttpPost("IniciarSesion")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> IniciarSesion(LoginViewModel model)
     {
+        if (User.Identity?.IsAuthenticated == true) return RedirectToAuthenticatedHome();
         if (!ModelState.IsValid) return View(model);
         var user = await users.FindByEmailAsync(model.Email);
         if (user is null || !await users.VerifyPasswordAsync(user, model.Password))
@@ -31,12 +36,17 @@ public sealed class CuentaController(IUserStore users, IWebHostEnvironment envir
     }
 
     [HttpGet("Registro")]
-    public IActionResult Registro() => View(new RegisterViewModel());
+    public IActionResult Registro()
+    {
+        if (User.Identity?.IsAuthenticated == true) return RedirectToAuthenticatedHome();
+        return View(new RegisterViewModel());
+    }
 
     [HttpPost("Registro")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Registro(RegisterViewModel model)
     {
+        if (User.Identity?.IsAuthenticated == true) return RedirectToAuthenticatedHome();
         if (!ModelState.IsValid) return View(model);
         var user = new AppUser { FullName = model.FullName.Trim(), Email = model.Email };
         if (!await users.CreateAsync(user, model.Password))
@@ -97,4 +107,6 @@ public sealed class CuentaController(IUserStore users, IWebHostEnvironment envir
             new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
             new AuthenticationProperties { IsPersistent = persistent });
     }
+
+    private IActionResult RedirectToAuthenticatedHome() => RedirectToAction("Index", "Home");
 }
