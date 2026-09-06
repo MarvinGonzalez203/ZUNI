@@ -464,41 +464,6 @@ public sealed class CuentaController(
     }
 
     // ============================================================
-    // COOKIE DEL SISTEMA JSON ANTIGUO
-    // ============================================================
-
-    private async Task SignInAsync(
-        AppUser user,
-        bool persistent)
-    {
-        Claim[] claims =
-        [
-            new(
-                ClaimTypes.NameIdentifier,
-                user.Id.ToString()),
-
-            new(
-                ClaimTypes.Name,
-                user.FullName),
-
-            new(
-                ClaimTypes.Email,
-                user.Email)
-        ];
-
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(
-                new ClaimsIdentity(
-                    claims,
-                    CookieAuthenticationDefaults.AuthenticationScheme)),
-            new AuthenticationProperties
-            {
-                IsPersistent = persistent
-            });
-    }
-
-    // ============================================================
     // REDIRECCIONES
     // ============================================================
 

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Zuni.Data;
 using Zuni.Models;
-using Zuni.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,8 +42,6 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddSingleton<IUserStore, JsonUserStore>();
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -53,13 +50,6 @@ using (var scope = app.Services.CreateScope())
         .GetRequiredService<ApplicationDbContext>();
 
     await DbInitializer.SeedRolesAsync(dbContext);
-
-    var migratedUsers = await JsonUserMigrator.MigrateAsync(
-        dbContext,
-        app.Environment);
-
-    System.Diagnostics.Debug.WriteLine(
-        $"Usuarios migrados desde JSON: {migratedUsers}");
 }
 
 if (!app.Environment.IsDevelopment())
