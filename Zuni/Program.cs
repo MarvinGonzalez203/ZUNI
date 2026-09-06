@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Zuni.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Zuni.Data;
+using Zuni.Models;
 using Zuni.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<
+    IPasswordHasher<ApplicationUser>,
+    PasswordHasher<ApplicationUser>>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -37,22 +43,17 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// Sistema JSON actual.
-// Todavía NO lo eliminamos.
 builder.Services.AddSingleton<IUserStore, JsonUserStore>();
 
 var app = builder.Build();
 
-// Inicializar datos de PostgreSQL.
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider
         .GetRequiredService<ApplicationDbContext>();
 
-    // Crear los roles si todavía no existen.
     await DbInitializer.SeedRolesAsync(dbContext);
 
-    // Migrar los usuarios de users.json hacia PostgreSQL.
     var migratedUsers = await JsonUserMigrator.MigrateAsync(
         dbContext,
         app.Environment);
@@ -61,17 +62,13 @@ using (var scope = app.Services.CreateScope())
         $"Usuarios migrados desde JSON: {migratedUsers}");
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-
-    // The default HSTS value is 30 days.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 
 app.UseRouting();
