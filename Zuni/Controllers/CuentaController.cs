@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Zuni.Data;
 using Zuni.Models;
 using Zuni.Services;
@@ -170,8 +171,7 @@ public sealed class CuentaController(
     // ============================================================
     // REGISTRO
     // ============================================================
-    // TEMPORALMENTE SIGUE UTILIZANDO users.json.
-    // Posteriormente lo cambiaremos a PostgreSQL.
+    // Los registros nuevos se guardan directamente en PostgreSQL.
 
     [HttpGet("Registro")]
     public IActionResult Registro()
@@ -193,15 +193,72 @@ public sealed class CuentaController(
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = new AppUser
+        var email = model.Email.Trim();
+        var normalizedEmail = email.ToUpperInvariant();
+
+        var emailAlreadyExists = await db.Users
+            .AsNoTracking()
+            .AnyAsync(user =>
+                user.NormalizedEmail == normalizedEmail);
+
+        if (emailAlreadyExists)
         {
+            ModelState.AddModelError(
+                nameof(model.Email),
+                "Ya existe una cuenta con este correo.");
+
+            return View(model);
+        }
+
+        var estudianteRole = await db.Roles
+            .AsNoTracking()
+            .SingleOrDefaultAsync(role =>
+                role.NormalizedName == "ESTUDIANTE");
+
+        if (estudianteRole is null)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "No fue posible completar el registro. Inténtalo nuevamente.");
+
+            return View(model);
+        }
+
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid().ToString(),
             FullName = model.FullName.Trim(),
-            Email = model.Email
+            Email = email,
+            NormalizedEmail = normalizedEmail,
+            UserName = email,
+            NormalizedUserName = normalizedEmail,
+            CreatedAtUtc = DateTime.UtcNow,
+            IsActive = true,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            ConcurrencyStamp = Guid.NewGuid().ToString()
         };
 
-        if (!await users.CreateAsync(
+        user.PasswordHash = passwordHasher.HashPassword(
             user,
-            model.Password))
+            model.Password);
+
+        db.Users.Add(user);
+        db.UserRoles.Add(
+            new IdentityUserRole<string>
+            {
+                UserId = user.Id,
+                RoleId = estudianteRole.Id
+            });
+
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException exception)
+            when (exception.InnerException is PostgresException
+            {
+                SqlState: PostgresErrorCodes.UniqueViolation
+            })
         {
             ModelState.AddModelError(
                 nameof(model.Email),
