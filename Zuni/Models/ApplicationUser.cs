@@ -9,5 +9,8 @@ namespace Zuni.Models
         public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
         public bool IsActive { get; set; } = true;
+
+        public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } =
+            new List<PasswordResetToken>();
     }
 }

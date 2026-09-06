@@ -1,9 +1,12 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Zuni.Data;
@@ -19,6 +22,9 @@ public sealed class CuentaController(
     ApplicationDbContext db,
     IPasswordHasher<ApplicationUser> passwordHasher) : Controller
 {
+    private static readonly TimeSpan PasswordResetTokenLifetime =
+        TimeSpan.FromMinutes(30);
+
     // ============================================================
     // INICIAR SESIÓN
     // ============================================================
@@ -280,7 +286,6 @@ public sealed class CuentaController(
     // ============================================================
     // RECUPERAR CONTRASEÑA
     // ============================================================
-    // TEMPORALMENTE SIGUE UTILIZANDO users.json.
 
     [HttpGet("RecuperarContrasena")]
     public IActionResult RecuperarContrasena()
@@ -297,23 +302,57 @@ public sealed class CuentaController(
         if (!ModelState.IsValid)
             return View(model);
 
-        var token =
-            await users.CreateResetTokenAsync(
-                model.Email);
+        var email = model.Email.Trim();
+        var normalizedEmail = email.ToUpperInvariant();
+        var user = await db.Users
+            .FirstOrDefaultAsync(candidate =>
+                candidate.NormalizedEmail == normalizedEmail);
 
-        if (token is not null &&
-            environment.IsDevelopment())
+        if (user is not null && user.IsActive)
         {
-            ViewBag.ResetUrl =
-                Url.Action(
-                    nameof(RestablecerContrasena),
-                    "Cuenta",
-                    new
-                    {
-                        email = model.Email,
-                        token
-                    },
-                    Request.Scheme);
+            var now = DateTime.UtcNow;
+
+            await using var transaction =
+                await db.Database.BeginTransactionAsync();
+
+            await db.PasswordResetTokens
+                .Where(resetToken =>
+                    resetToken.UserId == user.Id &&
+                    resetToken.UsedAtUtc == null)
+                .ExecuteUpdateAsync(setters =>
+                    setters.SetProperty(
+                        resetToken => resetToken.UsedAtUtc,
+                        now));
+
+            var token = WebEncoders.Base64UrlEncode(
+                RandomNumberGenerator.GetBytes(32));
+
+            db.PasswordResetTokens.Add(
+                new PasswordResetToken
+                {
+                    UserId = user.Id,
+                    TokenHash = HashResetToken(token),
+                    CreatedAtUtc = now,
+                    ExpiresAtUtc = now.Add(
+                        PasswordResetTokenLifetime)
+                });
+
+            await db.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            if (environment.IsDevelopment())
+            {
+                ViewBag.ResetUrl =
+                    Url.Action(
+                        nameof(RestablecerContrasena),
+                        "Cuenta",
+                        new
+                        {
+                            email,
+                            token
+                        },
+                        Request.Scheme);
+            }
         }
 
         ViewBag.Sent = true;
@@ -346,17 +385,72 @@ public sealed class CuentaController(
         if (!ModelState.IsValid)
             return View(model);
 
-        if (!await users.ResetPasswordAsync(
-            model.Email,
-            model.Token,
-            model.Password))
+        var email = model.Email.Trim();
+        var normalizedEmail = email.ToUpperInvariant();
+        var tokenHash = HashResetToken(model.Token);
+        var now = DateTime.UtcNow;
+
+        await using var transaction =
+            await db.Database.BeginTransactionAsync();
+
+        var user = await db.Users
+            .FirstOrDefaultAsync(candidate =>
+                candidate.NormalizedEmail == normalizedEmail &&
+                candidate.IsActive);
+
+        var resetTokenId = user is null
+            ? null
+            : await db.PasswordResetTokens
+                .AsNoTracking()
+                .Where(resetToken =>
+                    resetToken.UserId == user.Id &&
+                    resetToken.TokenHash == tokenHash &&
+                    resetToken.UsedAtUtc == null &&
+                    resetToken.ExpiresAtUtc > now)
+                .OrderByDescending(resetToken =>
+                    resetToken.CreatedAtUtc)
+                .Select(resetToken => (Guid?)resetToken.Id)
+                .FirstOrDefaultAsync();
+
+        if (user is null || resetTokenId is null)
         {
+            await transaction.RollbackAsync();
+
             ModelState.AddModelError(
                 string.Empty,
                 "El enlace no es válido o ya venció.");
 
             return View(model);
         }
+
+        var consumedTokens = await db.PasswordResetTokens
+            .Where(resetToken =>
+                resetToken.Id == resetTokenId.Value &&
+                resetToken.UsedAtUtc == null &&
+                resetToken.ExpiresAtUtc > now)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(
+                    resetToken => resetToken.UsedAtUtc,
+                    now));
+
+        if (consumedTokens != 1)
+        {
+            await transaction.RollbackAsync();
+
+            ModelState.AddModelError(
+                string.Empty,
+                "El enlace no es válido o ya venció.");
+
+            return View(model);
+        }
+
+        user.PasswordHash = passwordHasher.HashPassword(
+            user,
+            model.Password);
+        user.SecurityStamp = Guid.NewGuid().ToString();
+
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         TempData["Success"] =
             "Tu contraseña fue actualizada. " +
@@ -499,5 +593,12 @@ public sealed class CuentaController(
         return RedirectToAction(
             "Index",
             "Home");
+    }
+
+    private static string HashResetToken(string token)
+    {
+        return Convert.ToHexString(
+            SHA256.HashData(
+                Encoding.UTF8.GetBytes(token)));
     }
 }
