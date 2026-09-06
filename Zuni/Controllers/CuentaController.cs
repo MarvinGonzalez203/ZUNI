@@ -11,13 +11,11 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Zuni.Data;
 using Zuni.Models;
-using Zuni.Services;
 
 namespace Zuni.Controllers;
 
 [Route("Cuenta")]
 public sealed class CuentaController(
-    IUserStore users,
     IWebHostEnvironment environment,
     ApplicationDbContext db,
     IPasswordHasher<ApplicationUser> passwordHasher) : Controller
@@ -54,108 +52,11 @@ public sealed class CuentaController(
         var email = model.Email.Trim();
         var normalizedEmail = email.ToUpperInvariant();
 
-        // ========================================================
-        // 1. BUSCAR PRIMERO EN POSTGRESQL
-        // ========================================================
-
         var dbUser = await db.Users
             .FirstOrDefaultAsync(u =>
                 u.NormalizedEmail == normalizedEmail);
 
-        if (dbUser is not null)
-        {
-            System.Diagnostics.Debug.WriteLine(
-                "Login: usuario encontrado en PostgreSQL.");
-
-            // Verificar que la cuenta esté activa
-            if (!dbUser.IsActive)
-            {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Esta cuenta se encuentra desactivada.");
-
-                return View(model);
-            }
-
-            var passwordResult =
-                passwordHasher.VerifyHashedPassword(
-                    dbUser,
-                    dbUser.PasswordHash ?? string.Empty,
-                    model.Password);
-
-            // ====================================================
-            // COMPATIBILIDAD TEMPORAL CON EL HASH DEL JSON
-            // ====================================================
-
-            if (passwordResult == PasswordVerificationResult.Failed)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    "El hash de PostgreSQL no pudo verificarse. " +
-                    "Comprobando temporalmente el almacenamiento JSON.");
-
-                var legacyUser =
-                    await users.FindByEmailAsync(email);
-
-                if (legacyUser is null ||
-                    !await users.VerifyPasswordAsync(
-                        legacyUser,
-                        model.Password))
-                {
-                    ModelState.AddModelError(
-                        string.Empty,
-                        "El correo o la contraseña son incorrectos.");
-
-                    return View(model);
-                }
-
-                // Si la contraseña funciona con el sistema anterior,
-                // generar un nuevo hash compatible con ApplicationUser.
-                dbUser.PasswordHash =
-                    passwordHasher.HashPassword(
-                        dbUser,
-                        model.Password);
-
-                await db.SaveChangesAsync();
-
-                System.Diagnostics.Debug.WriteLine(
-                    "Contraseña actualizada al formato de PostgreSQL/Identity.");
-            }
-            else if (
-                passwordResult ==
-                PasswordVerificationResult.SuccessRehashNeeded)
-            {
-                dbUser.PasswordHash =
-                    passwordHasher.HashPassword(
-                        dbUser,
-                        model.Password);
-
-                await db.SaveChangesAsync();
-            }
-
-            await SignInAsync(
-                dbUser,
-                model.RememberMe);
-
-            System.Diagnostics.Debug.WriteLine(
-                "Login realizado correctamente desde PostgreSQL.");
-
-            return RedirectAfterLogin(model.ReturnUrl);
-        }
-
-        // ========================================================
-        // 2. RESPALDO TEMPORAL: BUSCAR EN users.json
-        // ========================================================
-
-        System.Diagnostics.Debug.WriteLine(
-            "Usuario no encontrado en PostgreSQL. " +
-            "Buscando temporalmente en users.json.");
-
-        var oldUser = await users.FindByEmailAsync(email);
-
-        if (oldUser is null ||
-            !await users.VerifyPasswordAsync(
-                oldUser,
-                model.Password))
+        if (dbUser is null || !dbUser.IsActive)
         {
             ModelState.AddModelError(
                 string.Empty,
@@ -164,12 +65,35 @@ public sealed class CuentaController(
             return View(model);
         }
 
-        await SignInAsync(
-            oldUser,
-            model.RememberMe);
+        var passwordResult =
+            passwordHasher.VerifyHashedPassword(
+                dbUser,
+                dbUser.PasswordHash ?? string.Empty,
+                model.Password);
 
-        System.Diagnostics.Debug.WriteLine(
-            "Login realizado mediante respaldo JSON.");
+        if (passwordResult == PasswordVerificationResult.Failed)
+        {
+            ModelState.AddModelError(
+                string.Empty,
+                "El correo o la contraseña son incorrectos.");
+
+            return View(model);
+        }
+
+        if (passwordResult ==
+            PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            dbUser.PasswordHash =
+                passwordHasher.HashPassword(
+                    dbUser,
+                    model.Password);
+
+            await db.SaveChangesAsync();
+        }
+
+        await SignInAsync(
+            dbUser,
+            model.RememberMe);
 
         return RedirectAfterLogin(model.ReturnUrl);
     }
