@@ -12,5 +12,7 @@ namespace Zuni.Models
 
         public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } =
             new List<PasswordResetToken>();
+
+        public PerfilEstudiante? PerfilEstudiante { get; set; }
     }
 }
