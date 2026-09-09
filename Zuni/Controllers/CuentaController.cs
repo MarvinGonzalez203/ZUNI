@@ -125,6 +125,7 @@ public sealed class CuentaController(
 
         var email = model.Email.Trim();
         var normalizedEmail = email.ToUpperInvariant();
+        var carne = model.Carne.Trim();
 
         var emailAlreadyExists = await db.Users
             .AsNoTracking()
@@ -136,6 +137,20 @@ public sealed class CuentaController(
             ModelState.AddModelError(
                 nameof(model.Email),
                 "Ya existe una cuenta con este correo.");
+
+            return View(model);
+        }
+
+        var carneAlreadyExists = await db.PerfilesEstudiante
+            .AsNoTracking()
+            .AnyAsync(perfil =>
+                perfil.Carne == carne);
+
+        if (carneAlreadyExists)
+        {
+            ModelState.AddModelError(
+                nameof(model.Carne),
+                "Ya existe un estudiante registrado con este carné.");
 
             return View(model);
         }
@@ -172,6 +187,25 @@ public sealed class CuentaController(
             user,
             model.Password);
 
+        var perfil = new PerfilEstudiante
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = user.Id,
+            Carne = carne,
+            Carrera = model.Carrera.Trim(),
+            Semestre = string.IsNullOrWhiteSpace(model.Semestre)
+                ? null
+                : model.Semestre.Trim(),
+            Telefono = string.IsNullOrWhiteSpace(model.Telefono)
+                ? null
+                : model.Telefono.Trim(),
+            FechaCreacionUtc = DateTime.UtcNow,
+            Activo = true
+        };
+
+        await using var transaction =
+            await db.Database.BeginTransactionAsync();
+
         db.Users.Add(user);
         db.UserRoles.Add(
             new IdentityUserRole<string>
@@ -179,10 +213,12 @@ public sealed class CuentaController(
                 UserId = user.Id,
                 RoleId = estudianteRole.Id
             });
+        db.PerfilesEstudiante.Add(perfil);
 
         try
         {
             await db.SaveChangesAsync();
+            await transaction.CommitAsync();
         }
         catch (DbUpdateException exception)
             when (exception.InnerException is PostgresException
@@ -190,9 +226,21 @@ public sealed class CuentaController(
                 SqlState: PostgresErrorCodes.UniqueViolation
             })
         {
-            ModelState.AddModelError(
-                nameof(model.Email),
-                "Ya existe una cuenta con este correo.");
+            await transaction.RollbackAsync();
+
+            if (((PostgresException)exception.InnerException).ConstraintName ==
+                "IX_PerfilesEstudiante_Carne")
+            {
+                ModelState.AddModelError(
+                    nameof(model.Carne),
+                    "Ya existe un estudiante registrado con este carné.");
+            }
+            else
+            {
+                ModelState.AddModelError(
+                    nameof(model.Email),
+                    "Ya existe una cuenta con este correo.");
+            }
 
             return View(model);
         }
