@@ -30,9 +30,10 @@ public sealed class CompletarPerfilEstudianteViewModel
     [Display(Name = "Nombre del contacto de emergencia")]
     public string? NombreContactoEmergencia { get; set; }
 
-    [StringLength(20, ErrorMessage = "El teléfono del contacto no puede superar los 20 caracteres.")]
-    [Phone(ErrorMessage = "Ingresa un teléfono de contacto válido.")]
-    [Display(Name = "Teléfono del contacto de emergencia")]
+    [RegularExpression(
+        @"^\d{8}$",
+        ErrorMessage = "El teléfono de emergencia debe contener 8 dígitos.")]
+    [Display(Name = "Teléfono de emergencia")]
     public string? TelefonoContactoEmergencia { get; set; }
 
     [StringLength(60, ErrorMessage = "La relación no puede superar los 60 caracteres.")]

@@ -61,7 +61,7 @@
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="form-floating">
-                <input asp-for="TelefonoContactoEmergencia" class="form-control" placeholder="Teléfono del contacto" autocomplete="tel" inputmode="tel" />
+                <input asp-for="TelefonoContactoEmergencia" class="form-control" placeholder="Teléfono de emergencia" type="tel" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" autocomplete="tel" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                 <label asp-for="TelefonoContactoEmergencia"></label>
             </div>
             <span asp-validation-for="TelefonoContactoEmergencia" class="text-danger small validation-message"></span>
