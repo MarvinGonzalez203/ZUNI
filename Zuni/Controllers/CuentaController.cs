@@ -95,6 +95,13 @@ public sealed class CuentaController(
             dbUser,
             model.RememberMe);
 
+        if (await RequierePerfilEstudianteAsync(dbUser.Id))
+        {
+            return RedirectToAction(
+                "Completar",
+                "Perfil");
+        }
+
         return RedirectAfterLogin(model.ReturnUrl);
     }
 
@@ -523,6 +530,27 @@ public sealed class CuentaController(
             : RedirectToAction(
                 "Index",
                 "Home");
+    }
+
+    private async Task<bool> RequierePerfilEstudianteAsync(
+        string usuarioId)
+    {
+        var esEstudiante = await (
+            from usuarioRol in db.UserRoles
+            join rol in db.Roles
+                on usuarioRol.RoleId equals rol.Id
+            where usuarioRol.UserId == usuarioId &&
+                  rol.NormalizedName == "ESTUDIANTE"
+            select usuarioRol
+        ).AnyAsync();
+
+        if (!esEstudiante)
+            return false;
+
+        return !await db.PerfilesEstudiante
+            .AsNoTracking()
+            .AnyAsync(perfil =>
+                perfil.UsuarioId == usuarioId);
     }
 
     private IActionResult RedirectToAuthenticatedHome()

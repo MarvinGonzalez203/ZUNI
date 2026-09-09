@@ -1,0 +1,46 @@
+@model CompletarPerfilEstudianteViewModel
+@{
+    ViewData["Title"] = "Completar perfil";
+    Layout = "~/Views/Cuenta/_AuthLayout.cshtml";
+}
+
+<a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
+<h1 class="h2 fw-bold mb-2">Completa tu perfil</h1>
+<p class="text-secondary mb-4">Necesitamos algunos datos académicos para continuar en ZUNI.</p>
+
+<form method="post" novalidate class="auth-form-fields">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="Carne" class="form-control" placeholder="Carné" autocomplete="off" />
+        <label asp-for="Carne"></label>
+        <span asp-validation-for="Carne" class="text-danger small validation-message"></span>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="Carrera" class="form-control" placeholder="Carrera" autocomplete="organization-title" />
+        <label asp-for="Carrera"></label>
+        <span asp-validation-for="Carrera" class="text-danger small validation-message"></span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="form-floating">
+                <input asp-for="Semestre" class="form-control" placeholder="Semestre" />
+                <label asp-for="Semestre"></label>
+            </div>
+            <span asp-validation-for="Semestre" class="text-danger small validation-message"></span>
+        </div>
+        <div class="col-md-6">
+            <div class="form-floating">
+                <input asp-for="Telefono" class="form-control" placeholder="Teléfono" autocomplete="tel" inputmode="tel" />
+                <label asp-for="Telefono"></label>
+            </div>
+            <span asp-validation-for="Telefono" class="text-danger small validation-message"></span>
+        </div>
+    </div>
+
+    <button class="btn btn-zuni w-100 btn-lg" type="submit">
+        Completar perfil
+    </button>
+</form>
