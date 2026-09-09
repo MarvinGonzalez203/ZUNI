@@ -95,13 +95,6 @@ public sealed class CuentaController(
             dbUser,
             model.RememberMe);
 
-        if (await RequierePerfilEstudianteAsync(dbUser.Id))
-        {
-            return RedirectToAction(
-                "Completar",
-                "Perfil");
-        }
-
         return RedirectAfterLogin(model.ReturnUrl);
     }
 
@@ -199,13 +192,13 @@ public sealed class CuentaController(
             Id = Guid.NewGuid(),
             UsuarioId = user.Id,
             Carne = carne,
-            Carrera = model.Carrera.Trim(),
-            Semestre = string.IsNullOrWhiteSpace(model.Semestre)
-                ? null
-                : model.Semestre.Trim(),
-            Telefono = string.IsNullOrWhiteSpace(model.Telefono)
-                ? null
-                : model.Telefono.Trim(),
+            Telefono = model.Telefono.Trim(),
+            Carrera = null,
+            Semestre = null,
+            CicloAcademico = null,
+            NombreContactoEmergencia = null,
+            TelefonoContactoEmergencia = null,
+            RelacionContactoEmergencia = null,
             FechaCreacionUtc = DateTime.UtcNow,
             Activo = true
         };
@@ -530,27 +523,6 @@ public sealed class CuentaController(
             : RedirectToAction(
                 "Index",
                 "Home");
-    }
-
-    private async Task<bool> RequierePerfilEstudianteAsync(
-        string usuarioId)
-    {
-        var esEstudiante = await (
-            from usuarioRol in db.UserRoles
-            join rol in db.Roles
-                on usuarioRol.RoleId equals rol.Id
-            where usuarioRol.UserId == usuarioId &&
-                  rol.NormalizedName == "ESTUDIANTE"
-            select usuarioRol
-        ).AnyAsync();
-
-        if (!esEstudiante)
-            return false;
-
-        return !await db.PerfilesEstudiante
-            .AsNoTracking()
-            .AnyAsync(perfil =>
-                perfil.UsuarioId == usuarioId);
     }
 
     private IActionResult RedirectToAuthenticatedHome()

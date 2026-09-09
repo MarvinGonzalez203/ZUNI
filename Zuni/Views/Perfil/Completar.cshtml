@@ -6,16 +6,28 @@
 
 <a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
 <h1 class="h2 fw-bold mb-2">Completa tu perfil</h1>
-<p class="text-secondary mb-4">Necesitamos algunos datos académicos para continuar en ZUNI.</p>
+<p class="text-secondary mb-4">Agrega algunos datos académicos y de contacto para aprovechar todas las funciones de ZUNI.</p>
 
 <form method="post" novalidate class="auth-form-fields">
     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
 
-    <div class="form-floating mb-3">
-        <input asp-for="Carne" class="form-control" placeholder="Carné" autocomplete="off" />
-        <label asp-for="Carne"></label>
-        <span asp-validation-for="Carne" class="text-danger small validation-message"></span>
-    </div>
+    @if (Model.SolicitarCarne)
+    {
+        <div class="form-floating mb-3">
+            <input asp-for="Carne" class="form-control" placeholder="Carné" autocomplete="off" />
+            <label asp-for="Carne"></label>
+            <span asp-validation-for="Carne" class="text-danger small validation-message"></span>
+        </div>
+    }
+
+    @if (Model.SolicitarTelefono)
+    {
+        <div class="form-floating mb-3">
+            <input asp-for="Telefono" class="form-control" placeholder="Teléfono personal" autocomplete="tel" inputmode="tel" />
+            <label asp-for="Telefono"></label>
+            <span asp-validation-for="Telefono" class="text-danger small validation-message"></span>
+        </div>
+    }
 
     <div class="form-floating mb-3">
         <input asp-for="Carrera" class="form-control" placeholder="Carrera" autocomplete="organization-title" />
@@ -33,10 +45,33 @@
         </div>
         <div class="col-md-6">
             <div class="form-floating">
-                <input asp-for="Telefono" class="form-control" placeholder="Teléfono" autocomplete="tel" inputmode="tel" />
-                <label asp-for="Telefono"></label>
+                <input asp-for="CicloAcademico" class="form-control" placeholder="Ciclo académico" />
+                <label asp-for="CicloAcademico"></label>
             </div>
-            <span asp-validation-for="Telefono" class="text-danger small validation-message"></span>
+            <span asp-validation-for="CicloAcademico" class="text-danger small validation-message"></span>
+        </div>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="NombreContactoEmergencia" class="form-control" placeholder="Nombre del contacto de emergencia" autocomplete="name" />
+        <label asp-for="NombreContactoEmergencia"></label>
+        <span asp-validation-for="NombreContactoEmergencia" class="text-danger small validation-message"></span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="form-floating">
+                <input asp-for="TelefonoContactoEmergencia" class="form-control" placeholder="Teléfono del contacto" autocomplete="tel" inputmode="tel" />
+                <label asp-for="TelefonoContactoEmergencia"></label>
+            </div>
+            <span asp-validation-for="TelefonoContactoEmergencia" class="text-danger small validation-message"></span>
+        </div>
+        <div class="col-md-6">
+            <div class="form-floating">
+                <input asp-for="RelacionContactoEmergencia" class="form-control" placeholder="Relación con el estudiante" />
+                <label asp-for="RelacionContactoEmergencia"></label>
+            </div>
+            <span asp-validation-for="RelacionContactoEmergencia" class="text-danger small validation-message"></span>
         </div>
     </div>
 

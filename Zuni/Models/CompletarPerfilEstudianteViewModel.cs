@@ -4,10 +4,14 @@ namespace Zuni.Models;
 
 public sealed class CompletarPerfilEstudianteViewModel
 {
-    [Required(ErrorMessage = "Ingresa tu carné.")]
     [StringLength(30, ErrorMessage = "El carné no puede superar los 30 caracteres.")]
     [Display(Name = "Carné")]
-    public string Carne { get; set; } = string.Empty;
+    public string? Carne { get; set; }
+
+    [StringLength(20, ErrorMessage = "El teléfono no puede superar los 20 caracteres.")]
+    [Phone(ErrorMessage = "Ingresa un teléfono válido.")]
+    [Display(Name = "Teléfono personal")]
+    public string? Telefono { get; set; }
 
     [Required(ErrorMessage = "Ingresa tu carrera.")]
     [StringLength(150, ErrorMessage = "La carrera no puede superar los 150 caracteres.")]
@@ -18,8 +22,23 @@ public sealed class CompletarPerfilEstudianteViewModel
     [Display(Name = "Semestre")]
     public string? Semestre { get; set; }
 
-    [StringLength(20, ErrorMessage = "El teléfono no puede superar los 20 caracteres.")]
-    [Phone(ErrorMessage = "Ingresa un teléfono válido.")]
-    [Display(Name = "Teléfono")]
-    public string? Telefono { get; set; }
+    [StringLength(30, ErrorMessage = "El ciclo académico no puede superar los 30 caracteres.")]
+    [Display(Name = "Ciclo académico")]
+    public string? CicloAcademico { get; set; }
+
+    [StringLength(150, ErrorMessage = "El nombre del contacto no puede superar los 150 caracteres.")]
+    [Display(Name = "Nombre del contacto de emergencia")]
+    public string? NombreContactoEmergencia { get; set; }
+
+    [StringLength(20, ErrorMessage = "El teléfono del contacto no puede superar los 20 caracteres.")]
+    [Phone(ErrorMessage = "Ingresa un teléfono de contacto válido.")]
+    [Display(Name = "Teléfono del contacto de emergencia")]
+    public string? TelefonoContactoEmergencia { get; set; }
+
+    [StringLength(60, ErrorMessage = "La relación no puede superar los 60 caracteres.")]
+    [Display(Name = "Relación con el estudiante")]
+    public string? RelacionContactoEmergencia { get; set; }
+
+    public bool SolicitarCarne { get; set; }
+    public bool SolicitarTelefono { get; set; }
 }

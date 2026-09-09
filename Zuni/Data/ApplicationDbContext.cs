@@ -62,11 +62,13 @@ namespace Zuni.Data
                     .IsRequired();
 
                 entity.Property(perfil => perfil.Carrera)
-                    .HasMaxLength(150)
-                    .IsRequired();
+                    .HasMaxLength(150);
 
                 entity.Property(perfil => perfil.Semestre)
                     .HasMaxLength(50);
+
+                entity.Property(perfil => perfil.CicloAcademico)
+                    .HasMaxLength(30);
 
                 entity.Property(perfil => perfil.Telefono)
                     .HasMaxLength(20);
@@ -76,6 +78,9 @@ namespace Zuni.Data
 
                 entity.Property(perfil => perfil.TelefonoContactoEmergencia)
                     .HasMaxLength(20);
+
+                entity.Property(perfil => perfil.RelacionContactoEmergencia)
+                    .HasMaxLength(60);
 
                 entity.HasIndex(perfil => perfil.UsuarioId)
                     .IsUnique();

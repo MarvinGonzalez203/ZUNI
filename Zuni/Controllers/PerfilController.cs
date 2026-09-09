@@ -29,15 +29,15 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         if (!usuarioExiste)
             return Forbid();
 
-        var perfilExiste = await db.PerfilesEstudiante
+        var perfil = await db.PerfilesEstudiante
             .AsNoTracking()
-            .AnyAsync(perfil =>
+            .FirstOrDefaultAsync(perfil =>
                 perfil.UsuarioId == usuarioId);
 
-        if (perfilExiste)
+        if (perfil?.EstaCompleto == true)
             return RedirectToAction("Index", "Home");
 
-        return View(new CompletarPerfilEstudianteViewModel());
+        return View(CrearViewModel(perfil));
     }
 
     [HttpPost("Completar")]
@@ -45,9 +45,6 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
     public async Task<IActionResult> Completar(
         CompletarPerfilEstudianteViewModel model)
     {
-        if (!ModelState.IsValid)
-            return View(model);
-
         var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrWhiteSpace(usuarioId))
@@ -62,45 +59,92 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         if (!usuarioExiste)
             return Forbid();
 
-        var perfilExiste = await db.PerfilesEstudiante
-            .AsNoTracking()
-            .AnyAsync(perfil =>
+        var perfil = await db.PerfilesEstudiante
+            .FirstOrDefaultAsync(perfil =>
                 perfil.UsuarioId == usuarioId);
 
-        if (perfilExiste)
+        if (perfil?.EstaCompleto == true)
             return RedirectToAction("Index", "Home");
 
-        var carne = model.Carne.Trim();
-        var carneExiste = await db.PerfilesEstudiante
-            .AsNoTracking()
-            .AnyAsync(perfil =>
-                perfil.Carne == carne);
+        model.SolicitarCarne =
+            string.IsNullOrWhiteSpace(perfil?.Carne);
+        model.SolicitarTelefono =
+            string.IsNullOrWhiteSpace(perfil?.Telefono);
 
-        if (carneExiste)
+        if (model.SolicitarCarne &&
+            string.IsNullOrWhiteSpace(model.Carne))
         {
             ModelState.AddModelError(
                 nameof(model.Carne),
-                "Ya existe un estudiante registrado con este carné.");
-
-            return View(model);
+                "Ingresa tu carné.");
         }
 
-        db.PerfilesEstudiante.Add(
-            new PerfilEstudiante
+        if (model.SolicitarTelefono &&
+            string.IsNullOrWhiteSpace(model.Telefono))
+        {
+            ModelState.AddModelError(
+                nameof(model.Telefono),
+                "Ingresa tu teléfono.");
+        }
+
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var carne = model.SolicitarCarne
+            ? model.Carne!.Trim()
+            : perfil!.Carne;
+
+        if (model.SolicitarCarne)
+        {
+            var carneExiste = await db.PerfilesEstudiante
+                .AsNoTracking()
+                .AnyAsync(perfilExistente =>
+                    perfilExistente.Carne == carne &&
+                    perfilExistente.UsuarioId != usuarioId);
+
+            if (carneExiste)
+            {
+                ModelState.AddModelError(
+                    nameof(model.Carne),
+                    "Ya existe un estudiante registrado con este carné.");
+
+                return View(model);
+            }
+        }
+
+        if (perfil is null)
+        {
+            perfil = new PerfilEstudiante
             {
                 Id = Guid.NewGuid(),
                 UsuarioId = usuarioId,
                 Carne = carne,
-                Carrera = model.Carrera.Trim(),
-                Semestre = string.IsNullOrWhiteSpace(model.Semestre)
-                    ? null
-                    : model.Semestre.Trim(),
-                Telefono = string.IsNullOrWhiteSpace(model.Telefono)
-                    ? null
-                    : model.Telefono.Trim(),
+                Telefono = model.Telefono!.Trim(),
                 FechaCreacionUtc = DateTime.UtcNow,
                 Activo = true
-            });
+            };
+
+            db.PerfilesEstudiante.Add(perfil);
+        }
+        else
+        {
+            if (model.SolicitarCarne)
+                perfil.Carne = carne;
+
+            if (model.SolicitarTelefono)
+                perfil.Telefono = model.Telefono!.Trim();
+        }
+
+        perfil.Carrera = model.Carrera.Trim();
+        perfil.Semestre = NormalizarOpcional(model.Semestre);
+        perfil.CicloAcademico =
+            NormalizarOpcional(model.CicloAcademico);
+        perfil.NombreContactoEmergencia =
+            NormalizarOpcional(model.NombreContactoEmergencia);
+        perfil.TelefonoContactoEmergencia =
+            NormalizarOpcional(model.TelefonoContactoEmergencia);
+        perfil.RelacionContactoEmergencia =
+            NormalizarOpcional(model.RelacionContactoEmergencia);
 
         try
         {
@@ -132,5 +176,33 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
             "Tu perfil fue completado correctamente.";
 
         return RedirectToAction("Index", "Home");
+    }
+
+    private static CompletarPerfilEstudianteViewModel CrearViewModel(
+        PerfilEstudiante? perfil)
+    {
+        return new CompletarPerfilEstudianteViewModel
+        {
+            Carrera = perfil?.Carrera ?? string.Empty,
+            Semestre = perfil?.Semestre,
+            CicloAcademico = perfil?.CicloAcademico,
+            NombreContactoEmergencia =
+                perfil?.NombreContactoEmergencia,
+            TelefonoContactoEmergencia =
+                perfil?.TelefonoContactoEmergencia,
+            RelacionContactoEmergencia =
+                perfil?.RelacionContactoEmergencia,
+            SolicitarCarne =
+                string.IsNullOrWhiteSpace(perfil?.Carne),
+            SolicitarTelefono =
+                string.IsNullOrWhiteSpace(perfil?.Telefono)
+        };
+    }
+
+    private static string? NormalizarOpcional(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim();
     }
 }
