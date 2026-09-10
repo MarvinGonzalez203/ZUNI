@@ -8,8 +8,22 @@
     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
     <div class="form-floating mb-3"><input asp-for="FullName" class="form-control" placeholder="Nombre" autocomplete="name" /><label asp-for="FullName"></label><span asp-validation-for="FullName" class="text-danger small"></span></div>
     <div class="form-floating mb-3"><input asp-for="Email" class="form-control" placeholder="Correo" autocomplete="email" /><label asp-for="Email"></label><span asp-validation-for="Email" class="text-danger small"></span></div>
-    <div class="form-floating mb-3"><input asp-for="Carne" class="form-control" placeholder="Carné" autocomplete="off" /><label asp-for="Carne"></label><span asp-validation-for="Carne" class="text-danger small"></span></div>
-    <div class="form-floating mb-3"><input asp-for="Telefono" class="form-control" placeholder="Teléfono" autocomplete="tel" inputmode="tel" /><label asp-for="Telefono"></label><span asp-validation-for="Telefono" class="text-danger small"></span></div>
+    <fieldset class="carne-fieldset mb-3">
+        <legend>Carné</legend>
+        <div class="carne-segmented">
+            <input asp-for="CarneParte1" class="form-control" aria-label="Primer bloque del carné" placeholder="0000" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+            <span aria-hidden="true">−</span>
+            <input asp-for="CarneParte2" class="form-control" aria-label="Segundo bloque del carné" placeholder="00" type="text" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+            <span aria-hidden="true">−</span>
+            <input asp-for="CarneParte3" class="form-control" aria-label="Tercer bloque del carné" placeholder="0000" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+        </div>
+        <div class="carne-validation">
+            <span asp-validation-for="CarneParte1" class="text-danger small validation-message"></span>
+            <span asp-validation-for="CarneParte2" class="text-danger small validation-message"></span>
+            <span asp-validation-for="CarneParte3" class="text-danger small validation-message"></span>
+        </div>
+    </fieldset>
+    <div class="form-floating mb-3"><input asp-for="Telefono" class="form-control" placeholder="Teléfono" type="tel" autocomplete="tel" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" /><label asp-for="Telefono"></label><span asp-validation-for="Telefono" class="text-danger small"></span></div>
     <div class="row g-3 mb-4 password-row">
         <div class="col-md-6"><div class="form-floating password-field"><input asp-for="Password" class="form-control" placeholder="Contraseña" autocomplete="new-password" /><label asp-for="Password"></label><button type="button" class="password-toggle" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false"><span aria-hidden="true">◉</span></button></div><span asp-validation-for="Password" class="text-danger small validation-message"></span></div>
         <div class="col-md-6"><div class="form-floating password-field"><input asp-for="ConfirmPassword" class="form-control" placeholder="Confirmar" autocomplete="new-password" /><label asp-for="ConfirmPassword"></label><button type="button" class="password-toggle" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false"><span aria-hidden="true">◉</span></button></div><span asp-validation-for="ConfirmPassword" class="text-danger small validation-message"></span></div>

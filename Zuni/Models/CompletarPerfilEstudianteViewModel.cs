@@ -4,12 +4,16 @@ namespace Zuni.Models;
 
 public sealed class CompletarPerfilEstudianteViewModel
 {
-    [StringLength(30, ErrorMessage = "El carné no puede superar los 30 caracteres.")]
-    [Display(Name = "Carné")]
-    public string? Carne { get; set; }
+    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    public string? CarneParte1 { get; set; }
 
-    [StringLength(20, ErrorMessage = "El teléfono no puede superar los 20 caracteres.")]
-    [Phone(ErrorMessage = "Ingresa un teléfono válido.")]
+    [RegularExpression(@"^\d{2}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    public string? CarneParte2 { get; set; }
+
+    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    public string? CarneParte3 { get; set; }
+
+    [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe contener 8 dígitos.")]
     [Display(Name = "Teléfono personal")]
     public string? Telefono { get; set; }
 
@@ -18,11 +22,11 @@ public sealed class CompletarPerfilEstudianteViewModel
     [Display(Name = "Carrera")]
     public string Carrera { get; set; } = string.Empty;
 
-    [StringLength(50, ErrorMessage = "El semestre no puede superar los 50 caracteres.")]
+    [RegularExpression(@"^(?:[1-9]|10)$", ErrorMessage = "Selecciona un semestre válido.")]
     [Display(Name = "Semestre")]
     public string? Semestre { get; set; }
 
-    [StringLength(30, ErrorMessage = "El ciclo académico no puede superar los 30 caracteres.")]
+    [RegularExpression(@"^[12]$", ErrorMessage = "Selecciona un ciclo académico válido.")]
     [Display(Name = "Ciclo académico")]
     public string? CicloAcademico { get; set; }
 

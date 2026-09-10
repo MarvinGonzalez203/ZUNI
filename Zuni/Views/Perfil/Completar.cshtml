@@ -13,17 +13,27 @@
 
     @if (Model.SolicitarCarne)
     {
-        <div class="form-floating mb-3">
-            <input asp-for="Carne" class="form-control" placeholder="Carné" autocomplete="off" />
-            <label asp-for="Carne"></label>
-            <span asp-validation-for="Carne" class="text-danger small validation-message"></span>
-        </div>
+        <fieldset class="carne-fieldset mb-3">
+            <legend>Carné</legend>
+            <div class="carne-segmented">
+                <input asp-for="CarneParte1" class="form-control" aria-label="Primer bloque del carné" placeholder="0000" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                <span aria-hidden="true">−</span>
+                <input asp-for="CarneParte2" class="form-control" aria-label="Segundo bloque del carné" placeholder="00" type="text" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                <span aria-hidden="true">−</span>
+                <input asp-for="CarneParte3" class="form-control" aria-label="Tercer bloque del carné" placeholder="0000" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+            </div>
+            <div class="carne-validation">
+                <span asp-validation-for="CarneParte1" class="text-danger small validation-message"></span>
+                <span asp-validation-for="CarneParte2" class="text-danger small validation-message"></span>
+                <span asp-validation-for="CarneParte3" class="text-danger small validation-message"></span>
+            </div>
+        </fieldset>
     }
 
     @if (Model.SolicitarTelefono)
     {
         <div class="form-floating mb-3">
-            <input asp-for="Telefono" class="form-control" placeholder="Teléfono personal" autocomplete="tel" inputmode="tel" />
+            <input asp-for="Telefono" class="form-control" placeholder="Teléfono personal" type="tel" autocomplete="tel" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
             <label asp-for="Telefono"></label>
             <span asp-validation-for="Telefono" class="text-danger small validation-message"></span>
         </div>
@@ -38,14 +48,24 @@
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="form-floating">
-                <input asp-for="Semestre" class="form-control" placeholder="Semestre" />
+                <select asp-for="Semestre" class="form-select">
+                    <option value="">Seleccione...</option>
+                    @for (var semestre = 1; semestre <= 10; semestre++)
+                    {
+                        <option value="@semestre">@semestre</option>
+                    }
+                </select>
                 <label asp-for="Semestre"></label>
             </div>
             <span asp-validation-for="Semestre" class="text-danger small validation-message"></span>
         </div>
         <div class="col-md-6">
             <div class="form-floating">
-                <input asp-for="CicloAcademico" class="form-control" placeholder="Ciclo académico" />
+                <select asp-for="CicloAcademico" class="form-select">
+                    <option value="">Seleccione...</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                </select>
                 <label asp-for="CicloAcademico"></label>
             </div>
             <span asp-validation-for="CicloAcademico" class="text-danger small validation-message"></span>

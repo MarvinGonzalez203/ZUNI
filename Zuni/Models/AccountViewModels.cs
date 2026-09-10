@@ -32,14 +32,20 @@ public sealed class RegisterViewModel
     [Display(Name = "Correo electrónico")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Ingresa tu carné.")]
-    [StringLength(30, ErrorMessage = "El carné no puede superar los 30 caracteres.")]
-    [Display(Name = "Carné")]
-    public string Carne { get; set; } = string.Empty;
+    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    public string CarneParte1 { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^\d{2}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    public string CarneParte2 { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    public string CarneParte3 { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Ingresa tu teléfono.")]
-    [StringLength(20, ErrorMessage = "El teléfono no puede superar los 20 caracteres.")]
-    [Phone(ErrorMessage = "Ingresa un teléfono válido.")]
+    [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe contener 8 dígitos.")]
     [Display(Name = "Teléfono")]
     public string Telefono { get; set; } = string.Empty;
 

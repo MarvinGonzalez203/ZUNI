@@ -120,12 +120,30 @@ public sealed class CuentaController(
         if (User.Identity?.IsAuthenticated == true)
             return RedirectToAuthenticatedHome();
 
+        var email = model.Email?.Trim() ?? string.Empty;
+
+        if (!EsCorreoInstitucional(email))
+        {
+            ModelState.AddModelError(
+                nameof(model.Email),
+                "Debes utilizar tu correo institucional @miumg.edu.gt.");
+        }
+
+        if (!TryConstruirCarne(
+            model.CarneParte1,
+            model.CarneParte2,
+            model.CarneParte3,
+            out var carne))
+        {
+            ModelState.AddModelError(
+                nameof(model.CarneParte1),
+                "El carné debe contener 10 dígitos en el formato 0000-00-0000.");
+        }
+
         if (!ModelState.IsValid)
             return View(model);
 
-        var email = model.Email.Trim();
         var normalizedEmail = email.ToUpperInvariant();
-        var carne = model.Carne.Trim();
 
         var emailAlreadyExists = await db.Users
             .AsNoTracking()
@@ -149,7 +167,7 @@ public sealed class CuentaController(
         if (carneAlreadyExists)
         {
             ModelState.AddModelError(
-                nameof(model.Carne),
+                nameof(model.CarneParte1),
                 "Ya existe un estudiante registrado con este carné.");
 
             return View(model);
@@ -232,7 +250,7 @@ public sealed class CuentaController(
                 "IX_PerfilesEstudiante_Carne")
             {
                 ModelState.AddModelError(
-                    nameof(model.Carne),
+                    nameof(model.CarneParte1),
                     "Ya existe un estudiante registrado con este carné.");
             }
             else
@@ -537,5 +555,31 @@ public sealed class CuentaController(
         return Convert.ToHexString(
             SHA256.HashData(
                 Encoding.UTF8.GetBytes(token)));
+    }
+
+    private static bool EsCorreoInstitucional(string email)
+    {
+        var separatorIndex = email.LastIndexOf('@');
+
+        return separatorIndex > 0 &&
+               email.IndexOf('@') == separatorIndex &&
+               email[(separatorIndex + 1)..].Equals(
+                   "miumg.edu.gt",
+                   StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryConstruirCarne(
+        string? parte1,
+        string? parte2,
+        string? parte3,
+        out string carne)
+    {
+        carne = string.Concat(parte1, parte2, parte3);
+
+        return parte1 is { Length: 4 } &&
+               parte2 is { Length: 2 } &&
+               parte3 is { Length: 4 } &&
+               carne.Length == 10 &&
+               carne.All(char.IsDigit);
     }
 }

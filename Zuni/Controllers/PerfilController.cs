@@ -71,12 +71,18 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         model.SolicitarTelefono =
             string.IsNullOrWhiteSpace(perfil?.Telefono);
 
+        string? carneIngresado = null;
+
         if (model.SolicitarCarne &&
-            string.IsNullOrWhiteSpace(model.Carne))
+            !TryConstruirCarne(
+                model.CarneParte1,
+                model.CarneParte2,
+                model.CarneParte3,
+                out carneIngresado))
         {
             ModelState.AddModelError(
-                nameof(model.Carne),
-                "Ingresa tu carné.");
+                nameof(model.CarneParte1),
+                "El carné debe contener 10 dígitos en el formato 0000-00-0000.");
         }
 
         if (model.SolicitarTelefono &&
@@ -91,7 +97,7 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
             return View(model);
 
         var carne = model.SolicitarCarne
-            ? model.Carne!.Trim()
+            ? carneIngresado!
             : perfil!.Carne;
 
         if (model.SolicitarCarne)
@@ -105,7 +111,7 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
             if (carneExiste)
             {
                 ModelState.AddModelError(
-                    nameof(model.Carne),
+                    nameof(model.CarneParte1),
                     "Ya existe un estudiante registrado con este carné.");
 
                 return View(model);
@@ -166,7 +172,7 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
             }
 
             ModelState.AddModelError(
-                nameof(model.Carne),
+                nameof(model.CarneParte1),
                 "Ya existe un estudiante registrado con este carné.");
 
             return View(model);
@@ -204,5 +210,20 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         return string.IsNullOrWhiteSpace(value)
             ? null
             : value.Trim();
+    }
+
+    private static bool TryConstruirCarne(
+        string? parte1,
+        string? parte2,
+        string? parte3,
+        out string carne)
+    {
+        carne = string.Concat(parte1, parte2, parte3);
+
+        return parte1 is { Length: 4 } &&
+               parte2 is { Length: 2 } &&
+               parte3 is { Length: 4 } &&
+               carne.Length == 10 &&
+               carne.All(char.IsDigit);
     }
 }
