@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Panel del Director";
+}
+
+<section class="container py-5" aria-labelledby="director-title">
+    <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
+         style="max-width: 760px; background: linear-gradient(145deg, rgba(255, 255, 255, .92), rgba(237, 232, 208, .82)); border-color: rgba(206, 162, 253, .45) !important;">
+        <div class="d-inline-flex align-items-center gap-2 rounded-pill border px-3 py-2 mb-4"
+             style="background: rgba(206, 162, 253, .16); border-color: rgba(206, 162, 253, .4) !important; color: #111111;">
+            <span aria-hidden="true">◆</span>
+            <span class="small fw-semibold">Acceso autorizado</span>
+        </div>
+
+        <h1 id="director-title" class="display-6 fw-bold mb-3" style="color: #111111;">
+            Panel del Director
+        </h1>
+        <p class="lead mb-4" style="color: rgba(17, 17, 17, .72);">
+            Este espacio está restringido exclusivamente a usuarios con el rol Director.
+        </p>
+
+        <a asp-controller="Home" asp-action="Index" class="btn btn-zuni px-4">
+            Volver al inicio
+        </a>
+    </div>
+</section>
