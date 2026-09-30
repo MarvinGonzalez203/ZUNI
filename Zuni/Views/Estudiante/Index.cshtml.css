@@ -1,0 +1,6 @@
+.student-dashboard { max-width: 1080px; margin: auto; }
+.student-welcome { background: linear-gradient(135deg, #f7f3e2, var(--zuni-beige), #e9dfed); border: 1px solid rgba(255,255,255,.85); border-radius: 2rem; box-shadow: 0 18px 48px rgba(17,17,17,.07); }
+.student-card { background: rgba(255,255,255,.75); border: 1px solid rgba(17,17,17,.09); border-radius: 1.25rem; }
+.student-state { background: rgba(237,232,208,.35); border-radius: .85rem; }
+.student-status { display: inline-block; background: rgba(206,162,253,.25); color: #44314f; padding: .35rem .8rem; border-radius: 2rem; font-size: .8rem; font-weight: 600; }
+h1 { overflow-wrap: anywhere; }

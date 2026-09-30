@@ -1,0 +1,38 @@
+@model MiPerfilViewModel
+@{
+    ViewData["Title"] = "Mi perfil";
+    string Mostrar(string? valor) => string.IsNullOrWhiteSpace(valor) ? "Sin registrar" : valor;
+}
+<section class="student-profile py-4 py-md-5" aria-labelledby="profile-title">
+    <a asp-action="Index" class="text-dark">← Volver a mi panel</a>
+    <div class="profile-sheet p-4 p-md-5 mt-3">
+        <h1 id="profile-title" class="display-6 fw-bold">Mi perfil</h1>
+        <p class="text-secondary">Consulta tus datos personales, académicos y de contacto.</p>
+        @if (!Model.Completo)
+        {
+            <div class="mb-4">
+                <p>Tu perfil tiene datos pendientes.</p>
+                <a asp-controller="Perfil" asp-action="Completar" class="btn btn-zuni">Completar mi perfil</a>
+            </div>
+        }
+        <h2 class="h5 mt-4">Datos personales</h2>
+        <dl class="row">
+            <dt class="col-sm-4">Nombre completo</dt><dd class="col-sm-8">@Mostrar(Model.Nombre)</dd>
+            <dt class="col-sm-4">Correo institucional</dt><dd class="col-sm-8">@Mostrar(Model.Email)</dd>
+            <dt class="col-sm-4">Carné</dt><dd class="col-sm-8">@Mostrar(Model.CarneFormateado)</dd>
+            <dt class="col-sm-4">Teléfono</dt><dd class="col-sm-8">@Mostrar(Model.Telefono)</dd>
+        </dl>
+        <h2 class="h5 mt-4">Datos académicos</h2>
+        <dl class="row">
+            <dt class="col-sm-4">Carrera</dt><dd class="col-sm-8">@Mostrar(Model.Carrera)</dd>
+            <dt class="col-sm-4">Semestre</dt><dd class="col-sm-8">@Mostrar(Model.Semestre)</dd>
+            <dt class="col-sm-4">Ciclo académico</dt><dd class="col-sm-8">@Mostrar(Model.CicloAcademico)</dd>
+        </dl>
+        <h2 class="h5 mt-4">Contacto de emergencia</h2>
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">@Mostrar(Model.NombreContactoEmergencia)</dd>
+            <dt class="col-sm-4">Teléfono</dt><dd class="col-sm-8">@Mostrar(Model.TelefonoContactoEmergencia)</dd>
+            <dt class="col-sm-4">Relación</dt><dd class="col-sm-8">@Mostrar(Model.RelacionContactoEmergencia)</dd>
+        </dl>
+    </div>
+</section>
