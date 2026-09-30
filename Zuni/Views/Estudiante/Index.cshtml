@@ -1,0 +1,62 @@
+@model EstudianteDashboardViewModel
+@{
+    ViewData["Title"] = "Mi panel";
+}
+<section class="student-dashboard py-4 py-md-5" aria-labelledby="student-title">
+    @if (TempData["Success"] is string message)
+    {
+        <div class="alert alert-success" role="status">@message</div>
+    }
+    <header class="student-welcome p-4 p-md-5 mb-4">
+        <p class="text-uppercase small fw-semibold">Tu espacio ZUNI · Estudiante</p>
+        <h1 id="student-title" class="display-6 fw-bold">Hola, @Model.Nombre</h1>
+        <p class="lead">Un espacio para conocerte y acompañar tu vida universitaria.</p>
+        <a asp-action="MiPerfil" class="btn btn-zuni">Mi perfil <span aria-hidden="true">→</span></a>
+    </header>
+
+    @if (!Model.PerfilCompleto)
+    {
+        <aside class="student-card p-4 mb-4" aria-labelledby="profile-notice">
+            <h2 id="profile-notice" class="h5">Completa tu perfil</h2>
+            <p>Agrega los datos académicos y de contacto que faltan.</p>
+            <a asp-controller="Perfil" asp-action="Completar" class="btn btn-zuni">Completar mi perfil</a>
+        </aside>
+    }
+
+    <section class="student-card p-4 mb-4" aria-labelledby="evaluations-title">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <h2 id="evaluations-title" class="h4 mb-0">Mis evaluaciones</h2>
+            <span class="student-status">Próximamente</span>
+        </div>
+        <p>Explora tus gustos, preferencias e intereses a tu ritmo.</p>
+        <div class="row g-3 mb-3">
+            @foreach (var estado in new[] { "Pendientes", "En progreso", "Finalizadas" })
+            {
+                <div class="col-md-4">
+                    <div class="student-state p-3 h-100">
+                        <h3 class="h6">@estado</h3>
+                        <p class="small mb-0">Disponible cuando se habiliten las evaluaciones.</p>
+                    </div>
+                </div>
+            }
+        </div>
+        <p class="small text-secondary mb-0">Modalidades previstas: rápida (15 preguntas), media (40) y avanzada (60 o más).</p>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <section class="student-card p-4 h-100" aria-labelledby="results-title">
+                <span class="student-status">Próximamente</span>
+                <h2 id="results-title" class="h4 mt-3">Mis resultados</h2>
+                <p class="mb-0">Aquí podrás consultar los resultados que se habiliten para ti y sus niveles de intensidad. No representan un diagnóstico.</p>
+            </section>
+        </div>
+        <div class="col-md-6">
+            <section class="student-card p-4 h-100" aria-labelledby="appointments-title">
+                <span class="student-status">Próximamente</span>
+                <h2 id="appointments-title" class="h4 mt-3">Mis citas</h2>
+                <p class="mb-0">Podrás acceder a tus citas desde este espacio cuando el servicio esté disponible.</p>
+            </section>
+        </div>
+    </div>
+</section>
