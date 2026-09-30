@@ -1,0 +1,71 @@
+@model IReadOnlyList<Zuni.Models.Administrador.UsuarioAdminViewModel>
+@{
+    ViewData["Title"] = "Panel Administrador · Usuarios";
+}
+
+<section class="container py-4 py-md-5" aria-labelledby="usuarios-title">
+    <div class="rounded-4 border shadow-sm p-3 p-md-4 p-lg-5"
+         style="background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <div>
+                <p class="small fw-semibold mb-2">Panel Administrador</p>
+                <h1 id="usuarios-title" class="display-6 fw-bold mb-2">Usuarios</h1>
+                <p class="mb-0">Consulta las cuentas de ZUNI, su rol y su estado actual.</p>
+            </div>
+            <span class="rounded-pill px-3 py-2 small fw-semibold" style="background: rgba(206,162,253,.25);">
+                Total de usuarios: @Model.Count
+            </span>
+        </div>
+
+        <p id="acciones-aviso" class="small mb-3">
+            Próximamente: cambiar roles, desactivar o reactivar cuentas y consultar su historial.
+            Por ahora, este panel es únicamente de consulta.
+        </p>
+
+        @if (Model.Count == 0)
+        {
+            <div class="rounded-3 border p-4">No hay usuarios registrados.</div>
+        }
+        else
+        {
+            <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="Listado de usuarios">
+                <table class="table align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: #111111;">
+                    <caption class="visually-hidden">Usuarios de ZUNI. Las acciones estarán disponibles próximamente.</caption>
+                    <thead style="background: rgba(206,162,253,.18);">
+                        <tr>
+                            <th scope="col" class="p-3">Nombre</th>
+                            <th scope="col" class="p-3">Correo</th>
+                            <th scope="col" class="p-3">Rol</th>
+                            <th scope="col" class="p-3">Estado</th>
+                            <th scope="col" class="p-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var usuario in Model)
+                        {
+                            <tr>
+                                <th scope="row" class="p-3 fw-semibold text-break">@usuario.FullName</th>
+                                <td class="p-3 text-break">@(usuario.Email ?? "Sin correo")</td>
+                                <td class="p-3">@usuario.Rol</td>
+                                <td class="p-3">
+                                    <span class="badge rounded-pill border text-dark"
+                                          style="background: @(usuario.IsActive ? "rgba(206,162,253,.25)" : "rgba(237,232,208,.65)");">
+                                        @(usuario.IsActive ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td class="p-3">
+                                    <div class="d-flex flex-wrap gap-2" aria-describedby="acciones-aviso">
+                                        <button type="button" class="btn btn-sm btn-outline-dark" disabled>Cambiar rol</button>
+                                        <button type="button" class="btn btn-sm btn-outline-dark" disabled>@(usuario.IsActive ? "Desactivar" : "Reactivar")</button>
+                                        <button type="button" class="btn btn-sm btn-outline-dark" disabled>Ver historial</button>
+                                    </div>
+                                    <span class="small d-block mt-2">Próximamente</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
