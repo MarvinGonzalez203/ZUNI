@@ -17,9 +17,15 @@
             </span>
         </div>
 
+        @foreach (var tipo in new[] { "Success", "Info", "Error" })
+        {
+            if (TempData[tipo] is string mensaje)
+            {
+                <div class="alert @(tipo == "Error" ? "alert-danger" : "alert-light") border" role="status">@mensaje</div>
+            }
+        }
         <p id="acciones-aviso" class="small mb-3">
-            Próximamente: cambiar roles, desactivar o reactivar cuentas y consultar su historial.
-            Por ahora, este panel es únicamente de consulta.
+            Puedes cambiar el rol de usuarios activos. Próximamente: desactivar o reactivar cuentas y consultar su historial.
         </p>
 
         @if (Model.Count == 0)
@@ -30,7 +36,7 @@
         {
             <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="Listado de usuarios">
                 <table class="table align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: #111111;">
-                    <caption class="visually-hidden">Usuarios de ZUNI. Las acciones estarán disponibles próximamente.</caption>
+                    <caption class="visually-hidden">Usuarios de ZUNI. Cambio de rol disponible para usuarios activos.</caption>
                     <thead style="background: rgba(206,162,253,.18);">
                         <tr>
                             <th scope="col" class="p-3">Nombre</th>
@@ -55,11 +61,18 @@
                                 </td>
                                 <td class="p-3">
                                     <div class="d-flex flex-wrap gap-2" aria-describedby="acciones-aviso">
-                                        <button type="button" class="btn btn-sm btn-outline-dark" disabled>Cambiar rol</button>
+                                        @if (usuario.IsActive)
+                                        {
+                                            <a asp-action="CambiarRol" asp-route-id="@usuario.Id" class="btn btn-sm btn-outline-dark">Cambiar rol</a>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-dark" disabled title="Requiere un usuario activo">Cambiar rol</button>
+                                        }
                                         <button type="button" class="btn btn-sm btn-outline-dark" disabled>@(usuario.IsActive ? "Desactivar" : "Reactivar")</button>
                                         <button type="button" class="btn btn-sm btn-outline-dark" disabled>Ver historial</button>
                                     </div>
-                                    <span class="small d-block mt-2">Próximamente</span>
+                                    <span class="small d-block mt-2">Estado e historial: próximamente</span>
                                 </td>
                             </tr>
                         }

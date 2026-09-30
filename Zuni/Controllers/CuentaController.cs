@@ -23,6 +23,9 @@ public sealed class CuentaController(
     private static readonly TimeSpan PasswordResetTokenLifetime =
         TimeSpan.FromMinutes(30);
 
+    private static readonly TimeSpan SessionLifetime =
+        TimeSpan.FromMinutes(30);
+
     // ============================================================
     // INICIAR SESIÓN
     // ============================================================
@@ -225,12 +228,14 @@ public sealed class CuentaController(
             await db.Database.BeginTransactionAsync();
 
         db.Users.Add(user);
+
         db.UserRoles.Add(
             new IdentityUserRole<string>
             {
                 UserId = user.Id,
                 RoleId = estudianteRole.Id
             });
+
         db.PerfilesEstudiante.Add(perfil);
 
         try
@@ -294,6 +299,7 @@ public sealed class CuentaController(
 
         var email = model.Email.Trim();
         var normalizedEmail = email.ToUpperInvariant();
+
         var user = await db.Users
             .FirstOrDefaultAsync(candidate =>
                 candidate.NormalizedEmail == normalizedEmail);
@@ -437,6 +443,7 @@ public sealed class CuentaController(
         user.PasswordHash = passwordHasher.HashPassword(
             user,
             model.Password);
+
         user.SecurityStamp = Guid.NewGuid().ToString();
 
         await db.SaveChangesAsync();
@@ -487,7 +494,11 @@ public sealed class CuentaController(
 
             new(
                 ClaimTypes.Email,
-                user.Email ?? string.Empty)
+                user.Email ?? string.Empty),
+
+            new(
+                "Zuni.SecurityStamp",
+                user.SecurityStamp ?? string.Empty)
         };
 
         // Obtener roles desde PostgreSQL.
@@ -520,13 +531,23 @@ public sealed class CuentaController(
         var principal =
             new ClaimsPrincipal(identity);
 
+        var authenticationProperties =
+            new AuthenticationProperties
+            {
+                // Mantiene el comportamiento actual de "Recordarme".
+                IsPersistent = persistent,
+
+                // La sesión tendrá una vigencia máxima de 30 minutos.
+                ExpiresUtc = DateTimeOffset.UtcNow.Add(SessionLifetime),
+
+                // Evita renovar automáticamente la sesión.
+                AllowRefresh = false
+            };
+
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal,
-            new AuthenticationProperties
-            {
-                IsPersistent = persistent
-            });
+            authenticationProperties);
     }
 
     // ============================================================
@@ -574,7 +595,10 @@ public sealed class CuentaController(
         string? parte3,
         out string carne)
     {
-        carne = string.Concat(parte1, parte2, parte3);
+        carne = string.Concat(
+            parte1,
+            parte2,
+            parte3);
 
         return parte1 is { Length: 4 } &&
                parte2 is { Length: 2 } &&
