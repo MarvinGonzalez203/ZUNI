@@ -1,0 +1,15 @@
+@model Zuni.Models.PreguntaPruebaFormViewModel
+@{ ViewData["Title"] = "Editar pregunta"; }
+<link rel="stylesheet" href="~/css/director.css" asp-append-version="true" />
+<section class="director-dashboard py-4 py-lg-5" aria-labelledby="form-title">
+    <div class="director-hero mb-4"><div><div class="director-access-pill">Banco de preguntas</div><h1 id="form-title">Editar pregunta</h1><p>Actualiza el enunciado, su propósito exploratorio o el orden.</p></div><div class="director-hero-mark" aria-hidden="true">✎</div></div>
+    <div class="director-form-card"><form asp-action="EditarPregunta" method="post">
+        <input asp-for="Id" type="hidden" /><input asp-for="DimensionId" type="hidden" /><div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+        <div class="alert alert-info" role="note">Mantén el propósito dentro de gustos, preferencias o intereses. No convierte la respuesta en diagnóstico ni evaluación de riesgo.</div>
+        <div class="mb-3"><label asp-for="Texto" class="form-label"></label><textarea asp-for="Texto" class="form-control" rows="4" maxlength="1000"></textarea><span asp-validation-for="Texto" class="text-danger small"></span></div>
+        <div class="mb-3"><label asp-for="PropositoExploratorio" class="form-label"></label><textarea asp-for="PropositoExploratorio" class="form-control" rows="3" maxlength="500"></textarea><span asp-validation-for="PropositoExploratorio" class="text-danger small"></span></div>
+        <div class="mb-4"><label asp-for="Orden" class="form-label"></label><input asp-for="Orden" class="form-control" min="1" max="999" /><span asp-validation-for="Orden" class="text-danger small"></span></div>
+        <div class="d-flex justify-content-end gap-2"><a asp-action="Preguntas" asp-route-dimensionId="@Model.DimensionId" class="btn btn-outline-secondary">Cancelar</a><button class="btn btn-zuni" type="submit">Guardar cambios</button></div>
+    </form></div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

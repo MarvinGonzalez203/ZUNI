@@ -61,7 +61,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// En desarrollo, cada perfil de launchSettings controla si se usa HTTP o HTTPS.
+// Redirigir desde el perfil HTTP sin un puerto HTTPS configurado provoca que
+// Visual Studio marque el servidor local como no disponible.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 
 app.UseRouting();

@@ -25,10 +25,10 @@
 
     <section class="student-card p-4 mb-4" aria-labelledby="evaluations-title">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-            <h2 id="evaluations-title" class="h4 mb-0">Mis evaluaciones</h2>
+            <h2 id="evaluations-title" class="h4 mb-0">Cuestionarios exploratorios</h2>
             <span class="student-status">Próximamente</span>
         </div>
-        <p>Explora tus gustos, preferencias e intereses a tu ritmo.</p>
+        <p>Comparte información sobre tus gustos, preferencias e intereses para apoyar una conversación con la psicóloga cuando corresponda.</p>
         <div class="row g-3 mb-3">
             @foreach (var estado in new[] { "Pendientes", "En progreso", "Finalizadas" })
             {
@@ -40,7 +40,7 @@
                 </div>
             }
         </div>
-        <p class="small text-secondary mb-0">Modalidades previstas: rápida (15 preguntas), media (40) y avanzada (60 o más).</p>
+        <p class="small text-secondary mb-0">Los cuestionarios son exploratorios: no son pruebas diagnósticas ni determinan una condición o nivel de riesgo.</p>
     </section>
 
     <div class="row g-4">
@@ -48,7 +48,7 @@
             <section class="student-card p-4 h-100" aria-labelledby="results-title">
                 <span class="student-status">Próximamente</span>
                 <h2 id="results-title" class="h4 mt-3">Mis resultados</h2>
-                <p class="mb-0">Aquí podrás consultar los resultados que se habiliten para ti y sus niveles de intensidad. No representan un diagnóstico.</p>
+                <p class="mb-0">Si se habilita esta función, mostrará información descriptiva de tus respuestas para apoyar la conversación profesional. No emitirá diagnósticos ni sustituirá la valoración de la psicóloga.</p>
             </section>
         </div>
         <div class="col-md-6">

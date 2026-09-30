@@ -1,0 +1,15 @@
+@model Zuni.Models.DimensionPruebaFormViewModel
+@{ ViewData["Title"] = "Nueva dimensión"; }
+<link rel="stylesheet" href="~/css/director.css" asp-append-version="true" />
+<section class="director-dashboard py-4 py-lg-5" aria-labelledby="form-title">
+    <div class="director-hero mb-4"><div><div class="director-access-pill">Contenido de la prueba</div><h1 id="form-title">Nueva dimensión</h1><p>Define una categoría para organizar preguntas relacionadas.</p></div><div class="director-hero-mark" aria-hidden="true">+</div></div>
+    <div class="director-form-card"><form asp-action="CrearDimension" method="post">
+        <input asp-for="PruebaId" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+        <div class="mb-3"><label asp-for="Nombre" class="form-label"></label><input asp-for="Nombre" class="form-control" maxlength="100" autocomplete="off" /><span asp-validation-for="Nombre" class="text-danger small"></span></div>
+        <div class="mb-3"><label asp-for="Descripcion" class="form-label"></label><textarea asp-for="Descripcion" class="form-control" rows="4" maxlength="500"></textarea><span asp-validation-for="Descripcion" class="text-danger small"></span></div>
+        <div class="mb-4"><label asp-for="Orden" class="form-label"></label><input asp-for="Orden" class="form-control" min="1" max="999" /><span asp-validation-for="Orden" class="text-danger small"></span></div>
+        <div class="d-flex justify-content-end gap-2"><a asp-action="Dimensiones" asp-route-pruebaId="@Model.PruebaId" class="btn btn-outline-secondary">Cancelar</a><button class="btn btn-zuni" type="submit">Crear dimensión</button></div>
+    </form></div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

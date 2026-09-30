@@ -1,6 +1,60 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+@{
+    ViewData["Title"] = "Privacidad en ZUNI";
 }
-<h1>@ViewData["Title"]</h1>
+<section class="student-dashboard py-4 py-md-5" aria-labelledby="privacidad-title">
+    <a asp-controller="Home" asp-action="Index" class="student-back-link">← Volver a inicio</a>
+    <header class="student-feature-hero p-4 p-md-5 mb-4">
+        <span class="student-preview-pill">Información transparente</span>
+        <p class="text-uppercase small fw-semibold mt-3 mb-2">Tu información merece cuidado</p>
+        <h1 id="privacidad-title">Privacidad</h1>
+        <p class="lead mb-0">Conoce qué protecciones están disponibles y qué políticas deben definirse antes de activar nuevas funciones.</p>
+    </header>
 
-<p>Use this page to detail your site's privacy policy.</p>
+    <div class="alert alert-warning" role="note"><strong>Estado de esta vista:</strong> es una guía informativa, no una política institucional aprobada ni un panel para cambiar permisos o consentimientos.</div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <article class="student-card p-4 h-100">
+                <span class="student-privacy-icon" aria-hidden="true">01</span>
+                <h2 class="h5 mt-3">Cuenta y perfil</h2>
+                <p class="mb-0">ZUNI usa una cuenta con acceso autenticado. Los datos de perfil se administran desde tu cuenta; revisa allí la información que proporcionaste.</p>
+                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Estudiante"))
+                {
+                    <a asp-controller="Estudiante" asp-action="MiPerfil" class="btn btn-outline-secondary mt-3">Ver mi perfil</a>
+                }
+            </article>
+        </div>
+        <div class="col-md-6">
+            <article class="student-card p-4 h-100">
+                <span class="student-privacy-icon" aria-hidden="true">02</span>
+                <h2 class="h5 mt-3">Cuestionarios y respuestas</h2>
+                <p class="mb-0">Los cuestionarios previstos son exploratorios. Antes de recopilar respuestas reales deben definirse consentimiento, finalidad, personas autorizadas y plazo de conservación.</p>
+            </article>
+        </div>
+        <div class="col-md-6">
+            <article class="student-card p-4 h-100">
+                <span class="student-privacy-icon" aria-hidden="true">03</span>
+                <h2 class="h5 mt-3">Citas y acompañamiento</h2>
+                <p class="mb-0">La pantalla de solicitud es una demostración. Todavía no envía solicitudes ni guarda citas.</p>
+            </article>
+        </div>
+        <div class="col-md-6">
+            <article class="student-card p-4 h-100">
+                <span class="student-privacy-icon" aria-hidden="true">04</span>
+                <h2 class="h5 mt-3">Acceso profesional</h2>
+                <p class="mb-0">Los accesos a respuestas individuales, seguimiento profesional y reportes deben aprobarse con la institución antes de habilitar esas funciones.</p>
+            </article>
+        </div>
+    </div>
+
+    <section class="student-card p-4 p-lg-5" aria-labelledby="pendiente-title">
+        <p class="student-eyebrow mb-1">Antes de recopilar respuestas</p>
+        <h2 id="pendiente-title" class="h4">Políticas que el equipo debe acordar</h2>
+        <div class="student-resource-grid mt-3">
+            <details class="student-resource"><summary>Consentimiento informado</summary><p>Explicar qué datos se piden, para qué se usan, quién puede consultarlos y cómo retirar el consentimiento.</p></details>
+            <details class="student-resource"><summary>Conservación y eliminación</summary><p>Definir un plazo institucional de conservación y el procedimiento para datos incompletos, cancelaciones y solicitudes de eliminación.</p></details>
+            <details class="student-resource"><summary>Acceso y auditoría</summary><p>Definir permisos por rol, necesidad de acceso profesional y registro de consultas antes de mostrar información individual.</p></details>
+        </div>
+        <p class="small text-secondary mt-3 mb-0">Esta página no cambia ni guarda preferencias. La política final debe ser revisada y aprobada por la institución.</p>
+    </section>
+</section>

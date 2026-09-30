@@ -1,0 +1,30 @@
+@model Zuni.Models.PreguntasPruebaViewModel
+@{ ViewData["Title"] = "Preguntas de la dimensión"; }
+<link rel="stylesheet" href="~/css/director.css" asp-append-version="true" />
+<section class="director-dashboard py-4 py-lg-5" aria-labelledby="preguntas-title">
+    <div class="director-hero mb-4"><div><div class="director-access-pill">@Model.PruebaNombre · @Model.DimensionNombre</div><h1 id="preguntas-title">Preguntas exploratorias</h1><p>Organiza preguntas sobre gustos, preferencias e intereses para apoyar la conversación con la psicóloga.</p></div><div class="director-hero-mark" aria-hidden="true">?</div></div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"><div><p class="director-eyebrow mb-1">Banco de preguntas</p><h2 class="h3 mb-0">Preguntas <span class="text-secondary">(@Model.Preguntas.Count)</span></h2></div><div class="d-flex flex-wrap gap-2"><a asp-action="Dimensiones" asp-route-pruebaId="@Model.PruebaId" class="btn btn-outline-secondary">Volver a dimensiones</a><a asp-action="CrearPregunta" asp-route-dimensionId="@Model.DimensionId" class="btn btn-zuni">Nueva pregunta</a></div></div>
+    @if (TempData["Success"] is string success) { <div class="alert alert-success" role="status">@success</div> }
+    @if (TempData["Error"] is string error) { <div class="alert alert-danger" role="alert">@error</div> }
+    <div class="director-feature-card p-0 overflow-hidden"><div class="table-responsive"><table class="table align-middle mb-0 director-users-table">
+        <thead><tr><th>Pregunta</th><th>Opciones activas</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+        <tbody>
+        @foreach (var pregunta in Model.Preguntas)
+        {
+            var opcionesActivas = pregunta.Opciones.Count(opcion => opcion.Activa);
+            <tr>
+                <td><span class="small text-secondary">Orden @pregunta.Orden</span><strong class="d-block">@pregunta.Texto</strong><span class="small text-secondary d-block">Propósito: @(string.IsNullOrWhiteSpace(pregunta.PropositoExploratorio) ? "Pendiente de definir" : pregunta.PropositoExploratorio)</span></td>
+                <td>@opcionesActivas / @pregunta.Opciones.Count</td>
+                <td><span class="badge @(pregunta.Activa ? "text-bg-success" : "text-bg-secondary")">@(pregunta.Activa ? "Habilitada en catálogo" : "Borrador")</span></td>
+                <td><div class="director-prueba-actions justify-content-end">
+                    <a asp-action="Opciones" asp-route-preguntaId="@pregunta.Id" class="btn btn-sm btn-zuni">Opciones</a>
+                    <a asp-action="EditarPregunta" asp-route-id="@pregunta.Id" class="btn btn-sm btn-outline-secondary">Editar</a>
+                    <form asp-action="CambiarEstadoPregunta" asp-route-id="@pregunta.Id" method="post"><button type="submit" class="btn btn-sm @(pregunta.Activa ? "btn-outline-danger" : "btn-outline-success")">@(pregunta.Activa ? "Pasar a borrador" : "Habilitar en catálogo")</button></form>
+                </div></td>
+            </tr>
+        }
+        @if (Model.Preguntas.Count == 0) { <tr><td colspan="4" class="text-center text-secondary py-5">Esta dimensión todavía no tiene preguntas.</td></tr> }
+        </tbody>
+    </table></div></div>
+    <p class="small text-secondary mt-3 mb-0">Para activarla, la pregunta necesita un propósito exploratorio, una dimensión activa y al menos dos opciones activas. Activarla solo la habilita en el catálogo interno; no asigna ni interpreta respuestas.</p>
+</section>

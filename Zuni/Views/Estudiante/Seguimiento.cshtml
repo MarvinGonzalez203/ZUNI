@@ -1,0 +1,50 @@
+@model SeguimientoEstudiantePreviewViewModel
+@{
+    ViewData["Title"] = "Mi seguimiento";
+}
+<section class="student-dashboard py-4 py-md-5" aria-labelledby="seguimiento-title">
+    <a asp-controller="Home" asp-action="Index" class="student-back-link">← Volver a mi espacio</a>
+    <header class="student-feature-hero p-4 p-md-5 mb-4">
+        <span class="student-preview-pill">Vista previa con datos de ejemplo</span>
+        <p class="text-uppercase small fw-semibold mt-3 mb-2">Tu proceso, paso a paso</p>
+        <h1 id="seguimiento-title">Ver seguimiento</h1>
+        <p class="lead mb-0">Una guía visual para conocer el estado de tus cuestionarios, sin etiquetas ni conclusiones clínicas.</p>
+    </header>
+
+    <div class="alert alert-info" role="note">El ejemplo de esta página es ficticio. El seguimiento real se conectará al flujo de respuestas cuando esté disponible; no representa avance de tu cuenta.</div>
+
+    <div class="row g-4 mb-4">
+        @foreach (var cuestionario in Model.Cuestionarios)
+        {
+            var progreso = cuestionario.PreguntasTotales == 0 ? 0 : (int)Math.Round(100d * cuestionario.PreguntasRespondidas / cuestionario.PreguntasTotales);
+            <div class="col-lg-8">
+                <article class="student-card p-4 p-lg-5 h-100">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                        <div><p class="student-eyebrow mb-1">Cuestionario exploratorio</p><h2 class="h4 mb-0">@cuestionario.Nombre</h2></div>
+                        <span class="student-status">@cuestionario.Estado</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-2"><span>Avance de ejemplo</span><strong>@cuestionario.PreguntasRespondidas de @cuestionario.PreguntasTotales</strong></div>
+                    <div class="progress student-progress" role="progressbar" aria-label="Avance de ejemplo" aria-valuenow="@progreso" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: @progreso%"></div></div>
+                    <p class="small text-secondary mt-3 mb-0">Modalidad @Html.DisplayFor(_ => cuestionario.Modalidad). Esta barra solo muestra una posible presentación visual.</p>
+                </article>
+            </div>
+        }
+        <div class="col-lg-4">
+            <aside class="student-card student-card-soft p-4 h-100">
+                <span class="student-note-icon" aria-hidden="true">↗</span>
+                <h2 class="h5">¿Qué significa este avance?</h2>
+                <p class="mb-0">Solo indica cuántas preguntas se han contestado. No mide bienestar, gravedad ni riesgo y no reemplaza una conversación con la psicóloga.</p>
+            </aside>
+        </div>
+    </div>
+
+    <section class="student-card p-4" aria-labelledby="steps-title">
+        <p class="student-eyebrow mb-1">Cómo podría verse</p>
+        <h2 id="steps-title" class="h4 mb-4">Tu recorrido</h2>
+        <div class="student-timeline">
+            <div class="student-timeline-step is-complete"><span>1</span><div><strong>Cuestionario asignado</strong><p>Lo encontrarás aquí cuando el flujo esté conectado.</p></div></div>
+            <div class="student-timeline-step is-current"><span>2</span><div><strong>Responder a tu ritmo</strong><p>Podrás guardar el avance y retomarlo después.</p></div></div>
+            <div class="student-timeline-step"><span>3</span><div><strong>Revisar información descriptiva</strong><p>La información servirá de apoyo para una conversación profesional.</p></div></div>
+        </div>
+    </section>
+</section>

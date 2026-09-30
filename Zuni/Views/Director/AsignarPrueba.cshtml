@@ -1,0 +1,56 @@
+@model Zuni.Models.AsignarPruebaViewModel
+@{
+    ViewData["Title"] = "Asignar cuestionario";
+}
+<link rel="stylesheet" href="~/css/director.css" asp-append-version="true" />
+
+<section class="director-dashboard py-4 py-lg-5" aria-labelledby="asignar-title">
+    <div class="director-hero mb-4">
+        <div>
+            <div class="director-access-pill">Administración de evaluaciones</div>
+            <h1 id="asignar-title">Asignar cuestionario</h1>
+            <p>Selecciona un cuestionario habilitado, un estudiante y la cantidad de preguntas.</p>
+        </div>
+        <div class="director-hero-mark" aria-hidden="true">+</div>
+    </div>
+
+    <div class="director-form-card">
+        <form asp-action="AsignarPrueba" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+            <div class="alert alert-info" role="note">Esta asignación solo organiza el cuestionario para el estudiante. No recopila respuestas, puntúa ni emite diagnósticos o alertas de riesgo.</div>
+
+            <div class="mb-3">
+                <label asp-for="PruebaId" class="form-label"></label>
+                <select asp-for="PruebaId" asp-items="Model.PruebasDisponibles" class="form-select">
+                    <option value="">Selecciona un cuestionario...</option>
+                </select>
+                <span asp-validation-for="PruebaId" class="text-danger small"></span>
+                @if (Model.PruebasDisponibles.Count == 0)
+                {
+                    <span class="form-text">Primero habilita un cuestionario exploratorio en el catálogo.</span>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EstudianteId" class="form-label"></label>
+                <select asp-for="EstudianteId" asp-items="Model.Estudiantes" class="form-select">
+                    <option value="">Selecciona un estudiante...</option>
+                </select>
+                <span asp-validation-for="EstudianteId" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Modalidad" class="form-label"></label>
+                <select asp-for="Modalidad" asp-items="Html.GetEnumSelectList<Zuni.Models.ModalidadPrueba>()" class="form-select"></select>
+                <span asp-validation-for="Modalidad" class="text-danger small"></span>
+                <div class="form-text">La modalidad requiere 15, 40 o al menos 60 preguntas activas, respectivamente.</div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="AsignacionesPrueba" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-zuni" disabled="@(Model.PruebasDisponibles.Count == 0 || Model.Estudiantes.Count == 0)">Asignar</button>
+            </div>
+        </form>
+    </div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

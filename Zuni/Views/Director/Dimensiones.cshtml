@@ -1,0 +1,45 @@
+@model Zuni.Models.DimensionesPruebaViewModel
+@{
+    ViewData["Title"] = "Dimensiones de la prueba";
+}
+<link rel="stylesheet" href="~/css/director.css" asp-append-version="true" />
+<section class="director-dashboard py-4 py-lg-5" aria-labelledby="contenido-title">
+    <div class="director-hero mb-4">
+        <div>
+            <div class="director-access-pill"><span aria-hidden="true">◆</span> @Model.PruebaNombre</div>
+            <h1 id="contenido-title">Dimensiones</h1>
+            <p>Organiza los temas que agrupan las preguntas de esta prueba.</p>
+        </div>
+        <div class="director-hero-mark" aria-hidden="true">D</div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div><p class="director-eyebrow mb-1">Estructura de la prueba</p><h2 class="h3 mb-0">Dimensiones <span class="text-secondary">(@Model.Dimensiones.Count)</span></h2></div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Pruebas" class="btn btn-outline-secondary">Volver a pruebas</a>
+            <a asp-action="CrearDimension" asp-route-pruebaId="@Model.PruebaId" class="btn btn-zuni">Nueva dimensión</a>
+        </div>
+    </div>
+    @if (TempData["Success"] is string success) { <div class="alert alert-success" role="status">@success</div> }
+    @if (TempData["Error"] is string error) { <div class="alert alert-danger" role="alert">@error</div> }
+    <div class="director-feature-card p-0 overflow-hidden"><div class="table-responsive">
+        <table class="table align-middle mb-0 director-users-table">
+            <thead><tr><th>Dimensión</th><th>Preguntas</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+            <tbody>
+            @foreach (var dimension in Model.Dimensiones)
+            {
+                <tr>
+                    <td><span class="small text-secondary">Orden @dimension.Orden</span><strong class="d-block">@dimension.Nombre</strong><span class="small text-secondary">@(dimension.Descripcion ?? "Sin descripción")</span></td>
+                    <td>@dimension.Preguntas.Count</td>
+                    <td><span class="badge @(dimension.Activa ? "text-bg-success" : "text-bg-secondary")">@(dimension.Activa ? "Activa" : "Inactiva")</span></td>
+                    <td><div class="director-prueba-actions justify-content-end">
+                        <a asp-action="Preguntas" asp-route-dimensionId="@dimension.Id" class="btn btn-sm btn-zuni">Preguntas</a>
+                        <a asp-action="EditarDimension" asp-route-id="@dimension.Id" class="btn btn-sm btn-outline-secondary">Editar</a>
+                        <form asp-action="CambiarEstadoDimension" asp-route-id="@dimension.Id" method="post"><button class="btn btn-sm @(dimension.Activa ? "btn-outline-danger" : "btn-outline-success")" type="submit">@(dimension.Activa ? "Desactivar" : "Activar")</button></form>
+                    </div></td>
+                </tr>
+            }
+            @if (Model.Dimensiones.Count == 0) { <tr><td colspan="4" class="text-center text-secondary py-5">Esta prueba aún no tiene dimensiones. Agrega la primera para organizar sus preguntas.</td></tr> }
+            </tbody>
+        </table>
+    </div></div>
+</section>

@@ -1,0 +1,59 @@
+@model SolicitudCitaPreviewViewModel
+@{
+    ViewData["Title"] = "Solicitar cita";
+    var fechaMinima = DateTime.Today.ToString("yyyy-MM-dd");
+    var fechaMaxima = DateTime.Today.AddDays(30).ToString("yyyy-MM-dd");
+}
+<section class="student-dashboard py-4 py-md-5" aria-labelledby="cita-title">
+    <a asp-controller="Home" asp-action="Index" class="student-back-link">← Volver a mi espacio</a>
+    <header class="student-feature-hero p-4 p-md-5 mb-4">
+        <span class="student-preview-pill">Vista previa interactiva</span>
+        <p class="text-uppercase small fw-semibold mt-3 mb-2">Acompañamiento universitario</p>
+        <h1 id="cita-title">Solicitar una cita</h1>
+        <p class="lead mb-0">Indica cuándo te sería conveniente conversar con el equipo de Psicología.</p>
+    </header>
+
+    @if (TempData["PreviewSuccess"] is string message)
+    {
+        <div class="alert alert-info" role="status">@message</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <section class="student-card p-4 p-lg-5 h-100" aria-labelledby="cita-form-title">
+                <h2 id="cita-form-title" class="h4 mb-2">Cuéntanos tu preferencia</h2>
+                <p class="text-secondary">Los horarios son ejemplos para mostrar cómo funcionaría esta pantalla.</p>
+                <form asp-action="SolicitarCita" method="post" class="student-preview-form">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+                    <div class="mb-3">
+                        <label asp-for="FechaPreferida" class="form-label"></label>
+                        <input asp-for="FechaPreferida" type="date" class="form-control" min="@fechaMinima" max="@fechaMaxima" />
+                        <span asp-validation-for="FechaPreferida" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="FranjaHoraria" class="form-label"></label>
+                        <select asp-for="FranjaHoraria" asp-items="Model.FranjasHorarias" class="form-select">
+                            <option value="">Selecciona un horario...</option>
+                        </select>
+                        <span asp-validation-for="FranjaHoraria" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="Modalidad" class="form-label"></label>
+                        <select asp-for="Modalidad" asp-items="Html.GetEnumSelectList<ModalidadCitaPreview>()" class="form-select"></select>
+                        <span asp-validation-for="Modalidad" class="text-danger small"></span>
+                    </div>
+                    <button type="submit" class="btn btn-zuni">Probar solicitud de cita <span aria-hidden="true">→</span></button>
+                </form>
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <aside class="student-note-card p-4 h-100" aria-labelledby="cita-note-title">
+                <span class="student-note-icon" aria-hidden="true">✦</span>
+                <h2 id="cita-note-title" class="h5">A tu ritmo y con claridad</h2>
+                <p>Esta demostración no envía una solicitud ni reserva una cita. El flujo real se conectará cuando el equipo de Psicología defina disponibilidad, modalidad y confirmaciones.</p>
+                <p class="small mb-0">No incluyas información privada o detalles de salud en esta vista previa.</p>
+            </aside>
+        </div>
+    </div>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

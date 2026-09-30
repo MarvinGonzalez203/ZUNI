@@ -59,6 +59,72 @@ public sealed class EstudianteController(ApplicationDbContext db) : Controller
         });
     }
 
+    [HttpGet("SolicitarCita")]
+    public IActionResult SolicitarCita() => View(CrearSolicitudCitaPreview());
+
+    [HttpPost("SolicitarCita")]
+    [ValidateAntiForgeryToken]
+    public IActionResult SolicitarCita(SolicitudCitaPreviewViewModel model)
+    {
+        var hoy = DateTime.Today;
+        if (model.FechaPreferida.HasValue &&
+            (model.FechaPreferida.Value.Date < hoy || model.FechaPreferida.Value.Date > hoy.AddDays(30)))
+        {
+            ModelState.AddModelError(
+                nameof(model.FechaPreferida),
+                "Elige una fecha entre hoy y los próximos 30 días.");
+        }
+
+        if (!Enum.IsDefined(typeof(ModalidadCitaPreview), model.Modalidad))
+            ModelState.AddModelError(nameof(model.Modalidad), "Selecciona una modalidad válida.");
+
+        var franjasValidas = CrearSolicitudCitaPreview().FranjasHorarias
+            .Any(franja => franja.Value == model.FranjaHoraria);
+        if (!franjasValidas)
+            ModelState.AddModelError(nameof(model.FranjaHoraria), "Selecciona uno de los horarios de ejemplo.");
+
+        if (!ModelState.IsValid)
+        {
+            model.FranjasHorarias = CrearSolicitudCitaPreview().FranjasHorarias;
+            return View(model);
+        }
+
+        TempData["PreviewSuccess"] = "La interacción funcionó, pero esta solicitud es solo una vista previa: todavía no se envió ni reservó una cita.";
+        return RedirectToAction(nameof(SolicitarCita));
+    }
+
+    [HttpGet("Seguimiento")]
+    public IActionResult Seguimiento()
+    {
+        return View(new SeguimientoEstudiantePreviewViewModel
+        {
+            Cuestionarios =
+            [
+                new SeguimientoCuestionarioPreviewItem
+                {
+                    Nombre = "Cuestionario exploratorio de ejemplo",
+                    Estado = "En progreso · ejemplo visual",
+                    Modalidad = ModalidadPrueba.Media,
+                    PreguntasRespondidas = 12,
+                    PreguntasTotales = 40
+                }
+            ]
+        });
+    }
+
+    [HttpGet("Bienestar")]
+    public IActionResult Bienestar() => View();
+
+    private static SolicitudCitaPreviewViewModel CrearSolicitudCitaPreview() => new()
+    {
+        FranjasHorarias =
+        [
+            new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("09:00–11:00 · ejemplo", "09:00-11:00"),
+            new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("11:00–13:00 · ejemplo", "11:00-13:00"),
+            new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("14:00–16:00 · ejemplo", "14:00-16:00")
+        ]
+    };
+
     private Task<ApplicationUser?> ObtenerUsuarioAsync(CancellationToken cancellationToken)
     {
         // La identidad procede exclusivamente de la sesión, nunca de parámetros de la URL.

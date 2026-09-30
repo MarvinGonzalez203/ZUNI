@@ -7,7 +7,7 @@
         <span class="auth-liquid auth-liquid-one" aria-hidden="true"></span>
         <span class="auth-liquid auth-liquid-two" aria-hidden="true"></span>
         <div class="auth-network" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        <a asp-controller="Home" asp-action="Index" class="auth-logo text-white text-decoration-none"><img src="~/images/zuni-logo-transparent.png" alt="" /><span>ZUNI</span></a>
+        <div class="auth-brand-spacer" aria-hidden="true"></div>
         <div class="auth-brand-copy">
             <span class="auth-eyebrow">Tu espacio, a tu manera</span>
             <h2>Todo comienza con una cuenta segura.</h2>
@@ -18,7 +18,6 @@
     </aside>
     <div class="col-lg-7 auth-panel p-4 p-md-5 d-flex align-items-center">
         <div class="auth-form mx-auto w-100">
-            <a asp-controller="Home" asp-action="Index" class="auth-mobile-logo d-lg-none"><img src="~/images/zuni-logo-transparent.png" alt="" />ZUNI</a>
             @RenderBody()
         </div>
     </div>

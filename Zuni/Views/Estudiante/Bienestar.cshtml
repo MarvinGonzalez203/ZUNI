@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "Bienestar";
+}
+<section class="student-dashboard py-4 py-md-5" aria-labelledby="bienestar-title">
+    <a asp-controller="Home" asp-action="Index" class="student-back-link">← Volver a mi espacio</a>
+    <header class="student-feature-hero p-4 p-md-5 mb-4">
+        <span class="student-preview-pill">Recursos de autocuidado</span>
+        <p class="text-uppercase small fw-semibold mt-3 mb-2">Un momento para ti</p>
+        <h1 id="bienestar-title">Bienestar</h1>
+        <p class="lead mb-0">Ideas breves para hacer una pausa durante tu día universitario.</p>
+    </header>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <section class="student-card student-breathing-card p-4 p-lg-5 h-100" aria-labelledby="pausa-title">
+                <p class="student-eyebrow mb-1">Pausa guiada · 1 minuto</p>
+                <h2 id="pausa-title" class="h4">Respira a tu propio ritmo</h2>
+                <p class="text-secondary">Sigue una respiración suave. Puedes detenerte en cualquier momento.</p>
+                <div class="breathing-orb" aria-hidden="true"><span id="breathing-phase">Listo</span></div>
+                <p id="breathing-status" class="text-center small text-secondary" aria-live="polite">La actividad no se registra ni se envía.</p>
+                <div class="d-flex justify-content-center"><button id="breathing-toggle" class="btn btn-zuni" type="button">Iniciar pausa</button></div>
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <aside class="student-note-card p-4 h-100">
+                <span class="student-note-icon" aria-hidden="true">✧</span>
+                <h2 class="h5">Pequeños pasos</h2>
+                <ul class="student-wellbeing-list mb-0">
+                    <li>Estira hombros y manos unos segundos.</li>
+                    <li>Toma agua y descansa la vista.</li>
+                    <li>Escribe una tarea pequeña para empezar.</li>
+                </ul>
+            </aside>
+        </div>
+    </div>
+
+    <section class="student-card p-4" aria-labelledby="recursos-title">
+        <p class="student-eyebrow mb-1">Explora</p>
+        <h2 id="recursos-title" class="h4">Recursos para tu día</h2>
+        <div class="student-resource-grid mt-3">
+            <details class="student-resource"><summary>Organizar una semana pesada</summary><p>Elige una prioridad, divídela en pasos pequeños y reserva pausas realistas.</p></details>
+            <details class="student-resource"><summary>Prepararte para pedir apoyo</summary><p>Puedes anotar qué te gustaría conversar y qué preguntas tienes. No necesitas tenerlo todo resuelto antes de pedir una cita.</p></details>
+            <details class="student-resource"><summary>Tomar una pausa sensorial</summary><p>Nombra en silencio tres cosas que ves, dos sonidos que escuchas y una sensación física neutral.</p></details>
+        </div>
+        <p class="small text-secondary mt-3 mb-0">Estos recursos son generales y no sustituyen atención profesional. Si algo no te resulta cómodo, omítelo.</p>
+    </section>
+</section>
+
+@section Scripts {
+<script>
+(() => {
+    const button = document.getElementById('breathing-toggle');
+    const phase = document.getElementById('breathing-phase');
+    const status = document.getElementById('breathing-status');
+    const orb = document.querySelector('.breathing-orb');
+    if (!button || !phase || !status || !orb) return;
+
+    let intervalId;
+    let elapsed = 0;
+    const stop = () => {
+        window.clearInterval(intervalId);
+        intervalId = undefined;
+        orb.classList.remove('is-breathing-in', 'is-breathing-out');
+        phase.textContent = 'Listo';
+        button.textContent = 'Iniciar pausa';
+    };
+    button.addEventListener('click', () => {
+        if (intervalId) {
+            stop();
+            status.textContent = 'Pausa detenida. No se registró información.';
+            return;
+        }
+        elapsed = 0;
+        button.textContent = 'Detener';
+        status.textContent = 'Sigue el ritmo durante un minuto, sin forzar la respiración.';
+        const tick = () => {
+            if (elapsed >= 60) {
+                stop();
+                phase.textContent = 'Pausa lista';
+                status.textContent = 'Terminaste la pausa. No se registró información.';
+                return;
+            }
+            const inhale = elapsed % 10 < 4;
+            phase.textContent = inhale ? 'Inhala suavemente' : 'Exhala suavemente';
+            orb.classList.toggle('is-breathing-in', inhale);
+            orb.classList.toggle('is-breathing-out', !inhale);
+            elapsed += 1;
+        };
+        tick();
+        intervalId = window.setInterval(tick, 1000);
+    });
+})();
+</script>
+}

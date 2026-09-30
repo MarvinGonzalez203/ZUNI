@@ -1,0 +1,42 @@
+@model Zuni.Models.PruebaFormViewModel
+
+@{
+    ViewData["Title"] = "Nueva prueba";
+}
+
+<link rel="stylesheet" href="~/css/director.css" asp-append-version="true" />
+
+<section class="director-dashboard py-4 py-lg-5" aria-labelledby="form-title">
+    <div class="director-hero mb-4">
+        <div>
+            <div class="director-access-pill"><span aria-hidden="true">◆</span> Banco de cuestionarios exploratorios</div>
+            <h1 id="form-title">Nueva prueba</h1>
+            <p>Registra un cuestionario sobre gustos, preferencias o intereses. Se guardará como borrador.</p>
+        </div>
+        <div class="director-hero-mark" aria-hidden="true">+</div>
+    </div>
+    <div class="director-form-card">
+        <form asp-action="CrearPrueba" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+            <div class="alert alert-info" role="note">ZUNI brinda apoyo para la conversación profesional. Este cuestionario no diagnostica, evalúa riesgos ni sustituye la entrevista o el criterio de la psicóloga.</div>
+            <div class="mb-3">
+                <label asp-for="Nombre" class="form-label"></label>
+                <input asp-for="Nombre" class="form-control" maxlength="120" autocomplete="off" />
+                <span asp-validation-for="Nombre" class="text-danger small"></span>
+            </div>
+            <div class="mb-4">
+                <label asp-for="Descripcion" class="form-label"></label>
+                <textarea asp-for="Descripcion" class="form-control" rows="5" maxlength="1000"></textarea>
+                <span asp-validation-for="Descripcion" class="text-danger small"></span>
+            </div>
+            <div class="d-flex flex-wrap justify-content-end gap-2">
+                <a asp-action="Pruebas" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-zuni">Crear prueba</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
