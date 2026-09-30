@@ -4,13 +4,13 @@ namespace Zuni.Models;
 
 public sealed class CompletarPerfilEstudianteViewModel
 {
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^\d{4}$", ErrorMessage = "El primer bloque del carné debe tener 4 dígitos.")]
     public string? CarneParte1 { get; set; }
 
-    [RegularExpression(@"^\d{2}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^\d{2}$", ErrorMessage = "El segundo bloque del carné debe tener 2 dígitos.")]
     public string? CarneParte2 { get; set; }
 
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^\d{3,6}$", ErrorMessage = "El tercer bloque del carné debe tener entre 3 y 6 dígitos.")]
     public string? CarneParte3 { get; set; }
 
     [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe contener 8 dígitos.")]

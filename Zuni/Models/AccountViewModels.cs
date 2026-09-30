@@ -32,16 +32,16 @@ public sealed class RegisterViewModel
     [Display(Name = "Correo electrónico")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Ingresa la primera parte del carné.")]
+    [RegularExpression(@"^\d{4}$", ErrorMessage = "El primer bloque debe contener 4 dígitos.")]
     public string CarneParte1 { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
-    [RegularExpression(@"^\d{2}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Ingresa la segunda parte del carné.")]
+    [RegularExpression(@"^\d{2}$", ErrorMessage = "El segundo bloque debe contener 2 dígitos.")]
     public string CarneParte2 { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Ingresa la tercera parte del carné.")]
+    [RegularExpression(@"^\d{3,6}$", ErrorMessage = "El tercer bloque debe contener entre 3 y 6 dígitos.")]
     public string CarneParte3 { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Ingresa tu teléfono.")]

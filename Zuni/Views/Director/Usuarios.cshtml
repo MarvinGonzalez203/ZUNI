@@ -1,0 +1,126 @@
+@model Zuni.Models.DirectorUsuariosViewModel
+
+@{
+    ViewData["Title"] = "Usuarios y roles";
+    var rolesAsignables = new[]
+    {
+        (Valor: "Estudiante", Etiqueta: "Estudiante"),
+        (Valor: "Psicologo", Etiqueta: "Psicólogo"),
+        (Valor: "Catedratico", Etiqueta: "Catedrático")
+    };
+}
+
+<link rel="stylesheet" href="~/css/director.css" asp-append-version="true" />
+
+<section class="director-dashboard py-4 py-lg-5" aria-labelledby="usuarios-title">
+    <div class="director-hero mb-4">
+        <div>
+            <div class="director-access-pill"><span aria-hidden="true">◆</span> Administración</div>
+            <h1 id="usuarios-title">Usuarios y roles</h1>
+            <p>Administra el tipo de acceso operativo de las cuentas de ZUNI.</p>
+        </div>
+        <div class="director-hero-mark" aria-hidden="true">U</div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <p class="director-eyebrow mb-1">Accesos del sistema</p>
+            <h2 class="h3 mb-0">Cuentas registradas <span class="text-secondary">(@Model.Usuarios.Count)</span></h2>
+        </div>
+        <a asp-controller="Director" asp-action="Index" class="btn btn-outline-secondary">Volver al panel</a>
+    </div>
+
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert alert-success" role="status">@success</div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="alert alert-danger" role="alert">@error</div>
+    }
+
+    <div class="director-feature-card p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 director-users-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Tipo actual</th>
+                        <th scope="col">Cambiar tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var usuario in Model.Usuarios)
+                    {
+                        var rolActual = usuario.Roles.FirstOrDefault(rol =>
+                            rolesAsignables.Any(opcion =>
+                                string.Equals(opcion.Valor, rol, StringComparison.OrdinalIgnoreCase)));
+
+                        <tr>
+                            <td>
+                                <strong class="d-block">@usuario.Nombre</strong>
+                                <span class="small text-secondary">@usuario.Correo</span>
+                            </td>
+                            <td>
+                                @if (usuario.Roles.Count == 0)
+                                {
+                                    <span class="badge text-bg-secondary">Sin rol</span>
+                                }
+                                else
+                                {
+                                    foreach (var rol in usuario.Roles)
+                                    {
+                                        var etiquetaRol = rol switch
+                                        {
+                                            "Psicologo" => "Psicólogo",
+                                            "Catedratico" => "Catedrático",
+                                            _ => rol
+                                        };
+                                        <span class="badge director-role-badge me-1">@etiquetaRol</span>
+                                    }
+                                }
+                                @if (!usuario.PuedeEditar)
+                                {
+                                    <span class="d-block small text-secondary mt-2">
+                                        @(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == usuario.Id
+                                            ? "Tu propia cuenta está protegida."
+                                            : "Rol protegido; requiere coordinación administrativa.")
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (usuario.PuedeEditar)
+                                {
+                                    <form asp-controller="Director" asp-action="CambiarRol" method="post" class="director-role-form">
+                                        <input type="hidden" name="UsuarioId" value="@usuario.Id" />
+                                        <label class="visually-hidden" for="rol-@usuario.Id">Nuevo tipo para @usuario.Nombre</label>
+                                        <select class="form-select" id="rol-@usuario.Id" name="Rol" required>
+                                            <option value="" disabled selected="@(rolActual is null)">Selecciona un tipo</option>
+                                            @foreach (var opcion in rolesAsignables)
+                                            {
+                                                <option value="@opcion.Valor" selected="@(string.Equals(opcion.Valor, rolActual, StringComparison.OrdinalIgnoreCase))">@opcion.Etiqueta</option>
+                                            }
+                                        </select>
+                                        <button type="submit" class="btn btn-zuni">Guardar</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary small">Sin cambios desde esta pantalla</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (Model.Usuarios.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-center text-secondary py-5">Todavía no hay cuentas registradas.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p class="small text-secondary mt-3 mb-0">
+        Por seguridad, no puedes cambiar tu propio rol ni asignar los roles de Director o Administrador aquí. Los cambios de acceso se aplican al siguiente requerimiento de la cuenta.
+    </p>
+</section>

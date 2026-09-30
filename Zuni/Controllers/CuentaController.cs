@@ -137,7 +137,7 @@ public sealed class CuentaController(
         {
             ModelState.AddModelError(
                 nameof(model.CarneParte1),
-                "El carné debe contener 10 dígitos en el formato 0000-00-0000.");
+                "El carné debe tener entre 9 y 12 dígitos, con el formato 0000-00-000 a 0000-00-000000.");
         }
 
         if (!ModelState.IsValid)
@@ -578,8 +578,8 @@ public sealed class CuentaController(
 
         return parte1 is { Length: 4 } &&
                parte2 is { Length: 2 } &&
-               parte3 is { Length: 4 } &&
-               carne.Length == 10 &&
+               parte3 is { Length: >= 3 and <= 6 } &&
+               carne.Length is >= 9 and <= 12 &&
                carne.All(char.IsDigit);
     }
 }

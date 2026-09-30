@@ -1,0 +1,109 @@
+@model Zuni.Models.DirectorDashboardViewModel
+
+@{
+    ViewData["Title"] = "Panel del Director";
+}
+
+<link rel="stylesheet" href="~/css/director.css" asp-append-version="true" />
+
+<section class="director-dashboard py-4 py-lg-5" aria-labelledby="director-title">
+    <div class="director-hero mb-4 mb-lg-5">
+        <div>
+            <div class="director-access-pill">
+                <span aria-hidden="true">◆</span>
+                Acceso autorizado
+            </div>
+            <h1 id="director-title">Panel del Director</h1>
+            <p>Consulta el estado general de los estudiantes y prepara las próximas herramientas de acompañamiento institucional.</p>
+        </div>
+        <div class="director-hero-mark" aria-hidden="true">Z</div>
+    </div>
+
+    <div class="director-admin-shortcut mb-4">
+        <div>
+            <p class="director-eyebrow mb-1">Administración</p>
+            <h2 class="h4 mb-1">Usuarios y roles</h2>
+            <p class="mb-0">Asigna el tipo de acceso operativo a las cuentas.</p>
+        </div>
+        <a asp-controller="Director" asp-action="Usuarios" class="btn btn-zuni">Gestionar usuarios</a>
+    </div>
+
+    <section aria-labelledby="metricas-title">
+        <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
+            <div>
+                <p class="director-eyebrow mb-1">Vista general</p>
+                <h2 id="metricas-title" class="h3 mb-0">Indicadores actuales</h2>
+            </div>
+            <span class="director-live-status"><span aria-hidden="true"></span> Datos disponibles</span>
+        </div>
+
+        <div class="row g-3 g-lg-4">
+            <div class="col-md-4">
+                <article class="director-metric-card director-metric-dark h-100">
+                    <span class="director-metric-icon" aria-hidden="true">◉</span>
+                    <p>Estudiantes registrados</p>
+                    <strong>@Model.EstudiantesRegistrados</strong>
+                    <small>Usuarios con rol Estudiante</small>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="director-metric-card h-100">
+                    <span class="director-metric-icon" aria-hidden="true">✓</span>
+                    <p>Perfiles completos</p>
+                    <strong>@Model.PerfilesCompletos</strong>
+                    <small>Con carné, teléfono y carrera</small>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="director-metric-card director-metric-accent h-100">
+                    <span class="director-metric-icon" aria-hidden="true">!</span>
+                    <p>Perfiles incompletos</p>
+                    <strong>@Model.PerfilesIncompletos</strong>
+                    <small>Incluye perfiles aún pendientes</small>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-5" aria-labelledby="herramientas-title">
+        <div class="mb-3">
+            <p class="director-eyebrow mb-1">Módulos institucionales</p>
+            <h2 id="herramientas-title" class="h3 mb-0">Próximamente</h2>
+        </div>
+
+        <div class="row g-3 g-lg-4">
+            <div class="col-sm-6 col-xl-3">
+                <article class="director-feature-card h-100" aria-label="Evaluaciones, próximamente">
+                    <span class="director-feature-icon" aria-hidden="true">⌁</span>
+                    <h3>Evaluaciones</h3>
+                    <p>Instrumentos basados en gustos, preferencias e intereses.</p>
+                    <span class="director-coming-soon">Próximamente</span>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <article class="director-feature-card h-100" aria-label="Asignaciones, próximamente">
+                    <span class="director-feature-icon" aria-hidden="true">↗</span>
+                    <h3>Asignaciones</h3>
+                    <p>Organización de instrumentos para la comunidad estudiantil.</p>
+                    <span class="director-coming-soon">Próximamente</span>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <article class="director-feature-card h-100" aria-label="Resultados, próximamente">
+                    <span class="director-feature-icon" aria-hidden="true">◫</span>
+                    <h3>Resultados</h3>
+                    <p>Consulta de niveles e indicadores de intensidad.</p>
+                    <span class="director-coming-soon">Próximamente</span>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <article class="director-feature-card h-100" aria-label="Referencias, próximamente">
+                    <span class="director-feature-icon" aria-hidden="true">◇</span>
+                    <h3>Referencias</h3>
+                    <p>Canalización y seguimiento de apoyos institucionales.</p>
+                    <span class="director-coming-soon">Próximamente</span>
+                </article>
+            </div>
+        </div>
+    </section>
+</section>

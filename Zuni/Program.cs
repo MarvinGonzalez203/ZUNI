@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Zuni.Data;
 using Zuni.Models;
+using Zuni.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddScoped<
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<RoleClaimsCookieEvents>();
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(
@@ -31,6 +33,7 @@ builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
+        options.EventsType = typeof(RoleClaimsCookieEvents);
         options.LoginPath = "/Cuenta/IniciarSesion";
         options.AccessDeniedPath = "/Cuenta/AccesoDenegado";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
