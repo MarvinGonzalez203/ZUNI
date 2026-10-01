@@ -34,7 +34,7 @@ public sealed class CuentaController(
     public IActionResult IniciarSesion(string? returnUrl = null)
     {
         if (User.Identity?.IsAuthenticated == true)
-            return RedirectToAuthenticatedHome();
+            return RedirectToAuthenticatedHome(returnUrl);
 
         return View(new LoginViewModel
         {
@@ -47,7 +47,7 @@ public sealed class CuentaController(
     public async Task<IActionResult> IniciarSesion(LoginViewModel model)
     {
         if (User.Identity?.IsAuthenticated == true)
-            return RedirectToAuthenticatedHome();
+            return RedirectToAuthenticatedHome(model.ReturnUrl);
 
         if (!ModelState.IsValid)
             return View(model);
@@ -98,7 +98,7 @@ public sealed class CuentaController(
             dbUser,
             model.RememberMe);
 
-        return RedirectAfterLogin(model.ReturnUrl);
+        return await RedirectAfterLogin(dbUser.Id, model.ReturnUrl);
     }
 
     // ============================================================
@@ -554,21 +554,49 @@ public sealed class CuentaController(
     // REDIRECCIONES
     // ============================================================
 
-    private IActionResult RedirectAfterLogin(
+    private async Task<IActionResult> RedirectAfterLogin(
+        string usuarioId,
         string? returnUrl)
+    {
+        // La cookie recién emitida todavía no actualiza HttpContext.User.
+        var roles = await (
+            from userRole in db.UserRoles.AsNoTracking()
+            join role in db.Roles.AsNoTracking()
+                on userRole.RoleId equals role.Id
+            where userRole.UserId == usuarioId
+            select role.Name
+        ).ToListAsync();
+
+        return Url.IsLocalUrl(returnUrl)
+            ? LocalRedirect(returnUrl!)
+            : RedirectByRole(rol => roles.Contains(rol));
+    }
+
+    private IActionResult RedirectToAuthenticatedHome(string? returnUrl = null)
     {
         return Url.IsLocalUrl(returnUrl)
             ? LocalRedirect(returnUrl!)
-            : RedirectToAction(
-                "Index",
-                "Home");
+            : RedirectByRole(User.IsInRole);
     }
 
-    private IActionResult RedirectToAuthenticatedHome()
+    private IActionResult RedirectByRole(Func<string, bool> tieneRol)
     {
-        return RedirectToAction(
-            "Index",
-            "Home");
+        // El orden es intencional para usuarios con múltiples roles.
+        foreach (var rol in new[] { "Administrador", "Director", "Psicologo", "Catedratico", "Estudiante" })
+        {
+            if (tieneRol(rol))
+            {
+                var controller = rol switch
+                {
+                    "Administrador" => "Administrador",
+                    "Director" => "Director",
+                    _ => "Home"
+                };
+                return RedirectToAction("Index", controller);
+            }
+        }
+
+        return RedirectToAction("Index", "Home");
     }
 
     private static string HashResetToken(string token)
