@@ -354,6 +354,135 @@ public sealed class AdministradorController : Controller
         }
     }
 
+    [HttpGet]
+    public async Task<IActionResult> ConfirmarEstado(
+        string id, bool activar, CancellationToken cancellationToken)
+    {
+        var administradorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!await EsAdministradorActivoAsync(administradorId, cancellationToken))
+            return Forbid();
+
+        var usuario = await _db.Users.AsNoTracking()
+            .SingleOrDefaultAsync(u => u.Id == id, cancellationToken);
+        if (usuario is null)
+            return NotFound();
+
+        if (usuario.IsActive == activar)
+        {
+            TempData["Info"] = "El usuario ya tiene el estado solicitado. No se realizó ningún cambio.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!activar && usuario.Id == administradorId)
+        {
+            TempData["Error"] = "No puedes desactivarte a ti mismo.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(new CambiarEstadoUsuarioViewModel
+        {
+            UsuarioId = usuario.Id,
+            NombreUsuario = usuario.FullName,
+            EstadoActual = usuario.IsActive
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Desactivar(
+        CambiarEstadoUsuarioViewModel model, CancellationToken cancellationToken) =>
+        CambiarEstadoAsync(model, false, cancellationToken);
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Reactivar(
+        CambiarEstadoUsuarioViewModel model, CancellationToken cancellationToken) =>
+        CambiarEstadoAsync(model, true, cancellationToken);
+
+    private async Task<IActionResult> CambiarEstadoAsync(
+        CambiarEstadoUsuarioViewModel model, bool activar, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(model.UsuarioId))
+            return BadRequest("Debes seleccionar un usuario.");
+
+        var administradorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        // Mismo aislamiento que el cambio de roles: las comprobaciones y escrituras
+        // concurrentes no pueden dejar el sistema sin un administrador activo.
+        await using var transaction = await _db.Database.BeginTransactionAsync(
+            IsolationLevel.Serializable, cancellationToken);
+        try
+        {
+            if (!await EsAdministradorActivoAsync(administradorId, cancellationToken))
+                return Forbid();
+
+            var usuario = await _db.Users.SingleOrDefaultAsync(
+                u => u.Id == model.UsuarioId, cancellationToken);
+            if (usuario is null)
+                return NotFound();
+
+            // Estos datos siempre se reconstruyen desde PostgreSQL.
+            model.NombreUsuario = usuario.FullName;
+            model.EstadoActual = usuario.IsActive;
+
+            if (usuario.IsActive == activar)
+            {
+                TempData["Info"] = "El usuario ya tiene el estado solicitado. No se realizó ningún cambio.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!activar)
+            {
+                if (usuario.Id == administradorId)
+                    ModelState.AddModelError(string.Empty, "No puedes desactivarte a ti mismo.");
+
+                if (await EsAdministradorActivoAsync(usuario.Id, cancellationToken) &&
+                    !await (from u in _db.Users.AsNoTracking()
+                            join ur in _db.UserRoles.AsNoTracking() on u.Id equals ur.UserId
+                            join r in _db.Roles.AsNoTracking() on ur.RoleId equals r.Id
+                            where u.IsActive && u.Id != usuario.Id && r.Name == "Administrador"
+                            select u.Id).AnyAsync(cancellationToken))
+                {
+                    ModelState.AddModelError(string.Empty,
+                        "No puedes desactivar al único Administrador activo.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+                return View("ConfirmarEstado", model);
+
+            var estadoAnterior = usuario.IsActive;
+            usuario.IsActive = activar;
+            usuario.SecurityStamp = Guid.NewGuid().ToString();
+            usuario.ConcurrencyStamp = Guid.NewGuid().ToString();
+
+            _db.AuditoriaUsuarios.Add(new AuditoriaUsuario
+            {
+                UsuarioAfectadoId = usuario.Id,
+                AdministradorId = administradorId!,
+                Accion = activar ? "USUARIO_REACTIVADO" : "USUARIO_DESACTIVADO",
+                DatosAnteriores = JsonSerializer.Serialize(new { IsActive = estadoAnterior }),
+                DatosNuevos = JsonSerializer.Serialize(new { IsActive = activar }),
+                Motivo = string.IsNullOrWhiteSpace(model.Motivo) ? null : model.Motivo.Trim(),
+                FechaUtc = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            TempData["Success"] = activar
+                ? "El usuario fue reactivado correctamente."
+                : "El usuario fue desactivado correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex) when (ex is DbUpdateException or NpgsqlException or InvalidOperationException)
+        {
+            await transaction.RollbackAsync(CancellationToken.None);
+            _db.ChangeTracker.Clear();
+            TempData["Error"] = "No se pudo cambiar el estado. No se guardaron cambios; vuelve a intentarlo.";
+            return RedirectToAction(nameof(Index));
+        }
+        // DisposeAsync revierte también las salidas sin Commit y excepciones no capturadas.
+    }
+
     private Task<bool> EsAdministradorActivoAsync(
         string? id,
         CancellationToken cancellationToken)
