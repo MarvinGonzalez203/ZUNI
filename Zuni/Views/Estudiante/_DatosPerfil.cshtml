@@ -1,0 +1,24 @@
+@model MiPerfilViewModel
+@{
+    string Mostrar(string? valor) => string.IsNullOrWhiteSpace(valor) ? "Pendiente" : valor;
+}
+<div class="dash-detail-grid">
+    <section class="dash-card" aria-labelledby="academica-title">
+        <div class="dash-card-heading"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("book")' /></span><h2 id="academica-title">Mi información académica</h2></div>
+        <dl class="dash-details">
+            <div><dt>Carné institucional</dt><dd>@Mostrar(Model.CarneFormateado)</dd></div>
+            <div><dt>Carrera</dt><dd>@Mostrar(Model.Carrera)</dd></div>
+            <div><dt>Semestre</dt><dd>@Mostrar(Model.Semestre)</dd></div>
+            <div><dt>Ciclo académico</dt><dd>@Mostrar(Model.CicloAcademico)</dd></div>
+        </dl>
+    </section>
+    <section class="dash-card" aria-labelledby="contacto-title">
+        <div class="dash-card-heading"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("phone")' /></span><h2 id="contacto-title">Información de contacto</h2></div>
+        <dl class="dash-details">
+            <div><dt>Teléfono personal</dt><dd>@Mostrar(Model.Telefono)</dd></div>
+            <div><dt>Contacto de emergencia</dt><dd>@Mostrar(Model.NombreContactoEmergencia)</dd></div>
+            <div><dt>Teléfono de emergencia</dt><dd>@Mostrar(Model.TelefonoContactoEmergencia)</dd></div>
+            <div><dt>Relación con el estudiante</dt><dd>@Mostrar(Model.RelacionContactoEmergencia)</dd></div>
+        </dl>
+    </section>
+</div>

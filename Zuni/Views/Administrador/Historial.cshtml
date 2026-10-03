@@ -1,0 +1,60 @@
+@model Zuni.Models.Administrador.HistorialUsuarioViewModel
+@{
+    ViewData["Title"] = "Historial del usuario";
+}
+
+<section class="container py-4 py-md-5" aria-labelledby="historial-title">
+    <div class="rounded-4 border shadow-sm p-3 p-md-4 p-lg-5"
+         style="background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+            <div>
+                <p class="small fw-semibold mb-2">Panel Administrador</p>
+                <h1 id="historial-title" class="display-6 fw-bold mb-3">Historial del usuario</h1>
+                <dl class="mb-0">
+                    <dt>Nombre</dt>
+                    <dd class="text-break">@Model.NombreUsuario</dd>
+                    <dt>Correo</dt>
+                    <dd class="text-break">@(Model.Email ?? "Sin correo")</dd>
+                </dl>
+            </div>
+            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark">Volver a usuarios</a>
+        </div>
+
+        @if (Model.Eventos.Count == 0)
+        {
+            <div class="rounded-3 border p-4" style="background: rgba(206,162,253,.12);">
+                No hay cambios registrados para este usuario.
+            </div>
+        }
+        else
+        {
+            <p class="small">Eventos del más reciente al más antiguo. Fechas expresadas en UTC.</p>
+            <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="Eventos de auditoría del usuario">
+                <table class="table align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: #111111;">
+                    <caption class="visually-hidden">Historial de cambios del usuario, ordenado por fecha descendente.</caption>
+                    <thead style="background: rgba(206,162,253,.18);">
+                        <tr>
+                            <th scope="col" class="p-3">Fecha (UTC)</th>
+                            <th scope="col" class="p-3">Acción</th>
+                            <th scope="col" class="p-3">Estado anterior</th>
+                            <th scope="col" class="p-3">Estado nuevo</th>
+                            <th scope="col" class="p-3">Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var evento in Model.Eventos)
+                        {
+                            <tr>
+                                <td class="p-3 text-nowrap">@evento.FechaUtc.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                <th scope="row" class="p-3 fw-semibold">@evento.AccionVisible</th>
+                                <td class="p-3 text-break">@evento.EstadoAnterior</td>
+                                <td class="p-3 text-break">@evento.EstadoNuevo</td>
+                                <td class="p-3 text-break" style="white-space: pre-wrap;">@(string.IsNullOrWhiteSpace(evento.Motivo) ? "Sin motivo registrado" : evento.Motivo)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>

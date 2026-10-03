@@ -1,0 +1,44 @@
+@model Zuni.Models.Administrador.CambiarRolViewModel
+@{
+    ViewData["Title"] = "Cambiar rol";
+}
+
+<section class="container py-4 py-md-5" aria-labelledby="cambiar-rol-title">
+    <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
+         style="max-width: 720px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
+        <h1 id="cambiar-rol-title" class="h2 fw-bold mb-4">Cambiar rol</h1>
+        <dl>
+            <dt>Usuario seleccionado</dt>
+            <dd class="text-break">@Model.NombreUsuario</dd>
+            <dt>Rol actual</dt>
+            <dd>@Model.RolesActuales</dd>
+        </dl>
+        <p class="small">Al confirmar, los roles actuales se reemplazarán por el rol seleccionado.</p>
+
+        <form asp-controller="Administrador" asp-action="CambiarRol" method="post">
+            <input asp-for="UsuarioId" type="hidden" />
+            <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
+            <div class="mb-3">
+                <label asp-for="NuevoRol" class="form-label"></label>
+                <select asp-for="NuevoRol" class="form-select" required>
+                    <option value="">Selecciona un rol...</option>
+                    @foreach (var rol in Zuni.Models.Administrador.CambiarRolViewModel.RolesPermitidos)
+                    {
+                        <option value="@rol">@rol</option>
+                    }
+                </select>
+                <span asp-validation-for="NuevoRol" class="text-danger small"></span>
+            </div>
+            <div class="mb-4">
+                <label asp-for="Motivo" class="form-label">Motivo (opcional)</label>
+                <textarea asp-for="Motivo" class="form-control" rows="4" maxlength="500" aria-describedby="motivo-ayuda"></textarea>
+                <div id="motivo-ayuda" class="form-text">Máximo 500 caracteres. Evita incluir información sensible.</div>
+                <span asp-validation-for="Motivo" class="text-danger small"></span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-zuni px-4">Confirmar</button>
+                <a asp-action="Index" class="btn btn-outline-dark px-4">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</section>

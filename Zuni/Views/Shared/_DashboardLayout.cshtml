@@ -1,0 +1,61 @@
+@{
+    Layout = null;
+    var nombre = ViewData["DashboardName"] as string ?? User.Identity?.Name ?? "Usuario";
+    var primero = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Usuario";
+    var corto = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primero.ToLower());
+    var rol = ViewData["DashboardRole"] as string ?? string.Empty;
+    var inicio = ViewData["DashboardController"] as string ?? "Home";
+    var navegacion = ViewData["DashboardNavigation"] as string;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · ZUNI</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+</head>
+<body class="dashboard-app">
+    <a href="#dashboard-main" class="dash-skip">Saltar al contenido</a>
+    <aside class="dashboard-sidebar offcanvas offcanvas-start" tabindex="-1" id="dashboard-sidebar" aria-labelledby="sidebar-title">
+        <div class="dash-brand-row">
+            <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><img src="~/images/zuni-logo-transparent.png" alt="" /> ZUNI<span>.</span></a>
+            <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" aria-label="Cerrar menú"></button>
+        </div>
+        <p class="dash-sidebar-caption">Tu espacio universitario</p>
+        @if (navegacion is not null)
+        {
+            @await Html.PartialAsync(navegacion)
+        }
+        <div class="dash-sidebar-bottom">
+            <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>Tu bienestar también<br />forma parte del camino.</p></div>
+            <a class="dash-account" asp-controller="@inicio" asp-action="MiPerfil" aria-label="Ver mi perfil: @corto"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@rol</small></div></a>
+            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-logout" type="submit"><partial name="_DashboardIcon" model='@("logout")' />Cerrar sesión</button></form>
+        </div>
+    </aside>
+    <div class="dashboard-workspace">
+        <header class="dashboard-topbar">
+            <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="Abrir menú"><partial name="_DashboardIcon" model='@("menu")' /></button><span>Mi espacio <span class="dash-slash">/</span> <strong>@ViewData["Title"]</strong></span></div>
+            <div class="dash-top-account"><span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />Sesión activa</span><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></div>
+        </header>
+        <main id="dashboard-main" class="dashboard-main" tabindex="-1">
+            @if (TempData["Success"] is string mensaje)
+            {
+                <div class="dash-notice" role="status">@mensaje</div>
+            }
+            @RenderBody()
+            <footer class="dash-footer"><span>ZUNI · Bienestar y acompañamiento estudiantil</span><span>Tu espacio. Tu ritmo.</span></footer>
+        </main>
+    </div>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 992) {
+                bootstrap.Offcanvas.getInstance(document.getElementById('dashboard-sidebar'))?.hide();
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
