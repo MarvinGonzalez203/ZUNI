@@ -1,0 +1,52 @@
+<div class="modal fade" id="disponibilidad-modal" tabindex="-1" aria-labelledby="disponibilidad-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content rounded-4">
+        <div class="modal-header"><h2 id="disponibilidad-title" class="modal-title h5">Disponibilidad del profesional</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body"><p class="small text-secondary">Espacios que el estudiante podrá elegir al solicitar su cita.</p>
+            <form id="disponibilidad-form" autocomplete="off">
+                <label for="disponibilidad-fecha" class="form-label">Fecha</label><input id="disponibilidad-fecha" type="date" class="form-control mb-3" />
+                <div class="row g-3 mb-3"><div class="col-6"><label for="disponibilidad-inicio" class="form-label">Desde</label><input id="disponibilidad-inicio" type="time" class="form-control" /></div><div class="col-6"><label for="disponibilidad-fin" class="form-label">Hasta</label><input id="disponibilidad-fin" type="time" class="form-control" /></div></div>
+                <label for="disponibilidad-duracion" class="form-label">Duración de la cita (minutos)</label><input id="disponibilidad-duracion" type="number" min="1" class="form-control mb-3" placeholder="Por definir" />
+                <label for="disponibilidad-modalidad" class="form-label">Modalidad</label><select id="disponibilidad-modalidad" class="form-select"><option value="">Seleccionar</option><option>Presencial</option><option>Virtual</option></select>
+            </form>
+            <p class="small text-secondary mt-3 mb-0">Vista previa. La disponibilidad y sus reglas se definirán con la institución.</p>
+        </div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><button type="button" class="btn btn-zuni" disabled>Guardar disponibilidad</button></div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="cita-modal" tabindex="-1" aria-labelledby="cita-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content rounded-4">
+        <div class="modal-header"><h2 id="cita-title" class="modal-title h5">Detalle de cita</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body"><dl><dt>Estudiante</dt><dd>Sin vincular</dd><dt>Fecha, hora y modalidad</dt><dd>Sin asignar</dd><dt>Estado</dt><dd>Sin cita seleccionada</dd></dl>
+            <form autocomplete="off"><label for="cita-nueva-fecha" class="form-label">Nuevo horario disponible</label><select id="cita-nueva-fecha" class="form-select mb-3" disabled><option>Sin horarios disponibles</option></select><label for="cita-motivo" class="form-label">Motivo de cancelación o reprogramación</label><textarea id="cita-motivo" class="form-control" rows="2" placeholder="Motivo administrativo"></textarea></form>
+            <p class="small text-secondary mt-3 mb-0">Las acciones estarán disponibles al vincular una cita.</p>
+        </div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" disabled>Confirmar</button><button type="button" class="btn btn-outline-secondary" disabled>Reprogramar</button><button type="button" class="btn btn-outline-secondary" disabled>Cancelar cita</button><button type="button" class="btn btn-zuni" disabled>Completar cita</button><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button></div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="revision-modal" tabindex="-1" aria-labelledby="revision-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content rounded-4">
+        <div class="modal-header"><h2 id="revision-title" class="modal-title h5">Revisión del resultado</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body"><p class="small text-secondary">Sin estudiante ni resultado vinculados. Prueba el formato con texto ficticio.</p>
+            <form autocomplete="off"><label for="revision-interpretacion" class="form-label">Interpretación del profesional</label><textarea id="revision-interpretacion" class="form-control mb-3" rows="4" placeholder="Contextualización de las dimensiones y puntuaciones"></textarea><label for="revision-recomendaciones" class="form-label">Recomendaciones</label><textarea id="revision-recomendaciones" class="form-control mb-3" rows="3" placeholder="Orientaciones del profesional"></textarea><div class="form-check"><input id="revision-revisado" type="checkbox" class="form-check-input" /><label for="revision-revisado" class="form-check-label">Marcar el resultado como revisado</label></div></form>
+            <p class="small text-secondary mt-3 mb-0">Vista previa. No se guardan cambios ni se modifica el estado del resultado.</p>
+        </div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><button type="button" class="btn btn-zuni" disabled>Guardar revisión</button></div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="atencion-modal" tabindex="-1" aria-labelledby="atencion-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content rounded-4">
+        <div class="modal-header"><h2 id="atencion-title" class="modal-title h5">Reseña de cita finalizada</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body"><p class="small text-secondary">Sin cita vinculada. Usa únicamente texto ficticio para probar el formato.</p>
+            <form autocomplete="off"><label for="atencion-resena" class="form-label">Reseña de la atención</label><textarea id="atencion-resena" class="form-control mb-3" rows="3" placeholder="Aspectos abordados en la sesión"></textarea><label for="atencion-interpretacion" class="form-label">Interpretación del profesional</label><textarea id="atencion-interpretacion" class="form-control mb-3" rows="3"></textarea><label for="atencion-recomendaciones" class="form-label">Recomendaciones</label><textarea id="atencion-recomendaciones" class="form-control mb-3" rows="3"></textarea><label for="atencion-seguimiento" class="form-label">Acuerdos y próximo seguimiento</label><textarea id="atencion-seguimiento" class="form-control" rows="2"></textarea></form>
+            <p class="small text-secondary mt-3 mb-0">Vista previa sin guardado. El acceso a estas notas requerirá permisos específicos.</p>
+        </div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button><button type="button" class="btn btn-zuni" disabled>Guardar atención</button></div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="historial-modal" tabindex="-1" aria-labelledby="historial-detalle-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content rounded-4">
+        <div class="modal-header"><h2 id="historial-detalle-title" class="modal-title h5">Detalle de atención</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body"><p class="small text-secondary">Sin atención seleccionada.</p><dl><dt>Estudiante, fecha y profesional</dt><dd>—</dd><dt>Modalidad</dt><dd>—</dd><dt>Reseña de la atención</dt><dd>—</dd><dt>Interpretación</dt><dd>—</dd><dt>Recomendaciones</dt><dd>—</dd><dt>Acuerdos y seguimiento</dt><dd>—</dd></dl></div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button></div>
+    </div></div>
+</div>

@@ -1,0 +1,12 @@
+@{
+    var accion = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<nav class="dash-nav" aria-label="Navegación del psicólogo">
+    <span class="dash-nav-label">MI ESPACIO</span>
+    @foreach (var item in new[] { ("Index", "Tablero", "grid"), ("Agenda", "Agenda", "calendar"), ("Estudiantes", "Estudiantes", "user"), ("Resultados", "Resultados", "results"), ("Atencion", "Atención", "clipboard"), ("Historial", "Historial", "book") })
+    {
+        <a class="dash-nav-link @(accion == item.Item1 ? "is-active" : "")" asp-controller="Psicologo" asp-action="@item.Item1" aria-current="@(accion == item.Item1 ? "page" : null)"><partial name="_DashboardIcon" model="item.Item3" /><span>@item.Item2</span></a>
+    }
+    <span class="dash-nav-label dash-nav-label-spaced">CUENTA</span>
+    <div class="dash-nav-link is-unavailable" aria-disabled="true"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta<small>Próximamente</small></span></div>
+</nav>

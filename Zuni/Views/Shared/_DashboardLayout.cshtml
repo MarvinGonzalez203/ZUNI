@@ -15,6 +15,7 @@
     <title>@ViewData["Title"] · ZUNI</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="dashboard-app">
     <a href="#dashboard-main" class="dash-skip">Saltar al contenido</a>
@@ -30,7 +31,14 @@
         }
         <div class="dash-sidebar-bottom">
             <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>Tu bienestar también<br />forma parte del camino.</p></div>
-            <a class="dash-account" asp-controller="@inicio" asp-action="MiPerfil" aria-label="Ver mi perfil: @corto"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@rol</small></div></a>
+            @if (ViewData["DashboardAccountUnavailable"] is true)
+            {
+                <div class="dash-account"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@rol</small></div></div>
+            }
+            else
+            {
+                <a class="dash-account" asp-controller="@inicio" asp-action="MiPerfil" aria-label="Ver mi perfil: @corto"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@rol</small></div></a>
+            }
             <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-logout" type="submit"><partial name="_DashboardIcon" model='@("logout")' />Cerrar sesión</button></form>
         </div>
     </aside>
