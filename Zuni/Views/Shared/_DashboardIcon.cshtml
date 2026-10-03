@@ -1,0 +1,19 @@
+@model string
+@{
+    var path = Model switch
+    {
+        "grid" => "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
+        "user" => "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M4 21v-2a8 8 0 0 1 16 0v2",
+        "clipboard" => "M9 4H5v17h14V4h-4 M9 2h6v5H9z M8 12h8 M8 16h5",
+        "results" => "M4 3v18h17 M9 15v2 M14 10v7 M19 6v11",
+        "calendar" => "M3 5h18v16H3z M7 2v6 M17 2v6 M3 10h18 M7 14h3 M14 14h3",
+        "shield" => "M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6z M8 12l3 3 5-6",
+        "arrow" => "M4 12h16 M14 6l6 6-6 6",
+        "logout" => "M9 4H3v16h6 M9 12h12 M16 7l5 5-5 5",
+        "book" => "M12 5C8 2 4 3 2 4v16c3-2 7-2 10 0 3-2 7-2 10 0V4c-3-1-7-2-10 1v15",
+        "phone" => "M5 3H3v4c0 8 6 14 14 14h4v-5l-5-2-2 3c-4-1-6-3-7-7l3-2-2-5z",
+        "spark" => "M12 2c0 7-3 10-10 10 7 0 10 3 10 10 0-7 3-10 10-10-7 0-10-3-10-10z",
+        _ => "M4 6h16 M4 12h16 M4 18h16"
+    };
+}
+<svg class="dash-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="@path" /></svg>

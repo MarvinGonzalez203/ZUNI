@@ -665,6 +665,7 @@ public sealed class CuentaController(
                 {
                     "Administrador" => "Administrador",
                     "Director" => "Director",
+                    "Estudiante" => "Estudiante",
                     _ => "Home"
                 };
                 return RedirectToAction("Index", controller);
