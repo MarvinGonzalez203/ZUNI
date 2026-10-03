@@ -483,6 +483,43 @@ public sealed class AdministradorController : Controller
         // DisposeAsync revierte también las salidas sin Commit y excepciones no capturadas.
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Historial(string id, CancellationToken cancellationToken)
+    {
+        if (!await EsAdministradorActivoAsync(
+                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken))
+            return Forbid();
+
+        var usuario = await _db.Users.AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new { u.Id, u.FullName, u.Email })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (usuario is null)
+            return NotFound();
+
+        var eventos = await _db.AuditoriaUsuarios.AsNoTracking()
+            .Where(evento => evento.UsuarioAfectadoId == id)
+            .OrderByDescending(evento => evento.FechaUtc)
+            .ThenByDescending(evento => evento.Id)
+            .Select(evento => new EventoAuditoriaUsuarioViewModel
+            {
+                Accion = evento.Accion,
+                FechaUtc = evento.FechaUtc,
+                Motivo = evento.Motivo,
+                DatosAnteriores = evento.DatosAnteriores,
+                DatosNuevos = evento.DatosNuevos
+            })
+            .ToListAsync(cancellationToken);
+
+        return View(new HistorialUsuarioViewModel
+        {
+            UsuarioId = usuario.Id,
+            NombreUsuario = usuario.FullName,
+            Email = usuario.Email,
+            Eventos = eventos
+        });
+    }
+
     private Task<bool> EsAdministradorActivoAsync(
         string? id,
         CancellationToken cancellationToken)

@@ -25,7 +25,7 @@
             }
         }
         <p id="acciones-aviso" class="small mb-3">
-            Puedes cambiar el rol de usuarios activos y desactivar o reactivar cuentas. Próximamente: consultar su historial.
+            Puedes cambiar el rol de usuarios activos, desactivar o reactivar cuentas y consultar su historial.
         </p>
 
         @if (Model.Count == 0)
@@ -70,9 +70,8 @@
                                             <button type="button" class="btn btn-sm btn-outline-dark" disabled title="Requiere un usuario activo">Cambiar rol</button>
                                         }
                                         <a asp-action="ConfirmarEstado" asp-route-id="@usuario.Id" asp-route-activar="@(!usuario.IsActive)" class="btn btn-sm btn-outline-dark">@(usuario.IsActive ? "Desactivar" : "Reactivar")</a>
-                                        <button type="button" class="btn btn-sm btn-outline-dark" disabled>Ver historial</button>
+                                        <a asp-action="Historial" asp-route-id="@usuario.Id" class="btn btn-sm btn-outline-dark">Ver historial</a>
                                     </div>
-                                    <span class="small d-block mt-2">Historial: próximamente</span>
                                 </td>
                             </tr>
                         }
