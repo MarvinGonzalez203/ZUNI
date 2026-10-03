@@ -10,6 +10,8 @@ namespace Zuni.Models
 
         public bool IsActive { get; set; } = true;
 
+        public bool DebeCambiarContrasena { get; set; } = false;
+
         public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } =
             new List<PasswordResetToken>();
 
