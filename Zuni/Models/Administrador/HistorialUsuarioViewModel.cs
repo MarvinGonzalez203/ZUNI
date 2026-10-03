@@ -22,12 +22,14 @@ public sealed class EventoAuditoriaUsuarioViewModel
     public string AccionVisible => Accion switch
     {
         "ROL_CAMBIADO" => "Cambio de rol",
+        "USUARIO_CREADO" => "Usuario creado",
         "USUARIO_DESACTIVADO" => "Usuario desactivado",
         "USUARIO_REACTIVADO" => "Usuario reactivado",
         _ => "Acción no disponible"
     };
 
-    public string EstadoAnterior => InterpretarDatos(DatosAnteriores);
+    public string EstadoAnterior => Accion == "USUARIO_CREADO" && DatosAnteriores is null
+        ? "—" : InterpretarDatos(DatosAnteriores);
     public string EstadoNuevo => InterpretarDatos(DatosNuevos);
 
     private string InterpretarDatos(string? json)
@@ -42,7 +44,7 @@ public sealed class EventoAuditoriaUsuarioViewModel
             if (raiz.ValueKind != JsonValueKind.Object)
                 return "No disponible";
 
-            if (Accion == "ROL_CAMBIADO" && raiz.TryGetProperty("Roles", out var roles) &&
+            if ((Accion == "ROL_CAMBIADO" || Accion == "USUARIO_CREADO") && raiz.TryGetProperty("Roles", out var roles) &&
                 roles.ValueKind == JsonValueKind.Array)
             {
                 var nombres = new List<string>();
@@ -58,7 +60,15 @@ public sealed class EventoAuditoriaUsuarioViewModel
                         var nombre => nombre!
                     });
                 }
-                return nombres.Count == 0 ? "Sin rol" : string.Join(", ", nombres);
+                var textoRoles = nombres.Count == 0 ? "Sin rol" : string.Join(", ", nombres);
+                if (Accion == "USUARIO_CREADO")
+                {
+                    if (!raiz.TryGetProperty("IsActive", out var estado) ||
+                        (estado.ValueKind != JsonValueKind.True && estado.ValueKind != JsonValueKind.False))
+                        return "No disponible";
+                    return textoRoles + (estado.GetBoolean() ? " · Activo" : " · Inactivo");
+                }
+                return textoRoles;
             }
 
             if ((Accion == "USUARIO_DESACTIVADO" || Accion == "USUARIO_REACTIVADO") &&

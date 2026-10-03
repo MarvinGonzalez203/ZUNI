@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Npgsql;
+using Microsoft.AspNetCore.Identity;
 
 namespace Zuni.Controllers;
 
@@ -518,6 +519,140 @@ public sealed class AdministradorController : Controller
             Email = usuario.Email,
             Eventos = eventos
         });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AgregarUsuario(CancellationToken cancellationToken)
+    {
+        if (!await EsAdministradorActivoAsync(User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken))
+            return Forbid();
+        return View(new AgregarUsuarioViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AgregarUsuario(
+        AgregarUsuarioViewModel model,
+        [FromServices] IPasswordHasher<ApplicationUser> passwordHasher,
+        CancellationToken cancellationToken)
+    {
+        var administradorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await using var transaction = await _db.Database.BeginTransactionAsync(
+            IsolationLevel.Serializable, cancellationToken);
+        try
+        {
+            if (!await EsAdministradorActivoAsync(administradorId, cancellationToken))
+                return Forbid();
+            if (!ModelState.IsValid)
+                return MostrarAltaConErrores(model);
+
+            var correo = model.Correo.Trim();
+            var normalizado = correo.ToUpperInvariant();
+            var carne = model.Rol == "Estudiante"
+                ? string.Concat(model.CarneParte1, model.CarneParte2, model.CarneParte3) : null;
+            var rol = await _db.Roles.AsNoTracking()
+                .SingleOrDefaultAsync(r => r.Name == model.Rol, cancellationToken);
+            if (!AgregarUsuarioViewModel.RolesPermitidos.Contains(model.Rol) ||
+                rol is null || string.IsNullOrWhiteSpace(rol.NormalizedName))
+                ModelState.AddModelError(nameof(model.Rol), "Selecciona un rol permitido que exista en el sistema.");
+
+            if (await _db.Users.AsNoTracking().AnyAsync(u =>
+                    u.NormalizedEmail == normalizado || u.NormalizedUserName == normalizado, cancellationToken))
+                ModelState.AddModelError(nameof(model.Correo), "Ya existe una cuenta con este correo.");
+            if (carne is not null && await _db.PerfilesEstudiante.AsNoTracking()
+                    .AnyAsync(p => p.Carne == carne, cancellationToken))
+                ModelState.AddModelError(nameof(model.CarneParte1), "Ya existe un estudiante con este carné.");
+            if (!ModelState.IsValid)
+                return MostrarAltaConErrores(model);
+
+            var usuario = new ApplicationUser
+            {
+                Id = Guid.NewGuid().ToString(),
+                FullName = model.NombreCompleto.Trim(),
+                Email = correo,
+                UserName = correo,
+                NormalizedEmail = normalizado,
+                NormalizedUserName = normalizado,
+                CreatedAtUtc = DateTime.UtcNow,
+                IsActive = true,
+                DebeCambiarContrasena = true,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = Guid.NewGuid().ToString()
+            };
+            usuario.PasswordHash = passwordHasher.HashPassword(usuario, model.ContrasenaTemporal);
+            LimpiarContrasenasAlta(model);
+
+            // El store comparte DbContext y transacción; se guarda todo al final.
+            using var store = new UserStore<ApplicationUser>(_db) { AutoSaveChanges = false };
+            var resultado = await store.CreateAsync(usuario, cancellationToken);
+            if (!resultado.Succeeded)
+                throw new InvalidOperationException("No se pudo crear el usuario.");
+            await store.AddToRoleAsync(usuario, rol!.NormalizedName!, cancellationToken);
+
+            if (carne is not null)
+                _db.PerfilesEstudiante.Add(new PerfilEstudiante
+                {
+                    UsuarioId = usuario.Id,
+                    Usuario = usuario,
+                    Carne = carne
+                });
+
+            _db.AuditoriaUsuarios.Add(new AuditoriaUsuario
+            {
+                UsuarioAfectadoId = usuario.Id,
+                AdministradorId = administradorId!,
+                Accion = "USUARIO_CREADO",
+                DatosAnteriores = null,
+                DatosNuevos = JsonSerializer.Serialize(new
+                {
+                    Roles = new[] { model.Rol },
+                    IsActive = true,
+                    DebeCambiarContrasena = true
+                }),
+                Motivo = string.IsNullOrWhiteSpace(model.Motivo) ? null : model.Motivo.Trim(),
+                FechaUtc = DateTime.UtcNow
+            });
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            TempData["Success"] = "El usuario fue creado correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException
+               { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            await transaction.RollbackAsync(CancellationToken.None);
+            _db.ChangeTracker.Clear();
+            var restriccion = ((PostgresException)ex.InnerException!).ConstraintName;
+            if (restriccion == "IX_PerfilesEstudiante_Carne")
+                ModelState.AddModelError(nameof(model.CarneParte1), "Ya existe un estudiante con este carné.");
+            else if (restriccion is "UserNameIndex" or "EmailIndex")
+                ModelState.AddModelError(nameof(model.Correo), "Ya existe una cuenta con este correo.");
+            else
+                ModelState.AddModelError(string.Empty, "No se pudo crear el usuario. No se guardaron cambios.");
+            return MostrarAltaConErrores(model);
+        }
+        catch (Exception ex) when (ex is DbUpdateException or NpgsqlException or InvalidOperationException)
+        {
+            await transaction.RollbackAsync(CancellationToken.None);
+            _db.ChangeTracker.Clear();
+            ModelState.AddModelError(string.Empty, "No se pudo crear el usuario. No se guardaron cambios; vuelve a intentarlo.");
+            return MostrarAltaConErrores(model);
+        }
+        // Toda salida sin Commit revierte la transacción al disponerla.
+    }
+
+    private ViewResult MostrarAltaConErrores(AgregarUsuarioViewModel model)
+    {
+        LimpiarContrasenasAlta(model);
+        return View("AgregarUsuario", model);
+    }
+
+    private void LimpiarContrasenasAlta(AgregarUsuarioViewModel model)
+    {
+        model.ContrasenaTemporal = string.Empty;
+        model.ConfirmarContrasenaTemporal = string.Empty;
+        ModelState.SetModelValue(nameof(model.ContrasenaTemporal), null, null);
+        ModelState.SetModelValue(nameof(model.ConfirmarContrasenaTemporal), null, null);
     }
 
     private Task<bool> EsAdministradorActivoAsync(
