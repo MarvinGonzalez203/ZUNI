@@ -98,7 +98,80 @@ public sealed class CuentaController(
             dbUser,
             model.RememberMe);
 
+        if (dbUser.DebeCambiarContrasena)
+            return RedirectToAction(nameof(CambiarContrasenaObligatoria));
+
         return await RedirectAfterLogin(dbUser.Id, model.ReturnUrl);
+    }
+
+    // ============================================================
+    // CAMBIO OBLIGATORIO DE CONTRASEÑA
+    // ============================================================
+
+    [Authorize]
+    [HttpGet("CambiarContrasenaObligatoria")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> CambiarContrasenaObligatoria()
+    {
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var pendiente = await db.Users.AsNoTracking()
+            .AnyAsync(u => u.Id == id && u.IsActive && u.DebeCambiarContrasena);
+        return pendiente ? View(new CambiarContrasenaObligatoriaViewModel())
+            : RedirectToAuthenticatedHome();
+    }
+
+    [Authorize]
+    [HttpPost("CambiarContrasenaObligatoria")]
+    [ValidateAntiForgeryToken]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> CambiarContrasenaObligatoria(
+        CambiarContrasenaObligatoriaViewModel model)
+    {
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var usuario = await db.Users.SingleOrDefaultAsync(u => u.Id == id);
+        if (usuario is null || !usuario.IsActive ||
+            usuario.SecurityStamp != User.FindFirstValue("Zuni.SecurityStamp"))
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction(nameof(IniciarSesion));
+        }
+        if (!usuario.DebeCambiarContrasena)
+            return RedirectToAuthenticatedHome();
+        if (!ModelState.IsValid)
+            return View(model);
+
+        if (passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash ?? string.Empty,
+                model.PasswordActual) == PasswordVerificationResult.Failed)
+        {
+            ModelState.AddModelError(nameof(model.PasswordActual), "La contraseña actual es incorrecta.");
+            return View(model);
+        }
+        if (passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash ?? string.Empty,
+                model.Password) != PasswordVerificationResult.Failed)
+        {
+            ModelState.AddModelError(nameof(model.Password), "La nueva contraseña debe ser distinta de la actual.");
+            return View(model);
+        }
+
+        usuario.PasswordHash = passwordHasher.HashPassword(usuario, model.Password);
+        usuario.DebeCambiarContrasena = false;
+        usuario.SecurityStamp = Guid.NewGuid().ToString();
+        usuario.ConcurrencyStamp = Guid.NewGuid().ToString();
+        try
+        {
+            // SaveChanges guarda los campos juntos y comprueba ConcurrencyStamp.
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData["Error"] = "La cuenta cambió durante la operación. Inicia sesión nuevamente.";
+            return RedirectToAction(nameof(IniciarSesion));
+        }
+
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        TempData["Success"] = "Tu contraseña fue actualizada correctamente. Inicia sesión nuevamente.";
+        return RedirectToAction(nameof(IniciarSesion));
     }
 
     // ============================================================
@@ -445,6 +518,8 @@ public sealed class CuentaController(
             model.Password);
 
         user.SecurityStamp = Guid.NewGuid().ToString();
+        user.ConcurrencyStamp = Guid.NewGuid().ToString();
+        user.DebeCambiarContrasena = false;
 
         await db.SaveChangesAsync();
         await transaction.CommitAsync();

@@ -36,17 +36,17 @@ builder.Services
         options.LoginPath = "/Cuenta/IniciarSesion";
         options.AccessDeniedPath = "/Cuenta/AccesoDenegado";
 
-        // La sesiÛn dura como m·ximo 30 minutos.
+        // La sesi√≥n dura como m√°ximo 30 minutos.
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 
-        // No renovar autom·ticamente la sesiÛn.
+        // No renovar autom√°ticamente la sesi√≥n.
         options.SlidingExpiration = false;
 
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 
-        // Revalidar la sesiÛn contra PostgreSQL.
+        // Revalidar la sesi√≥n contra PostgreSQL.
         options.Events.OnValidatePrincipal = async context =>
         {
             var userId = context.Principal?
@@ -55,7 +55,7 @@ builder.Services
             var cookieSecurityStamp = context.Principal?
                 .FindFirstValue("Zuni.SecurityStamp");
 
-            // Una cookie sin los datos necesarios ya no es v·lida.
+            // Una cookie sin los datos necesarios ya no es v√°lida.
             if (string.IsNullOrWhiteSpace(userId) ||
                 string.IsNullOrWhiteSpace(cookieSecurityStamp))
             {
@@ -83,7 +83,7 @@ builder.Services
             // Invalidar la cookie si:
             // - el usuario ya no existe;
             // - fue desactivado;
-            // - cambiÛ su SecurityStamp.
+            // - cambi√≥ su SecurityStamp.
             if (usuario is null ||
                 !usuario.IsActive ||
                 !string.Equals(
@@ -123,6 +123,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseMiddleware<Zuni.Middleware.CambioContrasenaObligatorioMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(
