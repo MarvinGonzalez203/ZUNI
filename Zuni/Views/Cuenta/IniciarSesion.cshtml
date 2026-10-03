@@ -4,6 +4,14 @@
 <a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
 <h1 class="h2 fw-bold mb-2">Bienvenido de nuevo</h1>
 <p class="text-secondary mb-4">Ingresa tus datos para continuar en ZUNI.</p>
+@if (TempData["Success"] is string mensajeExito)
+{
+    <div class="alert alert-light border" role="status">@mensajeExito</div>
+}
+@if (TempData["Error"] is string mensajeError)
+{
+    <div class="alert alert-danger" role="alert">@mensajeError</div>
+}
 <form method="post" novalidate class="auth-form-fields">
     <input asp-for="ReturnUrl" type="hidden" />
     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>

@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Tablero";
+    var primero = (User.Identity?.Name ?? "Psicólogo").Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Psicólogo";
+    var nombre = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primero.ToLower());
+}
+<header class="dash-welcome">
+    <div class="dash-welcome-copy">
+        <span class="dash-eyebrow">TU ESPACIO DE ACOMPAÑAMIENTO</span>
+        <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
+        <p>Gestiona tu agenda, estudiantes y seguimiento de atención desde un solo lugar.</p>
+        <a class="dash-button" asp-action="Agenda">Ver agenda <partial name="_DashboardIcon" model='@("arrow")' /></a>
+    </div>
+    <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>Acompañar y conectar.</span></div>
+</header>
+<div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2></div>
+<section class="dash-summary-grid" aria-label="Accesos rápidos">
+    @foreach (var item in new[] { ("Agenda", "Agenda", "calendar", "Consulta la agenda y el formato de disponibilidad."), ("Estudiantes", "Estudiantes", "user", "Accede al espacio de estudiantes asignados o referidos."), ("Resultados", "Resultados", "results", "Consulta la estructura de resultados exploratorios."), ("Atencion", "Atención", "clipboard", "Accede al formato de reseña y seguimiento.") })
+    {
+        <a class="dash-card dash-summary dash-card-link" asp-action="@item.Item1">
+            <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item3" /></span><h2>@item.Item2</h2></div>
+            <p>@item.Item4</p><span class="dash-module-label">Sin datos disponibles</span>
+        </a>
+    }
+</section>
+<partial name="_Agenda" />

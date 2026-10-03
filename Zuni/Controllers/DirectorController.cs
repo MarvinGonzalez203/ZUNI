@@ -863,7 +863,7 @@ public sealed class DirectorController(ApplicationDbContext db) : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CambiarRol(CambiarRolViewModel model)
+    public async Task<IActionResult> CambiarRol(DirectorCambiarRolViewModel model)
     {
         if (!ModelState.IsValid ||
             !RolesAsignables.Contains(model.Rol, StringComparer.Ordinal))

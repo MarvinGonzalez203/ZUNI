@@ -1,62 +1,59 @@
 @model EstudianteDashboardViewModel
 @{
-    ViewData["Title"] = "Mi panel";
+    ViewData["Title"] = "Tablero";
+    ViewData["DashboardName"] = Model.Nombre;
+    var primero = Model.Nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Estudiante";
+    var nombre = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primero.ToLower());
+    var perfilController = Model.PerfilCompleto ? "Estudiante" : "Perfil";
+    var perfilAction = Model.PerfilCompleto ? "MiPerfil" : "Completar";
 }
-<section class="student-dashboard py-4 py-md-5" aria-labelledby="student-title">
-    @if (TempData["Success"] is string message)
-    {
-        <div class="alert alert-success" role="status">@message</div>
-    }
-    <header class="student-welcome p-4 p-md-5 mb-4">
-        <p class="text-uppercase small fw-semibold">Tu espacio ZUNI · Estudiante</p>
-        <h1 id="student-title" class="display-6 fw-bold">Hola, @Model.Nombre</h1>
-        <p class="lead">Un espacio para conocerte y acompañar tu vida universitaria.</p>
-        <a asp-action="MiPerfil" class="btn btn-zuni">Mi perfil <span aria-hidden="true">→</span></a>
-    </header>
-
-    @if (!Model.PerfilCompleto)
-    {
-        <aside class="student-card p-4 mb-4" aria-labelledby="profile-notice">
-            <h2 id="profile-notice" class="h5">Completa tu perfil</h2>
-            <p>Agrega los datos académicos y de contacto que faltan.</p>
-            <a asp-controller="Perfil" asp-action="Completar" class="btn btn-zuni">Completar mi perfil</a>
-        </aside>
-    }
-
-    <section class="student-card p-4 mb-4" aria-labelledby="evaluations-title">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-            <h2 id="evaluations-title" class="h4 mb-0">Cuestionarios exploratorios</h2>
-            <span class="student-status">Próximamente</span>
-        </div>
-        <p>Comparte información sobre tus gustos, preferencias e intereses para apoyar una conversación con la psicóloga cuando corresponda.</p>
-        <div class="row g-3 mb-3">
-            @foreach (var estado in new[] { "Pendientes", "En progreso", "Finalizadas" })
-            {
-                <div class="col-md-4">
-                    <div class="student-state p-3 h-100">
-                        <h3 class="h6">@estado</h3>
-                        <p class="small mb-0">Disponible cuando se habiliten las evaluaciones.</p>
-                    </div>
-                </div>
-            }
-        </div>
-        <p class="small text-secondary mb-0">Los cuestionarios son exploratorios: no son pruebas diagnósticas ni determinan una condición o nivel de riesgo.</p>
-    </section>
-
-    <div class="row g-4">
-        <div class="col-md-6">
-            <section class="student-card p-4 h-100" aria-labelledby="results-title">
-                <span class="student-status">Próximamente</span>
-                <h2 id="results-title" class="h4 mt-3">Mis resultados</h2>
-                <p class="mb-0">Si se habilita esta función, mostrará información descriptiva de tus respuestas para apoyar la conversación profesional. No emitirá diagnósticos ni sustituirá la valoración de la psicóloga.</p>
-            </section>
-        </div>
-        <div class="col-md-6">
-            <section class="student-card p-4 h-100" aria-labelledby="appointments-title">
-                <span class="student-status">Próximamente</span>
-                <h2 id="appointments-title" class="h4 mt-3">Mis citas</h2>
-                <p class="mb-0">Podrás acceder a tus citas desde este espacio cuando el servicio esté disponible.</p>
-            </section>
+<header class="dash-welcome">
+    <div class="dash-welcome-copy">
+        <span class="dash-eyebrow">BIENVENIDO A TU ESPACIO</span>
+        <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
+        <p>Este es tu espacio en ZUNI. Consulta tu información y accede a los servicios disponibles.</p>
+        <div class="dash-welcome-actions">
+            <a class="dash-button" asp-controller="@perfilController" asp-action="@perfilAction">@(Model.PerfilCompleto ? "Ver mi perfil" : "Completar mi perfil") <partial name="_DashboardIcon" model='@("arrow")' /></a>
+            <span class="dash-profile-status">Perfil: @(Model.PerfilCompleto ? "Completo" : "Incompleto")</span>
         </div>
     </div>
+    <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>Conecta contigo.</span></div>
+</header>
+
+<div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2><span>Todo en un solo lugar</span></div>
+<section class="dash-summary-grid" aria-label="Resumen de servicios">
+    <a class="dash-card dash-summary dash-summary-profile dash-card-link" asp-controller="Estudiante" asp-action="MiPerfil" aria-label="Ver mi perfil">
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><span class="dash-eyebrow">MI PERFIL</span></div>
+        <h3>@(Model.PerfilCompleto ? "Completo" : "Incompleto")</h3>
+        <p>@(Model.PerfilCompleto ? "Tus datos básicos están completos." : "Completa tus datos académicos y de contacto.")</p>
+        <span class="dash-text-link">Ver perfil <partial name="_DashboardIcon" model='@("arrow")' /></span>
+    </a>
+    @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Disponibles cuando se integre este módulo.", "Resultados"), ("calendar", "CITAS", "Podrás consultar o solicitar tus citas.", "Citas") })
+    {
+        <a class="dash-card dash-summary dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4" aria-label="@item.Item4">
+            <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><span class="dash-eyebrow">@item.Item2</span></div>
+            <h3>Próximamente</h3><p>@item.Item3</p><span class="dash-module-label">En preparación</span>
+        </a>
+    }
+</section>
+
+<section class="dash-card dash-evaluations" aria-labelledby="evaluaciones-title">
+    <div class="dash-section-heading"><div><h2 id="evaluaciones-title">Resumen de mis evaluaciones</h2><p>Un espacio para conocer tu recorrido.</p></div><span class="dash-badge">Próximamente</span></div>
+    <div class="dash-chart-placeholder">
+        <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("spark")' /></div>
+        <h3>Tu recorrido comienza contigo</h3>
+        <p>Tus resultados aparecerán aquí cuando completes tus evaluaciones.</p>
+        <small>Este módulo estará disponible próximamente.</small>
+    </div>
+</section>
+
+<div class="dash-section-heading"><h2>Tu información</h2><a class="dash-text-link" asp-action="MiPerfil">Ver mi perfil <partial name="_DashboardIcon" model='@("arrow")' /></a></div>
+<partial name="_DatosPerfil" model="Model.DatosPerfil" />
+
+<div class="dash-section-heading"><h2>Servicios para tu bienestar</h2><span>A tu ritmo</span></div>
+<section class="dash-services" aria-label="Próximos servicios">
+    @foreach (var item in new[] { ("clipboard", "Evaluaciones", "Un espacio para realizar las evaluaciones que se habiliten para ti.", "Evaluaciones"), ("results", "Resultados", "Consulta tus resultados cuando el módulo esté disponible.", "Resultados"), ("calendar", "Citas psicológicas", "Solicita y consulta citas cuando se integre el servicio.", "Citas") })
+    {
+        <a class="dash-card dash-service dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><h3>@item.Item2</h3><p>@item.Item3</p><span class="dash-badge">Próximamente</span></a>
+    }
 </section>

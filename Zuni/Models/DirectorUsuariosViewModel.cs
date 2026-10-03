@@ -21,7 +21,7 @@ public sealed class DirectorUsuarioRolItem
     public required bool PuedeEditar { get; init; }
 }
 
-public sealed class CambiarRolViewModel
+public sealed class DirectorCambiarRolViewModel
 {
     [Required]
     [StringLength(450)]

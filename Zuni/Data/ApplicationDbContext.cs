@@ -22,6 +22,9 @@ namespace Zuni.Data
 
         public DbSet<AsignacionPrueba> AsignacionesPrueba => Set<AsignacionPrueba>();
 
+        public DbSet<AuditoriaUsuario> AuditoriaUsuarios =>
+            Set<AuditoriaUsuario>();
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -30,6 +33,41 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<AuditoriaUsuario>(entity =>
+            {
+                entity.ToTable("AuditoriaUsuarios");
+                entity.HasKey(auditoria => auditoria.Id);
+
+                // Identificadores históricos sin relaciones para conservar la auditoría
+                // incluso si los usuarios se eliminan físicamente.
+                entity.Property(auditoria => auditoria.UsuarioAfectadoId)
+                    .IsRequired();
+
+                entity.Property(auditoria => auditoria.AdministradorId)
+                    .IsRequired();
+
+                entity.Property(auditoria => auditoria.Accion)
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(auditoria => auditoria.Motivo)
+                    .HasMaxLength(500);
+
+                entity.Property(auditoria => auditoria.DatosAnteriores)
+                    .HasColumnType("jsonb");
+
+                entity.Property(auditoria => auditoria.DatosNuevos)
+                    .HasColumnType("jsonb");
+
+                entity.Property(auditoria => auditoria.FechaUtc)
+                    .HasColumnType("timestamp with time zone")
+                    .IsRequired();
+
+                entity.HasIndex(auditoria => auditoria.UsuarioAfectadoId);
+                entity.HasIndex(auditoria => auditoria.AdministradorId);
+                entity.HasIndex(auditoria => auditoria.FechaUtc);
+            });
 
             builder.Entity<PasswordResetToken>(entity =>
             {

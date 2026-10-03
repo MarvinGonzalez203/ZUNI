@@ -1,0 +1,42 @@
+@model Zuni.Models.Administrador.CambiarEstadoUsuarioViewModel
+@{
+    var operacion = Model.EstadoActual ? "Desactivar" : "Reactivar";
+    ViewData["Title"] = operacion + " usuario";
+}
+
+<section class="container py-4 py-md-5" aria-labelledby="estado-title">
+    <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
+         style="max-width: 720px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
+        <h1 id="estado-title" class="h2 fw-bold mb-4">@operacion usuario</h1>
+        <dl>
+            <dt>Usuario seleccionado</dt>
+            <dd class="text-break">@Model.NombreUsuario</dd>
+            <dt>Estado actual</dt>
+            <dd>@(Model.EstadoActual ? "Activo" : "Inactivo")</dd>
+        </dl>
+        <p>
+            @if (Model.EstadoActual)
+            {
+                <text>¿Confirmas que deseas desactivar esta cuenta? El usuario perderá el acceso y sus sesiones se invalidarán.</text>
+            }
+            else
+            {
+                <text>¿Confirmas que deseas reactivar esta cuenta? El usuario podrá iniciar sesión nuevamente y conservará sus roles actuales.</text>
+            }
+        </p>
+        <form asp-controller="Administrador" asp-action="@operacion" method="post">
+            <input asp-for="UsuarioId" type="hidden" />
+            <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
+            <div class="mb-4">
+                <label asp-for="Motivo" class="form-label">Motivo (opcional)</label>
+                <textarea asp-for="Motivo" class="form-control" rows="4" maxlength="500" aria-describedby="motivo-ayuda"></textarea>
+                <div id="motivo-ayuda" class="form-text">Máximo 500 caracteres. Evita incluir información sensible.</div>
+                <span asp-validation-for="Motivo" class="text-danger small"></span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-zuni px-4">Confirmar: @operacion.ToLowerInvariant()</button>
+                <a asp-action="Index" class="btn btn-outline-dark px-4">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</section>

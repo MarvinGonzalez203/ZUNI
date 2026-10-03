@@ -1,7 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Zuni.Data;
 using Zuni.Models;
 using Zuni.Security;
@@ -36,11 +38,68 @@ builder.Services
         options.EventsType = typeof(RoleClaimsCookieEvents);
         options.LoginPath = "/Cuenta/IniciarSesion";
         options.AccessDeniedPath = "/Cuenta/AccesoDenegado";
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
-        options.SlidingExpiration = true;
+
+        // La sesión dura como máximo 30 minutos.
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+
+        // No renovar automáticamente la sesión.
+        options.SlidingExpiration = false;
+
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+
+        // Revalidar la sesión contra PostgreSQL.
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            var userId = context.Principal?
+                .FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var cookieSecurityStamp = context.Principal?
+                .FindFirstValue("Zuni.SecurityStamp");
+
+            // Una cookie sin los datos necesarios ya no es válida.
+            if (string.IsNullOrWhiteSpace(userId) ||
+                string.IsNullOrWhiteSpace(cookieSecurityStamp))
+            {
+                context.RejectPrincipal();
+
+                await context.HttpContext.SignOutAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme);
+
+                return;
+            }
+
+            var db = context.HttpContext.RequestServices
+                .GetRequiredService<ApplicationDbContext>();
+
+            var usuario = await db.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => new
+                {
+                    u.IsActive,
+                    u.SecurityStamp
+                })
+                .SingleOrDefaultAsync();
+
+            // Invalidar la cookie si:
+            // - el usuario ya no existe;
+            // - fue desactivado;
+            // - cambió su SecurityStamp.
+            if (usuario is null ||
+                !usuario.IsActive ||
+                !string.Equals(
+                    usuario.SecurityStamp,
+                    cookieSecurityStamp,
+                    StringComparison.Ordinal))
+            {
+                context.RejectPrincipal();
+
+                await context.HttpContext.SignOutAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -73,6 +132,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseMiddleware<Zuni.Middleware.CambioContrasenaObligatorioMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(
