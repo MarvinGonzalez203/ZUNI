@@ -1,0 +1,42 @@
+@model Zuni.Models.MiCuenta.MiCuentaViewModel
+@{
+    ViewData["Title"] = "Mi cuenta";
+    string Mostrar(string? valor) => string.IsNullOrWhiteSpace(valor) ? "Pendiente" : valor;
+}
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">TU INFORMACIÓN</span><h1>Mi cuenta</h1><p>Consulta tus datos y mantén tu información actualizada.</p></div><a class="dash-button" asp-action="Editar">Editar mis datos <partial name="_DashboardIcon" model='@("arrow")' /></a></header>
+<section class="dash-card dash-account-card" aria-labelledby="datos-generales">
+    <h2 id="datos-generales">Datos generales</h2>
+    <dl class="dash-account-details">
+        <div><dt>Nombre completo</dt><dd>@Model.NombreCompleto</dd></div>
+        <div><dt>Correo institucional · Solo lectura</dt><dd>@Mostrar(Model.Email)</dd></div>
+        <div><dt>Roles actuales · Solo lectura</dt><dd>@(Model.Roles.Count == 0 ? "Sin rol asignado" : string.Join(", ", Model.Roles))</dd></div>
+        <div><dt>Estado de la cuenta · Solo lectura</dt><dd>@(Model.Activo ? "Activo" : "Inactivo")</dd></div>
+    </dl>
+</section>
+@if (Model.EsEstudiante && !Model.PerfilCompleto)
+{
+    <aside class="dash-notice dash-profile-notice"><p>Debes completar tus datos estudiantiles.</p><a class="dash-button" asp-action="Editar">Completar mis datos</a></aside>
+}
+@if (Model.EsEstudiante && Model.Estudiante is { } p)
+{
+    <div class="dash-detail-grid">
+        <section class="dash-card" aria-labelledby="datos-academicos">
+            <h2 id="datos-academicos">Datos académicos</h2>
+            <dl class="dash-details">
+                <div><dt>Carné · Solo lectura</dt><dd>@Mostrar(Zuni.Helpers.CarneHelper.Formatear(p.Carne))</dd></div>
+                <div><dt>Carrera</dt><dd>@Mostrar(p.Carrera)</dd></div>
+                <div><dt>Semestre</dt><dd>@Mostrar(p.Semestre)</dd></div>
+                <div><dt>Ciclo académico</dt><dd>@Mostrar(p.CicloAcademico)</dd></div>
+            </dl>
+        </section>
+        <section class="dash-card" aria-labelledby="datos-contacto">
+            <h2 id="datos-contacto">Datos de contacto</h2>
+            <dl class="dash-details">
+                <div><dt>Teléfono</dt><dd>@Mostrar(p.Telefono)</dd></div>
+                <div><dt>Nombre del contacto de emergencia</dt><dd>@Mostrar(p.NombreContactoEmergencia)</dd></div>
+                <div><dt>Teléfono de emergencia</dt><dd>@Mostrar(p.TelefonoContactoEmergencia)</dd></div>
+                <div><dt>Relación del contacto</dt><dd>@Mostrar(p.RelacionContactoEmergencia)</dd></div>
+            </dl>
+        </section>
+    </div>
+}

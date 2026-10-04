@@ -1,0 +1,82 @@
+@model Zuni.Models.MiCuenta.EditarMiCuentaViewModel
+@{
+    ViewData["Title"] = "Editar datos";
+}
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">MI CUENTA</span><h1>Editar mis datos</h1><p>El correo, carné, roles y estado de tu cuenta no se pueden modificar aquí.</p></div></header>
+@if (TempData["Error"] is string error)
+{
+    <div class="dash-notice" role="alert">@error</div>
+}
+<form asp-action="Editar" method="post" class="dash-card">
+    <input asp-for="Revision" type="hidden" />
+    <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
+    <div class="mb-4">
+        <label asp-for="NombreCompleto" class="form-label">Nombre completo</label>
+        <input asp-for="NombreCompleto" class="form-control" autocomplete="name" maxlength="100" required aria-describedby="nombre-error" />
+        <span asp-validation-for="NombreCompleto" id="nombre-error" class="text-danger small"></span>
+    </div>
+    @if (Model.PuedeEditarEstudiante)
+    {
+        <fieldset>
+            <legend class="h5 mb-3">Datos académicos y de contacto</legend>
+            @if (Model.SolicitarCarne)
+            {
+                <fieldset class="mb-3">
+                    <legend class="h6">Carné institucional · Configuración inicial</legend>
+                    <div class="row g-2">
+                        <div class="col-4"><label asp-for="CarneParte1" class="form-label">Primer bloque</label><input asp-for="CarneParte1" class="form-control" inputmode="numeric" minlength="4" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required /></div>
+                        <div class="col-3"><label asp-for="CarneParte2" class="form-label">Segundo bloque</label><input asp-for="CarneParte2" class="form-control" inputmode="numeric" minlength="2" maxlength="2" pattern="[0-9]{2}" placeholder="00" required /></div>
+                        <div class="col-5"><label asp-for="CarneParte3" class="form-label">Tercer bloque</label><input asp-for="CarneParte3" class="form-control" inputmode="numeric" minlength="2" maxlength="6" pattern="[0-9]{2,6}" placeholder="00 a 000000" required /></div>
+                    </div>
+                    <span asp-validation-for="CarneParte1" class="text-danger small"></span>
+                    <p class="small text-secondary mt-2">@Zuni.Helpers.CarneHelper.MensajeFormato Una vez registrado no podrás cambiarlo aquí.</p>
+                </fieldset>
+            }
+            else
+            {
+                <p>Carné · Solo lectura: <strong>@Zuni.Helpers.CarneHelper.Formatear(Model.Estudiante?.Carne)</strong></p>
+            }
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Estudiante!.Telefono" class="form-label">Teléfono personal</label>
+                    <input asp-for="Estudiante!.Telefono" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="tel" />
+                    <span asp-validation-for="Estudiante!.Telefono" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Estudiante!.Carrera" class="form-label">Carrera</label>
+                    <input asp-for="Estudiante!.Carrera" class="form-control" maxlength="150" />
+                    <span asp-validation-for="Estudiante!.Carrera" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Estudiante!.Semestre" class="form-label">Semestre</label>
+                    <select asp-for="Estudiante!.Semestre" class="form-select"><option value="">Seleccione...</option>@for (var semestre = 1; semestre <= 10; semestre++) { <option value="@semestre">@semestre</option> }</select>
+                    <span asp-validation-for="Estudiante!.Semestre" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Estudiante!.CicloAcademico" class="form-label">Ciclo académico</label>
+                    <select asp-for="Estudiante!.CicloAcademico" class="form-select"><option value="">Seleccione...</option><option value="1">1</option><option value="2">2</option></select>
+                    <span asp-validation-for="Estudiante!.CicloAcademico" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Estudiante!.NombreContactoEmergencia" class="form-label">Nombre del contacto de emergencia</label>
+                    <input asp-for="Estudiante!.NombreContactoEmergencia" class="form-control" maxlength="150" />
+                    <span asp-validation-for="Estudiante!.NombreContactoEmergencia" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Estudiante!.TelefonoContactoEmergencia" class="form-label">Teléfono de emergencia</label>
+                    <input asp-for="Estudiante!.TelefonoContactoEmergencia" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" />
+                    <span asp-validation-for="Estudiante!.TelefonoContactoEmergencia" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Estudiante!.RelacionContactoEmergencia" class="form-label">Relación del contacto</label>
+                    <input asp-for="Estudiante!.RelacionContactoEmergencia" class="form-control" maxlength="60" />
+                    <span asp-validation-for="Estudiante!.RelacionContactoEmergencia" class="text-danger small"></span>
+                </div>
+            </div>
+        </fieldset>
+    }
+    <div class="d-flex flex-wrap gap-3 align-items-center mt-4">
+        <button class="dash-button" type="submit">Guardar cambios</button>
+        <a class="dash-text-link" asp-action="Index">Cancelar</a>
+    </div>
+</form>

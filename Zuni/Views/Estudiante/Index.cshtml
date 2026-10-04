@@ -4,8 +4,8 @@
     ViewData["DashboardName"] = Model.Nombre;
     var primero = Model.Nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Estudiante";
     var nombre = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primero.ToLower());
-    var perfilController = Model.PerfilCompleto ? "Estudiante" : "Perfil";
-    var perfilAction = Model.PerfilCompleto ? "MiPerfil" : "Completar";
+    var perfilController = "MiCuenta";
+    var perfilAction = Model.PerfilCompleto ? "Index" : "Editar";
 }
 <header class="dash-welcome">
     <div class="dash-welcome-copy">
@@ -13,7 +13,7 @@
         <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
         <p>Este es tu espacio en ZUNI. Consulta tu información y accede a los servicios disponibles.</p>
         <div class="dash-welcome-actions">
-            <a class="dash-button" asp-controller="@perfilController" asp-action="@perfilAction">@(Model.PerfilCompleto ? "Ver mi perfil" : "Completar mi perfil") <partial name="_DashboardIcon" model='@("arrow")' /></a>
+            <a class="dash-button" asp-controller="@perfilController" asp-action="@perfilAction">@(Model.PerfilCompleto ? "Ver mi cuenta" : "Completar mis datos") <partial name="_DashboardIcon" model='@("arrow")' /></a>
             <span class="dash-profile-status">Perfil: @(Model.PerfilCompleto ? "Completo" : "Incompleto")</span>
         </div>
     </div>
@@ -22,11 +22,11 @@
 
 <div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2><span>Todo en un solo lugar</span></div>
 <section class="dash-summary-grid" aria-label="Resumen de servicios">
-    <a class="dash-card dash-summary dash-summary-profile dash-card-link" asp-controller="Estudiante" asp-action="MiPerfil" aria-label="Ver mi perfil">
-        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><span class="dash-eyebrow">MI PERFIL</span></div>
+    <a class="dash-card dash-summary dash-summary-profile dash-card-link" asp-controller="MiCuenta" asp-action="Index" aria-label="Ver mi cuenta">
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><span class="dash-eyebrow">MI CUENTA</span></div>
         <h3>@(Model.PerfilCompleto ? "Completo" : "Incompleto")</h3>
         <p>@(Model.PerfilCompleto ? "Tus datos básicos están completos." : "Completa tus datos académicos y de contacto.")</p>
-        <span class="dash-text-link">Ver perfil <partial name="_DashboardIcon" model='@("arrow")' /></span>
+        <span class="dash-text-link">Ver cuenta <partial name="_DashboardIcon" model='@("arrow")' /></span>
     </a>
     @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Disponibles cuando se integre este módulo.", "Resultados"), ("calendar", "CITAS", "Podrás consultar o solicitar tus citas.", "Citas") })
     {
@@ -47,7 +47,7 @@
     </div>
 </section>
 
-<div class="dash-section-heading"><h2>Tu información</h2><a class="dash-text-link" asp-action="MiPerfil">Ver mi perfil <partial name="_DashboardIcon" model='@("arrow")' /></a></div>
+<div class="dash-section-heading"><h2>Tu información</h2><a class="dash-text-link" asp-controller="MiCuenta" asp-action="Index">Ver mi cuenta <partial name="_DashboardIcon" model='@("arrow")' /></a></div>
 <partial name="_DatosPerfil" model="Model.DatosPerfil" />
 
 <div class="dash-section-heading"><h2>Servicios para tu bienestar</h2><span>A tu ritmo</span></div>

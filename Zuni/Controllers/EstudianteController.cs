@@ -26,15 +26,6 @@ public sealed class EstudianteController(ApplicationDbContext db) : Controller
         });
     }
 
-    [HttpGet("MiPerfil")]
-    public async Task<IActionResult> MiPerfil(CancellationToken cancellationToken)
-    {
-        var usuario = await ObtenerUsuarioAsync(cancellationToken);
-        if (usuario is null) return StatusCode(StatusCodes.Status403Forbidden);
-
-        return View(CrearPerfilViewModel(usuario));
-    }
-
     [HttpGet("Evaluaciones")]
     public IActionResult Evaluaciones() => View();
 
