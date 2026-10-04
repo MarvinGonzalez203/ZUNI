@@ -17,4 +17,5 @@
     <dl class="dash-account-details"><div><dt>Nombre completo</dt><dd>@Mostrar(Model.Nombre)</dd></div><div><dt>Correo institucional</dt><dd>@Mostrar(Model.Email)</dd></div></dl>
 </section>
 <partial name="_DatosPerfil" model="Model" />
+<a asp-controller="Perfil" asp-action="Completar" class="btn btn-primary">Editar mi perfil</a>
 <p class="dash-private-note"><partial name="_DashboardIcon" model='@("shield")' />Esta información se muestra dentro de tu sesión personal.</p>
