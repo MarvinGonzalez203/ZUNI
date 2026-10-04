@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Zuni.Data;
 using Zuni.Models;
+using Zuni.Helpers;
 
 namespace Zuni.Controllers;
 
@@ -74,7 +75,7 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         string? carneIngresado = null;
 
         if (model.SolicitarCarne &&
-            !TryConstruirCarne(
+            !CarneHelper.TryConstruir(
                 model.CarneParte1,
                 model.CarneParte2,
                 model.CarneParte3,
@@ -82,7 +83,7 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         {
             ModelState.AddModelError(
                 nameof(model.CarneParte1),
-                "El carné debe contener 10 dígitos en el formato 0000-00-0000.");
+                CarneHelper.MensajeFormato);
         }
 
         if (model.SolicitarTelefono &&
@@ -212,18 +213,4 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
             : value.Trim();
     }
 
-    private static bool TryConstruirCarne(
-        string? parte1,
-        string? parte2,
-        string? parte3,
-        out string carne)
-    {
-        carne = string.Concat(parte1, parte2, parte3);
-
-        return parte1 is { Length: 4 } &&
-               parte2 is { Length: 2 } &&
-               parte3 is { Length: 4 } &&
-               carne.Length == 10 &&
-               carne.All(char.IsDigit);
-    }
 }

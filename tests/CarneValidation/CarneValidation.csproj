@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Compile Include="../../Zuni/Helpers/CarneHelper.cs" Link="CarneHelper.cs" />
+    <Compile Include="../../Zuni/Models/AccountViewModels.cs" Link="AccountViewModels.cs" />
+    <Compile Include="../../Zuni/Models/CompletarPerfilEstudianteViewModel.cs" Link="CompletarPerfilEstudianteViewModel.cs" />
+    <Compile Include="../../Zuni/Models/MiPerfilViewModel.cs" Link="MiPerfilViewModel.cs" />
+    <Compile Include="../../Zuni/Models/Administrador/AgregarUsuarioViewModel.cs" Link="AgregarUsuarioViewModel.cs" />
+    <Compile Include="../../Zuni/Models/Administrador/CambiarRolViewModel.cs" Link="CambiarRolViewModel.cs" />
+  </ItemGroup>
+</Project>

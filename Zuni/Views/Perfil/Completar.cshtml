@@ -20,7 +20,7 @@
                 <span aria-hidden="true">−</span>
                 <input asp-for="CarneParte2" class="form-control" aria-label="Segundo bloque del carné" placeholder="00" type="text" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                 <span aria-hidden="true">−</span>
-                <input asp-for="CarneParte3" class="form-control" aria-label="Tercer bloque del carné" placeholder="0000" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                <input asp-for="CarneParte3" class="form-control" aria-label="Tercer bloque del carné" placeholder="00" type="text" inputmode="numeric" minlength="2" maxlength="6" pattern="[0-9]{2,6}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
             </div>
             <div class="carne-validation">
                 <span asp-validation-for="CarneParte1" class="text-danger small validation-message"></span>

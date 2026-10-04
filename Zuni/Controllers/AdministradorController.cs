@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Zuni.Data;
 using Zuni.Models.Administrador;
 using Zuni.Models;
+using Zuni.Helpers;
 using System.Data;
 using System.Security.Claims;
 using System.Text.Json;
@@ -548,8 +549,16 @@ public sealed class AdministradorController : Controller
 
             var correo = model.Correo.Trim();
             var normalizado = correo.ToUpperInvariant();
-            var carne = model.Rol == "Estudiante"
-                ? string.Concat(model.CarneParte1, model.CarneParte2, model.CarneParte3) : null;
+            string? carne = null;
+            if (model.Rol == "Estudiante")
+            {
+                if (!CarneHelper.TryConstruir(model.CarneParte1, model.CarneParte2, model.CarneParte3, out var carneNormalizado))
+                {
+                    ModelState.AddModelError(nameof(model.CarneParte1), CarneHelper.MensajeFormato);
+                    return MostrarAltaConErrores(model);
+                }
+                carne = carneNormalizado;
+            }
             var rol = await _db.Roles.AsNoTracking()
                 .SingleOrDefaultAsync(r => r.Name == model.Rol, cancellationToken);
             if (!AgregarUsuarioViewModel.RolesPermitidos.Contains(model.Rol) ||

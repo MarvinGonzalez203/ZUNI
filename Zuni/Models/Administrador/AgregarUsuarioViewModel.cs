@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Zuni.Helpers;
 
 namespace Zuni.Models.Administrador;
 
@@ -52,8 +53,7 @@ public sealed class AgregarUsuarioViewModel : IValidatableObject
             yield return new ValidationResult("El nombre debe tener entre 2 y 100 caracteres.", new[] { nameof(NombreCompleto) });
 
         if (Rol == "Estudiante" &&
-            !(CarneParte1 is { Length: 4 } && CarneParte2 is { Length: 2 } && CarneParte3 is { Length: 4 } &&
-              string.Concat(CarneParte1, CarneParte2, CarneParte3).All(c => c >= '0' && c <= '9')))
-            yield return new ValidationResult("El carné debe contener 10 dígitos en el formato 0000-00-0000.", new[] { nameof(CarneParte1) });
+            !CarneHelper.TryConstruir(CarneParte1, CarneParte2, CarneParte3, out _))
+            yield return new ValidationResult(CarneHelper.MensajeFormato, new[] { nameof(CarneParte1) });
     }
 }

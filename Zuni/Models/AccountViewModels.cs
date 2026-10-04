@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Zuni.Helpers;
 
 namespace Zuni.Models;
 
@@ -32,16 +33,16 @@ public sealed class RegisterViewModel
     [Display(Name = "Correo electrónico")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Ingresa la primera parte del carné.")]
+    [RegularExpression(CarneHelper.PatronParte1, ErrorMessage = CarneHelper.MensajeFormato)]
     public string CarneParte1 { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
-    [RegularExpression(@"^\d{2}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Ingresa la segunda parte del carné.")]
+    [RegularExpression(CarneHelper.PatronParte2, ErrorMessage = CarneHelper.MensajeFormato)]
     public string CarneParte2 { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Ingresa la tercera parte del carné.")]
+    [RegularExpression(CarneHelper.PatronParte3, ErrorMessage = CarneHelper.MensajeFormato)]
     public string CarneParte3 { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Ingresa tu teléfono.")]
