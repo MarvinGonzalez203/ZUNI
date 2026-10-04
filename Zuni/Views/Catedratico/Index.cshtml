@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Tablero";
+
+    var nombreCompleto = User.Identity?.Name ?? "Catedrático";
+    var nombre = nombreCompleto
+        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .FirstOrDefault() ?? "Catedrático";
+
+    ViewData["DashboardName"] = nombreCompleto;
+
+    var indicadores = new[]
+    {
+        ("book", "Cursos asignados", "MisCursos"),
+        ("user", "Estudiantes", "Estudiantes"),
+        ("clipboard", "Evaluaciones completadas", "AvanceEvaluaciones"),
+        ("calendar", "Evaluaciones pendientes", "AvanceEvaluaciones")
+    };
+}
+
+<header class="dash-welcome">
+    <div class="dash-welcome-copy">
+        <span class="dash-eyebrow">TU ESPACIO DOCENTE</span>
+
+        <h1>
+            Hola, @nombre<span class="dash-greeting-dot">.</span>
+        </h1>
+
+        <p>
+            Consulta el avance académico y la participación
+            de tus estudiantes.
+        </p>
+
+        <div class="dash-welcome-actions">
+            <a class="dash-button"
+               asp-controller="Catedratico"
+               asp-action="MisCursos">
+                Ver mis cursos
+                <partial name="_DashboardIcon" model='@("arrow")' />
+            </a>
+        </div>
+    </div>
+
+    <div class="dash-welcome-art" aria-hidden="true">
+        <div class="dash-glass-orbit"></div>
+        <div class="dash-glass-orbit orbit-small"></div>
+        <img src="~/images/zuni-logo-transparent.png" alt="" />
+        <span>Acompaña su aprendizaje.</span>
+    </div>
+</header>
+
+<div class="dash-section-heading">
+    <h2>Tu actividad, de un vistazo</h2>
+    <span>Módulos en preparación</span>
+</div>
+
+<section class="dash-summary-grid" aria-label="Resumen académico">
+    @foreach (var indicador in indicadores)
+    {
+        <a class="dash-card dash-summary dash-card-link"
+           asp-controller="Catedratico"
+           asp-action="@indicador.Item3">
+
+            <div class="dash-summary-top">
+                <span class="dash-icon-tile">
+                    <partial name="_DashboardIcon"
+                             model="indicador.Item1" />
+                </span>
+                <span class="dash-eyebrow">@indicador.Item2</span>
+            </div>
+
+            <h3>Próximamente</h3>
+            <p>Se habilitará al integrar el módulo correspondiente.</p>
+            <span class="dash-module-label">Sin datos disponibles</span>
+        </a>
+    }
+</section>
+
+<section class="dash-card dash-evaluations"
+         aria-labelledby="participacion-titulo">
+
+    <div class="dash-section-heading">
+        <div>
+            <h2 id="participacion-titulo">
+                Participación de estudiantes por curso
+            </h2>
+            <p>Un espacio para consultar la participación en evaluaciones.</p>
+        </div>
+        <span class="dash-badge">Próximamente</span>
+    </div>
+
+    <div id="participacion-contenido" class="dash-chart-placeholder">
+        <div class="dash-empty-symbol" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <partial name="_DashboardIcon" model='@("results")' />
+        </div>
+
+        <h3>Sin datos disponibles</h3>
+        <p>
+            La gráfica estará disponible cuando se integren
+            los cursos asignados y los registros de participación.
+        </p>
+        <small>Por ahora no se calculan cantidades ni porcentajes.</small>
+    </div>
+</section>
+
+<p class="small text-secondary mt-4">
+    Este panel solo mostrará información autorizada para tu rol.
+    No incluye notas clínicas, diagnósticos ni sesiones privadas.
+</p>

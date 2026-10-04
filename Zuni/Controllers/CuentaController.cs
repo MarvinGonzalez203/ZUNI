@@ -666,6 +666,7 @@ public sealed class CuentaController(
                     "Administrador" => "Administrador",
                     "Director" => "Director",
                     "Psicologo" => "Psicologo",
+                    "Catedratico" => "Catedratico",
                     "Estudiante" => "Estudiante",
                     _ => "Home"
                 };

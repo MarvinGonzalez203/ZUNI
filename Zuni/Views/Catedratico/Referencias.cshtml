@@ -1,0 +1,72 @@
+﻿@{
+    ViewData["Title"] = "Referencias";
+}
+
+<section class="dash-card p-4 p-md-5"
+         aria-labelledby="referencias-titulo">
+
+    <div class="dash-section-heading">
+        <div>
+            <h1 id="referencias-titulo" class="h2 mb-2">
+                Referencias
+            </h1>
+
+            <p>
+                Aquí podrás consultar el estado administrativo
+                de las referencias que hayas enviado.
+            </p>
+        </div>
+
+        <span class="dash-badge">Próximamente</span>
+    </div>
+
+    <div class="table-responsive mt-4">
+        <table class="table align-middle">
+            <caption>
+                El envío y seguimiento de referencias aún no están
+                disponibles.
+            </caption>
+
+            <thead>
+                <tr>
+                    <th scope="col">Fecha de envío</th>
+                    <th scope="col">Estudiante</th>
+                    <th scope="col">Estado administrativo</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td colspan="3" class="text-center py-5">
+                        <span class="dash-icon-tile mx-auto mb-3">
+                            <partial name="_DashboardIcon"
+                                     model='@("clipboard")' />
+                        </span>
+
+                        <strong class="d-block mb-2">
+                            Módulo aún no disponible
+                        </strong>
+
+                        <p class="text-secondary mb-0">
+                            Las referencias se habilitarán cuando
+                            estén definidas las asignaciones
+                            académicas y los permisos correspondientes.
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="small text-secondary mt-3">
+        El seguimiento mostrará únicamente información administrativa
+        autorizada, sin notas clínicas, diagnósticos ni sesiones privadas.
+    </p>
+
+    <a class="dash-button mt-3"
+       asp-controller="Catedratico"
+       asp-action="Index">
+        Volver al tablero
+        <partial name="_DashboardIcon" model='@("arrow")' />
+    </a>
+</section>

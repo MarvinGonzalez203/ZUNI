@@ -19,7 +19,17 @@
                 </button>
                 <div class="navbar-collapse collapse d-lg-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a></li> 
+                        @if (User.IsInRole("Catedratico"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Catedratico"
+                                   asp-action="Index">
+                                    Panel del Catedrático
+                                </a>
+                            </li>
+                        }
                     </ul>
                     <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
                         @if (User.Identity?.IsAuthenticated == true)

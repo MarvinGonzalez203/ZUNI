@@ -1,0 +1,31 @@
+﻿@{
+    var accion = ViewContext.RouteData.Values["action"]?.ToString();
+
+    var opciones = new[]
+    {
+        ("Index", "Tablero", "grid"),
+        ("MisCursos", "Mis cursos", "book"),
+        ("Estudiantes", "Estudiantes", "user"),
+        ("Referencias", "Referencias", "clipboard"),
+        ("AvanceEvaluaciones", "Avance de evaluaciones", "clipboard"),
+        ("ResultadosGenerales", "Resultados generales", "results"),
+        ("MiPerfil", "Mi cuenta", "user")
+    };
+}
+
+<nav class="dash-nav" aria-label="Navegación del catedrático">
+    <span class="dash-nav-label">MI ESPACIO</span>
+
+    @foreach (var opcion in opciones)
+    {
+        var activa = accion == opcion.Item1;
+
+        <a class="dash-nav-link @(activa ? "is-active" : "")"
+           asp-controller="Catedratico"
+           asp-action="@opcion.Item1"
+           aria-current="@(activa ? "page" : null)">
+            <partial name="_DashboardIcon" model="opcion.Item3" />
+            <span>@opcion.Item2</span>
+        </a>
+    }
+</nav>
