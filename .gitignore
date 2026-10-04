@@ -7,3 +7,8 @@
 Zuni/App_Data/
 Zuni/bin/
 Zuni/obj/
+
+# Archivos locales de compilacion y verificacion
+.verification-build/
+**/bin/
+**/obj/
