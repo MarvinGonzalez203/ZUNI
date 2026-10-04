@@ -1,0 +1,16 @@
+.student-dashboard, .student-empty { min-width: 0; overflow-wrap: anywhere; }
+.student-progress { margin: 24px 0; }
+.student-progress .dash-section-heading { margin: 0 0 16px; flex-wrap: wrap; }
+.student-progress .dash-badge { white-space: normal; }
+.student-progress progress { display: block; width: 100%; height: 18px; margin: 10px 0; accent-color: #70428f; }
+.student-progress p, .student-optional { color: #59515f; }
+.student-optional { margin-top: 20px; }
+.student-optional summary { cursor: pointer; padding: 8px 0; font-weight: 600; }
+.student-action-links { display: flex; flex-wrap: wrap; gap: 12px; }
+.student-back { margin-top: 24px; }
+.student-dashboard :focus-visible, .student-empty :focus-visible { outline: 3px solid #70428f; outline-offset: 3px; }
+@media (max-width: 575.98px) {
+    .student-action-links { display: grid; grid-template-columns: 1fr; }
+    .student-dashboard .dash-summary-grid { grid-template-columns: 1fr; }
+    .student-dashboard .dash-chart-placeholder, .student-empty .dash-chart-placeholder { padding: 16px 8px; }
+}

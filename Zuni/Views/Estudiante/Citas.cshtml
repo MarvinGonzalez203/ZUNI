@@ -1,3 +1,4 @@
+@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 @{
     ViewData["Title"] = "Citas";
 }
@@ -5,9 +6,11 @@
     <div><span class="dash-eyebrow">SERVICIOS</span><h1>Citas</h1><p>Desde este espacio podrás consultar y gestionar tus citas cuando el servicio esté disponible.</p></div>
     <span class="dash-badge">Próximamente</span>
 </header>
-<section class="dash-card" aria-label="Citas: próximamente">
+<section class="dash-card student-empty" aria-label="Citas: próximamente">
     <div class="dash-chart-placeholder">
         <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("calendar")' /></div>
-        <p>El módulo de citas estará disponible próximamente.</p>
+        <p>Todavía no se pueden reservar ni solicitar citas, ni consultar disponibilidad real. El servicio está pendiente de integración.</p>
     </div>
 </section>
+
+<div class="student-back"><a class="dash-button" asp-controller="Estudiante" asp-action="Index">Volver al tablero</a></div>
