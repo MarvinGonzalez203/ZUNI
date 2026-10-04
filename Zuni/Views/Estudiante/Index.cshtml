@@ -1,4 +1,5 @@
 @model EstudianteDashboardViewModel
+@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 @{
     ViewData["Title"] = "Tablero";
     ViewData["DashboardName"] = Model.Nombre;
@@ -7,6 +8,7 @@
     var perfilController = "MiCuenta";
     var perfilAction = Model.PerfilCompleto ? "Index" : "Editar";
 }
+<div class="student-dashboard">
 <header class="dash-welcome">
     <div class="dash-welcome-copy">
         <span class="dash-eyebrow">BIENVENIDO A TU ESPACIO</span>
@@ -19,6 +21,18 @@
     </div>
     <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>Conecta contigo.</span></div>
 </header>
+
+<partial name="_ProgresoPerfil" model="Model.DatosPerfil" />
+<section class="student-actions" aria-labelledby="acciones-title">
+    <div class="dash-section-heading"><h2 id="acciones-title">Acciones rápidas</h2></div>
+    <nav class="student-action-links" aria-label="Acciones rápidas">
+        <a class="dash-button" asp-controller="MiCuenta" asp-action="Index">Consultar mis datos</a>
+        <a class="dash-button" asp-controller="MiCuenta" asp-action="Editar">@(Model.PerfilCompleto ? "Editar mis datos" : "Completar mis datos")</a>
+        <a class="dash-button" asp-controller="Estudiante" asp-action="Evaluaciones">Evaluaciones</a>
+        <a class="dash-button" asp-controller="Estudiante" asp-action="Resultados">Resultados</a>
+        <a class="dash-button" asp-controller="Estudiante" asp-action="Citas">Citas</a>
+    </nav>
+</section>
 
 <div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2><span>Todo en un solo lugar</span></div>
 <section class="dash-summary-grid" aria-label="Resumen de servicios">
@@ -57,3 +71,5 @@
         <a class="dash-card dash-service dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><h3>@item.Item2</h3><p>@item.Item3</p><span class="dash-badge">Próximamente</span></a>
     }
 </section>
+
+</div>
