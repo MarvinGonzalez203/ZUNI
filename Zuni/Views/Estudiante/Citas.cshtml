@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "Citas";
 }
+@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 <header class="dash-profile-heading">
     <div><span class="dash-eyebrow">SERVICIOS</span><h1>Citas</h1><p>Desde este espacio podrás consultar y gestionar tus citas cuando el servicio esté disponible.</p></div>
     <span class="dash-badge">Próximamente</span>
@@ -8,6 +9,9 @@
 <section class="dash-card" aria-label="Citas: próximamente">
     <div class="dash-chart-placeholder">
         <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("calendar")' /></div>
-        <p>El módulo de citas estará disponible próximamente.</p>
+        <h2>Tu espacio de citas está en preparación</h2>
+        <p>Cuando se integre el servicio de Psicología, aquí podrás consultar tus próximas citas, las citas anteriores y el estado de tus solicitudes.</p>
+        <p>Por ahora no se pueden solicitar ni reservar citas desde este panel.</p>
     </div>
 </section>
+<a class="dash-text-link student-back" asp-action="Index">Volver a mi tablero</a>

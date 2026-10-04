@@ -1,4 +1,5 @@
 @model EstudianteDashboardViewModel
+@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 @{
     ViewData["Title"] = "Tablero";
     ViewData["DashboardName"] = Model.Nombre;
@@ -19,6 +20,21 @@
     </div>
     <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>Conecta contigo.</span></div>
 </header>
+
+<partial name="_ProgresoPerfil" model="Model.DatosPerfil" />
+<section class="student-actions" aria-labelledby="acciones-title">
+    <div class="dash-section-heading"><h2 id="acciones-title">Acciones rápidas</h2></div>
+    <nav class="student-action-links" aria-label="Acciones rápidas">
+        <a class="dash-button" asp-action="MiPerfil">Ver mi perfil</a>
+        @if (!Model.PerfilCompleto)
+        {
+            <a class="dash-button" asp-controller="Perfil" asp-action="Completar">Completar perfil</a>
+        }
+        <a class="dash-button" asp-action="Evaluaciones">Ir a Evaluaciones</a>
+        <a class="dash-button" asp-action="Resultados">Ir a Resultados</a>
+        <a class="dash-button" asp-action="Citas">Ir a Citas</a>
+    </nav>
+</section>
 
 <div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2><span>Todo en un solo lugar</span></div>
 <section class="dash-summary-grid" aria-label="Resumen de servicios">

@@ -4,16 +4,20 @@ namespace Zuni.Models;
 
 public sealed class CompletarPerfilEstudianteViewModel
 {
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Completa el primer bloque del carné.")]
+    [RegularExpression(@"^[0-9]{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
     public string? CarneParte1 { get; set; }
 
-    [RegularExpression(@"^\d{2}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Completa el segundo bloque del carné.")]
+    [RegularExpression(@"^[0-9]{2}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
     public string? CarneParte2 { get; set; }
 
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [Required(ErrorMessage = "Completa el último bloque del carné.")]
+    [RegularExpression(@"^[0-9]{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
     public string? CarneParte3 { get; set; }
 
-    [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe contener 8 dígitos.")]
+    [Required(ErrorMessage = "Ingresa tu teléfono.")]
+    [RegularExpression(@"^[0-9]{8}$", ErrorMessage = "El teléfono debe contener 8 dígitos.")]
     [Display(Name = "Teléfono personal")]
     public string? Telefono { get; set; }
 
@@ -35,7 +39,7 @@ public sealed class CompletarPerfilEstudianteViewModel
     public string? NombreContactoEmergencia { get; set; }
 
     [RegularExpression(
-        @"^\d{8}$",
+        @"^[0-9]{8}$",
         ErrorMessage = "El teléfono de emergencia debe contener 8 dígitos.")]
     [Display(Name = "Teléfono de emergencia")]
     public string? TelefonoContactoEmergencia { get; set; }

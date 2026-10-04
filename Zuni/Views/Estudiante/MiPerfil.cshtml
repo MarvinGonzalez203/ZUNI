@@ -1,21 +1,19 @@
 @model MiPerfilViewModel
+@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 @{
     ViewData["Title"] = "Mi perfil";
     ViewData["DashboardName"] = Model.Nombre;
     string Mostrar(string? valor) => string.IsNullOrWhiteSpace(valor) ? "Pendiente" : valor;
 }
 <header class="dash-profile-heading">
-    <div><span class="dash-eyebrow">MI CUENTA</span><h1>Mi perfil</h1><p>Tu información personal, académica y de contacto, en un solo lugar.</p></div>
+    <div><span class="dash-eyebrow">MI ESPACIO PERSONAL</span><h1>Mi perfil</h1><p>Tu información personal, académica y de contacto, en un solo lugar.</p></div>
     <span class="dash-badge">Perfil @(Model.Completo ? "completo" : "incompleto")</span>
 </header>
-@if (!Model.Completo)
-{
-    <aside class="dash-notice dash-profile-notice"><div><strong>Un paso más para completar tu perfil</strong><p>Agrega los datos académicos y de contacto que faltan.</p></div><a class="dash-button" asp-controller="Perfil" asp-action="Completar">Completar mi perfil <partial name="_DashboardIcon" model='@("arrow")' /></a></aside>
-}
+<partial name="_ProgresoPerfil" model="Model" />
 <section class="dash-card dash-account-card" aria-labelledby="cuenta-title">
     <div class="dash-card-heading"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><h2 id="cuenta-title">Datos de cuenta</h2><span class="dash-readonly">Solo lectura</span></div>
     <dl class="dash-account-details"><div><dt>Nombre completo</dt><dd>@Mostrar(Model.Nombre)</dd></div><div><dt>Correo institucional</dt><dd>@Mostrar(Model.Email)</dd></div></dl>
 </section>
 <partial name="_DatosPerfil" model="Model" />
-<a asp-controller="Perfil" asp-action="Completar" class="btn btn-primary">Editar mi perfil</a>
+<a asp-controller="Perfil" asp-action="Completar" class="dash-button">Editar mi perfil</a>
 <p class="dash-private-note"><partial name="_DashboardIcon" model='@("shield")' />Esta información se muestra dentro de tu sesión personal.</p>

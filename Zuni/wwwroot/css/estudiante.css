@@ -1,0 +1,31 @@
+/* Se carga únicamente en las páginas del estudiante. */
+.student-progress { margin: 24px 0; }
+.student-progress .dash-section-heading { margin: 0 0 16px; }
+.student-progress progress { display: block; width: 100%; height: 18px; margin: 10px 0; accent-color: #70428f; }
+.student-progress p, .student-optional { color: #59515f; }
+.student-optional { margin-top: 20px; }
+.student-optional summary { cursor: pointer; padding: 8px 0; font-weight: 600; }
+.student-action-links { display: flex; flex-wrap: wrap; gap: 12px; }
+.student-back { margin-top: 24px; }
+.student-profile-editor { margin-top: 24px; max-width: 900px; }
+.student-profile-form .validation-summary-valid,
+.student-profile-form .field-validation-valid { display: none; }
+.student-profile-form .carne-fieldset { min-width: 0; }
+.student-profile-form .carne-fieldset legend { font-size: 1rem; }
+.student-profile-form .carne-segmented { display: grid; grid-template-columns: minmax(0, 4fr) auto minmax(0, 2fr) auto minmax(0, 4fr); align-items: center; gap: 8px; }
+.student-profile-form .carne-segmented input { min-width: 0; text-align: center; }
+.student-profile-form .input-validation-error { border-color: #b42318; }
+.student-profile-form .dash-button:disabled { opacity: .65; cursor: wait; }
+.student-profile-form .student-action-links { align-items: center; }
+.student-profile-form :focus-visible { outline: 3px solid #70428f; outline-offset: 3px; }
+.dashboard-main { overflow-wrap: anywhere; }
+.dash-card-heading { flex-wrap: wrap; }
+.dash-badge { white-space: normal; }
+.dash-top-title, .dash-top-account { min-width: 0; }
+.dash-top-account > span:last-child { overflow-wrap: anywhere; }
+@media (max-width: 575.98px) {
+    .student-action-links { display: grid; grid-template-columns: 1fr; }
+    .dash-summary-grid { grid-template-columns: 1fr; }
+    .dash-chart-placeholder { padding: 16px 8px; }
+    .dashboard-sidebar.offcanvas { max-width: 100vw; }
+}

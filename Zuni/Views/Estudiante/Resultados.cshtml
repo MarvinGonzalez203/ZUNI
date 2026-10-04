@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "Mis resultados";
 }
+@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 <header class="dash-profile-heading">
     <div><span class="dash-eyebrow">SERVICIOS</span><h1>Mis resultados</h1><p>Aquí podrás consultar los resultados que se encuentren disponibles.</p></div>
     <span class="dash-badge">Próximamente</span>
@@ -8,6 +9,9 @@
 <section class="dash-card" aria-label="Mis resultados: próximamente">
     <div class="dash-chart-placeholder">
         <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("results")' /></div>
-        <p>Tus resultados aparecerán aquí cuando completes las evaluaciones correspondientes.</p>
+        <h2>Aún no hay resultados disponibles para consultar</h2>
+        <p>Este módulo está en preparación. Cuando se integre, aquí podrás consultar la evaluación, su fecha, su estado y el resultado disponible.</p>
+        <p>Actualmente no se muestran resultados de evaluaciones.</p>
     </div>
 </section>
+<a class="dash-text-link student-back" asp-action="Index">Volver a mi tablero</a>

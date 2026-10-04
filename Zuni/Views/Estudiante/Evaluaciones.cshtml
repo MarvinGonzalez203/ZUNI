@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "Evaluaciones";
 }
+@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 <header class="dash-profile-heading">
     <div><span class="dash-eyebrow">SERVICIOS</span><h1>Evaluaciones</h1><p>Aquí podrás realizar las evaluaciones que tengas disponibles.</p></div>
     <span class="dash-badge">Próximamente</span>
@@ -8,6 +9,9 @@
 <section class="dash-card" aria-label="Evaluaciones: próximamente">
     <div class="dash-chart-placeholder">
         <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("clipboard")' /></div>
-        <p>El módulo de evaluaciones estará disponible próximamente.</p>
+        <h2>Las evaluaciones todavía no están disponibles</h2>
+        <p>Cuando se integren los instrumentos oficiales proporcionados por la universidad, las evaluaciones disponibles aparecerán aquí.</p>
+        <p>Por ahora no hay evaluaciones que puedas responder.</p>
     </div>
 </section>
+<a class="dash-text-link student-back" asp-action="Index">Volver a mi tablero</a>
