@@ -5,6 +5,6 @@
     <span class="dash-nav-label">MI CUENTA</span>
     <a class="dash-nav-link @(accion == "Index" ? "is-active" : "")" asp-controller="MiCuenta" asp-action="Index" aria-current="@(accion == "Index" ? "page" : null)"><partial name="_DashboardIcon" model='@("user")' /><span>Resumen</span></a>
     <a class="dash-nav-link @(accion == "Editar" ? "is-active" : "")" asp-controller="MiCuenta" asp-action="Editar" aria-current="@(accion == "Editar" ? "page" : null)"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Editar datos</span></a>
-    <div class="dash-nav-link is-unavailable" aria-disabled="true"><partial name="_DashboardIcon" model='@("shield")' /><span>Cambiar contraseña<small>Próximamente</small></span></div>
+    <a class="dash-nav-link @(accion == "CambiarContrasena" ? "is-active" : "")" asp-controller="MiCuenta" asp-action="CambiarContrasena" aria-current="@(accion == "CambiarContrasena" ? "page" : null)"><partial name="_DashboardIcon" model='@("shield")' /><span>Cambiar contraseña</span></a>
     <a class="dash-nav-link" asp-controller='@(ViewData["PanelController"] as string ?? "Home")' asp-action="Index"><partial name="_DashboardIcon" model='@("grid")' /><span>Volver a mi panel</span></a>
 </nav>

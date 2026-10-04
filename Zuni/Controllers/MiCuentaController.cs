@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Zuni.Data;
@@ -24,9 +26,95 @@ namespace Zuni.Controllers;
 public sealed class MiCuentaController(
     ApplicationDbContext db,
     IDataProtectionProvider protection,
-    IActionDescriptorCollectionProvider actions) : Controller
+    IActionDescriptorCollectionProvider actions,
+    IPasswordHasher<ApplicationUser> passwordHasher) : Controller
 {
     private readonly IDataProtector revisionProtector = protection.CreateProtector("Zuni.MiCuenta.Revision.v1");
+
+    [HttpGet("CambiarContrasena")]
+    public async Task<IActionResult> CambiarContrasena(CancellationToken ct)
+    {
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var usuario = await db.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id && u.IsActive, ct);
+        if (usuario is null) return Forbid();
+        if (usuario.DebeCambiarContrasena)
+            return RedirectToAction("CambiarContrasenaObligatoria", "Cuenta");
+        PrepararLayout(usuario, await RolesAsync(usuario.Id, ct));
+        return View(new CambiarContrasenaViewModel());
+    }
+
+    [HttpPost("CambiarContrasena")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CambiarContrasena(CambiarContrasenaViewModel model, CancellationToken ct)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var usuario = await db.Users.SingleOrDefaultAsync(u => u.Id == id && u.IsActive, ct);
+        if (usuario is null) return Forbid();
+        if (usuario.DebeCambiarContrasena)
+            return RedirectToAction("CambiarContrasenaObligatoria", "Cuenta");
+        if (string.IsNullOrWhiteSpace(usuario.SecurityStamp) ||
+            usuario.SecurityStamp != User.FindFirstValue("Zuni.SecurityStamp"))
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("IniciarSesion", "Cuenta");
+        }
+        PrepararLayout(usuario, await RolesAsync(usuario.Id, ct));
+        if (!ModelState.IsValid) return FormularioContrasena();
+
+        var hash = usuario.PasswordHash;
+        if (string.IsNullOrEmpty(hash) || passwordHasher.VerifyHashedPassword(usuario, hash,
+                model.ContrasenaActual) == PasswordVerificationResult.Failed)
+        {
+            ModelState.AddModelError(nameof(model.ContrasenaActual), "La contraseña actual no es correcta.");
+            return FormularioContrasena();
+        }
+        if (passwordHasher.VerifyHashedPassword(usuario, hash, model.NuevaContrasena) != PasswordVerificationResult.Failed)
+        {
+            ModelState.AddModelError(nameof(model.NuevaContrasena), "La nueva contraseña debe ser diferente de la contraseña actual.");
+            return FormularioContrasena();
+        }
+
+        usuario.PasswordHash = passwordHasher.HashPassword(usuario, model.NuevaContrasena);
+        usuario.SecurityStamp = Guid.NewGuid().ToString();
+        usuario.ConcurrencyStamp = Guid.NewGuid().ToString();
+        usuario.DebeCambiarContrasena = false;
+        try
+        {
+            var now = DateTime.UtcNow;
+            await db.PasswordResetTokens
+                .Where(t => t.UserId == usuario.Id && t.UsedAtUtc == null)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.UsedAtUtc, now), ct);
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await transaction.RollbackAsync(ct);
+            ModelState.AddModelError(string.Empty, "La cuenta cambió durante la operación. Recarga la página e intenta nuevamente.");
+            return FormularioContrasena();
+        }
+        catch (Exception exception) when (
+            exception is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure } ||
+            exception is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.SerializationFailure } })
+        {
+            await transaction.RollbackAsync(ct);
+            ModelState.AddModelError(string.Empty, "La cuenta cambió durante la operación. Recarga la página e intenta nuevamente.");
+            return FormularioContrasena();
+        }
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        TempData["Success"] = "Tu contraseña fue actualizada correctamente. Inicia sesión nuevamente.";
+        return RedirectToAction("IniciarSesion", "Cuenta");
+    }
+
+    private ViewResult FormularioContrasena()
+    {
+        // Conserva errores, pero no los valores secretos intentados en el HTML.
+        foreach (var campo in new[] { nameof(CambiarContrasenaViewModel.ContrasenaActual),
+                     nameof(CambiarContrasenaViewModel.NuevaContrasena), nameof(CambiarContrasenaViewModel.ConfirmarNuevaContrasena) })
+            ModelState.SetModelValue(campo, ValueProviderResult.None);
+        return View("CambiarContrasena", new CambiarContrasenaViewModel());
+    }
 
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken ct)
