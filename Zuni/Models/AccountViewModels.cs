@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Zuni.Helpers;
 
 namespace Zuni.Models;
 
@@ -33,15 +34,15 @@ public sealed class RegisterViewModel
     public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Ingresa la primera parte del carné.")]
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El primer bloque debe contener 4 dígitos.")]
+    [RegularExpression(CarneHelper.PatronParte1, ErrorMessage = CarneHelper.MensajeFormato)]
     public string CarneParte1 { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Ingresa la segunda parte del carné.")]
-    [RegularExpression(@"^\d{2}$", ErrorMessage = "El segundo bloque debe contener 2 dígitos.")]
+    [RegularExpression(CarneHelper.PatronParte2, ErrorMessage = CarneHelper.MensajeFormato)]
     public string CarneParte2 { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Ingresa la tercera parte del carné.")]
-    [RegularExpression(@"^\d{3,6}$", ErrorMessage = "El tercer bloque debe contener entre 3 y 6 dígitos.")]
+    [RegularExpression(CarneHelper.PatronParte3, ErrorMessage = CarneHelper.MensajeFormato)]
     public string CarneParte3 { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Ingresa tu teléfono.")]

@@ -1,16 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using Zuni.Helpers;
 
 namespace Zuni.Models;
 
 public sealed class CompletarPerfilEstudianteViewModel
 {
-    [RegularExpression(@"^\d{4}$", ErrorMessage = "El primer bloque del carné debe tener 4 dígitos.")]
+    [RegularExpression(CarneHelper.PatronParte1, ErrorMessage = CarneHelper.MensajeFormato)]
     public string? CarneParte1 { get; set; }
 
-    [RegularExpression(@"^\d{2}$", ErrorMessage = "El segundo bloque del carné debe tener 2 dígitos.")]
+    [RegularExpression(CarneHelper.PatronParte2, ErrorMessage = CarneHelper.MensajeFormato)]
     public string? CarneParte2 { get; set; }
 
-    [RegularExpression(@"^\d{3,6}$", ErrorMessage = "El tercer bloque del carné debe tener entre 3 y 6 dígitos.")]
+    [RegularExpression(CarneHelper.PatronParte3, ErrorMessage = CarneHelper.MensajeFormato)]
     public string? CarneParte3 { get; set; }
 
     [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe contener 8 dígitos.")]
