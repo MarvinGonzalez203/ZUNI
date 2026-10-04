@@ -1,14 +1,14 @@
 @model CompletarPerfilEstudianteViewModel
 @{
-    ViewData["Title"] = "Completar perfil";
+    ViewData["Title"] = "Editar perfil";
     Layout = "~/Views/Cuenta/_AuthLayout.cshtml";
 }
 
-<a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
-<h1 class="h2 fw-bold mb-2">Completa tu perfil</h1>
-<p class="text-secondary mb-4">Agrega algunos datos académicos y de contacto para aprovechar todas las funciones de ZUNI.</p>
+<a asp-controller="Estudiante" asp-action="MiPerfil" class="auth-back">← Volver a mi perfil</a>
+<h1 class="h2 fw-bold mb-2">Completa o edita tu perfil</h1>
+<p class="text-secondary mb-4">Para completar tu perfil necesitas carné, teléfono y carrera. Semestre, ciclo académico y los datos del contacto de emergencia son opcionales. El nombre y correo se conservan en tu cuenta.</p>
 
-<form method="post" novalidate class="auth-form-fields">
+<form asp-controller="Perfil" asp-action="Completar" method="post" asp-antiforgery="true" novalidate class="auth-form-fields">
     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
 
     @if (Model.SolicitarCarne)
@@ -96,6 +96,6 @@
     </div>
 
     <button class="btn btn-zuni w-100 btn-lg" type="submit">
-        Completar perfil
+        Guardar perfil
     </button>
 </form>

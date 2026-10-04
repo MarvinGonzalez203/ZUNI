@@ -9,6 +9,7 @@ using Zuni.Models;
 namespace Zuni.Controllers;
 
 [Authorize(Roles = "Estudiante")]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("Perfil")]
 public sealed class PerfilController(ApplicationDbContext db) : Controller
 {
@@ -33,9 +34,6 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
             .AsNoTracking()
             .FirstOrDefaultAsync(perfil =>
                 perfil.UsuarioId == usuarioId);
-
-        if (perfil?.EstaCompleto == true)
-            return RedirectToAction("Index", "Home");
 
         return View(CrearViewModel(perfil));
     }
@@ -63,18 +61,13 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
             .FirstOrDefaultAsync(perfil =>
                 perfil.UsuarioId == usuarioId);
 
-        if (perfil?.EstaCompleto == true)
-            return RedirectToAction("Index", "Home");
-
-        model.SolicitarCarne =
-            string.IsNullOrWhiteSpace(perfil?.Carne);
-        model.SolicitarTelefono =
-            string.IsNullOrWhiteSpace(perfil?.Telefono);
+        // Estos indicadores son de presentación; nunca se aceptan del navegador.
+        model.SolicitarCarne = true;
+        model.SolicitarTelefono = true;
 
         string? carneIngresado = null;
 
-        if (model.SolicitarCarne &&
-            !TryConstruirCarne(
+        if (!TryConstruirCarne(
                 model.CarneParte1,
                 model.CarneParte2,
                 model.CarneParte3,
@@ -85,8 +78,7 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
                 "El carné debe contener 10 dígitos en el formato 0000-00-0000.");
         }
 
-        if (model.SolicitarTelefono &&
-            string.IsNullOrWhiteSpace(model.Telefono))
+        if (string.IsNullOrWhiteSpace(model.Telefono))
         {
             ModelState.AddModelError(
                 nameof(model.Telefono),
@@ -96,26 +88,21 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var carne = model.SolicitarCarne
-            ? carneIngresado!
-            : perfil!.Carne;
+        var carne = carneIngresado!;
 
-        if (model.SolicitarCarne)
-        {
-            var carneExiste = await db.PerfilesEstudiante
+        var carneExiste = await db.PerfilesEstudiante
                 .AsNoTracking()
                 .AnyAsync(perfilExistente =>
                     perfilExistente.Carne == carne &&
                     perfilExistente.UsuarioId != usuarioId);
 
-            if (carneExiste)
-            {
-                ModelState.AddModelError(
-                    nameof(model.CarneParte1),
-                    "Ya existe un estudiante registrado con este carné.");
+        if (carneExiste)
+        {
+            ModelState.AddModelError(
+                nameof(model.CarneParte1),
+                "Ya existe un estudiante registrado con este carné.");
 
-                return View(model);
-            }
+            return View(model);
         }
 
         if (perfil is null)
@@ -134,11 +121,8 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         }
         else
         {
-            if (model.SolicitarCarne)
-                perfil.Carne = carne;
-
-            if (model.SolicitarTelefono)
-                perfil.Telefono = model.Telefono!.Trim();
+            perfil.Carne = carne;
+            perfil.Telefono = model.Telefono!.Trim();
         }
 
         perfil.Carrera = model.Carrera.Trim();
@@ -165,11 +149,15 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
             var postgresException =
                 (PostgresException)exception.InnerException;
 
-            if (postgresException.ConstraintName ==
-                "IX_PerfilesEstudiante_UsuarioId")
+            if (postgresException.ConstraintName == "IX_PerfilesEstudiante_UsuarioId")
             {
-                return RedirectToAction("Index", "Home");
+                ModelState.AddModelError(string.Empty,
+                    "Tu perfil fue creado desde otra sesión. Recarga la página antes de guardar nuevamente.");
+                return View(model);
             }
+
+            if (postgresException.ConstraintName != "IX_PerfilesEstudiante_Carne")
+                throw;
 
             ModelState.AddModelError(
                 nameof(model.CarneParte1),
@@ -179,9 +167,9 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         }
 
         TempData["Success"] =
-            "Tu perfil fue completado correctamente.";
+            "Tu perfil fue guardado correctamente.";
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("MiPerfil", "Estudiante");
     }
 
     private static CompletarPerfilEstudianteViewModel CrearViewModel(
@@ -189,6 +177,10 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
     {
         return new CompletarPerfilEstudianteViewModel
         {
+            CarneParte1 = perfil?.Carne is { Length: 10 } carne1 ? carne1[..4] : null,
+            CarneParte2 = perfil?.Carne is { Length: 10 } carne2 ? carne2[4..6] : null,
+            CarneParte3 = perfil?.Carne is { Length: 10 } carne3 ? carne3[6..] : null,
+            Telefono = perfil?.Telefono,
             Carrera = perfil?.Carrera ?? string.Empty,
             Semestre = perfil?.Semestre,
             CicloAcademico = perfil?.CicloAcademico,
@@ -198,10 +190,8 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
                 perfil?.TelefonoContactoEmergencia,
             RelacionContactoEmergencia =
                 perfil?.RelacionContactoEmergencia,
-            SolicitarCarne =
-                string.IsNullOrWhiteSpace(perfil?.Carne),
-            SolicitarTelefono =
-                string.IsNullOrWhiteSpace(perfil?.Telefono)
+            SolicitarCarne = true,
+            SolicitarTelefono = true
         };
     }
 
@@ -224,6 +214,6 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
                parte2 is { Length: 2 } &&
                parte3 is { Length: 4 } &&
                carne.Length == 10 &&
-               carne.All(char.IsDigit);
+               carne.All(c => c >= '0' && c <= '9');
     }
 }
