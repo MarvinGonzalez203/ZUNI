@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Estadísticas";
+}
+<header class="dash-profile-heading">
+    <div><span class="dash-eyebrow">PANEL INSTITUCIONAL</span><h1>Estadísticas</h1><p>Espacios preparados para futuros indicadores institucionales.</p></div>
+    <span class="dash-badge">Próximamente</span>
+</header>
+<section class="dash-summary-grid" aria-label="Indicadores futuros">
+    @foreach (var indicador in new[] { "Cobertura por carrera", "Participación general", "Evolución por período" })
+    {
+        <article class="dash-card dash-summary">
+            <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("grid")' /></span></div>
+            <h2>@indicador</h2>
+            <p>El indicador aparecerá cuando existan datos disponibles.</p>
+            <span class="dash-module-label">Sin datos disponibles</span>
+        </article>
+    }
+</section>

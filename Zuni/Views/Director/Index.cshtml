@@ -1,25 +1,71 @@
 @{
-    ViewData["Title"] = "Panel del Director";
+    ViewData["Title"] = "Tablero";
+    var nombreCompleto = ViewData["DashboardName"] as string ?? "Director";
+    var primero = nombreCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Director";
+    var nombre = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primero.ToLower());
 }
 
-<section class="container py-5" aria-labelledby="director-title">
-    <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
-         style="max-width: 760px; background: linear-gradient(145deg, rgba(255, 255, 255, .92), rgba(237, 232, 208, .82)); border-color: rgba(206, 162, 253, .45) !important;">
-        <div class="d-inline-flex align-items-center gap-2 rounded-pill border px-3 py-2 mb-4"
-             style="background: rgba(206, 162, 253, .16); border-color: rgba(206, 162, 253, .4) !important; color: #111111;">
-            <span aria-hidden="true">◆</span>
-            <span class="small fw-semibold">Acceso autorizado</span>
+<header class="dash-welcome">
+    <div class="dash-welcome-copy">
+        <span class="dash-eyebrow">ESPACIO INSTITUCIONAL</span>
+        <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
+        <p>Consulta el avance institucional y la participación estudiantil desde un solo lugar.</p>
+    </div>
+    <div class="dash-welcome-art" aria-hidden="true">
+        <div class="dash-glass-orbit"></div>
+        <div class="dash-glass-orbit orbit-small"></div>
+        <img src="~/images/zuni-logo-transparent.png" alt="" />
+        <span>Mirada institucional.</span>
+    </div>
+</header>
+
+<div class="dash-section-heading">
+    <h2>Resumen institucional</h2>
+    <span>Información disponible en ZUNI</span>
+</div>
+
+<section class="dash-summary-grid" aria-label="Secciones del panel del Director">
+    <a class="dash-card dash-summary dash-card-link" asp-controller="Director" asp-action="Carreras">
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("book")' /></span><span class="dash-eyebrow">COBERTURA</span></div>
+        <h3>Carreras</h3>
+        <p>Aquí podrás consultar la participación y cobertura de las carreras.</p>
+        <span class="dash-module-label">Sin datos disponibles</span>
+    </a>
+
+    <a class="dash-card dash-summary dash-card-link" asp-controller="Director" asp-action="AvanceEvaluaciones">
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("clipboard")' /></span><span class="dash-eyebrow">PARTICIPACIÓN</span></div>
+        <h3>Avance de evaluaciones</h3>
+        <p>El avance se mostrará cuando se integre el módulo de evaluaciones.</p>
+        <span class="dash-module-label">Estudiantes: Sin datos disponibles</span>
+        <span class="dash-module-label">Completadas y pendientes: Sin datos disponibles</span>
+    </a>
+
+    <a class="dash-card dash-summary dash-card-link" asp-controller="Director" asp-action="ResultadosInstitucionales">
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("results")' /></span><span class="dash-eyebrow">VISTA AGREGADA</span></div>
+        <h3>Resultados institucionales</h3>
+        <p>Consulta futura de información institucional agregada.</p>
+        <span class="dash-module-label">Próximamente</span>
+    </a>
+
+    <a class="dash-card dash-summary dash-card-link" asp-controller="Director" asp-action="Estadisticas">
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("grid")' /></span><span class="dash-eyebrow">INDICADORES</span></div>
+        <h3>Estadísticas</h3>
+        <p>Un espacio para consultar indicadores institucionales cuando existan datos.</p>
+        <span class="dash-module-label">Próximamente</span>
+    </a>
+</section>
+
+<section class="dash-card dash-evaluations" aria-labelledby="director-graficas-title">
+    <div class="dash-section-heading">
+        <div>
+            <h2 id="director-graficas-title">Panorama institucional</h2>
+            <p>Espacio para futuras gráficas de participación y cobertura.</p>
         </div>
-
-        <h1 id="director-title" class="display-6 fw-bold mb-3" style="color: #111111;">
-            Panel del Director
-        </h1>
-        <p class="lead mb-4" style="color: rgba(17, 17, 17, .72);">
-            Este espacio está restringido exclusivamente a usuarios con el rol Director.
-        </p>
-
-        <a asp-controller="Home" asp-action="Index" class="btn btn-zuni px-4">
-            Volver al inicio
-        </a>
+        <span class="dash-badge">Próximamente</span>
+    </div>
+    <div class="dash-chart-placeholder">
+        <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("spark")' /></div>
+        <h3>Sin datos disponibles</h3>
+        <p>Las estadísticas aparecerán aquí cuando existan evaluaciones registradas.</p>
     </div>
 </section>

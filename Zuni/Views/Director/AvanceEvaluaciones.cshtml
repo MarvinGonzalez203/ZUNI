@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Avance de evaluaciones";
+}
+<header class="dash-profile-heading">
+    <div><span class="dash-eyebrow">PANEL INSTITUCIONAL</span><h1>Avance de evaluaciones</h1><p>Consulta el avance cuando el módulo de evaluaciones esté integrado.</p></div>
+    <span class="dash-badge">Próximamente</span>
+</header>
+<section class="dash-card" aria-labelledby="avance-vacio-title">
+    <div class="dash-card-heading"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("clipboard")' /></span><h2 id="avance-vacio-title">Información del avance</h2></div>
+    <div class="row g-3">
+        @foreach (var indicador in new[] { "Carrera", "Estudiantes asignados", "Evaluaciones pendientes", "Evaluaciones completadas", "Participación" })
+        {
+            <div class="col-12 col-sm-6 col-xl-4">
+                <div class="dash-card h-100">
+                    <span class="dash-eyebrow">@indicador</span>
+                    <p class="dash-module-label mt-3 mb-0">Sin datos disponibles</p>
+                </div>
+            </div>
+        }
+    </div>
+</section>
