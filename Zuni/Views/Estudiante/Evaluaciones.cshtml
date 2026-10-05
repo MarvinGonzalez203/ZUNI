@@ -1,3 +1,4 @@
+@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 @{
     ViewData["Title"] = "Evaluaciones";
 }
@@ -5,9 +6,11 @@
     <div><span class="dash-eyebrow">SERVICIOS</span><h1>Evaluaciones</h1><p>Aquí podrás realizar las evaluaciones que tengas disponibles.</p></div>
     <span class="dash-badge">Próximamente</span>
 </header>
-<section class="dash-card" aria-label="Evaluaciones: próximamente">
+<section class="dash-card student-empty" aria-label="Evaluaciones: próximamente">
     <div class="dash-chart-placeholder">
         <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("clipboard")' /></div>
-        <p>El módulo de evaluaciones estará disponible próximamente.</p>
+        <p>Todavía no hay evaluaciones disponibles. Los instrumentos oficiales están pendientes de definición.</p>
     </div>
 </section>
+
+<div class="student-back"><a class="dash-button" asp-controller="Estudiante" asp-action="Index">Volver al tablero</a></div>

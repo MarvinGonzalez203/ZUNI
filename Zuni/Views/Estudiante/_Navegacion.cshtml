@@ -4,7 +4,7 @@
 <nav class="dash-nav" aria-label="Navegación del estudiante">
     <span class="dash-nav-label">MI ESPACIO</span>
     <a class="dash-nav-link @(accion == "Index" ? "is-active" : "")" asp-controller="Estudiante" asp-action="Index" aria-current="@(accion == "Index" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
-    <a class="dash-nav-link @(accion == "MiPerfil" ? "is-active" : "")" asp-controller="Estudiante" asp-action="MiPerfil" aria-current="@(accion == "MiPerfil" ? "page" : null)"><partial name="_DashboardIcon" model='@("user")' /><span>Mi perfil</span></a>
+    <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
     <span class="dash-nav-label dash-nav-label-spaced">SERVICIOS</span>
     @foreach (var item in new[] { ("clipboard", "Evaluaciones"), ("results", "Resultados"), ("calendar", "Citas") })
     {

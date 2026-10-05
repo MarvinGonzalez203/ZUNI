@@ -1,3 +1,4 @@
+using Zuni.Helpers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -205,7 +206,7 @@ public sealed class CuentaController(
                 "Debes utilizar tu correo institucional @miumg.edu.gt.");
         }
 
-        if (!TryConstruirCarne(
+        if (!CarneHelper.TryConstruir(
             model.CarneParte1,
             model.CarneParte2,
             model.CarneParte3,
@@ -213,7 +214,7 @@ public sealed class CuentaController(
         {
             ModelState.AddModelError(
                 nameof(model.CarneParte1),
-                "El carné debe contener 10 dígitos en el formato 0000-00-0000.");
+                CarneHelper.MensajeFormato);
         }
 
         if (!ModelState.IsValid)
@@ -545,8 +546,7 @@ public sealed class CuentaController(
             CookieAuthenticationDefaults.AuthenticationScheme);
 
         return RedirectToAction(
-            "Index",
-            "Home");
+            nameof(IniciarSesion));
     }
 
     // ============================================================
@@ -695,21 +695,5 @@ public sealed class CuentaController(
                    StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool TryConstruirCarne(
-        string? parte1,
-        string? parte2,
-        string? parte3,
-        out string carne)
-    {
-        carne = string.Concat(
-            parte1,
-            parte2,
-            parte3);
 
-        return parte1 is { Length: 4 } &&
-               parte2 is { Length: 2 } &&
-               parte3 is { Length: 4 } &&
-               carne.Length == 10 &&
-               carne.All(char.IsDigit);
-    }
 }

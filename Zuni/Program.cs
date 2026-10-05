@@ -123,6 +123,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseMiddleware<Zuni.Middleware.ContenidoPrivadoNoCacheMiddleware>();
 app.UseMiddleware<Zuni.Middleware.CambioContrasenaObligatorioMiddleware>();
 app.UseAuthorization();
 

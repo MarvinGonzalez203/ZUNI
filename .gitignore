@@ -7,3 +7,11 @@
 Zuni/App_Data/
 Zuni/bin/
 Zuni/obj/
+
+# Artefactos de verificación locales (no versionar)
+/.verification-build/
+
+# Salidas de compilación y caché del IDE en cualquier proyecto
+bin/
+obj/
+.vs/
