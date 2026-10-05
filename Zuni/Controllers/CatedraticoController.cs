@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Zuni.Models.Catedratico;
 
 namespace Zuni.Controllers;
 
@@ -8,7 +9,12 @@ public sealed class CatedraticoController : Controller
 {
     public IActionResult Index()
     {
-        return View();
+        var model = new DashboardViewModel
+        {
+            NombreCatedratico = User.Identity?.Name ?? "Catedrático"
+        };
+
+        return View(model);
     }
 
     public IActionResult MisCursos()
@@ -31,11 +37,6 @@ public sealed class CatedraticoController : Controller
         return View();
     }
     public IActionResult Referencias()
-    {
-        return View();
-    }
-
-    public IActionResult MiPerfil()
     {
         return View();
     }
