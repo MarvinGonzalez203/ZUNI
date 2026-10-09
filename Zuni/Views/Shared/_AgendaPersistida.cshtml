@@ -1,12 +1,9 @@
 @model Zuni.Models.AgendaCalendario
 @using Zuni.Services
 @{
-    var now=AgendaService.Ahora;var today=DateOnly.FromDateTime(now);var currentTime=TimeOnly.FromDateTime(now);
+    var now=AgendaService.Ahora;var today=DateOnly.FromDateTime(now);
     var first=Model.Mes;var offset=((int)first.DayOfWeek+6)%7;var count=DateTime.DaysInMonth(first.Year,first.Month);
     var min=new DateOnly(today.Year,today.Month,1);var culture=System.Globalization.CultureInfo.GetCultureInfo("es-GT");
-    var selected=DateOnly.TryParse(Context.Request.Query["fecha"],out var requested)&&requested>=today&&requested<=today.AddMonths(12)?requested:first<today?today:first;
-    TimeOnly? AvailableStart(HorarioAgendaPsicologo h,DateOnly date)=>AgendaService.InicioDisponible(h,date,now);
-    bool Available(HorarioAgendaPsicologo h,DateOnly date)=>AvailableStart(h,date)!=null;
 }
 <section class="dash-card agenda-persistida">
 <nav class="agenda-month" aria-label="Mes del calendario">
@@ -15,54 +12,59 @@
 @if(first<min.AddMonths(12)){<a class="dash-button" href="?mes=@first.AddMonths(1).ToString("yyyy-MM-dd")">Siguiente →</a>}
 </nav>
 <p>🟢 Disponible · 🔴 Ocupado · ⚪ Sin horarios definidos</p>
+<p class="agenda-hint">@(Model.Editor?"Pulsa un día para consultar o editar su disponibilidad.":"Pulsa un día para consultar sus horarios.")</p>
 <div class="agenda-grid" aria-label="Calendario mensual">
 @foreach(var weekday in new[]{"Lun","Mar","Mié","Jue","Vie","Sáb","Dom"}){<span class="agenda-weekday">@weekday</span>}
 @for(var blank=0;blank<offset;blank++){<span aria-hidden="true"></span>}
 @for(var n=1;n<=count;n++){
     var date=first.AddDays(n-1);var day=Model.Dias.SingleOrDefault(d=>d.Fecha==date);
-    var free=day is {Ocupado:false} && day.Horarios.Any(h=>Available(h,date));
+    var free=day is {Ocupado:false} && day.Horarios.Any(h=>AgendaService.InicioDisponible(h,date,now)!=null);
     var label=date<today ? "Pasado" : day?.Ocupado==true ? "Ocupado" : free ? "Disponible" : "Sin horarios";
-    if(Model.Editor && date>=today&&date<=today.AddMonths(12)){
-    <a class="agenda-day @(free?"is-free":day?.Ocupado==true?"is-busy":"")" href="?mes=@first.ToString("yyyy-MM-dd")&amp;fecha=@date.ToString("yyyy-MM-dd")#editar-horario" aria-label="Configurar @date.ToString("dd MMMM",culture): @label"><strong>@n</strong><span>@label</span></a>
-    } else if(day is not null && date>=today){
-    <a class="agenda-day @(free?"is-free":day.Ocupado?"is-busy":"")" href="#dia-@date.ToString("yyyy-MM-dd")" aria-label="@date.ToString("dd MMMM",culture): @label"><strong>@n</strong><span>@label</span></a>
+    if(date>=today && date<=today.AddMonths(12)){
+    <button type="button" class="agenda-day @(free?"is-free":day?.Ocupado==true?"is-busy":"")" data-bs-toggle="modal" data-bs-target="#agenda-dia-@date.ToString("yyyy-MM-dd")" aria-label="@date.ToString("dd MMMM",culture): @label"><strong>@n</strong><span>@label</span></button>
     } else {<span class="agenda-day" aria-label="@date.ToString("dd MMMM",culture): @label"><strong>@n</strong><span>@label</span></span>}
 }
 </div>
 </section>
-@if(Model.Editor){
-<section class="dash-card mt-4 agenda-detail" id="editar-horario"><h2>Añadir horario disponible</h2><p>Selecciona un día del calendario o escribe su fecha. De 08:00 a 18:00. Los cambios se guardan y se reflejan al volver a cargar el calendario del estudiante.</p>
-<form asp-controller="Psicologo" asp-action="Disponibilidad" method="post" class="agenda-form">
-<input type="hidden" name="operacion" value="agregar" />
-<label>Fecha<input type="date" name="Fecha" min="@today.ToString("yyyy-MM-dd")" max="@today.AddMonths(12).ToString("yyyy-MM-dd")" value="@selected.ToString("yyyy-MM-dd")" required /></label>
-<label>Inicio<input type="time" name="Inicio" min="08:00" max="18:00" step="300" value="08:00" required /></label>
-<label>Fin<input type="time" name="Fin" min="08:00" max="18:00" step="300" value="12:00" required /></label>
-<label>Duración de cada cita<select name="DuracionMinutos">@foreach(var duration in new[]{15,30,45,50,60}){<option value="@duration">@duration minutos</option>}</select></label>
-<label>Modalidad<select name="Modalidad"><option>Presencial</option><option>Virtual</option></select></label>
-<button class="dash-button" type="submit">Guardar horario</button>
-</form>
-<h3 class="mt-4">Marcar un día ocupado</h3><form asp-controller="Psicologo" asp-action="Disponibilidad" method="post" class="agenda-form"><input type="hidden" name="operacion" value="bloquear" /><label>Fecha<input type="date" name="Fecha" min="@today.ToString("yyyy-MM-dd")" max="@today.AddMonths(12).ToString("yyyy-MM-dd")" value="@selected.ToString("yyyy-MM-dd")" required /></label><button class="dash-button" type="submit">Guardar día ocupado</button></form>
-</section>
-}
-<section class="dash-card mt-4"><h2>Horarios del mes</h2>
-@if(!Model.Dias.Any(d=>d.Fecha>=today)){<p>@(Model.Editor?"Aún no has definido disponibilidad para este mes.":"Tu psicólogo aún no ha definido disponibilidad para este mes.")</p>}
-@foreach(var day in Model.Dias.Where(d=>d.Fecha>=today)){
-<article class="agenda-detail" id="dia-@day.Fecha.ToString("yyyy-MM-dd")"><h3>@day.Fecha.ToString("dddd dd MMMM",culture)</h3>
-@if(day.Ocupado){<p>Día ocupado. No hay horarios disponibles.</p>}
-else {
-    var horarios=day.Horarios.OrderBy(h=>h.Inicio).Where(h=>Model.Editor || Available(h,day.Fecha)).ToArray();
-    if(horarios.Length==0){<p>Sin horarios disponibles.</p>}
-    foreach(var h in horarios){
-    <p><strong>@(Model.Editor?h.Inicio.ToString("HH:mm"):AvailableStart(h,day.Fecha)?.ToString("HH:mm"))–@h.Fin.ToString("HH:mm")</strong> · @h.Modalidad · citas de @h.DuracionMinutos minutos</p>
-    if(Model.Editor){<form asp-controller="Psicologo" asp-action="Disponibilidad" method="post"><input type="hidden" name="Fecha" value="@day.Fecha.ToString("yyyy-MM-dd")" /><input type="hidden" name="operacion" value="quitar" /><input type="hidden" name="horario" value="@h.Id" /><button class="dash-button" type="submit">Quitar horario</button></form>}
+@for(var n=1;n<=count;n++){
+    var date=first.AddDays(n-1);if(date<today||date>today.AddMonths(12)){continue;}
+    var day=Model.Dias.SingleOrDefault(d=>d.Fecha==date);
+    var key="agenda-dia-"+date.ToString("yyyy-MM-dd");
+    <div class="modal fade agenda-modal" id="@key" tabindex="-1" aria-labelledby="@key-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title fs-5" id="@key-titulo">@date.ToString("dddd dd MMMM yyyy",culture)</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <div class="modal-body">
+    <p class="agenda-hint">Hora de Guatemala</p>
+    <h3 class="h5">Horarios de este día</h3>
+    @if(day?.Ocupado==true){<p>Día ocupado. No hay horarios disponibles.</p>}
+    else {
+        var horarios=day?.Horarios.OrderBy(h=>h.Inicio).Where(h=>Model.Editor || AgendaService.InicioDisponible(h,date,now)!=null).ToArray() ?? [];
+        if(horarios.Length==0){<p>Sin horarios disponibles para este día.</p>}
+        foreach(var h in horarios){
+        <div class="agenda-slot"><p><strong>@(Model.Editor?h.Inicio.ToString("HH:mm"):AgendaService.InicioDisponible(h,date,now)?.ToString("HH:mm"))–@h.Fin.ToString("HH:mm")</strong> · @h.Modalidad · citas de @h.DuracionMinutos minutos</p>
+        @if(Model.Editor){<form asp-controller="Psicologo" asp-action="Disponibilidad" method="post"><input type="hidden" name="Fecha" value="@date.ToString("yyyy-MM-dd")" /><input type="hidden" name="operacion" value="quitar" /><input type="hidden" name="horario" value="@h.Id" /><button class="dash-button" type="submit">Quitar horario</button></form>}
+        </div>
+        }
     }
+    @if(Model.Editor){
+        if(day?.Ocupado!=true){
+        <h3 class="h5 mt-4">Añadir horario disponible</h3><p>De 08:00 a 18:00, con espacio para al menos una cita completa.</p>
+        <form asp-controller="Psicologo" asp-action="Disponibilidad" method="post" class="agenda-form">
+        <input type="hidden" name="operacion" value="agregar" /><input type="hidden" name="Fecha" value="@date.ToString("yyyy-MM-dd")" />
+        <label>Inicio<input type="time" name="Inicio" min="08:00" max="18:00" step="300" value="08:00" required /></label>
+        <label>Fin<input type="time" name="Fin" min="08:00" max="18:00" step="300" value="12:00" required /></label>
+        <label>Duración de cada cita<select name="DuracionMinutos">@foreach(var duration in new[]{15,30,45,50,60}){<option value="@duration">@duration minutos</option>}</select></label>
+        <label>Modalidad<select name="Modalidad"><option>Presencial</option><option>Virtual</option></select></label>
+        <button class="dash-button" type="submit">Guardar horario</button>
+        </form>
+        }
+        <h3 class="h5 mt-4">Disponibilidad del día</h3>
+        <form asp-controller="Psicologo" asp-action="Disponibilidad" method="post" class="agenda-actions"><input type="hidden" name="Fecha" value="@date.ToString("yyyy-MM-dd")" />
+        <button class="dash-button" type="submit" name="operacion" value="@(day?.Ocupado==true?"habilitar":"bloquear")">@(day?.Ocupado==true?"Habilitar día":"Marcar día ocupado")</button>
+        @if(day is not null){<button class="dash-button" type="submit" name="operacion" value="limpiar">Quitar configuración del día</button>}
+        </form>
+        <p class="agenda-hint">Marcar ocupado conserva los horarios. Habilitar el día vuelve a mostrarlos. Quitar su configuración elimina los horarios.</p>
+    }
+    </div><div class="modal-footer"><button class="dash-button" type="button" data-bs-dismiss="modal">Cerrar</button></div>
+    </div></div></div>
 }
-@if(Model.Editor){
-<form asp-controller="Psicologo" asp-action="Disponibilidad" method="post" class="agenda-actions"><input type="hidden" name="Fecha" value="@day.Fecha.ToString("yyyy-MM-dd")" />
-<button class="dash-button" type="submit" name="operacion" value="@(day.Ocupado?"habilitar":"bloquear")">@(day.Ocupado?"Habilitar día":"Marcar ocupado")</button>
-<button class="dash-button" type="submit" name="operacion" value="limpiar">Quitar configuración del día</button></form>
-<p><small>Marcar ocupado conserva los horarios, pero los oculta al estudiante hasta habilitar el día. Quitar la configuración elimina sus horarios.</small></p>
-}
-</article>
-}
-</section>

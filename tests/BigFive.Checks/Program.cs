@@ -152,7 +152,7 @@ try
     var alienSummary=await Page(strangerClient,"/Psicologo/Resultados");Check(!alienSummary.Contains("Motivo FICTICIO"),"Otro psicólogo no recibe perfil");
     await using(var db=Db())await Reject(()=>Bf(db).Aceptar(other,new(){Acepto=true,MayorDeEdad=true,MotivoConsulta="Ejemplo ficticio"},default),"Múltiples psicólogos no asignan arbitrariamente");
     var end=await Page(owner,"/Estudiante/BigFive/cuestionario");Check(end.Contains("Comprobante")&&!end.Contains("id=\"bigfive-form\""),"Finalizado bloquea edición");
-    Check(WebUtility.HtmlDecode(await Page(owner,"/Estudiante/Citas")).Contains("Horarios del mes"),"Citas habilita calendario tras finalizar");
+    Check(WebUtility.HtmlDecode(await Page(owner,"/Estudiante/Citas")).Contains("agenda-persistida"),"Citas habilita calendario tras finalizar");
     var date=AgendaService.Hoy.AddDays(1);var month=new DateOnly(date.Year,date.Month,1);
     var agendaPath="/Psicologo/Agenda?mes="+month.ToString("yyyy-MM-dd");
     var studentPath="/Estudiante/Citas?mes="+month.ToString("yyyy-MM-dd");
@@ -193,7 +193,7 @@ try
     Check(!(await Page(owner,"/Estudiante/Evaluaciones")).Contains("DEMO"),"Panel de evaluaciones sin demostraciones");
     Check(WebUtility.HtmlDecode(await Page(owner,"/Estudiante/Resultados")).Contains("Aún no hay recomendaciones"),"Resultados sin puntuaciones automáticas");
     await Post(owner,"/Estudiante/BigFive/retirar",new(),"/Estudiante/BigFive");
-    Check(!WebUtility.HtmlDecode(await Page(owner,studentPath)).Contains("Horarios del mes"),"Retiro de consentimiento vuelve a cerrar calendario");
+    Check(!WebUtility.HtmlDecode(await Page(owner,studentPath)).Contains("agenda-persistida"),"Retiro de consentimiento vuelve a cerrar calendario");
     Check(!(await Page(pClient,"/Psicologo/Resultados")).Contains("Motivo FICTICIO"),"Retiro oculta el perfil al profesional");
     await using(var db=Db())
     {
