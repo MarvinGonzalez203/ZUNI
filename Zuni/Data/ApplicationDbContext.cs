@@ -28,6 +28,7 @@ namespace Zuni.Data
             base.OnModelCreating(builder);
             builder.ConfigurarEvaluaciones();
             builder.ConfigurarBigFive();
+            builder.ConfigurarAgenda();
 
             builder.Entity<AsignacionEstudiantePsicologo>(entity =>
             {

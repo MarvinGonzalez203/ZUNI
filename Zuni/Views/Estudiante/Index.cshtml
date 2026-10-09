@@ -42,11 +42,11 @@
         <p>@(Model.PerfilCompleto ? "Tus datos básicos están completos." : "Completa tus datos académicos y de contacto.")</p>
         <span class="dash-text-link">Ver cuenta <partial name="_DashboardIcon" model='@("arrow")' /></span>
     </a>
-    @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Consulta los resultados autorizados para tu cuenta.", "Resultados"), ("calendar", "CITAS", "Podrás consultar o solicitar tus citas.", "Citas") })
+    @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Aquí aparecerán las recomendaciones de tu psicólogo.", "Resultados"), ("calendar", "CITAS", "Consulta el calendario al finalizar Big Five.", "Citas") })
     {
         <a class="dash-card dash-summary dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4" aria-label="@item.Item4">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><span class="dash-eyebrow">@item.Item2</span></div>
-            <h3>@(item.Item4 == "Citas" ? "Próximamente" : "Disponible")</h3><p>@item.Item3</p><span class="dash-module-label">@(item.Item4 == "Citas" ? "En preparación" : "Ir al módulo")</span>
+            <h3>@(item.Item4 == "Resultados" ? "Pendiente" : item.Item4 == "Citas" ? "Calendario" : "Disponible")</h3><p>@item.Item3</p><span class="dash-module-label">Ir al módulo</span>
         </a>
     }
 </section>
@@ -66,9 +66,9 @@
 
 <div class="dash-section-heading"><h2>Servicios para tu bienestar</h2><span>A tu ritmo</span></div>
 <section class="dash-services" aria-label="Próximos servicios">
-    @foreach (var item in new[] { ("clipboard", "Evaluaciones", "Un espacio para realizar las evaluaciones que se habiliten para ti.", "Evaluaciones"), ("results", "Resultados", "Consulta tus resultados cuando el módulo esté disponible.", "Resultados"), ("calendar", "Citas psicológicas", "Solicita y consulta citas cuando se integre el servicio.", "Citas") })
+    @foreach (var item in new[] { ("clipboard", "Evaluaciones", "Un espacio para realizar las evaluaciones que se habiliten para ti.", "Evaluaciones"), ("results", "Resultados", "Aquí aparecerán las recomendaciones de tu psicólogo.", "Resultados"), ("calendar", "Citas psicológicas", "Consulta los horarios de tu psicólogo después de finalizar Big Five.", "Citas") })
     {
-        <a class="dash-card dash-service dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><h3>@item.Item2</h3><p>@item.Item3</p><span class="dash-badge">Próximamente</span></a>
+        <a class="dash-card dash-service dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><h3>@item.Item2</h3><p>@item.Item3</p><span class="dash-badge">@(item.Item4 == "Resultados" ? "Pendiente" : "Ir al módulo")</span></a>
     }
 </section>
 

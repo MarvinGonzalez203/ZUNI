@@ -1,5 +1,8 @@
-@{
-    ViewData["Title"] = "Agenda";
-}
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Agenda</h1></div></header>
-<partial name="_Agenda" />
+@model Zuni.Models.AgendaCalendario
+@{ ViewData["Title"]="Agenda"; ViewData["ResultadosConectados"]=true; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Mi disponibilidad</h1><p>Define los días y horarios que verán tus estudiantes después de finalizar Big Five.</p></div></header>
+<link rel="stylesheet" href="~/css/agenda.css" asp-append-version="true" />
+@if(TempData["AgendaError"] is string error){<p class="dash-notice" role="alert">@error</p>}
+@if(TempData["AgendaMensaje"] is string message){<p class="dash-notice" role="status">@message</p>}
+@if(!Model.Habilitado){<section class="dash-card"><p>Tu cuenta no está habilitada para configurar disponibilidad.</p></section>}
+else {<partial name="_AgendaPersistida" model="Model" />}

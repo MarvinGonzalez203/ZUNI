@@ -24,6 +24,7 @@ builder.Services.AddScoped<
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<EvaluacionesService>();
 builder.Services.AddScoped<BigFiveService>();
+builder.Services.AddScoped<AgendaService>();
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(

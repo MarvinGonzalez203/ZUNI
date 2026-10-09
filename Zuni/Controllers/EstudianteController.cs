@@ -10,7 +10,7 @@ namespace Zuni.Controllers;
 [Authorize(Roles = "Estudiante")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("Estudiante")]
-public sealed class EstudianteController(ApplicationDbContext db, Zuni.Services.BigFiveService? bigFive = null) : Controller
+public sealed class EstudianteController(ApplicationDbContext db, Zuni.Services.BigFiveService? bigFive = null, Zuni.Services.AgendaService? agenda = null) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -30,24 +30,18 @@ public sealed class EstudianteController(ApplicationDbContext db, Zuni.Services.
     public IActionResult MiPerfil() => RedirectToAction("Index", "MiCuenta");
 
     [HttpGet("Evaluaciones")]
-    public async Task<IActionResult> Evaluaciones(CancellationToken ct) => View(await db.Set<Zuni.Models.Evaluaciones.AsignacionEvaluacion>().AsNoTracking().AsSplitQuery().Where(a=>a.EstudianteId==User.FindFirstValue(ClaimTypes.NameIdentifier) && a.EvaluacionId!=Zuni.Services.Ipip50.EvaluacionId).Include(a=>a.Evaluacion).ThenInclude(e=>e.Preguntas).Include(a=>a.Respuestas).OrderBy(a=>a.FechaAsignacionUtc).ToListAsync(ct));
+    public IActionResult Evaluaciones() => View();
 
     [HttpGet("Resultados")]
-    public async Task<IActionResult> Resultados(CancellationToken ct)
-    {
-        var usuarioId=User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return View(await db.Set<Zuni.Models.Evaluaciones.AsignacionEvaluacion>().AsNoTracking()
-            .Where(a=>a.EstudianteId==usuarioId && a.EvaluacionId!=Zuni.Services.Ipip50.EvaluacionId && a.Estado==Zuni.Models.Evaluaciones.EstadoEvaluacion.Finalizada)
-            .Select(a=>new Zuni.Models.Evaluaciones.ResultadoEstudianteViewModel { AsignacionId=a.Id,Titulo=a.Evaluacion.Titulo,EsDemostracion=a.Evaluacion.EsDemostracion,FechaFinalizacionUtc=a.FechaFinalizacionUtc,Publicado=a.Resultado!=null && a.Resultado.Publicado,Puntuacion=a.Resultado!=null && a.Resultado.Publicado ? a.Resultado.Puntuacion : null,Observaciones=a.Resultado!=null && a.Resultado.Publicado ? a.Resultado.ObservacionesPublicables : null }).ToListAsync(ct));
-    }
+    public IActionResult Resultados() => View();
 
     [HttpGet("Citas")]
-    public async Task<IActionResult> Citas(CancellationToken ct)
+    public async Task<IActionResult> Citas(DateOnly? mes,CancellationToken ct)
     {
-        ViewData["BigFiveCompleto"]=bigFive is not null && await bigFive.PuedeSolicitarCita(User.FindFirstValue(ClaimTypes.NameIdentifier)!,ct);
-        return View();
+        if(bigFive?.PruebaLocal==true && (HttpContext.Connection.RemoteIpAddress is not {} address || !System.Net.IPAddress.IsLoopback(address))) return StatusCode(403);
+        return View(agenda is null ? new AgendaCalendario(Zuni.Services.AgendaService.Mes(mes),"",false,false,[]) :
+            await agenda.Leer(User.FindFirstValue(ClaimTypes.NameIdentifier)!,false,mes,ct));
     }
-
     private static MiPerfilViewModel CrearPerfilViewModel(ApplicationUser usuario)
     {
         var perfil = usuario.PerfilEstudiante;
