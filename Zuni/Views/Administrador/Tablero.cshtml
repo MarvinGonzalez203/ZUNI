@@ -1,0 +1,8 @@
+@model int[]
+@{ ViewData["Title"] = "Tablero administrativo"; }
+<header class="dash-welcome"><div><span class="dash-eyebrow">ADMINISTRACIÓN ZUNI</span><h1>Tu comunidad universitaria</h1><p>Administra estudiantes, cuentas y accesos desde un solo lugar.</p></div></header>
+<section class="dash-summary-grid">
+    <a class="dash-card" asp-action="Estudiantes"><h2>@Model[0]</h2><p>Estudiantes</p></a>
+    <a class="dash-card" asp-action="Index"><h2>@Model[1]</h2><p>Usuarios registrados</p></a>
+    <a class="dash-card" asp-action="Importar"><h2>Importar CSV</h2><p>Revisa y registra estudiantes sin duplicar cuentas.</p></a>
+</section>

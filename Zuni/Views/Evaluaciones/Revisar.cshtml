@@ -1,0 +1,9 @@
+@model Zuni.Models.Evaluaciones.AsignacionEvaluacion
+@{ViewData["Title"]="Revisar respuestas";}
+@section Styles {<link rel="stylesheet" href="~/css/evaluaciones.css" asp-append-version="true"/>}
+<h1>Revisa tus respuestas</h1><p>@Model.Evaluacion.Titulo</p><p>Este avance ya está guardado.</p>
+<section class="dash-card"><dl>@foreach(var p in Model.Evaluacion.Preguntas.OrderBy(p=>p.Orden)){<dt>@p.Texto</dt><dd>@(Model.Respuestas.SingleOrDefault(r=>r.PreguntaId==p.Id)?.Valor.ToString()??"Sin responder")</dd>}</dl></section>
+<div class="d-flex gap-3 my-3"><a class="dash-button" asp-action="Detalle" asp-route-id="@Model.Id">Volver a editar</a><button class="dash-button" id="abrir-confirmacion" type="button" hidden>Finalizar evaluación</button></div>
+<dialog id="confirmacion-finalizar" aria-labelledby="confirmacion-titulo"><h2 id="confirmacion-titulo">Confirmar envío</h2><p>¿Estás seguro de que deseas finalizar esta evaluación? Una vez enviada, no podrás modificar tus respuestas, salvo que un responsable autorizado permita reabrirla.</p><button type="button" id="cancelar-finalizacion" class="btn btn-outline-dark">Cancelar</button><form asp-action="Finalizar" asp-route-id="@Model.Id" method="post" id="finalizar-form"><input type="hidden" name="revision" value="@Model.Revision"/><input type="hidden" name="confirmado" value="true"/><button class="dash-button">Confirmar y finalizar</button></form></dialog>
+<noscript><p>Al confirmar, las respuestas quedarán bloqueadas.</p><form asp-action="Finalizar" asp-route-id="@Model.Id" method="post"><input type="hidden" name="revision" value="@Model.Revision"/><label><input name="confirmado" type="checkbox" value="true" required/>Confirmo que deseo finalizar.</label><button class="dash-button">Confirmar y finalizar</button></form></noscript>
+@section Scripts {<script src="~/js/evaluaciones.js" asp-append-version="true"></script>}

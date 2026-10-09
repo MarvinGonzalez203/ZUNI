@@ -213,7 +213,7 @@ public sealed class CuentaController(
         {
             ModelState.AddModelError(
                 nameof(model.CarneParte1),
-                "El carné debe contener 10 dígitos en el formato 0000-00-0000.");
+                "El carné debe tener 10 u 11 dígitos: 0000-00-0000 o 0000-00-00000.");
         }
 
         if (!ModelState.IsValid)
@@ -656,7 +656,8 @@ public sealed class CuentaController(
 
     private IActionResult RedirectByRole(Func<string, bool> tieneRol)
     {
-        // El orden es intencional para usuarios con múltiples roles.
+        if (tieneRol("Administrador") && tieneRol("Estudiante")) return RedirectToAction("Index", "Panel");
+        // Prioridad para las demás combinaciones de roles.
         foreach (var rol in new[] { "Administrador", "Director", "Psicologo", "Catedratico", "Estudiante" })
         {
             if (tieneRol(rol))
@@ -669,7 +670,7 @@ public sealed class CuentaController(
                     "Estudiante" => "Estudiante",
                     _ => "Home"
                 };
-                return RedirectToAction("Index", controller);
+                return RedirectToAction(controller == "Administrador" ? "Tablero" : "Index", controller);
             }
         }
 
@@ -707,8 +708,8 @@ public sealed class CuentaController(
 
         return parte1 is { Length: 4 } &&
                parte2 is { Length: 2 } &&
-               parte3 is { Length: 4 } &&
-               carne.Length == 10 &&
+               parte3 is { Length: 4 or 5 } &&
+               (carne.Length == 10 || carne.Length == 11) &&
                carne.All(char.IsDigit);
     }
 }

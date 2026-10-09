@@ -36,10 +36,16 @@ public sealed class EstudianteController(ApplicationDbContext db) : Controller
     }
 
     [HttpGet("Evaluaciones")]
-    public IActionResult Evaluaciones() => View();
+    public async Task<IActionResult> Evaluaciones(CancellationToken ct) => View(await db.Set<Zuni.Models.Evaluaciones.AsignacionEvaluacion>().AsNoTracking().AsSplitQuery().Where(a=>a.EstudianteId==User.FindFirstValue(ClaimTypes.NameIdentifier)).Include(a=>a.Evaluacion).ThenInclude(e=>e.Preguntas).Include(a=>a.Respuestas).OrderBy(a=>a.FechaAsignacionUtc).ToListAsync(ct));
 
     [HttpGet("Resultados")]
-    public IActionResult Resultados() => View();
+    public async Task<IActionResult> Resultados(CancellationToken ct)
+    {
+        var usuarioId=User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return View(await db.Set<Zuni.Models.Evaluaciones.AsignacionEvaluacion>().AsNoTracking()
+            .Where(a=>a.EstudianteId==usuarioId && a.Estado==Zuni.Models.Evaluaciones.EstadoEvaluacion.Finalizada)
+            .Select(a=>new Zuni.Models.Evaluaciones.ResultadoEstudianteViewModel { AsignacionId=a.Id,Titulo=a.Evaluacion.Titulo,EsDemostracion=a.Evaluacion.EsDemostracion,FechaFinalizacionUtc=a.FechaFinalizacionUtc,Publicado=a.Resultado!=null && a.Resultado.Publicado,Puntuacion=a.Resultado!=null && a.Resultado.Publicado ? a.Resultado.Puntuacion : null,Observaciones=a.Resultado!=null && a.Resultado.Publicado ? a.Resultado.ObservacionesPublicables : null }).ToListAsync(ct));
+    }
 
     [HttpGet("Citas")]
     public IActionResult Citas() => View();

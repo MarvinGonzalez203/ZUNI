@@ -1,0 +1,5 @@
+.pregunta legend { font-size:1.1rem; font-weight:600; float:none; width:auto; }
+#progreso { width:100%; accent-color:#80519c; margin-bottom:1rem; }
+#confirmacion-finalizar { max-width: min(92vw,560px); border:1px solid #ddcceb; border-radius:20px; padding:28px; color:#292032; background:#fffdf9; }
+#confirmacion-finalizar::backdrop { background:rgba(28,18,38,.55); }
+#finalizar-form { display:inline-block; margin:12px; }

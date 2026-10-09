@@ -19,6 +19,7 @@ builder.Services.AddScoped<
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+ builder.Services.AddScoped<Zuni.Services.EvaluacionesService>();
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(

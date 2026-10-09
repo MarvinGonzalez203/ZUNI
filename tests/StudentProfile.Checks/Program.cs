@@ -36,3 +36,14 @@ if (complete.PorcentajeAvance != 100 || complete.CamposOpcionalesFaltantes.Count
 if (new MiPerfilViewModel().PorcentajeAvance != 0 || complete.CarneFormateado != "2026-01-0001")
     throw new Exception("Progreso o formato incorrecto.");
 Console.WriteLine($"Correcto: {cases.Length + 3} comprobaciones de validación y presentación.");
+var eleven = Valid(); eleven.CarneParte3 = "15193";
+if (!IsValid(eleven)) throw new Exception("Carné de 11 dígitos rechazado");
+if (new MiPerfilViewModel { Carne="74902015193" }.CarneFormateado != "7490-20-15193") throw new Exception("Formato de 11 dígitos incorrecto");
+eleven.CarneParte3="151933";
+if (IsValid(eleven)) throw new Exception("Se aceptó carné demasiado largo");
+Console.WriteLine("Correcto: carnés de 10/11 dígitos y rechazo de 12.");
+var csv = Zuni.Services.EstudiantesCsv.Leer("Nombre,Correo,Carne,Carrera\n\"Alumno, Uno\",uno@miumg.edu.gt,7490-20-15193,Ingeniería\nAlumno Dos,dos@miumg.edu.gt,2020010001,");
+if(csv.Errores.Count!=0 || csv.Filas.Count!=2 || csv.Filas[0].Carne!="74902015193") throw new Exception("CSV válido rechazado");
+foreach(var invalid in new[]{"Nombre,Correo,Carne,Carrera\nUno,uno@miumg.edu.gt,2020010001,X\nOtro,UNO@miumg.edu.gt,2020010002,X", "Nombre,Correo,Carne,Carrera\nUno,uno@gmail.com,2020010001,X", "Nombre,Correo,Carne,Carrera\nUno,uno@miumg.edu.gt,abc,X", "Nombre,Correo,Carne,Carrera\n\"Sin cierre", "Otra,Cabecera"})
+if(Zuni.Services.EstudiantesCsv.Leer(invalid).Errores.Count==0) throw new Exception("CSV inválido aceptado");
+Console.WriteLine("Correcto: CSV con comillas, 10/11 dígitos, duplicados, dominio, formato y encabezados.");

@@ -15,7 +15,7 @@ namespace Zuni.Controllers;
 
 [Authorize(Roles = "Administrador")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class AdministradorController : Controller
+public sealed partial class AdministradorController : Controller
 {
     private readonly ApplicationDbContext _db;
 
@@ -26,7 +26,7 @@ public sealed class AdministradorController : Controller
 
     [HttpGet]
     public async Task<IActionResult> Index(
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, string? busqueda = null)
     {
         var usuarios = await _db.Users
             .AsNoTracking()
@@ -50,6 +50,9 @@ public sealed class AdministradorController : Controller
             })
             .ToListAsync(cancellationToken);
 
+        var asignaciones = await (from ur in _db.UserRoles join r in _db.Roles on ur.RoleId equals r.Id select new { ur.UserId, r.Name }).ToListAsync(cancellationToken);
+        foreach (var u in usuarios) u.Rol = string.Join(", ", asignaciones.Where(r => r.UserId == u.Id).Select(r => r.Name).OrderBy(r => r));
+        if (!string.IsNullOrWhiteSpace(busqueda)) usuarios = usuarios.Where(u => u.FullName.Contains(busqueda, StringComparison.OrdinalIgnoreCase) || (u.Email?.Contains(busqueda, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
         return View(usuarios);
     }
 
@@ -190,7 +193,7 @@ public sealed class AdministradorController : Controller
                     "Selecciona un rol permitido que exista en el sistema.");
             }
 
-            if (usuario.Id == administradorId &&
+            if (!model.ConservarRoles && usuario.Id == administradorId &&
                 model.NuevoRol != "Administrador")
             {
                 ModelState.AddModelError(
@@ -198,7 +201,7 @@ public sealed class AdministradorController : Controller
                     "No puedes quitarte a ti mismo el rol Administrador.");
             }
 
-            if (model.NuevoRol != "Administrador" &&
+            if (!model.ConservarRoles && model.NuevoRol != "Administrador" &&
                 !await (
                     from u in _db.Users.AsNoTracking()
                     join ur in _db.UserRoles.AsNoTracking()
@@ -219,7 +222,7 @@ public sealed class AdministradorController : Controller
             if (!ModelState.IsValid)
                 return View(model);
 
-            if (rolesAnteriores.Count == 1 &&
+            if ((model.ConservarRoles && rolesAnteriores.Contains(model.NuevoRol)) || rolesAnteriores.Count == 1 &&
                 rolesAnteriores[0] == model.NuevoRol)
             {
                 TempData["Info"] =
@@ -238,7 +241,7 @@ public sealed class AdministradorController : Controller
                 )
                 .ToListAsync(cancellationToken);
 
-            foreach (var anterior in rolesAsignados)
+            foreach (var anterior in rolesAsignados.Where(_ => !model.ConservarRoles))
             {
                 if (string.IsNullOrWhiteSpace(
                     anterior.NormalizedName))
@@ -308,10 +311,7 @@ public sealed class AdministradorController : Controller
                             new
                             {
                                 Roles =
-                                    new[]
-                                    {
-                                        model.NuevoRol
-                                    }
+                                    (model.ConservarRoles ? rolesAnteriores.Append(model.NuevoRol) : new[] { model.NuevoRol }).Distinct().OrderBy(r => r).ToArray()
                             }),
 
                     Motivo =
@@ -522,11 +522,11 @@ public sealed class AdministradorController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> AgregarUsuario(CancellationToken cancellationToken)
+    public async Task<IActionResult> AgregarUsuario(CancellationToken cancellationToken, string? rol = null)
     {
         if (!await EsAdministradorActivoAsync(User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken))
             return Forbid();
-        return View(new AgregarUsuarioViewModel());
+        return View(new AgregarUsuarioViewModel { Rol = rol == "Estudiante" ? "Estudiante" : "" });
     }
 
     [HttpPost]

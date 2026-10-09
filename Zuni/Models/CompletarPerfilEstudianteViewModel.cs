@@ -5,15 +5,15 @@ namespace Zuni.Models;
 public sealed class CompletarPerfilEstudianteViewModel
 {
     [Required(ErrorMessage = "Completa el primer bloque del carné.")]
-    [RegularExpression(@"^[0-9]{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^[0-9]{4}$", ErrorMessage = "El carné debe tener 10 u 11 dígitos: 0000-00-0000 o 0000-00-00000.")]
     public string? CarneParte1 { get; set; }
 
     [Required(ErrorMessage = "Completa el segundo bloque del carné.")]
-    [RegularExpression(@"^[0-9]{2}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^[0-9]{2}$", ErrorMessage = "El carné debe tener 10 u 11 dígitos: 0000-00-0000 o 0000-00-00000.")]
     public string? CarneParte2 { get; set; }
 
     [Required(ErrorMessage = "Completa el último bloque del carné.")]
-    [RegularExpression(@"^[0-9]{4}$", ErrorMessage = "El carné debe contener 10 dígitos en el formato 0000-00-0000.")]
+    [RegularExpression(@"^[0-9]{4,5}$", ErrorMessage = "El carné debe tener 10 u 11 dígitos: 0000-00-0000 o 0000-00-00000.")]
     public string? CarneParte3 { get; set; }
 
     [Required(ErrorMessage = "Ingresa tu teléfono.")]

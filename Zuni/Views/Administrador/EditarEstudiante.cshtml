@@ -1,0 +1,8 @@
+@model Zuni.Models.Administrador.EditarEstudianteViewModel
+@{ ViewData["Title"]="Editar estudiante"; }
+<h1>Editar estudiante</h1>
+<form method="post" class="dash-card"><div asp-validation-summary="All" class="text-danger"></div><input type="hidden" asp-for="Id" />
+<label asp-for="Nombre"></label><input asp-for="Nombre" class="form-control mb-3" />
+<label asp-for="Carne">Carné</label><input asp-for="Carne" class="form-control mb-3" />
+<label asp-for="Carrera"></label><input asp-for="Carrera" class="form-control mb-3" />
+<button class="dash-button">Guardar</button> <a asp-action="Estudiantes">Cancelar</a></form>

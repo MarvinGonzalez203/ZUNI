@@ -14,6 +14,7 @@ public sealed class CambiarRolViewModel
     [Required(ErrorMessage = "Selecciona un rol.")]
     [Display(Name = "Nuevo rol")]
     public string NuevoRol { get; set; } = string.Empty;
+    public bool ConservarRoles { get; set; } = true;
 
     [StringLength(500, ErrorMessage = "El motivo no puede superar los 500 caracteres.")]
     public string? Motivo { get; set; }

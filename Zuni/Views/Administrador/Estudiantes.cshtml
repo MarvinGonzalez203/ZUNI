@@ -1,0 +1,11 @@
+@model IReadOnlyList<Zuni.Models.Administrador.EstudianteAdminViewModel>
+@{ ViewData["Title"] = "Gestión de Estudiantes"; }
+<h1>Estudiantes</h1>
+<p>Consulta sus datos y administra el acceso de cada cuenta.</p>
+<div class="d-flex gap-3 mb-3"><a class="dash-button" asp-action="AgregarUsuario" asp-route-rol="Estudiante">Registrar estudiante</a><a class="dash-button" asp-action="Importar">Importar CSV</a></div>
+<form method="get" class="d-flex gap-2 mb-4"><input class="form-control" name="busqueda" value="@Context.Request.Query["busqueda"]" aria-label="Buscar estudiante" placeholder="Nombre, correo o carné" /><button class="dash-button">Buscar</button></form>
+<div class="dash-card table-responsive"><table class="table"><thead><tr><th>Nombre</th><th>Correo</th><th>Carné</th><th>Carrera</th><th>Estado</th><th>Administrar</th></tr></thead><tbody>
+@foreach(var e in Model) {
+<tr><td>@e.Nombre</td><td>@e.Correo</td><td>@(new Zuni.Models.MiPerfilViewModel { Carne = e.Carne }.CarneFormateado)</td><td>@e.Carrera</td><td>@(e.Activo ? "Activo" : "Inactivo")</td><td><a asp-action="EditarEstudiante" asp-route-id="@e.Id">Editar</a> · <a asp-action="Historial" asp-route-id="@e.Id">Historial</a> · <a asp-action="CambiarRol" asp-route-id="@e.Id">Accesos</a> · <a asp-action="ConfirmarEstado" asp-route-id="@e.Id" asp-route-activar="@(!e.Activo)">@(e.Activo ? "Desactivar" : "Reactivar")</a></td></tr>
+}
+</tbody></table>@if(Model.Count == 0) { <p>No se encontraron estudiantes.</p> }</div>

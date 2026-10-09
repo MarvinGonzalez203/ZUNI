@@ -75,7 +75,7 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
         {
             ModelState.AddModelError(
                 nameof(model.CarneParte1),
-                "El carné debe contener 10 dígitos en el formato 0000-00-0000.");
+                "El carné debe tener 10 u 11 dígitos: 0000-00-0000 o 0000-00-00000.");
         }
 
         if (string.IsNullOrWhiteSpace(model.Telefono))
@@ -177,9 +177,9 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
     {
         return new CompletarPerfilEstudianteViewModel
         {
-            CarneParte1 = perfil?.Carne is { Length: 10 } carne1 ? carne1[..4] : null,
-            CarneParte2 = perfil?.Carne is { Length: 10 } carne2 ? carne2[4..6] : null,
-            CarneParte3 = perfil?.Carne is { Length: 10 } carne3 ? carne3[6..] : null,
+            CarneParte1 = perfil?.Carne is { Length: 10 or 11 } carne1 ? carne1[..4] : null,
+            CarneParte2 = perfil?.Carne is { Length: 10 or 11 } carne2 ? carne2[4..6] : null,
+            CarneParte3 = perfil?.Carne is { Length: 10 or 11 } carne3 ? carne3[6..] : null,
             Telefono = perfil?.Telefono,
             Carrera = perfil?.Carrera ?? string.Empty,
             Semestre = perfil?.Semestre,
@@ -212,8 +212,8 @@ public sealed class PerfilController(ApplicationDbContext db) : Controller
 
         return parte1 is { Length: 4 } &&
                parte2 is { Length: 2 } &&
-               parte3 is { Length: 4 } &&
-               carne.Length == 10 &&
+               parte3 is { Length: 4 or 5 } &&
+               (carne.Length == 10 || carne.Length == 11) &&
                carne.All(c => c >= '0' && c <= '9');
     }
 }

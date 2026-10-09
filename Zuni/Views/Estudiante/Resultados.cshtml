@@ -1,17 +1,5 @@
-@{
-    ViewData["Title"] = "Mis resultados";
-}
-@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
-<header class="dash-profile-heading">
-    <div><span class="dash-eyebrow">SERVICIOS</span><h1>Mis resultados</h1><p>Aquí podrás consultar los resultados que se encuentren disponibles.</p></div>
-    <span class="dash-badge">Próximamente</span>
-</header>
-<section class="dash-card" aria-label="Mis resultados: próximamente">
-    <div class="dash-chart-placeholder">
-        <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("results")' /></div>
-        <h2>Aún no hay resultados disponibles para consultar</h2>
-        <p>Este módulo está en preparación. Cuando se integre, aquí podrás consultar la evaluación, su fecha, su estado y el resultado disponible.</p>
-        <p>Actualmente no se muestran resultados de evaluaciones.</p>
-    </div>
-</section>
-<a class="dash-text-link student-back" asp-action="Index">Volver a mi tablero</a>
+@model IReadOnlyList<Zuni.Models.Evaluaciones.ResultadoEstudianteViewModel>
+@{ViewData["Title"]="Mis resultados";}
+<h1>Mis resultados</h1><p>Solo se muestran resultados de tu cuenta autorizados para publicación.</p>
+@if(Model.Count==0){<section class="dash-card"><p>Todavía no tienes evaluaciones finalizadas.</p></section>}
+@foreach(var r in Model){<article class="dash-card mb-3"><h2>@r.Titulo</h2>@if(r.EsDemostracion){<p class="dash-badge">Demostración · sin interpretación clínica</p>}<p>Finalizada: @r.FechaFinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC</p>@if(r.Publicado){@if(r.Puntuacion.HasValue){<p>Puntuación: @r.Puntuacion</p>}<p>@r.Observaciones</p>}else{<p>Resultado pendiente de publicación</p>}</article>}

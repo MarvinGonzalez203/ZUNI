@@ -1,17 +1,19 @@
-@{
-    ViewData["Title"] = "Evaluaciones";
+@model IReadOnlyList<Zuni.Models.Evaluaciones.AsignacionEvaluacion>
+@using Zuni.Models.Evaluaciones
+@{ ViewData["Title"]="Evaluaciones"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">TU ESPACIO</span><h1>Mis evaluaciones</h1><p>Consulta tus asignaciones, guarda tu avance y continúa cuando lo necesites.</p></div></header>
+@foreach(var grupo in new[] { (EstadoEvaluacion.Asignada,"Asignadas"), (EstadoEvaluacion.Pendiente,"Pendientes"), (EstadoEvaluacion.EnProceso,"En proceso"), (EstadoEvaluacion.Finalizada,"Finalizadas") }) {
+<section class="mb-4" aria-labelledby="estado-@grupo.Item1"><h2 id="estado-@grupo.Item1">@grupo.Item2 <span class="dash-badge">@Model.Count(a=>a.Estado==grupo.Item1)</span></h2>
+@if(!Model.Any(a=>a.Estado==grupo.Item1)) { <p>No tienes evaluaciones en este estado.</p> }
+<div class="row g-3">
+@foreach(var a in Model.Where(a=>a.Estado==grupo.Item1)) {
+<div class="col-12 col-xl-6"><article class="dash-card h-100" data-estado="@a.Estado"><h3>@a.Evaluacion.Titulo</h3>@if(a.Evaluacion.EsDemostracion){<p class="dash-badge">Demostración · sin interpretación clínica</p>}<p>@a.Evaluacion.Descripcion</p><p>Asignada: @a.FechaAsignacionUtc.ToString("dd/MM/yyyy HH:mm") UTC</p>
+@if(a.Estado==EstadoEvaluacion.Asignada){<p>Asignada, pendiente de habilitación.</p>}
+@if(a.Estado==EstadoEvaluacion.Pendiente){<p>Disponible para iniciar.</p>}
+@if(a.Estado==EstadoEvaluacion.EnProceso){<p>@a.Respuestas.Count de @a.Evaluacion.Preguntas.Count preguntas respondidas · @(a.Evaluacion.Preguntas.Count == 0 ? 0 : (int)Math.Round(100d * a.Respuestas.Count / a.Evaluacion.Preguntas.Count)) %</p><progress value="@a.Respuestas.Count" max="@a.Evaluacion.Preguntas.Count" aria-label="Avance de evaluación"></progress>}
+@if(a.Estado==EstadoEvaluacion.Finalizada){<p>Finalizada: @a.FechaFinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC</p><p>Comprobante: <small>@a.Comprobante</small></p>}
+<a class="dash-button" asp-controller="Evaluaciones" asp-action="Detalle" asp-route-id="@a.Id">@(a.Estado==EstadoEvaluacion.EnProceso?"Continuar evaluación":a.Estado==EstadoEvaluacion.Finalizada?"Ver comprobante":"Ver instrucciones")</a>
+</article></div>
 }
-@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
-<header class="dash-profile-heading">
-    <div><span class="dash-eyebrow">SERVICIOS</span><h1>Evaluaciones</h1><p>Aquí podrás realizar las evaluaciones que tengas disponibles.</p></div>
-    <span class="dash-badge">Próximamente</span>
-</header>
-<section class="dash-card" aria-label="Evaluaciones: próximamente">
-    <div class="dash-chart-placeholder">
-        <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("clipboard")' /></div>
-        <h2>Las evaluaciones todavía no están disponibles</h2>
-        <p>Cuando se integren los instrumentos oficiales proporcionados por la universidad, las evaluaciones disponibles aparecerán aquí.</p>
-        <p>Por ahora no hay evaluaciones que puedas responder.</p>
-    </div>
-</section>
-<a class="dash-text-link student-back" asp-action="Index">Volver a mi tablero</a>
+</div></section>
+}

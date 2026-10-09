@@ -1,0 +1,10 @@
+@model IReadOnlyList<Zuni.Models.Evaluaciones.AsignacionEvaluacion>
+@using Zuni.Models.Evaluaciones
+@{ViewData["Title"]="Administrar evaluaciones";}
+<h1>Evaluaciones y publicación</h1><p>Habilita asignaciones, publica resultados y autoriza reaperturas. Cada cambio queda registrado.</p>
+@if(TempData["Error"] is string error){<div class="alert alert-danger">@error</div>}
+@foreach(var a in Model){<article class="dash-card mb-3"><h2>@a.Evaluacion.Titulo</h2><p>@a.Estudiante.FullName · @a.Estado</p>@if(a.Evaluacion.EsDemostracion){<span class="dash-badge">Demostración</span>}
+<form asp-action="GestionarEvaluacion" method="post" class="d-flex flex-wrap gap-2 mt-3"><input type="hidden" name="id" value="@a.Id"/><input type="hidden" name="revision" value="@a.Revision"/>
+@if(a.Estado==EstadoEvaluacion.Asignada){<button class="dash-button" name="operacion" value="habilitar">Habilitar evaluación</button>}
+@if(a.Estado==EstadoEvaluacion.Finalizada){<button class="dash-button" name="operacion" value="reabrir">Reabrir evaluación</button>@if(a.Resultado!=null){<p>@a.Resultado.ObservacionesPublicables</p><button class="dash-button" name="operacion" value="@(a.Resultado.Publicado?"ocultar":"publicar")">@(a.Resultado.Publicado?"Ocultar resultado":"Autorizar publicación")</button>}}
+</form></article>}

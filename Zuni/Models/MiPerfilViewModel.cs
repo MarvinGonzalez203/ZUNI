@@ -35,7 +35,7 @@ public sealed class MiPerfilViewModel
         }.Where(campo => string.IsNullOrWhiteSpace(campo.Item2))
          .Select(campo => campo.Item1).ToArray();
 
-    public string? CarneFormateado => Carne is { Length: 10 }
+    public string? CarneFormateado => Carne is { Length: 10 or 11 }
         ? $"{Carne[..4]}-{Carne[4..6]}-{Carne[6..]}"
         : Carne;
 }

@@ -7,3 +7,10 @@
 Zuni/App_Data/
 Zuni/bin/
 Zuni/obj/
+
+# Artefactos locales de verificación y compilación.
+/.verification-build/
+bin/
+obj/
+.vs/
+*.csproj.user

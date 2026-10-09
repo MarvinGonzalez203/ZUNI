@@ -1,0 +1,24 @@
+@model Zuni.Models.Evaluaciones.AsignacionEvaluacion
+@using Zuni.Models.Evaluaciones
+@{ViewData["Title"]=Model.Evaluacion.Titulo;var preguntas=Model.Evaluacion.Preguntas.OrderBy(p=>p.Orden).ToList();}
+@section Styles {<link rel="stylesheet" href="~/css/evaluaciones.css" asp-append-version="true"/>}
+<h1>@Model.Evaluacion.Titulo</h1>
+@if(Model.Evaluacion.EsDemostracion){<p class="dash-badge">Datos de prueba · no es una prueba clínica validada</p>}
+<p>@Model.Evaluacion.Descripcion</p><section class="dash-card mb-3"><h2>Instrucciones</h2><p>@Model.Evaluacion.Instrucciones</p></section>
+@if(TempData["EvaluacionError"] is string error){<div class="alert alert-danger" role="alert">@error</div>}
+@if(Model.Estado==EstadoEvaluacion.Asignada){<p>Esta evaluación todavía no ha sido habilitada.</p>}
+@if(Model.Estado==EstadoEvaluacion.Pendiente){<form asp-action="Iniciar" asp-route-id="@Model.Id" method="post"><input type="hidden" name="revision" value="@Model.Revision"/><button class="dash-button">Iniciar evaluación</button></form>}
+@if(Model.Estado==EstadoEvaluacion.Finalizada){<section class="dash-card"><h2>Evaluación enviada</h2><p>Fecha: @Model.FechaFinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC</p><p>Comprobante: <strong>@Model.Comprobante</strong></p><p>Las respuestas están bloqueadas. Solo un responsable autorizado puede reabrirla.</p><a class="dash-button" asp-controller="Estudiante" asp-action="Resultados">Consultar resultados</a></section>}
+@if(Model.Estado==EstadoEvaluacion.EnProceso){
+<form asp-action="Guardar" asp-route-id="@Model.Id" method="post" id="respuestas-form">
+<input type="hidden" name="revision" value="@Model.Revision"/>
+<p id="avance" aria-live="polite">@Model.Respuestas.Count de @preguntas.Count respuestas guardadas · @(preguntas.Count == 0 ? 0 : (int)Math.Round(100d * Model.Respuestas.Count / preguntas.Count)) %</p><progress id="progreso" max="@preguntas.Count" value="@Model.Respuestas.Count" aria-label="Preguntas respondidas"></progress>
+@for(var i=0;i<preguntas.Count;i++){var p=preguntas[i];var respuesta=Model.Respuestas.SingleOrDefault(r=>r.PreguntaId==p.Id)?.Valor;
+<fieldset class="dash-card pregunta mb-3"><legend>@(i+1). @p.Texto @(p.Obligatoria?"(obligatoria)":"(opcional)")</legend>
+<label for="respuesta-@p.Id">Tu respuesta</label><select id="respuesta-@p.Id" name="respuestas[@p.Id]" class="form-select"><option value="">Sin responder</option>@for(var valor=1;valor<=5;valor++){<option value="@valor" selected="@(respuesta==valor)">@valor — @(valor==1?"Nunca":valor==2?"Casi nunca":valor==3?"A veces":valor==4?"Casi siempre":"Siempre")</option>}</select></fieldset>
+}
+<div class="d-flex gap-2 flex-wrap my-3"><button type="button" id="anterior" class="btn btn-outline-dark" hidden>Anterior</button><button type="button" id="siguiente" class="btn btn-outline-dark" hidden>Siguiente</button><button class="dash-button" name="revisar" value="false">Guardar avance</button><button class="dash-button" name="revisar" value="true">Guardar y revisar respuestas</button></div><p id="guardado-aviso" role="status">Guarda tu avance antes de cerrar sesión o salir.</p>
+</form>
+}
+<a class="dash-text-link" asp-controller="Estudiante" asp-action="Evaluaciones">Volver a evaluaciones</a>
+@section Scripts {<script src="~/js/evaluaciones.js" asp-append-version="true"></script>}

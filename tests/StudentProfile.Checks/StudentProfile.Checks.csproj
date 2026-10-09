@@ -8,5 +8,5 @@
   <ItemGroup>
     <Compile Include="../../Zuni/Models/CompletarPerfilEstudianteViewModel.cs" Link="CompletarPerfilEstudianteViewModel.cs" />
     <Compile Include="../../Zuni/Models/MiPerfilViewModel.cs" Link="MiPerfilViewModel.cs" />
-  </ItemGroup>
+  <Compile Include="../../Zuni/Services/EstudiantesCsv.cs" Link="EstudiantesCsv.cs" /><Compile Include="../../Zuni/Models/Administrador/EstudianteAdminViewModel.cs" Link="EstudianteAdminViewModel.cs" /></ItemGroup>
 </Project>
