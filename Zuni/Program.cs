@@ -6,8 +6,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Zuni.Data;
 using Zuni.Models;
+using Zuni.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<AsignacionPsicologoService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(

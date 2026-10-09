@@ -6,6 +6,9 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<AsignacionEstudiantePsicologo> AsignacionesEstudiantePsicologo =>
+            Set<AsignacionEstudiantePsicologo>();
+
         public DbSet<PasswordResetToken> PasswordResetTokens =>
             Set<PasswordResetToken>();
 
@@ -23,6 +26,25 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<AsignacionEstudiantePsicologo>(entity =>
+            {
+                entity.ToTable("AsignacionesEstudiantePsicologo", table =>
+                    table.HasCheckConstraint("CK_AsignacionesEstudiantePsicologo_Fechas",
+                        "\"FechaFinalizacionUtc\" IS NULL OR \"FechaFinalizacionUtc\" >= \"FechaAsignacionUtc\""));
+                entity.HasKey(a => a.Id);
+                entity.Property(a => a.PsicologoUsuarioId).IsRequired();
+                entity.Property(a => a.FechaAsignacionUtc).HasColumnType("timestamp with time zone");
+                entity.Property(a => a.FechaFinalizacionUtc).HasColumnType("timestamp with time zone");
+                entity.HasOne(a => a.PerfilEstudiante).WithMany()
+                    .HasForeignKey(a => a.PerfilEstudianteId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(a => a.PsicologoUsuario).WithMany()
+                    .HasForeignKey(a => a.PsicologoUsuarioId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(a => new { a.PsicologoUsuarioId, a.FechaFinalizacionUtc });
+                entity.HasIndex(a => a.PerfilEstudianteId).IsUnique()
+                    .HasDatabaseName(Zuni.Services.AsignacionPsicologoService.IndiceAsignacionVigente)
+                    .HasFilter("\"FechaFinalizacionUtc\" IS NULL");
+            });
 
             builder.Entity<AuditoriaUsuario>(entity =>
             {
