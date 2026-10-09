@@ -1,12 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../Zuni/Models/CompletarPerfilEstudianteViewModel.cs" Link="CompletarPerfilEstudianteViewModel.cs" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Compile Include="../../Zuni/Helpers/CarneHelper.cs" Link="CarneHelper.cs" />
     <Compile Include="../../Zuni/Models/MiPerfilViewModel.cs" Link="MiPerfilViewModel.cs" />
-  <Compile Include="../../Zuni/Services/EstudiantesCsv.cs" Link="EstudiantesCsv.cs" /><Compile Include="../../Zuni/Models/Administrador/EstudianteAdminViewModel.cs" Link="EstudianteAdminViewModel.cs" /></ItemGroup>
+    <Compile Include="../../Zuni/Models/MiCuenta/DatosEstudianteViewModel.cs" Link="DatosEstudianteViewModel.cs" />
+    <Compile Include="../../Zuni/Models/MiCuenta/EditarMiCuentaViewModel.cs" Link="EditarMiCuentaViewModel.cs" />
+    <Compile Include="../../Zuni/Models/MiCuenta/CambiarContrasenaViewModel.cs" Link="CambiarContrasenaViewModel.cs" />
+    <Compile Include="../../Zuni/Services/EstudiantesCsv.cs" Link="EstudiantesCsv.cs" />
+    <Compile Include="../../Zuni/Models/Administrador/EstudianteAdminViewModel.cs" Link="EstudianteAdminViewModel.cs" />
+    <Compile Include="../../Zuni/Models/Administrador/EditarEstudianteViewModel.cs" Link="EditarEstudianteViewModel.cs" />
+  </ItemGroup>
 </Project>

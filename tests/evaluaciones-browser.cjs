@@ -17,7 +17,7 @@ async function main() {
   check((await page.locator('#avance').innerText()).includes('67 %'),'Progreso interactivo 67 %');
   await Promise.all([page.waitForURL('**/Estudiante/Evaluaciones/'+id),page.getByRole('button',{name:'Guardar avance',exact:true}).click()]);
   check((await page.locator('#avance').innerText()).includes('67 %'),'Recarga tras guardar conserva 67 %');
-  await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await page.waitForURL(url=>url.pathname==='/' || url.pathname==='/Home');
+  await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await page.waitForURL(url=>url.pathname==='/Cuenta/IniciarSesion');
   await page.goto(origin+'/Estudiante/Evaluaciones/'+id);check(page.url().includes('IniciarSesion'),'Cerrar sesión impide acceso posterior');
   // Nueva sesión en contexto independiente: sin cookies de la sesión anterior.
   await context.close();const fresh=await browser.newContext();await fresh.addCookies([{name:'.AspNetCore.Cookies',value:cookie,url:origin,httpOnly:true,sameSite:'Lax'}]);

@@ -45,7 +45,7 @@
             }
             else
             {
-                <a class="dash-account" asp-controller="@inicio" asp-action="MiPerfil" aria-label="Ver mi perfil: @corto"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@rol</small></div></a>
+                <a class="dash-account" asp-controller="MiCuenta" asp-action="Index" aria-label="Ver mi cuenta: @corto"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@rol</small></div></a>
             }
             <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-logout" type="submit"><partial name="_DashboardIcon" model='@("logout")' />Cerrar sesión</button></form>
         </div>

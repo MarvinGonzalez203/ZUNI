@@ -1,49 +1,26 @@
 using System.ComponentModel.DataAnnotations;
 using Zuni.Models;
-
-static CompletarPerfilEstudianteViewModel Valid() => new()
-{
-    CarneParte1 = "2026", CarneParte2 = "01", CarneParte3 = "0001",
-    Telefono = "12345678", Carrera = "Ingeniería"
-};
-static bool IsValid(CompletarPerfilEstudianteViewModel model) =>
-    Validator.TryValidateObject(model, new ValidationContext(model), new List<ValidationResult>(), true);
-var cases = new (string Name, Action<CompletarPerfilEstudianteViewModel> Change)[]
-{
-    ("carné vacío", m => m.CarneParte1 = null),
-    ("segundo bloque vacío", m => m.CarneParte2 = ""),
-    ("último bloque vacío", m => m.CarneParte3 = null),
-    ("carné no ASCII", m => m.CarneParte1 = "٢٠٢٦"),
-    ("teléfono vacío", m => m.Telefono = null),
-    ("teléfono corto", m => m.Telefono = "123"),
-    ("teléfono no ASCII", m => m.Telefono = "١٢٣٤٥٦٧٨"),
-    ("carrera en blanco", m => m.Carrera = "   "),
-    ("carrera demasiado larga", m => m.Carrera = new string('a', 151)),
-    ("semestre fuera de rango", m => m.Semestre = "11"),
-    ("ciclo fuera de rango", m => m.CicloAcademico = "3"),
-    ("teléfono de emergencia inválido", m => m.TelefonoContactoEmergencia = "123")
-};
-if (!IsValid(Valid())) throw new Exception("El perfil válido con opcionales vacíos debe aceptarse.");
-foreach (var test in cases)
-{
-    var model = Valid();
-    test.Change(model);
-    if (IsValid(model)) throw new Exception($"Se aceptó: {test.Name}");
+using Zuni.Models.MiCuenta;
+using Zuni.Helpers;
+int checks=0;
+void Check(bool ok,string name){if(!ok)throw new Exception(name);checks++;Console.WriteLine("OK: "+name);}
+bool Valid(object model)=>Validator.TryValidateObject(model,new ValidationContext(model),new List<ValidationResult>(),true);
+Check(Valid(new DatosEstudianteViewModel()),"MiCuenta permite opcionales vacíos");
+foreach(var change in new Action<DatosEstudianteViewModel>[] {m=>m.Telefono="123",m=>m.Telefono="١٢٣٤٥٦٧٨",m=>m.Carrera=new string('a',151),m=>m.Semestre="11",m=>m.CicloAcademico="3",m=>m.TelefonoContactoEmergencia="123",m=>m.NombreContactoEmergencia=new string('a',151),m=>m.RelacionContactoEmergencia=new string('a',61)}){var m=new DatosEstudianteViewModel();change(m);Check(!Valid(m),"MiCuenta rechaza campo inválido");}
+Check(Valid(new DatosEstudianteViewModel{Telefono="12345678",Carrera="Ingeniería",Semestre="10",CicloAcademico="2",TelefonoContactoEmergencia="12345678"}),"MiCuenta acepta datos completos");
+foreach(var length in new[]{2,3,4,5,6}){var last=new string('1',length);Check(CarneHelper.TryConstruir("7490","20",last,out var carne)&&CarneHelper.Formatear(carne)=="7490-20-"+last,"CarneHelper conserva formato remoto de "+(6+length)+" dígitos");}
+foreach(var parts in new[]{("","20","15193"),("7490","","15193"),("7490","20","1"),("7490","20","1234567"),("٧٤٩٠","20","15193")})Check(!CarneHelper.TryConstruir(parts.Item1,parts.Item2,parts.Item3,out _),"Carné inválido rechazado");
+var complete=new MiPerfilViewModel{Carne="74902015193",Telefono="12345678",Carrera="Ingeniería"};
+Check(complete.PorcentajeAvance==100&&complete.CamposOpcionalesFaltantes.Count==5&&complete.CarneFormateado=="7490-20-15193","Opcionales no reducen progreso y carné 11 se formatea");
+Check(new MiPerfilViewModel().PorcentajeAvance==0&&new MiPerfilViewModel{Carne="74902015193"}.PorcentajeAvance==33,"Progreso del perfil vacío y parcial");
+Check(!Valid(new EditarMiCuentaViewModel{NombreCompleto="Juan"}),"Editar exige revisión protegida");
+Check(!Valid(new EditarMiCuentaViewModel{NombreCompleto="J",Revision="test"}),"Editar rechaza nombre corto");
+Check(!Valid(new CambiarContrasenaViewModel{ContrasenaActual="test",NuevaContrasena="ejemplo123",ConfirmarNuevaContrasena="distinta123"}),"Cambio de contraseña exige confirmación coincidente");
+var csv=Zuni.Services.EstudiantesCsv.Leer("Nombre,Correo,Carne,Carrera\n\"Alumno, Uno\",uno@miumg.edu.gt,7490-20-15193,Ingeniería\nAlumno Dos,dos@miumg.edu.gt,2020010001,");
+Check(csv.Errores.Count==0&&csv.Filas.Count==2&&csv.Filas[0].Carne=="74902015193","CSV conserva comillas y carné de 11");
+foreach(var invalid in new[]{"Nombre,Correo,Carne,Carrera\nUno,uno@miumg.edu.gt,2020010001,X\nOtro,UNO@miumg.edu.gt,2020010002,X","Nombre,Correo,Carne,Carrera\nUno,uno@gmail.com,2020010001,X","Nombre,Correo,Carne,Carrera\nUno,uno@miumg.edu.gt,abc,X","Nombre,Correo,Carne,Carrera\n\"Sin cierre","Otra,Cabecera"})Check(Zuni.Services.EstudiantesCsv.Leer(invalid).Errores.Count>0,"CSV inválido rechazado");
+foreach(var carne in new[]{"7490-20-11","7490-20-123456"}){
+ Check(Valid(new Zuni.Models.Administrador.EditarEstudianteViewModel{Id="test",Nombre="Alumno",Carne=carne}),"Edición administrativa respeta formato de MiCuenta: "+carne);
+ Check(Zuni.Services.EstudiantesCsv.Leer("Nombre,Correo,Carne,Carrera\nAlumno,alumno@miumg.edu.gt,"+carne+",Ingeniería").Errores.Count==0,"CSV respeta formato de MiCuenta: "+carne);
 }
-var complete = new MiPerfilViewModel { Carne = "2026010001", Telefono = "12345678", Carrera = "Ingeniería" };
-if (complete.PorcentajeAvance != 100 || complete.CamposOpcionalesFaltantes.Count != 5)
-    throw new Exception("Los opcionales no deben reducir el progreso requerido.");
-if (new MiPerfilViewModel().PorcentajeAvance != 0 || complete.CarneFormateado != "2026-01-0001")
-    throw new Exception("Progreso o formato incorrecto.");
-Console.WriteLine($"Correcto: {cases.Length + 3} comprobaciones de validación y presentación.");
-var eleven = Valid(); eleven.CarneParte3 = "15193";
-if (!IsValid(eleven)) throw new Exception("Carné de 11 dígitos rechazado");
-if (new MiPerfilViewModel { Carne="74902015193" }.CarneFormateado != "7490-20-15193") throw new Exception("Formato de 11 dígitos incorrecto");
-eleven.CarneParte3="151933";
-if (IsValid(eleven)) throw new Exception("Se aceptó carné demasiado largo");
-Console.WriteLine("Correcto: carnés de 10/11 dígitos y rechazo de 12.");
-var csv = Zuni.Services.EstudiantesCsv.Leer("Nombre,Correo,Carne,Carrera\n\"Alumno, Uno\",uno@miumg.edu.gt,7490-20-15193,Ingeniería\nAlumno Dos,dos@miumg.edu.gt,2020010001,");
-if(csv.Errores.Count!=0 || csv.Filas.Count!=2 || csv.Filas[0].Carne!="74902015193") throw new Exception("CSV válido rechazado");
-foreach(var invalid in new[]{"Nombre,Correo,Carne,Carrera\nUno,uno@miumg.edu.gt,2020010001,X\nOtro,UNO@miumg.edu.gt,2020010002,X", "Nombre,Correo,Carne,Carrera\nUno,uno@gmail.com,2020010001,X", "Nombre,Correo,Carne,Carrera\nUno,uno@miumg.edu.gt,abc,X", "Nombre,Correo,Carne,Carrera\n\"Sin cierre", "Otra,Cabecera"})
-if(Zuni.Services.EstudiantesCsv.Leer(invalid).Errores.Count==0) throw new Exception("CSV inválido aceptado");
-Console.WriteLine("Correcto: CSV con comillas, 10/11 dígitos, duplicados, dominio, formato y encabezados.");
+Console.WriteLine($"APROBADAS: {checks} comprobaciones de MiCuenta, perfil, carné y CSV. Sin conexión a PostgreSQL.");

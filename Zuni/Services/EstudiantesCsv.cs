@@ -27,7 +27,7 @@ public static class EstudiantesCsv
                 var fields = parser.ReadFields();
                 if (fields is null || fields.Length != 4) { result.Errores.Add($"Fila {row}: se requieren cuatro columnas."); continue; }
                 var nombre = fields[0].Trim(); var correo = fields[1].Trim(); var rawCarne = fields[2].Trim(); var carne = rawCarne.Replace("-", ""); var carrera = fields[3].Trim();
-                if (nombre.Length < 2 || nombre.Length > 100 || correo.Length > 256 || !new EmailAddressAttribute().IsValid(correo) || !correo.EndsWith("@miumg.edu.gt",StringComparison.OrdinalIgnoreCase) || !Regex.IsMatch(rawCarne,@"^(?:[0-9]{10,11}|[0-9]{4}-[0-9]{2}-[0-9]{4,5})$") || carrera.Length > 150)
+                if (nombre.Length < 2 || nombre.Length > 100 || correo.Length > 256 || !new EmailAddressAttribute().IsValid(correo) || !correo.EndsWith("@miumg.edu.gt",StringComparison.OrdinalIgnoreCase) || !Regex.IsMatch(rawCarne,@"^(?:[0-9]{8,12}|[0-9]{4}-[0-9]{2}-[0-9]{2,6})$") || carrera.Length > 150)
                     result.Errores.Add($"Fila {row}: revisa nombre, correo institucional, carné o carrera.");
                 if (!emails.Add(correo) || !carnes.Add(carne)) result.Errores.Add($"Fila {row}: correo o carné repetido en el archivo.");
                 result.Filas.Add(new(nombre,correo,carne,carrera));

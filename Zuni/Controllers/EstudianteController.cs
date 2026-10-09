@@ -27,13 +27,7 @@ public sealed class EstudianteController(ApplicationDbContext db) : Controller
     }
 
     [HttpGet("MiPerfil")]
-    public async Task<IActionResult> MiPerfil(CancellationToken cancellationToken)
-    {
-        var usuario = await ObtenerUsuarioAsync(cancellationToken);
-        if (usuario is null) return StatusCode(StatusCodes.Status403Forbidden);
-
-        return View(CrearPerfilViewModel(usuario));
-    }
+    public IActionResult MiPerfil() => RedirectToAction("Index", "MiCuenta");
 
     [HttpGet("Evaluaciones")]
     public async Task<IActionResult> Evaluaciones(CancellationToken ct) => View(await db.Set<Zuni.Models.Evaluaciones.AsignacionEvaluacion>().AsNoTracking().AsSplitQuery().Where(a=>a.EstudianteId==User.FindFirstValue(ClaimTypes.NameIdentifier)).Include(a=>a.Evaluacion).ThenInclude(e=>e.Preguntas).Include(a=>a.Respuestas).OrderBy(a=>a.FechaAsignacionUtc).ToListAsync(ct));

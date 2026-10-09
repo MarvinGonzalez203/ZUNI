@@ -8,5 +8,5 @@
         <a class="dash-nav-link @(accion == item.Item1 ? "is-active" : "")" asp-controller="Psicologo" asp-action="@item.Item1" aria-current="@(accion == item.Item1 ? "page" : null)"><partial name="_DashboardIcon" model="item.Item3" /><span>@item.Item2</span></a>
     }
     <span class="dash-nav-label dash-nav-label-spaced">CUENTA</span>
-    <div class="dash-nav-link is-unavailable" aria-disabled="true"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta<small>Próximamente</small></span></div>
+    <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
 </nav>

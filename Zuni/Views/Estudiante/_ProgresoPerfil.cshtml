@@ -1,24 +1,24 @@
 @model MiPerfilViewModel
 <section class="dash-card student-progress" aria-labelledby="progreso-title">
     <div class="dash-section-heading">
-        <h2 id="progreso-title">@(Model.Completo ? "Tu perfil está completo" : "Tu perfil está incompleto")</h2>
-        <span class="dash-badge">@Model.PorcentajeAvance% de los datos requeridos</span>
+        <h2 id="progreso-title">@(Model.CamposCompletados == Model.TotalCamposRequeridos ? "Datos requeridos completos" : "Datos requeridos pendientes")</h2>
+        <span class="dash-badge">@Model.PorcentajeAvance% completado</span>
     </div>
-    <label for="perfil-progreso">@Model.CamposCompletados de @Model.TotalCamposRequeridos campos completados</label>
-    <progress id="perfil-progreso" value="@Model.CamposCompletados" max="@Model.TotalCamposRequeridos" aria-describedby="progreso-explicacion">@Model.PorcentajeAvance%</progress>
-    <p id="progreso-explicacion">El avance considera carné, teléfono y carrera. Los datos opcionales no afectan este indicador.</p>
-    @if (!Model.Completo)
+    <label for="datos-progreso">@Model.CamposCompletados de @Model.TotalCamposRequeridos datos requeridos</label>
+    <progress id="datos-progreso" value="@Model.CamposCompletados" max="@Model.TotalCamposRequeridos" aria-describedby="datos-progreso-ayuda">@Model.PorcentajeAvance%</progress>
+    <p id="datos-progreso-ayuda">Este porcentaje indica únicamente si registraste tu carné, teléfono y carrera. Los datos opcionales no afectan el avance.</p>
+    @if (Model.CamposRequeridosFaltantes.Count > 0)
     {
-        <h3>Datos requeridos que faltan</h3>
+        <h3>Datos que faltan</h3>
         <ul>@foreach (var campo in Model.CamposRequeridosFaltantes) { <li>@campo</li> }</ul>
-        <a class="dash-button" asp-controller="Perfil" asp-action="Completar">Completar mi perfil</a>
+        <a class="dash-button" asp-controller="MiCuenta" asp-action="Editar">Completar mis datos</a>
     }
     @if (Model.CamposOpcionalesFaltantes.Count > 0)
     {
         <details class="student-optional">
-            <summary>Datos opcionales sin registrar (@Model.CamposOpcionalesFaltantes.Count)</summary>
-            <p>No son necesarios para que tu perfil esté completo.</p>
+            <summary>Datos opcionales pendientes (@Model.CamposOpcionalesFaltantes.Count)</summary>
             <ul>@foreach (var campo in Model.CamposOpcionalesFaltantes) { <li>@campo</li> }</ul>
+            <a class="dash-text-link" asp-controller="MiCuenta" asp-action="Editar">Editar mis datos</a>
         </details>
     }
 </section>

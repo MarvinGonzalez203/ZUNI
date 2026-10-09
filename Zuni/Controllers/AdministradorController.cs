@@ -1,3 +1,4 @@
+using Zuni.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -548,8 +549,14 @@ public sealed partial class AdministradorController : Controller
 
             var correo = model.Correo.Trim();
             var normalizado = correo.ToUpperInvariant();
-            var carne = model.Rol == "Estudiante"
-                ? string.Concat(model.CarneParte1, model.CarneParte2, model.CarneParte3) : null;
+            string? carne = null;
+            if (model.Rol == "Estudiante")
+            {
+                if (!CarneHelper.TryConstruir(model.CarneParte1, model.CarneParte2, model.CarneParte3, out var normalizadoCarne))
+                    ModelState.AddModelError(nameof(model.CarneParte1), CarneHelper.MensajeFormato);
+                else
+                    carne = normalizadoCarne;
+            }
             var rol = await _db.Roles.AsNoTracking()
                 .SingleOrDefaultAsync(r => r.Name == model.Rol, cancellationToken);
             if (!AgregarUsuarioViewModel.RolesPermitidos.Contains(model.Rol) ||

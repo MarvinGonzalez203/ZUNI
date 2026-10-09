@@ -72,12 +72,12 @@ try {
  Check(!(await Page(student,"/Estudiante/Resultados")).Contains("Resultado ficticio:"),"Otro estudiante no ve el resultado publicado");
  var foreign=await student.GetAsync($"/Estudiante/Evaluaciones/{finished}");Check(foreign.StatusCode==HttpStatusCode.NotFound,"ID ajeno devuelve 404");
  var revisionBefore=await Revision(started);
- await Post(student,$"/Estudiante/Evaluaciones/{started}/guardar",new(){{"revision",revisionBefore.ToString()}},"/Estudiante/MiPerfil");
+ await Post(student,$"/Estudiante/Evaluaciones/{started}/guardar",new(){{"revision",revisionBefore.ToString()}},"/MiCuenta");
  Check(await Revision(started)==revisionBefore,"No se guardan respuestas de otro estudiante");
  var denied=await student.GetAsync("/Administrador/Evaluaciones");Check(denied.StatusCode==HttpStatusCode.Redirect && denied.Headers.Location!.ToString().Contains("AccesoDenegado"),"Controles administrativos protegidos");
  var csrf=await owner.PostAsync($"/Estudiante/Evaluaciones/{started}/finalizar",new FormUrlEncodedContent(new Dictionary<string,string>{{"confirmado","true"}}));Check(csrf.StatusCode==HttpStatusCode.BadRequest,"POST sin antifalsificación rechazado");
  await Manage(finished,"reabrir");Check(await Scalar("SELECT \"Estado\"::text FROM \"AsignacionesEvaluacion\" WHERE \"Id\"=@id",finished)=="2","Reapertura autorizada");Check(await Scalar("SELECT \"Publicado\"::text FROM \"ResultadosEvaluacion\" WHERE \"AsignacionId\"=@id",finished)=="false","Reapertura retira publicación");Check(await Scalar("SELECT count(*)::text FROM \"RespuestasEvaluacion\" WHERE \"AsignacionId\"=@id",finished)=="3","Reapertura conserva respuestas");
- foreach(var path in new[]{"/Panel","/Estudiante","/Estudiante/MiPerfil","/Estudiante/Citas","/Perfil/Completar","/Administrador/Tablero","/Administrador/Estudiantes","/Administrador","/Administrador/Importar"})await Page(owner,path);
+ foreach(var path in new[]{"/Panel","/Estudiante","/MiCuenta","/Estudiante/Citas","/MiCuenta/Editar","/Administrador/Tablero","/Administrador/Estudiantes","/Administrador","/Administrador/Importar"})await Page(owner,path);
  Console.WriteLine($"PRUEBAS COMPLETADAS: {checks} comprobaciones.");
 } finally {
  await using var tx=await db.BeginTransactionAsync();
