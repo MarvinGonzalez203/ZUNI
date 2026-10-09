@@ -29,6 +29,14 @@
         {
             @await Html.PartialAsync(navegacion)
         }
+        @if (User.IsInRole("Administrador") && User.IsInRole("Estudiante"))
+        {
+            <nav class="dash-nav" aria-label="Cambiar panel">
+                <span class="dash-nav-label">MIS PANELES</span>
+                <a class="dash-nav-link" asp-controller="Administrador" asp-action="Tablero">Panel Administrador</a>
+                <a class="dash-nav-link" asp-controller="Estudiante" asp-action="Index">Panel Estudiante</a>
+            </nav>
+        }
         <div class="dash-sidebar-bottom">
             <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>Tu bienestar también<br />forma parte del camino.</p></div>
             @if (ViewData["DashboardAccountUnavailable"] is true)
@@ -56,6 +64,7 @@
             <footer class="dash-footer"><span>ZUNI · Bienestar y acompañamiento estudiantil</span><span>Tu espacio. Tu ritmo.</span></footer>
         </main>
     </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         window.addEventListener('resize', () => {

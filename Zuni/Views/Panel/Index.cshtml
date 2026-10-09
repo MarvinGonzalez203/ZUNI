@@ -1,0 +1,7 @@
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Elige tu panel";
+    ViewData["DashboardAccountUnavailable"] = true;
+}
+<h1>¿Dónde quieres trabajar?</h1><p>Tu cuenta tiene acceso a ambos paneles. Puedes cambiar de panel desde el menú en cualquier momento.</p>
+<section class="dash-summary-grid"><a class="dash-card" asp-controller="Administrador" asp-action="Tablero"><h2>Administrador</h2><p>Estudiantes, usuarios e importaciones.</p></a><a class="dash-card" asp-controller="Estudiante" asp-action="Index"><h2>Estudiante</h2><p>Tu tablero, perfil y servicios.</p></a></section>

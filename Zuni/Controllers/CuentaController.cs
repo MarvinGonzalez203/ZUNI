@@ -656,7 +656,8 @@ public sealed class CuentaController(
 
     private IActionResult RedirectByRole(Func<string, bool> tieneRol)
     {
-        // El orden es intencional para usuarios con múltiples roles.
+        if (tieneRol("Administrador") && tieneRol("Estudiante")) return RedirectToAction("Index", "Panel");
+        // Prioridad para las demás combinaciones de roles.
         foreach (var rol in new[] { "Administrador", "Director", "Psicologo", "Catedratico", "Estudiante" })
         {
             if (tieneRol(rol))
@@ -670,7 +671,7 @@ public sealed class CuentaController(
                     "Estudiante" => "Estudiante",
                     _ => "Home"
                 };
-                return RedirectToAction("Index", controller);
+                return RedirectToAction(controller == "Administrador" ? "Tablero" : "Index", controller);
             }
         }
 

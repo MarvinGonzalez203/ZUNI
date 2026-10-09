@@ -1,0 +1,7 @@
+<nav class="dash-nav" aria-label="Administración">
+    <span class="dash-nav-label">ADMINISTRACIÓN</span>
+    @foreach (var item in new[] { ("Tablero", "Tablero administrativo"), ("Evaluaciones", "Evaluaciones y resultados"), ("Estudiantes", "Gestión de Estudiantes"), ("Index", "Usuarios y Accesos"), ("Importar", "Importar CSV") })
+    {
+        <a class="dash-nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == item.Item1 ? "is-active" : "")" asp-controller="Administrador" asp-action="@item.Item1">@item.Item2</a>
+    }
+</nav>

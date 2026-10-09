@@ -12,8 +12,8 @@ using Zuni.Data;
 namespace Zuni.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261004220526_AddAsignacionesEstudiantePsicologo")]
-    partial class AddAsignacionesEstudiantePsicologo
+    [Migration("20261009043711_AddEvaluaciones")]
+    partial class AddEvaluaciones
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -234,40 +234,6 @@ namespace Zuni.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Zuni.Models.AsignacionEstudiantePsicologo", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("FechaAsignacionUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("FechaFinalizacionUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("PerfilEstudianteId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("PsicologoUsuarioId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PerfilEstudianteId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_AsignacionesEstudiantePsicologo_PerfilEstudiante_Vigente")
-                        .HasFilter("\"FechaFinalizacionUtc\" IS NULL");
-
-                    b.HasIndex("PsicologoUsuarioId", "FechaFinalizacionUtc");
-
-                    b.ToTable("AsignacionesEstudiantePsicologo", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_AsignacionesEstudiantePsicologo_Fechas", "\"FechaFinalizacionUtc\" IS NULL OR \"FechaFinalizacionUtc\" >= \"FechaAsignacionUtc\"");
-                        });
-                });
-
             modelBuilder.Entity("Zuni.Models.AuditoriaUsuario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -309,6 +275,188 @@ namespace Zuni.Migrations
                     b.HasIndex("UsuarioAfectadoId");
 
                     b.ToTable("AuditoriaUsuarios", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.AsignacionEvaluacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("Comprobante")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EstudianteId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EvaluacionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaAsignacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaFinalizacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaInicioUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Comprobante")
+                        .IsUnique();
+
+                    b.HasIndex("EvaluacionId");
+
+                    b.HasIndex("EstudianteId", "EvaluacionId")
+                        .IsUnique();
+
+                    b.ToTable("AsignacionesEvaluacion", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Asignacion_Estado", "\"Estado\" BETWEEN 0 AND 3");
+
+                            t.HasCheckConstraint("CK_Asignacion_Finalizacion", "(\"Estado\" = 3 AND \"FechaFinalizacionUtc\" IS NOT NULL AND \"Comprobante\" IS NOT NULL AND \"FechaInicioUtc\" IS NOT NULL) OR (\"Estado\" <> 3 AND \"FechaFinalizacionUtc\" IS NULL AND \"Comprobante\" IS NULL)");
+
+                            t.HasCheckConstraint("CK_Asignacion_Inicio", "\"Estado\" <> 2 OR \"FechaInicioUtc\" IS NOT NULL");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.Evaluacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("EsDemostracion")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Instrucciones")
+                        .IsRequired()
+                        .HasMaxLength(3000)
+                        .HasColumnType("character varying(3000)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Evaluaciones", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.PreguntaEvaluacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EvaluacionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Obligatoria")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EvaluacionId", "Orden")
+                        .IsUnique();
+
+                    b.ToTable("PreguntasEvaluacion", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Pregunta_Orden", "\"Orden\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.RespuestaEvaluacion", b =>
+                {
+                    b.Property<Guid>("AsignacionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PreguntaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ActualizadaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EvaluacionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Valor")
+                        .HasColumnType("integer");
+
+                    b.HasKey("AsignacionId", "PreguntaId");
+
+                    b.HasIndex("AsignacionId", "EvaluacionId");
+
+                    b.HasIndex("PreguntaId", "EvaluacionId");
+
+                    b.ToTable("RespuestasEvaluacion", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Respuesta_Valor", "\"Valor\" BETWEEN 1 AND 5");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.ResultadoEvaluacion", b =>
+                {
+                    b.Property<Guid>("AsignacionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ObservacionesPublicables")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("Publicado")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PublicadoPorId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("PublicadoUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Puntuacion")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("AsignacionId");
+
+                    b.HasIndex("PublicadoPorId");
+
+                    b.ToTable("ResultadosEvaluacion", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Resultado_Publicacion", "NOT \"Publicado\" OR (\"PublicadoUtc\" IS NOT NULL AND \"PublicadoPorId\" IS NOT NULL)");
+                        });
                 });
 
             modelBuilder.Entity("Zuni.Models.PasswordResetToken", b =>
@@ -456,23 +604,73 @@ namespace Zuni.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Zuni.Models.AsignacionEstudiantePsicologo", b =>
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.AsignacionEvaluacion", b =>
                 {
-                    b.HasOne("Zuni.Models.PerfilEstudiante", "PerfilEstudiante")
+                    b.HasOne("Zuni.Models.ApplicationUser", "Estudiante")
                         .WithMany()
-                        .HasForeignKey("PerfilEstudianteId")
+                        .HasForeignKey("EstudianteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Zuni.Models.ApplicationUser", "PsicologoUsuario")
+                    b.HasOne("Zuni.Models.Evaluaciones.Evaluacion", "Evaluacion")
                         .WithMany()
-                        .HasForeignKey("PsicologoUsuarioId")
+                        .HasForeignKey("EvaluacionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("PerfilEstudiante");
+                    b.Navigation("Estudiante");
 
-                    b.Navigation("PsicologoUsuario");
+                    b.Navigation("Evaluacion");
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.PreguntaEvaluacion", b =>
+                {
+                    b.HasOne("Zuni.Models.Evaluaciones.Evaluacion", "Evaluacion")
+                        .WithMany("Preguntas")
+                        .HasForeignKey("EvaluacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Evaluacion");
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.RespuestaEvaluacion", b =>
+                {
+                    b.HasOne("Zuni.Models.Evaluaciones.AsignacionEvaluacion", "Asignacion")
+                        .WithMany("Respuestas")
+                        .HasForeignKey("AsignacionId", "EvaluacionId")
+                        .HasPrincipalKey("Id", "EvaluacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.Evaluaciones.PreguntaEvaluacion", "Pregunta")
+                        .WithMany()
+                        .HasForeignKey("PreguntaId", "EvaluacionId")
+                        .HasPrincipalKey("Id", "EvaluacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Asignacion");
+
+                    b.Navigation("Pregunta");
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.ResultadoEvaluacion", b =>
+                {
+                    b.HasOne("Zuni.Models.Evaluaciones.AsignacionEvaluacion", "Asignacion")
+                        .WithOne("Resultado")
+                        .HasForeignKey("Zuni.Models.Evaluaciones.ResultadoEvaluacion", "AsignacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.ApplicationUser", "PublicadoPor")
+                        .WithMany()
+                        .HasForeignKey("PublicadoPorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Asignacion");
+
+                    b.Navigation("PublicadoPor");
                 });
 
             modelBuilder.Entity("Zuni.Models.PasswordResetToken", b =>
@@ -502,6 +700,18 @@ namespace Zuni.Migrations
                     b.Navigation("PasswordResetTokens");
 
                     b.Navigation("PerfilEstudiante");
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.AsignacionEvaluacion", b =>
+                {
+                    b.Navigation("Respuestas");
+
+                    b.Navigation("Resultado");
+                });
+
+            modelBuilder.Entity("Zuni.Models.Evaluaciones.Evaluacion", b =>
+                {
+                    b.Navigation("Preguntas");
                 });
 #pragma warning restore 612, 618
         }

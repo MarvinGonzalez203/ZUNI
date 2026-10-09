@@ -1,3 +1,4 @@
+<form method="get" class="d-flex gap-2 mb-3"><input class="form-control" name="busqueda" value="@Context.Request.Query["busqueda"]" placeholder="Nombre o correo" aria-label="Buscar usuarios"/><button class="dash-button">Buscar</button></form>
 @model IReadOnlyList<Zuni.Models.Administrador.UsuarioAdminViewModel>
 @{
     ViewData["Title"] = "Panel Administrador · Usuarios";
@@ -12,7 +13,7 @@
                 <h1 id="usuarios-title" class="display-6 fw-bold mb-2">Usuarios</h1>
                 <p class="mb-0">Consulta las cuentas de ZUNI, su rol y su estado actual.</p>
             </div>
-            <a asp-action="AgregarUsuario" class="btn btn-zuni">Agregar usuario</a>
+            <a asp-action="AgregarUsuario" class="dash-button">Agregar usuario</a>
             <span class="rounded-pill px-3 py-2 small fw-semibold" style="background: rgba(206,162,253,.25);">
                 Total de usuarios: @Model.Count
             </span>

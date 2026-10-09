@@ -1,5 +1,7 @@
 @{
     var accion = ViewContext.RouteData.Values["action"]?.ToString();
+    if (ViewContext.RouteData.Values["controller"]?.ToString() == "Evaluaciones") accion = "Evaluaciones";
+    if (ViewContext.RouteData.Values["controller"]?.ToString() == "Perfil") accion = "MiPerfil";
 }
 <nav class="dash-nav" aria-label="Navegación del estudiante">
     <span class="dash-nav-label">MI ESPACIO</span>
@@ -8,6 +10,6 @@
     <span class="dash-nav-label dash-nav-label-spaced">SERVICIOS</span>
     @foreach (var item in new[] { ("clipboard", "Evaluaciones"), ("results", "Resultados"), ("calendar", "Citas") })
     {
-        <a class="dash-nav-link @(accion == item.Item2 ? "is-active" : "")" asp-controller="Estudiante" asp-action="@item.Item2" aria-current="@(accion == item.Item2 ? "page" : null)"><partial name="_DashboardIcon" model="item.Item1" /><span>@item.Item2<small>Próximamente</small></span></a>
+        <a class="dash-nav-link @(accion == item.Item2 ? "is-active" : "")" asp-controller="Estudiante" asp-action="@item.Item2" aria-current="@(accion == item.Item2 ? "page" : null)"><partial name="_DashboardIcon" model="item.Item1" /><span>@item.Item2@if(item.Item2 == "Citas"){<small>Próximamente</small>}</span></a>
     }
 </nav>

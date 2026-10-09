@@ -11,8 +11,8 @@ Creados:
 
 - `Zuni/Models/AsignacionEstudiantePsicologo.cs`.
 - `Zuni/Services/AsignacionPsicologoService.cs` (incluye el enum de resultados).
-- `Zuni/Migrations/20261004220526_AddAsignacionesEstudiantePsicologo.cs`.
-- `Zuni/Migrations/20261004220526_AddAsignacionesEstudiantePsicologo.Designer.cs`.
+- `Zuni/Migrations/20261009060000_AddAsignacionesEstudiantePsicologo.cs`.
+- `Zuni/Migrations/20261009060000_AddAsignacionesEstudiantePsicologo.Designer.cs`.
 - Este documento de revisión.
 
 Modificados:
@@ -53,7 +53,7 @@ No se registran datos personales ni se reemplazan o finalizan asignaciones exist
 
 ## Migración y snapshot
 
-Nombre exacto: `20261004220526_AddAsignacionesEstudiantePsicologo`.
+Nombre exacto: `20261009060000_AddAsignacionesEstudiantePsicologo`.
 
 `Up()` únicamente crea la tabla nueva, su PK, ambas FK restrictivas, el CHECK y los dos índices. No altera tablas o columnas existentes ni contiene inserciones o actualizaciones de datos. `Down()` únicamente elimina la tabla nueva y, con ella, sus restricciones e índices.
 

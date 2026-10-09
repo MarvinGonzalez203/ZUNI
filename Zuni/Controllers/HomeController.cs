@@ -22,6 +22,11 @@ namespace Zuni.Controllers
 
         public async Task<IActionResult> Index()
         {
+            if (User.Identity?.IsAuthenticated == true && User.IsInRole("Estudiante") &&
+                !User.IsInRole("Administrador") && !User.IsInRole("Director") &&
+                !User.IsInRole("Psicologo") && !User.IsInRole("Catedratico"))
+                return RedirectToAction("Index", "Estudiante");
+
             var model = new HomeViewModel
             {
                 PrimerNombre = ObtenerPrimerNombre(

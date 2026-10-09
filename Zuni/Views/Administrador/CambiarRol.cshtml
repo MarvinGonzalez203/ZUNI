@@ -29,14 +29,14 @@
                 </select>
                 <span asp-validation-for="NuevoRol" class="text-danger small"></span>
             </div>
-            <div class="mb-4">
+            <div class="form-check my-3"><input asp-for="ConservarRoles" class="form-check-input"/><label asp-for="ConservarRoles" class="form-check-label">Conservar los roles actuales y agregar el seleccionado</label><p>Desmarca solo si deseas reemplazar los roles actuales.</p></div><div class="mb-4">
                 <label asp-for="Motivo" class="form-label">Motivo (opcional)</label>
                 <textarea asp-for="Motivo" class="form-control" rows="4" maxlength="500" aria-describedby="motivo-ayuda"></textarea>
                 <div id="motivo-ayuda" class="form-text">Máximo 500 caracteres. Evita incluir información sensible.</div>
                 <span asp-validation-for="Motivo" class="text-danger small"></span>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" class="btn btn-zuni px-4">Confirmar</button>
+                <button type="submit" class="dash-button px-4">Confirmar</button>
                 <a asp-action="Index" class="btn btn-outline-dark px-4">Cancelar</a>
             </div>
         </form>

@@ -42,22 +42,22 @@
         <p>@(Model.PerfilCompleto ? "Tus datos básicos están completos." : "Completa tus datos académicos y de contacto.")</p>
         <span class="dash-text-link">Ver cuenta <partial name="_DashboardIcon" model='@("arrow")' /></span>
     </a>
-    @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Disponibles cuando se integre este módulo.", "Resultados"), ("calendar", "CITAS", "Podrás consultar o solicitar tus citas.", "Citas") })
+    @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Consulta los resultados autorizados para tu cuenta.", "Resultados"), ("calendar", "CITAS", "Podrás consultar o solicitar tus citas.", "Citas") })
     {
         <a class="dash-card dash-summary dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4" aria-label="@item.Item4">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><span class="dash-eyebrow">@item.Item2</span></div>
-            <h3>Próximamente</h3><p>@item.Item3</p><span class="dash-module-label">En preparación</span>
+            <h3>@(item.Item4 == "Citas" ? "Próximamente" : "Disponible")</h3><p>@item.Item3</p><span class="dash-module-label">@(item.Item4 == "Citas" ? "En preparación" : "Ir al módulo")</span>
         </a>
     }
 </section>
 
 <section class="dash-card dash-evaluations" aria-labelledby="evaluaciones-title">
-    <div class="dash-section-heading"><div><h2 id="evaluaciones-title">Resumen de mis evaluaciones</h2><p>Un espacio para conocer tu recorrido.</p></div><span class="dash-badge">Próximamente</span></div>
+    <div class="dash-section-heading"><div><h2 id="evaluaciones-title">Resumen de mis evaluaciones</h2><p>Un espacio para conocer tu recorrido.</p></div><a class="dash-text-link" asp-action="Evaluaciones">Consultar evaluaciones</a></div>
     <div class="dash-chart-placeholder">
         <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("spark")' /></div>
         <h3>Tu recorrido comienza contigo</h3>
         <p>Tus resultados aparecerán aquí cuando completes tus evaluaciones.</p>
-        <small>Este módulo estará disponible próximamente.</small>
+        <small>Los resultados se muestran cuando un responsable autoriza su publicación.</small>
     </div>
 </section>
 

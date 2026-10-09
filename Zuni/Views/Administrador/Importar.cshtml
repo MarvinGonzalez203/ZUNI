@@ -1,0 +1,19 @@
+@model Zuni.Models.Administrador.ImportacionEstudiantesViewModel
+@{ ViewData["Title"] = "Importar estudiantes"; }
+<h1>Importar estudiantes</h1>
+<p>CSV UTF-8 con encabezados <strong>Nombre,Correo,Carne,Carrera</strong>. Máximo 100 estudiantes y 256 KB. Se admiten carnés con o sin guiones.</p>
+<p>Las cuentas nuevas podrán establecer su contraseña mediante «Olvidé mi contraseña». No se reemplazan cuentas existentes.</p>
+<a asp-action="PlantillaCsv">Descargar plantilla</a>
+@foreach(var error in Model.Errores) { <div class="alert alert-danger" role="alert">@error</div> }
+<form asp-action="Importar" method="post" enctype="multipart/form-data" class="dash-card my-3">
+<label for="archivo">Selecciona el archivo CSV</label><input id="archivo" name="archivo" type="file" accept=".csv" required class="form-control my-3" /><button class="dash-button">Revisar archivo</button>
+</form>
+@if(Model.Filas.Count > 0) {
+<div class="dash-card table-responsive"><h2>Vista previa: @Model.Filas.Count estudiantes</h2><table class="table"><thead><tr><th>Nombre</th><th>Correo</th><th>Carné</th><th>Carrera</th></tr></thead><tbody>
+@foreach(var fila in Model.Filas) { <tr><td>@fila.Nombre</td><td>@fila.Correo</td><td>@fila.Carne</td><td>@fila.Carrera</td></tr> }
+</tbody></table>
+@if(Model.Errores.Count == 0) {
+<form asp-action="ConfirmarImportacion" method="post"><input type="hidden" asp-for="Csv"/><button class="dash-button">Confirmar importación</button></form>
+}
+</div>
+}

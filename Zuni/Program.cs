@@ -22,6 +22,7 @@ builder.Services.AddScoped<
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<EvaluacionesService>();
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(

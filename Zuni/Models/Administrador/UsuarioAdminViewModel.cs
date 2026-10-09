@@ -6,5 +6,5 @@ public sealed class UsuarioAdminViewModel
     public string FullName { get; init; } = string.Empty;
     public string? Email { get; init; }
     public bool IsActive { get; init; }
-    public string Rol { get; init; } = "Sin rol";
+    public string Rol { get; set; } = "Sin rol";
 }
