@@ -13,3 +13,21 @@
     .dashboard-sidebar .dash-support-note { display: none; }
     .dashboard-sidebar .dash-sidebar-bottom { padding-top: 16px; }
 }
+/* Calendario de disponibilidad del profesional */
+.availability-panel { padding: 1.25rem; border: 1px solid #e5daec; border-radius: 1.2rem; background: linear-gradient(145deg, #faf7fe, #fff); }
+.calendar-week,.calendar-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: .4rem; }
+.calendar-week { margin-bottom: .5rem; color: #625d63; text-align: center; font-size: .75rem; font-weight: 650; }
+.calendar-day { min-height: 66px; padding: .4rem .1rem; border: 1px solid #e1dce5; border-radius: .8rem; color: #4d4850; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem; }
+.calendar-day span { font-weight: 700; }.calendar-day small { font-size: .6rem; }
+.calendar-day.is-available { color: #225a3b; background: #e0f4e7; border-color: #a8d8b8; }
+.calendar-day.is-busy { color: #8e3439; background: #fde5e7; border-color: #edb9bf; }
+.calendar-day.is-selected { outline: 2px solid #80549f; outline-offset: 2px; }.calendar-day:focus-visible { outline: 3px solid #111; outline-offset: 2px; }
+.calendar-day:disabled { opacity: .45; cursor: default; }
+.calendar-legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: .75rem; }.calendar-legend span { display: inline-flex; align-items: center; gap: .4rem; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #ccc; }.legend-dot.available { background: #e0f4e7; border-color: #a8d8b8; }.legend-dot.busy { background: #fde5e7; border-color: #edb9bf; }.legend-dot.undefined { background: #fff; }
+.availability-editor { padding-top: 1rem; border-top: 1px solid #e5daec; }.availability-range { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-top: .6rem; padding: .85rem; background: #fff; border: 1px solid #d4e8da; border-radius: .8rem; font-size: .8rem; }
+@media (max-width: 575.98px) { .availability-panel { padding: .65rem; }.calendar-days,.calendar-week { gap: .25rem; }.calendar-day { min-height: 54px; }.calendar-day small { font-size: .48rem; } }
+
+.psych-dashboard .availability-panel { max-width: 880px; }
+.psych-dashboard .calendar-day { min-height: 72px; }
+@media (max-width: 575.98px) { .psych-dashboard .calendar-day { min-height: 54px; } }
