@@ -1,0 +1,30 @@
+@model Zuni.Models.Evaluaciones.ConsentimientoBigFiveInput
+@using Zuni.Models.Evaluaciones
+@{ViewData["Title"]="Conócete mejor";var participacion=ViewData["Participacion"] as ParticipacionBigFive;}
+@section Styles {<link rel="stylesheet" href="~/css/bigfive.css" asp-append-version="true"/>}
+<header class="bf-hero"><span class="dash-eyebrow">TU BIENESTAR · PASO A PASO</span><h1>Una mirada a tu personalidad</h1><p>Esto no es un diagnóstico médico, es para conocerte mejor.</p><div class="bf-chips"><span>50 afirmaciones</span><span>5 dimensiones</span><span>Guarda y continúa</span></div></header>
+@if(ViewData["PruebaLocal"] is true){<p class="alert alert-warning">Prueba local · usa únicamente datos ficticios. Adaptación al español y política institucional pendientes de aprobación.</p>}
+@if(TempData["BigFiveError"] is string error){<p class="alert alert-danger" role="alert">@error</p>}
+<section class="dash-card mb-4"><h2>Así funciona</h2><ol><li>Lee la información y decide si quieres participar.</li><li>Describe cómo eres habitualmente en bloques de 10 afirmaciones. Guarda antes de salir.</li><li>Al finalizar, tu psicólogo asignado recibe un resumen de las cinco dimensiones.</li></ol><p>Una puntuación más alta o baja no significa ser mejor o peor. No necesitas repetir el cuestionario automáticamente para cada consulta; una nueva aplicación debe acordarse con el profesional.</p></section>
+@if(participacion is not null)
+{
+    <section class="dash-card"><h2>Tu participación</h2>
+    @if(participacion.RevocadoUtc is not null){<p>Retiraste tu consentimiento. El cuestionario y el acceso del profesional están suspendidos. Puedes contactar a la institución para solicitar información sobre tus datos.</p>}
+    else {<p>Consentimiento registrado: @participacion.ConsentimientoUtc.ToString("dd/MM/yyyy HH:mm") UTC.</p><a class="dash-button" asp-action="Cuestionario">@(participacion.Asignacion.Estado==EstadoEvaluacion.Finalizada?"Ver comprobante":"Continuar cuestionario")</a>
+    <details class="mt-4"><summary>Retirar mi consentimiento</summary><p>Se suspenderán el cuestionario y el acceso del psicólogo. Los datos no se borran automáticamente.</p><form asp-action="Retirar" method="post"><button class="btn btn-outline-danger">Confirmar retiro del consentimiento</button></form></details>}
+    <details class="mt-3"><summary>Información que aceptaste</summary><p class="bf-consent">@participacion.TextoConsentimiento</p></details></section>
+}
+else if(ViewData["Disponible"] is true)
+{
+    <section class="dash-card"><h2>Antes de empezar</h2><p class="bf-consent">@ViewData["Consentimiento"]</p>
+    @if(ViewData["Profesional"] is string professional){<p><strong>Profesional disponible para tu acompañamiento:</strong> @professional. La asignación se verifica de nuevo al comenzar.</p>}
+    else {<p class="alert alert-info">Aún debe definirse un profesional disponible para tu acompañamiento. No podremos iniciar hasta verificar tu asignación.</p>}
+    <form asp-action="Aceptar" method="post">
+    <label asp-for="Referencia" class="form-label">¿Alguien te refirió a este espacio?</label><select asp-for="Referencia" class="form-select mb-3"><option value="Ninguna">No, vengo por iniciativa propia</option><option value="Docente">Un docente</option><option value="Estudiante">Otro estudiante</option><option value="Coordinacion">Coordinación</option><option value="Otra">Otra persona</option></select>
+    <label asp-for="MotivoConsulta" class="form-label">¿Qué te gustaría conversar con tu psicólogo?</label><p class="small text-secondary">Describe brevemente tu motivo. No necesitas relatar detalles íntimos ni experiencias difíciles aquí.</p><textarea asp-for="MotivoConsulta" class="form-control" rows="3" minlength="5" maxlength="1500" required></textarea><span asp-validation-for="MotivoConsulta" class="text-danger"></span>
+    <label class="d-block my-3"><input asp-for="MayorDeEdad" required/> Confirmo que tengo 18 años o más.</label>
+    <label class="d-block my-3"><input asp-for="Acepto" required/> Leí la información y acepto voluntariamente guardar mis respuestas y compartir el resumen y motivo con mi psicólogo asignado.</label>
+    <button class="dash-button">Aceptar y comenzar</button><a class="dash-text-link ms-3" asp-controller="Estudiante" asp-action="Evaluaciones">Ahora no</a></form></section>
+}
+else {<p class="dash-notice">El cuestionario estará disponible cuando la institución complete su política de privacidad y revisión profesional.</p>}
+<footer class="bf-source">Ítems basados en el <a href="https://ipip.ori.org/New_IPIP-50-item-scale.htm" target="_blank" rel="noopener">International Personality Item Pool (IPIP)</a>, dominio público. Adaptación española ZUNI v1; no acreditada como validada en Guatemala.</footer>

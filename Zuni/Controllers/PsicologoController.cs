@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Zuni.Controllers;
 
 [Authorize(Roles = "Psicologo")]
-public sealed class PsicologoController : Controller
+public sealed class PsicologoController(Zuni.Services.BigFiveService bigFive) : Controller
 {
     [HttpGet]
     public IActionResult Index()
@@ -19,7 +19,13 @@ public sealed class PsicologoController : Controller
     public IActionResult Estudiantes() => View();
 
     [HttpGet]
-    public IActionResult Resultados() => View();
+    public async Task<IActionResult> Resultados(CancellationToken ct)
+    {
+        ViewData["PruebaLocal"] = bigFive.PruebaLocal;
+        if (bigFive.PruebaLocal && (HttpContext.Connection.RemoteIpAddress is not { } address || !System.Net.IPAddress.IsLoopback(address))) return StatusCode(403);
+        if (!bigFive.Disponible) return View(Array.Empty<Zuni.Models.Evaluaciones.ResumenBigFive>());
+        return View(await bigFive.Resumenes(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value, ct));
+    }
 
     [HttpGet]
     public IActionResult Atencion() => View();

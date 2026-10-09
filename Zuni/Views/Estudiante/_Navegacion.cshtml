@@ -1,6 +1,7 @@
 @{
     var accion = ViewContext.RouteData.Values["action"]?.ToString();
     if (ViewContext.RouteData.Values["controller"]?.ToString() == "Evaluaciones") accion = "Evaluaciones";
+    if (ViewContext.RouteData.Values["controller"]?.ToString() == "BigFive") accion = "Evaluaciones";
     if (ViewContext.RouteData.Values["controller"]?.ToString() == "Perfil") accion = "MiPerfil";
 }
 <nav class="dash-nav" aria-label="Navegación del estudiante">

@@ -1,4 +1,3 @@
-@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
 @{
     ViewData["Title"] = "Citas";
 }
@@ -7,6 +6,10 @@
     <div><span class="dash-eyebrow">SERVICIOS</span><h1>Citas</h1><p>Desde este espacio podrás consultar y gestionar tus citas cuando el servicio esté disponible.</p></div>
     <span class="dash-badge">Próximamente</span>
 </header>
+<section class="dash-card mb-3"><h2>Cuestionario inicial</h2>
+@if(ViewData["BigFiveCompleto"] is true){<p>Tu Big Five está finalizado. No necesitas repetirlo automáticamente para cada cita; una nueva aplicación se acuerda con el profesional.</p>}
+else {<p>Antes del futuro flujo de reserva, completa el cuestionario inicial con consentimiento y asignación vigentes. Si prefieres no participar, consulta con el profesional sobre las alternativas de atención.</p><a class="dash-button" asp-controller="BigFive" asp-action="Index">Conocer el cuestionario</a>}
+</section>
 <section class="dash-card student-empty" aria-label="Citas: próximamente">
     <div class="dash-chart-placeholder">
         <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("calendar")' /></div>

@@ -5,13 +5,16 @@ using Zuni.Models.Evaluaciones;
 using System.Text.Json;
 namespace Zuni.Services;
 public sealed class EvaluacionOperacionException(string mensaje) : Exception(mensaje);
-public sealed class EvaluacionesService(ApplicationDbContext db)
+public sealed class EvaluacionesService(ApplicationDbContext db, BigFiveService? bigFive = null)
 {
-    public IQueryable<AsignacionEvaluacion> Consulta(string estudianteId) => db.Set<AsignacionEvaluacion>().AsNoTracking().AsSplitQuery().Where(a=>a.EstudianteId==estudianteId).Include(a=>a.Evaluacion).ThenInclude(e=>e.Preguntas).Include(a=>a.Respuestas);
+    public IQueryable<AsignacionEvaluacion> Consulta(string estudianteId) => db.Set<AsignacionEvaluacion>().AsNoTracking().AsSplitQuery().Where(a=>a.EstudianteId==estudianteId && a.EvaluacionId!=Ipip50.EvaluacionId).Include(a=>a.Evaluacion).ThenInclude(e=>e.Preguntas).Include(a=>a.Respuestas);
     private async Task<AsignacionEvaluacion> Bloquear(Guid id,string? estudianteId,CancellationToken ct)
     {
         var a=await db.Set<AsignacionEvaluacion>().FromSqlInterpolated($"SELECT * FROM \"AsignacionesEvaluacion\" WHERE \"Id\"={id} FOR UPDATE").SingleOrDefaultAsync(ct);
         if(a is null || (estudianteId!=null && a.EstudianteId!=estudianteId)) throw new EvaluacionOperacionException("Evaluación no disponible.");
+        if(a.EvaluacionId==Ipip50.EvaluacionId && (estudianteId is null || bigFive is null || !bigFive.Disponible ||
+            !await bigFive.Vigentes().AnyAsync(p=>p.AsignacionId==id && p.Asignacion.EstudianteId==estudianteId,ct)))
+            throw new EvaluacionOperacionException("El cuestionario requiere consentimiento y un vínculo vigente; no admite administración general.");
         await db.Entry(a).Reference(x=>x.Evaluacion).LoadAsync(ct);await db.Entry(a.Evaluacion).Collection(x=>x.Preguntas).LoadAsync(ct);
         await db.Entry(a).Collection(x=>x.Respuestas).LoadAsync(ct);await db.Entry(a).Reference(x=>x.Resultado).LoadAsync(ct);
         return a;
@@ -49,6 +52,14 @@ public sealed class EvaluacionesService(ApplicationDbContext db)
         a.Resultado.Publicado=false;a.Resultado.PublicadoUtc=null;a.Resultado.PublicadoPorId=null;
         a.Resultado.Puntuacion=a.Evaluacion.EsDemostracion ? a.Respuestas.Sum(r=>r.Valor) : null;
         a.Resultado.ObservacionesPublicables=a.Evaluacion.EsDemostracion ? "Resultado de demostración: suma de respuestas de ejemplo, sin interpretación clínica ni diagnóstico." : "";
+        if(a.EvaluacionId==Ipip50.EvaluacionId)
+        {
+            var scores=Ipip50.Calcular(a.Respuestas);
+            var participation=await db.Set<ParticipacionBigFive>().SingleAsync(p=>p.AsignacionId==a.Id,ct);
+            participation.Apertura=scores['O'];participation.Responsabilidad=scores['C'];participation.Extraversion=scores['E'];
+            participation.Amabilidad=scores['A'];participation.Neuroticismo=scores['N'];
+            a.Resultado.Puntuacion=null;a.Resultado.ObservacionesPublicables="";
+        }
         await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);
     }
     public async Task Administrar(Guid id,string actor,int revision,string operacion,CancellationToken ct)

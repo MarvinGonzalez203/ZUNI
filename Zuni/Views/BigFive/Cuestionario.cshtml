@@ -1,0 +1,36 @@
+@model Zuni.Models.Evaluaciones.AsignacionEvaluacion
+@using Zuni.Models.Evaluaciones
+@using Zuni.Services
+@{ViewData["Title"]="Big Five · IPIP-50";var items=Ipip50.Orden(Model.Id);}
+@section Styles {<link rel="stylesheet" href="~/css/bigfive.css" asp-append-version="true"/>}
+<header class="bf-hero"><span class="dash-eyebrow">CONÓCETE MEJOR</span><h1>Tu forma de ser, en tus palabras</h1><p>Esto no es un diagnóstico médico, es para conocerte mejor.</p></header>
+@if(TempData["BigFiveError"] is string error){<p class="alert alert-danger" role="alert">@error</p>}
+@if(TempData["BigFiveSuccess"] is string success){<p class="alert alert-success" role="status">@success</p>}
+@if(Model.Estado==EstadoEvaluacion.Finalizada)
+{
+    <section class="dash-card"><h2>Gracias por completar el cuestionario</h2><p>Tu psicólogo asignado puede consultar el resumen de las cinco dimensiones. Tus respuestas quedaron bloqueadas.</p><p>Fecha: @Model.FechaFinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC</p><p>Comprobante: <strong>@Model.Comprobante</strong></p><p>No se realiza un diagnóstico automático.</p></section>
+}
+else
+{
+    <p>Piensa en cómo eres habitualmente. Elige cuánto te describe cada afirmación: 1 = nada, 2 = poco, 3 = en parte, 4 = bastante, 5 = mucho.</p>
+    <form asp-action="Guardar" method="post" id="bigfive-form"><input type="hidden" name="id" value="@Model.Id"/><input type="hidden" name="revision" value="@Model.Revision"/>
+    <div class="bf-progress"><p id="bf-avance" aria-live="polite">@Model.Respuestas.Count de 50 respuestas guardadas</p><progress id="bf-progress" max="50" value="@Model.Respuestas.Count" aria-label="Preguntas respondidas"></progress><p id="bf-pagina" aria-live="polite"></p></div>
+    @for(var page=0;page<5;page++)
+    {
+        <section class="bf-page" aria-label="Bloque @(page+1)">
+        @foreach(var item in items.Skip(page*10).Take(10))
+        {
+            var value=Model.Respuestas.SingleOrDefault(r=>r.PreguntaId==item.Id)?.Valor;
+            <fieldset class="dash-card bf-question"><legend>@(items.ToList().IndexOf(item)+1). @item.Texto</legend><label class="visually-hidden" for="bf-@item.Id">Cuánto te describe esta afirmación</label><select class="form-select" id="bf-@item.Id" name="respuestas[@item.Id]"><option value="">Elige una respuesta</option>@for(var score=1;score<=5;score++){<option value="@score" selected="@(value==score)">@score — @(score==1?"Nada":score==2?"Poco":score==3?"En parte":score==4?"Bastante":"Mucho")</option>}</select></fieldset>
+        }
+        <p class="bf-kind">Tu cultura, tus creencias y tu identidad merecen respeto. Responde con libertad.</p></section>
+    }
+    <div class="bf-actions"><button type="button" id="bf-anterior" class="btn btn-outline-dark" hidden>Anterior</button><button type="button" id="bf-siguiente" class="btn btn-outline-dark" hidden>Siguiente</button><button class="dash-button">Guardar avance</button></div><p id="bf-save-status" role="status">Guarda tu avance antes de salir. No se guarda automáticamente.</p></form>
+    @if(Model.Respuestas.Count==50)
+    {
+        <section class="dash-card mt-4"><h2>Todo está guardado</h2><p>Revisa las afirmaciones antes de finalizar. Al confirmar, las respuestas quedarán bloqueadas y el resumen estará disponible para tu psicólogo asignado.</p><form asp-action="Finalizar" method="post" id="bf-finalizar"><input type="hidden" name="id" value="@Model.Id"/><input type="hidden" name="revision" value="@Model.Revision"/><label class="d-block mb-3"><input type="checkbox" name="confirmado" value="true" required/> Confirmo que deseo finalizar estas respuestas guardadas.</label><button class="dash-button">Confirmar y finalizar</button></form></section>
+    }
+}
+<a class="dash-text-link d-inline-block my-4" asp-action="Index">Información y consentimiento</a>
+<footer class="bf-source">IPIP-50 · Adaptación española ZUNI v1 · Sin diagnósticos ni clasificación de personas.</footer>
+@section Scripts {<script src="~/js/bigfive.js" asp-append-version="true"></script>}

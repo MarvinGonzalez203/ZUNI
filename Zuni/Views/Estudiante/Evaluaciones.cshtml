@@ -2,6 +2,7 @@
 @using Zuni.Models.Evaluaciones
 @{ ViewData["Title"]="Evaluaciones"; }
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">TU ESPACIO</span><h1>Mis evaluaciones</h1><p>Consulta tus asignaciones, guarda tu avance y continúa cuando lo necesites.</p></div></header>
+<section class="dash-card mb-4"><h2>Conócete mejor · Big Five</h2><p>50 afirmaciones, cinco dimensiones y un resumen para tu psicólogo asignado. Esto no es un diagnóstico médico.</p><a class="dash-button" asp-controller="BigFive" asp-action="Index">Conocer el cuestionario</a></section>
 @foreach(var grupo in new[] { (EstadoEvaluacion.Asignada,"Asignadas"), (EstadoEvaluacion.Pendiente,"Pendientes"), (EstadoEvaluacion.EnProceso,"En proceso"), (EstadoEvaluacion.Finalizada,"Finalizadas") }) {
 <section class="mb-4" aria-labelledby="estado-@grupo.Item1"><h2 id="estado-@grupo.Item1">@grupo.Item2 <span class="dash-badge">@Model.Count(a=>a.Estado==grupo.Item1)</span></h2>
 @if(!Model.Any(a=>a.Estado==grupo.Item1)) { <p>No tienes evaluaciones en este estado.</p> }

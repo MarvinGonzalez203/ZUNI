@@ -1,5 +1,16 @@
-@{
-    ViewData["Title"] = "Resultados exploratorios";
+@model IReadOnlyList<Zuni.Models.Evaluaciones.ResumenBigFive>
+@{ViewData["Title"]="Perfil Big Five";ViewData["ResultadosConectados"]=true;}
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ESTUDIANTES ASIGNADOS</span><h1>Cinco dimensiones, una mirada</h1><p>Resumen descriptivo del IPIP-50. No constituye un diagnóstico ni una clasificación de personas.</p></div></header>
+<p class="dash-notice">Medias de 1 a 5. Las barras muestran la posición dentro de esa escala, no percentiles ni comparación con la población guatemalteca. Una puntuación alta o baja no es mejor ni peor. @if(ViewData["PruebaLocal"] is true){<span>Prueba local: adaptación española pendiente de revisión profesional; usar datos ficticios.</span>}</p>
+@if(Model.Count==0){<section class="dash-card"><h2>Aún no hay perfiles disponibles</h2><p>Solo aparecen cuestionarios finalizados de tus estudiantes con consentimiento y asignación vigentes.</p></section>}
+@foreach(var resumen in Model)
+{
+<section class="dash-card my-4"><header><h2>@resumen.Estudiante</h2><p>Finalizado: @resumen.FinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC · IPIP50-ES-ZUNI-1</p></header><div class="bf-traits">
+@foreach(var trait in resumen.Dimensiones)
+{
+var width=((trait.Media-1)*25).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture);
+<article><div class="bf-trait-heading"><strong>@trait.Nombre</strong><span>@trait.Media.ToString("0.00") / 5</span></div><div class="bf-scale" role="meter" aria-label="@trait.Nombre" aria-valuemin="1" aria-valuemax="5" aria-valuenow="@trait.Media.ToString(System.Globalization.CultureInfo.InvariantCulture)"><span style="width:@(width)%"></span></div><div class="bf-extremes"><span>@trait.ExtremoInferior</span><span>@trait.ExtremoSuperior</span></div></article>
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Resultados exploratorios</h1></div></header>
-<partial name="_Resultados" />
+</div><details class="mt-4"><summary>Motivo de consulta y referencia</summary><p class="bf-consent">@resumen.MotivoConsulta</p><p>Referencia: @resumen.Referencia</p></details></section>
+}
+<p class="bf-source">Fuente: <a href="https://ipip.ori.org/newBigFive5broadKey.htm" target="_blank" rel="noopener">IPIP, marcadores de Goldberg</a>. Neuroticismo se expresa en dirección inversa a la estabilidad emocional del inventario original. Estos resultados requieren contexto y criterio profesional.</p>

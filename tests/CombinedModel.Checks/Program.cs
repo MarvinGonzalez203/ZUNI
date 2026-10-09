@@ -26,10 +26,11 @@ Check(differences.Count==0,"Snapshot coincide exactamente con el modelo combinad
 var migration=assembly.CreateMigration(assembly.Migrations["20261009043711_AddEvaluaciones"],db.Database.ProviderName!);
 var target=initializer.Initialize(migration.TargetModel,designTime:true);
 var linkMigration=assembly.CreateMigration(assembly.Migrations["20261009060000_AddAsignacionesEstudiantePsicologo"],db.Database.ProviderName!);
-var linkTarget=initializer.Initialize(linkMigration.TargetModel,designTime:true);
+var latest=assembly.CreateMigration(assembly.Migrations[assembly.Migrations.Keys.Last()],db.Database.ProviderName!);
+var linkTarget=initializer.Initialize(latest.TargetModel,designTime:true);
 Check(!differ.HasDifferences(linkTarget.GetRelationalModel(),current.GetRelationalModel()),"TargetModel de última migración coincide con modelo combinado");
 var additions=differ.GetDifferences(target.GetRelationalModel(),current.GetRelationalModel());
-Check(additions.OfType<CreateTableOperation>().Select(t=>t.Name).SequenceEqual(new[]{"AsignacionesEstudiantePsicologo"})&&additions.All(op=>op is CreateTableOperation or CreateIndexOperation),"Desde Evaluaciones solo se agregan asignaciones e índices");
+Check(additions.OfType<CreateTableOperation>().Select(t=>t.Name).Order().SequenceEqual(new[]{"AsignacionesEstudiantePsicologo","ParticipacionesBigFive","AccesosBigFive"}.Order())&&additions.All(op=>op is CreateTableOperation or CreateIndexOperation),"Desde Evaluaciones solo se agregan asignaciones, Big Five e índices");
 Check(linkMigration.UpOperations.OfType<CreateTableOperation>().Select(t=>t.Name).SequenceEqual(new[]{"AsignacionesEstudiantePsicologo"})&&linkMigration.UpOperations.All(op=>op is CreateTableOperation or CreateIndexOperation),"Migración de asignaciones únicamente agrega su tabla e índices");
 var migrator=db.GetService<IMigrator>();
 var freshSql=migrator.GenerateScript(null,null,MigrationsSqlGenerationOptions.Idempotent);
