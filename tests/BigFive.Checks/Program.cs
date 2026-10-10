@@ -141,7 +141,7 @@ try
     Check(rosterHtml.Contains("20262001")&&!rosterHtml.Contains("20262002")&&!rosterHtml.Contains("Motivo FICTICIO"),"Lista solo vinculados sin cargar sus perfiles Big Five");
     Check((await pClient.GetAsync("/Psicologo/Resultados")).StatusCode==HttpStatusCode.Redirect,"Resultados antiguos redirigen a estudiantes");
     Check((await pClient.GetAsync("/Psicologo/Atencion")).StatusCode==HttpStatusCode.Redirect,"Atención antigua redirige a estudiantes");
-    Check((await pClient.GetAsync("/Psicologo/Historial")).StatusCode==HttpStatusCode.Redirect,"Historial antiguo redirige a estudiantes");
+    Check((await Page(pClient,"/Psicologo/Historial")).Contains("Historial pendiente de conectar"),"Historial general conserva su vista independiente");
     Check((await Page(pClient,"/Psicologo/Estudiantes?filtro=completado")).Contains("20262001"),"Filtro de test completado incluye al titular");
     Check(!(await Page(pClient,"/Psicologo/Estudiantes?filtro=sinresultado")).Contains("20262001"),"Filtro sin resultado excluye al completado");
     Check(!(await Page(pClient,"/Psicologo/Estudiantes?busqueda=nombreinexistente")).Contains("20262001"),"Búsqueda filtra el listado sin abandonar la cuenta propia");

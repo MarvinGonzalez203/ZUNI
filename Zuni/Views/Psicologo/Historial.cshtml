@@ -1,5 +1,16 @@
 @{
     ViewData["Title"] = "Historial de atención";
+    ViewData["ResultadosConectados"] = true;
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Historial de atención</h1></div></header>
-<partial name="_Historial" />
+<link rel="stylesheet" href="~/css/seguimiento-estudiantes.css" asp-append-version="true" />
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Historial de atención</h1><p>Una vista general de tus atenciones terminadas. El historial de cada estudiante permanece dentro de su ficha.</p></div></header>
+<section class="dash-card">
+<p class="dash-notice">En preparación: esta vista se conectará con las citas terminadas. Compartirá los mismos registros del historial individual.</p>
+<fieldset disabled class="student-filters"><legend class="visually-hidden">Filtros del historial pendientes de conectar</legend>
+<label>Estudiante<input type="search" placeholder="Buscar por nombre" /></label>
+<label>Desde<input type="date" /></label><label>Hasta<input type="date" /></label>
+<label>Modalidad<select><option>Todas</option><option>Presencial</option><option>Virtual</option></select></label>
+<button class="dash-button" type="button">Filtrar</button></fieldset>
+<p class="student-muted mt-3">Se mostrarán nombre, fecha, modalidad y estado. Los detalles de la atención y las notas privadas se abrirán en la ficha del estudiante.</p>
+<div class="student-table-wrap"><table class="student-table"><caption class="visually-hidden">Vista general de atenciones terminadas</caption><thead><tr><th>Estudiante</th><th>Fecha y hora</th><th>Modalidad</th><th>Estado</th><th>Detalle</th></tr></thead><tbody><tr><td colspan="5"><div class="student-empty"><h2 class="h5">Historial pendiente de conectar</h2><p>Aquí aparecerán tus atenciones cuando se implemente el registro de citas terminadas.</p><a class="dash-button" asp-action="Estudiantes">Ver estudiantes y sus fichas</a></div></td></tr></tbody></table></div>
+</section>

@@ -1,6 +1,6 @@
 # Estudiantes y seguimiento
 
-El menú del psicólogo reúne Estudiantes, Resultados, Atención e Historial en **Estudiantes y seguimiento**. Agenda conserva la configuración de disponibilidad. Las rutas antiguas de resultados, atención e historial redirigen al listado.
+El menú del psicólogo reúne Estudiantes, Resultados y Atención en **Estudiantes y seguimiento**. Agenda conserva la configuración de disponibilidad. Las rutas antiguas de resultados y atención redirigen al listado. **Historial** conserva una vista general independiente; la ficha mantiene el historial individual. Ambas vistas utilizarán los mismos registros de atención cuando se implementen las citas terminadas.
 
 El listado usa vínculos vigentes de la cuenta autenticada y verifica en PostgreSQL los roles y estados activos del profesional y del estudiante. Muestra nombre, carné, carrera y disponibilidad del resultado Big Five. No requiere conocer un código para encontrar al estudiante: aparece automáticamente al quedar vinculado. Incluye búsqueda opcional por nombre, filtros de resultado disponible y paginación de 24 filas.
 

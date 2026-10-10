@@ -46,5 +46,6 @@ public sealed class PsicologoController(Zuni.Services.BigFiveService bigFive, Zu
     public IActionResult Atencion() => RedirectToAction(nameof(Estudiantes));
 
     [HttpGet]
-    public IActionResult Historial() => RedirectToAction(nameof(Estudiantes));
+    [ResponseCache(NoStore=true, Location=ResponseCacheLocation.None)]
+    public IActionResult Historial() => View();
 }
