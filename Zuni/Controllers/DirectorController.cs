@@ -10,4 +10,16 @@ public sealed class DirectorController : Controller
     {
         return View();
     }
+
+    [HttpGet]
+    public IActionResult Carreras() => View();
+
+    [HttpGet]
+    public IActionResult AvanceEvaluaciones() => View();
+
+    [HttpGet]
+    public IActionResult ResultadosInstitucionales() => View();
+
+    [HttpGet]
+    public IActionResult Estadisticas() => View();
 }

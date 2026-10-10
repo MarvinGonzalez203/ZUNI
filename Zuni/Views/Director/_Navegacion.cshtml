@@ -1,0 +1,13 @@
+@{
+    var accion = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<nav class="dash-nav" aria-label="Navegación del Director">
+    <span class="dash-nav-label">PANEL INSTITUCIONAL</span>
+    <a class="dash-nav-link @(accion == "Index" ? "is-active" : "")" asp-controller="Director" asp-action="Index" aria-current="@(accion == "Index" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
+    <a class="dash-nav-link @(accion == "Carreras" ? "is-active" : "")" asp-controller="Director" asp-action="Carreras" aria-current="@(accion == "Carreras" ? "page" : null)"><partial name="_DashboardIcon" model='@("book")' /><span>Carreras</span></a>
+    <a class="dash-nav-link @(accion == "AvanceEvaluaciones" ? "is-active" : "")" asp-controller="Director" asp-action="AvanceEvaluaciones" aria-current="@(accion == "AvanceEvaluaciones" ? "page" : null)"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Avance de evaluaciones</span></a>
+    <a class="dash-nav-link @(accion == "ResultadosInstitucionales" ? "is-active" : "")" asp-controller="Director" asp-action="ResultadosInstitucionales" aria-current="@(accion == "ResultadosInstitucionales" ? "page" : null)"><partial name="_DashboardIcon" model='@("results")' /><span>Resultados institucionales</span></a>
+    <a class="dash-nav-link @(accion == "Estadisticas" ? "is-active" : "")" asp-controller="Director" asp-action="Estadisticas" aria-current="@(accion == "Estadisticas" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Estadísticas</span></a>
+    <span class="dash-nav-label dash-nav-label-spaced">CUENTA</span>
+    <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
+</nav>

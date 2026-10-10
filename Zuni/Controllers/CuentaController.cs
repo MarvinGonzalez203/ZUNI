@@ -27,6 +27,14 @@ public sealed class CuentaController(
     private static readonly TimeSpan SessionLifetime =
         TimeSpan.FromMinutes(30);
 
+    [HttpGet("AccesoDenegado")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public IActionResult AccesoDenegado()
+    {
+        Response.StatusCode = StatusCodes.Status403Forbidden;
+        return View();
+    }
+
     // ============================================================
     // INICIAR SESIÓN
     // ============================================================
@@ -158,13 +166,20 @@ public sealed class CuentaController(
         usuario.DebeCambiarContrasena = false;
         usuario.SecurityStamp = Guid.NewGuid().ToString();
         usuario.ConcurrencyStamp = Guid.NewGuid().ToString();
+        await using var transaction = await db.Database.BeginTransactionAsync();
         try
         {
-            // SaveChanges guarda los campos juntos y comprueba ConcurrencyStamp.
+            var now = DateTime.UtcNow;
+            await db.PasswordResetTokens
+                .Where(token => token.UserId == usuario.Id && token.UsedAtUtc == null)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(token => token.UsedAtUtc, now));
+            // Contraseña y revocación de enlaces se confirman juntas.
             await db.SaveChangesAsync();
+            await transaction.CommitAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
+            await transaction.RollbackAsync();
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             TempData["Error"] = "La cuenta cambió durante la operación. Inicia sesión nuevamente.";
             return RedirectToAction(nameof(IniciarSesion));
@@ -368,6 +383,10 @@ public sealed class CuentaController(
     public async Task<IActionResult> RecuperarContrasena(
         ForgotPasswordViewModel model)
     {
+        // Sin proveedor de correo, no generar enlaces ni consultar cuentas fuera de desarrollo.
+        if (!environment.IsDevelopment())
+            return View(new ForgotPasswordViewModel());
+
         if (!ModelState.IsValid)
             return View(model);
 
