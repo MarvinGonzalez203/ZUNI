@@ -153,7 +153,15 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
 
     private static string? OpcionalAtencion(string? valor) => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
     [HttpGet("Evaluaciones")]
-    public IActionResult Evaluaciones() => View();
+    public async Task<IActionResult> Evaluaciones([FromServices] Zuni.Services.BigFive.BigFiveService bigFive, CancellationToken ct)
+    {
+        try { return View(await bigFive.Estado(User, ct)); }
+        catch (Zuni.Services.BigFive.BigFiveAccesoException) { return Forbid(); }
+        catch (Exception ex) when (ex is DbUpdateException or Npgsql.NpgsqlException)
+        {
+            return StatusCode(503, "Big Five no está disponible temporalmente. Puedes continuar con tu atención habitual.");
+        }
+    }
 
     [HttpGet("Resultados")]
     public IActionResult Resultados() => View();

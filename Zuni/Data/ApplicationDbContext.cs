@@ -7,6 +7,8 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<Zuni.Models.BigFive.ParticipacionBigFive> ParticipacionesBigFive => Set<Zuni.Models.BigFive.ParticipacionBigFive>();
+        public DbSet<Zuni.Models.BigFive.RespuestaBigFive> RespuestasBigFive => Set<Zuni.Models.BigFive.RespuestaBigFive>();
         public DbSet<SolicitudAtencion> SolicitudesAtencion => Set<SolicitudAtencion>();
         public DbSet<ConsentimientoAtencion> ConsentimientosAtencion => Set<ConsentimientoAtencion>();
         public DbSet<ExpedienteInicial> ExpedientesIniciales => Set<ExpedienteInicial>();
@@ -30,6 +32,7 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.ConfigurarBigFive();
 
             builder.Entity<SolicitudAtencion>(e =>
             {

@@ -1,16 +1,15 @@
-@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
-@{
-    ViewData["Title"] = "Evaluaciones";
-}
-<header class="dash-profile-heading">
-    <div><span class="dash-eyebrow">SERVICIOS</span><h1>Evaluaciones</h1><p>Aquí podrás realizar las evaluaciones que tengas disponibles.</p></div>
-    <span class="dash-badge">Próximamente</span>
-</header>
-<section class="dash-card student-empty" aria-label="Evaluaciones: próximamente">
-    <div class="dash-chart-placeholder">
-        <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("clipboard")' /></div>
-        <p>Todavía no hay evaluaciones disponibles. Los instrumentos oficiales están pendientes de definición.</p>
-    </div>
+@model Zuni.Models.BigFive.EstadoBigFiveViewModel
+@{ ViewData["Title"] = "Evaluaciones"; }
+@section Styles { <link rel="stylesheet" href="~/css/bigfive-apoyo.css" asp-append-version="true" /> }
+<div class="bf-module">
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">SERVICIOS</span><h1>Evaluaciones</h1><p>Participa a tu ritmo. Tu atención no depende de responder este cuestionario.</p></div></header>
+<section class="dash-card">
+    <h2>Big Five</h2><p>Herramienta opcional de apoyo · 50 afirmaciones · cinco dimensiones.</p>
+    <partial name="~/Views/BigFive/_Limitaciones.cshtml" />
+    @if (Model.FechaRetiroConsentimientoUtc != null) { <p>Participación retirada.</p> }
+    else if (Model.FechaFinalizacionUtc != null) { <p>Cuestionario completado · @Model.FechaFinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC · @Model.VersionInstrumento</p> }
+    else if (!Model.TieneSolicitudActiva) { <p>Necesitas una solicitud de atención activa para comenzar; no necesitas tener psicólogo asignado.</p> }
+    <a class="dash-button" asp-controller="BigFive" asp-action="Index">@(Model.Id == null ? "Comenzar" : Model.PuedeResponder ? "Continuar" : "Ver participación")</a>
 </section>
-
-<div class="student-back"><a class="dash-button" asp-controller="Estudiante" asp-action="Index">Volver al tablero</a></div>
+<a class="dash-text-link bf-back" asp-controller="Estudiante" asp-action="Index">Volver al tablero</a>
+</div>

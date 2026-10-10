@@ -58,7 +58,7 @@
     {
         <a class="dash-card dash-summary dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4" aria-label="@item.Item4">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><span class="dash-eyebrow">@item.Item2</span></div>
-            <h3>Próximamente</h3><p>@item.Item3</p><span class="dash-module-label">En preparación</span>
+            <h3>@(item.Item4 == "Evaluaciones" ? "Big Five" : "Próximamente")</h3><p>@(item.Item4 == "Evaluaciones" ? "Herramienta opcional de apoyo, sin diagnóstico." : item.Item3)</p><span class="dash-module-label">@(item.Item4 == "Evaluaciones" ? "Participación voluntaria" : "En preparación")</span>
         </a>
     }
 </section>

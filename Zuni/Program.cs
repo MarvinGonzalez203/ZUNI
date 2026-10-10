@@ -19,6 +19,7 @@ builder.Services.AddScoped<
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<Zuni.Services.BigFive.BigFiveService>();
 builder.Services.AddScoped<Zuni.Services.IAsignacionPsicologoService, Zuni.Services.AsignacionPsicologoService>();
 builder.Services.AddScoped<Zuni.Services.IAutorizacionClinicaService, Zuni.Services.AutorizacionClinicaService>();
 

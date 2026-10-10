@@ -1,0 +1,34 @@
+@model Zuni.Models.BigFive.ResumenBigFiveViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Resumen Big Five";
+    ViewData["DashboardRole"] = "Psicólogo";
+    ViewData["DashboardController"] = "Psicologo";
+    ViewData["DashboardNavigation"] = "~/Views/Psicologo/_Navegacion.cshtml";
+}
+@section Styles { <link rel="stylesheet" href="~/css/bigfive-apoyo.css" asp-append-version="true" /> }
+<div class="bf-module">
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">CONSULTA CONFIDENCIAL Y AUDITADA</span><h1>Resumen Big Five</h1></div></header>
+<partial name="~/Views/BigFive/_Limitaciones.cshtml" />
+@if (Model == null)
+{
+    <section class="dash-card"><h2>No hay un resumen disponible para consultar.</h2><p>La participación es opcional. La atención puede continuar sin este cuestionario.</p></section>
+}
+else
+{
+    <p>Versión: @Model.VersionInstrumento · Finalizado: @Model.FechaFinalizacionUtc.ToString("dd/MM/yyyy HH:mm") UTC.</p>
+    <p class="bf-notice">Las puntuaciones describen tendencias. No constituyen un diagnóstico y deben interpretarse junto con la entrevista y el contexto del estudiante.</p>
+    <div class="bf-traits">
+    @foreach (var dimension in Model.Dimensiones)
+    {
+        var width = ((dimension.Media - 1) * 25).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        <article class="dash-card">
+            <div class="bf-trait-heading"><h2>@dimension.Nombre</h2><strong>@dimension.Media.ToString("0.00") / 5</strong></div>
+            <div class="bf-scale" role="meter" aria-label="@dimension.Nombre" aria-valuemin="1" aria-valuemax="5" aria-valuenow="@dimension.Media.ToString(System.Globalization.CultureInfo.InvariantCulture)"><span style="width: @(width)%"></span></div>
+        </article>
+    }
+    </div>
+    <p>Las barras representan visualmente la escala de 1 a 5; no son porcentajes de personalidad ni percentiles.</p>
+}
+<a class="dash-button bf-back" asp-controller="Psicologo" asp-action="Expediente" asp-route-solicitudId="@ViewData["SolicitudId"]">Volver al expediente</a>
+</div>

@@ -28,5 +28,10 @@
     }
     </tbody></table></div>
     <h2 class="h4">Consideraciones de atención</h2><p class="text-break" style="white-space: pre-line">@(Model.ConsideracionesAtencion ?? "No indicadas")</p>
+    <section class="my-4" aria-labelledby="bigfive-title">
+        <h2 id="bigfive-title" class="h4">Big Five · apoyo opcional</h2>
+        <p>La atención no depende de este cuestionario. La consulta de un resumen disponible queda auditada.</p>
+        <a class="dash-button" asp-controller="BigFivePsicologo" asp-action="Resumen" asp-route-solicitudId="@ViewContext.RouteData.Values["solicitudId"]">Consultar resumen Big Five</a>
+    </section>
     <a class="dash-button" asp-controller="Psicologo" asp-action="Estudiantes">Volver a estudiantes</a>
 </section>
