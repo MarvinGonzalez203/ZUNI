@@ -24,6 +24,7 @@ public sealed class PsicologoController(Zuni.Services.BigFiveService bigFive, Zu
             await agenda.Cambiar(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value,input.Fecha,operacion,input,horario,ct);
             TempData["AgendaMensaje"]="Disponibilidad guardada. El estudiante podrá verla al finalizar Big Five.";
         } catch(Zuni.Services.EvaluacionOperacionException ex) {TempData["AgendaError"]=ex.Message;}
+        catch(Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException) {TempData["AgendaError"]="La disponibilidad cambió mientras guardabas. Revisa el calendario e inténtalo de nuevo.";}
         return RedirectToAction(nameof(Agenda),new {mes=input.Fecha.ToString("yyyy-MM-dd")});
     }
 

@@ -41,20 +41,20 @@
         var horarios=day?.Horarios.OrderBy(h=>h.Inicio).Where(h=>Model.Editor || AgendaService.InicioDisponible(h,date,now)!=null).ToArray() ?? [];
         if(horarios.Length==0){<p>Sin horarios disponibles para este día.</p>}
         foreach(var h in horarios){
-        <div class="agenda-slot"><p><strong>@(Model.Editor?h.Inicio.ToString("HH:mm"):AgendaService.InicioDisponible(h,date,now)?.ToString("HH:mm"))–@h.Fin.ToString("HH:mm")</strong> · @h.Modalidad · citas de @h.DuracionMinutos minutos</p>
+        <div class="agenda-slot"><p><strong>@(Model.Editor?h.Inicio.ToString("HH:mm"):AgendaService.InicioDisponible(h,date,now)?.ToString("HH:mm"))–@h.Fin.ToString("HH:mm")</strong> · @(h.Modalidad=="Ambas"?"Presencial o virtual":h.Modalidad) · @(h.DuracionMinutos==0?"Sin duración establecida; puede variar":$"citas de {h.DuracionMinutos} minutos")</p>
         @if(Model.Editor){<form asp-controller="Psicologo" asp-action="Disponibilidad" method="post"><input type="hidden" name="Fecha" value="@date.ToString("yyyy-MM-dd")" /><input type="hidden" name="operacion" value="quitar" /><input type="hidden" name="horario" value="@h.Id" /><button class="dash-button" type="submit">Quitar horario</button></form>}
         </div>
         }
     }
     @if(Model.Editor){
         if(day?.Ocupado!=true){
-        <h3 class="h5 mt-4">Añadir horario disponible</h3><p>De 08:00 a 18:00, con espacio para al menos una cita completa.</p>
+        <h3 class="h5 mt-4">Añadir horario disponible</h3><p>Define un intervalo entre 08:00 y 18:00. Si eliges una duración, debe caber al menos una cita. Sin duración establecida, el tiempo de atención puede variar.</p>
         <form asp-controller="Psicologo" asp-action="Disponibilidad" method="post" class="agenda-form">
         <input type="hidden" name="operacion" value="agregar" /><input type="hidden" name="Fecha" value="@date.ToString("yyyy-MM-dd")" />
         <label>Inicio<input type="time" name="Inicio" min="08:00" max="18:00" step="300" value="08:00" required /></label>
         <label>Fin<input type="time" name="Fin" min="08:00" max="18:00" step="300" value="12:00" required /></label>
-        <label>Duración de cada cita<select name="DuracionMinutos">@foreach(var duration in new[]{15,30,45,50,60}){<option value="@duration">@duration minutos</option>}</select></label>
-        <label>Modalidad<select name="Modalidad"><option>Presencial</option><option>Virtual</option></select></label>
+        <label>Duración de cada cita<select name="DuracionMinutos">@foreach(var duration in new[]{15,30,50}){<option value="@duration">@duration minutos</option>}<option value="0">Sin duración establecida</option></select></label>
+        <label>Modalidad<select name="Modalidad"><option>Presencial</option><option>Virtual</option><option value="Ambas">Ambas (presencial o virtual)</option></select></label>
         <button class="dash-button" type="submit">Guardar horario</button>
         </form>
         }

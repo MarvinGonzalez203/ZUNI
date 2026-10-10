@@ -28,6 +28,9 @@ var clockRange=new HorarioAgendaPsicologo{Inicio=new(8,0),Fin=new(18,0),Duracion
 Check(AgendaService.InicioDisponible(clockRange,clockDay,clock)==null,"Nunca reaparece disponibilidad al redondear hacia medianoche");
 Check(AgendaService.InicioDisponible(clockRange,clockDay,clock.Date.AddHours(14).AddMinutes(10))==new TimeOnly(15,0),"Inicio futuro alineado a duración de citas");
 Check(AgendaService.InicioDisponible(clockRange,clockDay,clock.Date.AddHours(17).AddMinutes(10))==null,"No ofrece fracción de cita al cerrar jornada");
+var variableRange=new HorarioAgendaPsicologo{Inicio=new(8,0),Fin=new(18,0),DuracionMinutos=0};
+Check(AgendaService.InicioDisponible(variableRange,clockDay,clock.Date.AddHours(17).AddMinutes(10))==new TimeOnly(17,10),"Duración no establecida admite intervalo restante sin duración fija");
+Check(AgendaService.InicioDisponible(variableRange,clockDay,clock)==null,"Duración no establecida respeta cierre de jornada");
 foreach(var trait in "OCEAN")Check(Ipip50.Items.Count(i=>i.Rasgo==trait)==10,"10 ítems para "+trait);
 var key=new[]{"E+","A-","C+","N+","O+","E-","A+","C-","N-","O-","E+","A-","C+","N+","O+","E-","A+","C-","N-","O-","E+","A-","C+","N+","O+","E-","A+","C-","N+","O-","E+","A-","C+","N+","O+","E-","A+","C-","N+","O+","E+","A+","C+","N+","O+","E-","A+","C+","N+","O+"};
 Check(Ipip50.Items.Select(i=>i.Rasgo+(i.Inversa?"-":"+")).SequenceEqual(key),"Clave oficial completa, IV invertido a Neuroticismo");
@@ -162,6 +165,9 @@ try
     Check((await pClient.PostAsync("/Psicologo/Disponibilidad",new FormUrlEncodedContent(new Dictionary<string,string>()))).StatusCode==HttpStatusCode.BadRequest,"Agenda exige antifalsificación");
     var schedule=new Dictionary<string,string>{{"Fecha",date.ToString("yyyy-MM-dd")},{"Inicio","09:00"},{"Fin","11:00"},{"DuracionMinutos","50"},{"Modalidad","Virtual"},{"operacion","agregar"}};
     Check((await Post(pClient,"/Psicologo/Disponibilidad",schedule,agendaPath)).StatusCode==HttpStatusCode.Redirect,"Horario guardado por HTTP");
+    Guid savedRange;await using(var db=Db())savedRange=await db.Set<HorarioAgendaPsicologo>().Select(h=>h.Id).SingleAsync();
+    Check((await Post(pClient,"/Psicologo/Disponibilidad",new(){{"Fecha",date.ToString("yyyy-MM-dd")},{"operacion","quitar"},{"horario",savedRange.ToString()}},agendaPath)).StatusCode==HttpStatusCode.Redirect,"Retira el horario conservando su día");
+    Check((await Post(pClient,"/Psicologo/Disponibilidad",schedule,agendaPath)).StatusCode==HttpStatusCode.Redirect,"Permite volver a añadir horario en el mismo día existente");
     await using(var db=Db()){
         Check(await db.Set<HorarioAgendaPsicologo>().CountAsync()==1,"Horario persiste en nueva conexión");
         var service=new AgendaService(db,Bf(db));
@@ -177,6 +183,18 @@ try
     }
     var studentCalendar=WebUtility.HtmlDecode(await Page(owner,studentPath));
     Check(studentCalendar.Contains("09:00–11:00")&&studentCalendar.Contains("Virtual")&&studentCalendar.Contains("50 minutos")&&!studentCalendar.Contains("Guardar horario"),"Estudiante ve disponibilidad y modalidad, sin edición");
+    Check((await Post(pClient,"/Psicologo/Disponibilidad",new(){{"Fecha",date.ToString("yyyy-MM-dd")},{"Inicio","12:00"},{"Fin","13:00"},{"DuracionMinutos","0"},{"Modalidad","Ambas"},{"operacion","agregar"}},agendaPath)).StatusCode==HttpStatusCode.Redirect,"Añade segundo horario al mismo día, sin duración y ambas modalidades");
+    var flexibleCalendar=WebUtility.HtmlDecode(await Page(owner,studentPath));
+    Check(flexibleCalendar.Contains("Sin duración establecida; puede variar")&&flexibleCalendar.Contains("Presencial o virtual"),"Estudiante ve duración variable y ambas modalidades");
+    Guid flexibleId;await using(var db=Db()){
+        flexibleId=await db.Set<HorarioAgendaPsicologo>().Where(h=>h.DuracionMinutos==0).Select(h=>h.Id).SingleAsync();
+        Check(await db.Set<HorarioAgendaPsicologo>().CountAsync()==2,"Segundo horario se inserta sin modificar el anterior");
+        await Reject(()=>new AgendaService(db,Bf(db)).Cambiar(psych,date,"agregar",new(){Inicio=new(14,0),Fin=new(16,0),DuracionMinutos=45},null,default),"No admite nueva duración de 45 minutos");
+        await Reject(()=>new AgendaService(db,Bf(db)).Cambiar(psych,date,"agregar",new(){Inicio=new(14,0),Fin=new(16,0),DuracionMinutos=60},null,default),"No admite nueva duración de 60 minutos");
+    }
+    await File.WriteAllTextAsync(".visual-check/bigfive/calendar-student.html",await Page(owner,studentPath));
+    await File.WriteAllTextAsync(".visual-check/bigfive/calendar-psych.html",await Page(pClient,agendaPath));
+    await Post(pClient,"/Psicologo/Disponibilidad",new(){{"Fecha",date.ToString("yyyy-MM-dd")},{"operacion","quitar"},{"horario",flexibleId.ToString()}},agendaPath);
     await File.WriteAllTextAsync(".visual-check/bigfive/calendar-student.html",await Page(owner,studentPath));
     await File.WriteAllTextAsync(".visual-check/bigfive/calendar-psych.html",await Page(pClient,agendaPath));
     Check(!WebUtility.HtmlDecode(await Page(otherClient,studentPath)).Contains("09:00–11:00"),"Estudiante sin Big Five no ve disponibilidad");

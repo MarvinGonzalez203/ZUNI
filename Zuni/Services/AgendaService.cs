@@ -13,9 +13,11 @@ public sealed class AgendaService(ApplicationDbContext db, BigFiveService bigFiv
         var hoy=DateOnly.FromDateTime(ahora);
         if(fecha<hoy)return null;
         var start=horario.Inicio.ToTimeSpan();
+        var step=horario.DuracionMinutos==0 ? 5 : horario.DuracionMinutos;
         if(fecha==hoy && start<ahora.TimeOfDay)
-            start+=TimeSpan.FromMinutes(Math.Ceiling((ahora.TimeOfDay-start).TotalMinutes/horario.DuracionMinutos)*horario.DuracionMinutos);
-        return start+TimeSpan.FromMinutes(horario.DuracionMinutos)<=horario.Fin.ToTimeSpan()?TimeOnly.FromTimeSpan(start):null;
+            start+=TimeSpan.FromMinutes(Math.Ceiling((ahora.TimeOfDay-start).TotalMinutes/step)*step);
+        var fits=horario.DuracionMinutos==0 ? start<horario.Fin.ToTimeSpan() : start+TimeSpan.FromMinutes(step)<=horario.Fin.ToTimeSpan();
+        return fits?TimeOnly.FromTimeSpan(start):null;
     }
     public static DateOnly Mes(DateOnly? requested)
     {
@@ -47,8 +49,8 @@ public sealed class AgendaService(ApplicationDbContext db, BigFiveService bigFiv
         if(action is not ("agregar" or "bloquear" or "habilitar" or "quitar" or "limpiar"))throw new EvaluacionOperacionException("Operación no válida.");
         if(action=="agregar" && (input is null || input.Inicio<new TimeOnly(8,0)||input.Fin>new TimeOnly(18,0)||input.Fin<=input.Inicio ||
             input.Inicio.Second!=0||input.Fin.Second!=0||input.Inicio.Minute%5!=0||input.Fin.Minute%5!=0 ||
-            !new[]{15,30,45,50,60}.Contains(input.DuracionMinutos) || (input.Fin-input.Inicio).TotalMinutes<input.DuracionMinutos ||
-            input.Modalidad is not ("Presencial" or "Virtual") || date==Hoy&&input.Inicio<=TimeOnly.FromDateTime(Ahora)))
+            !new[]{0,15,30,50}.Contains(input.DuracionMinutos) || (input.Fin-input.Inicio).TotalMinutes<input.DuracionMinutos ||
+            input.Modalidad is not ("Presencial" or "Virtual" or "Ambas") || date==Hoy&&input.Inicio<=TimeOnly.FromDateTime(Ahora)))
             throw new EvaluacionOperacionException("Revisa el horario: de 08:00 a 18:00, en intervalos de cinco minutos, con espacio para al menos una cita y sin horas pasadas.");
         await using var transaction=await db.Database.BeginTransactionAsync(ct);
         // A transaction-scoped lock also serializes creation when the day does not exist yet.
@@ -60,7 +62,9 @@ public sealed class AgendaService(ApplicationDbContext db, BigFiveService bigFiv
             if(day?.Ocupado==true)throw new EvaluacionOperacionException("Habilita el día antes de añadir horarios.");
             if(day?.Horarios.Any(h=>input!.Inicio<h.Fin&&input.Fin>h.Inicio)==true)throw new EvaluacionOperacionException("Ese horario se cruza con otro ya guardado.");
             if(day is null){day=new(){PsicologoId=psychologist,Fecha=date};db.Add(day);}
-            day.Horarios.Add(new(){Inicio=input!.Inicio,Fin=input.Fin,DuracionMinutos=input.DuracionMinutos,Modalidad=input.Modalidad});
+            var slot=new HorarioAgendaPsicologo {DiaId=day.Id,Inicio=input!.Inicio,Fin=input.Fin,DuracionMinutos=input.DuracionMinutos,Modalidad=input.Modalidad};
+            // Explicitly insert: a preassigned GUID added to a tracked day's navigation can otherwise be marked Modified.
+            db.Add(slot);
         }
         else if(action is "bloquear" or "habilitar")
         {

@@ -13,8 +13,9 @@ public static class AgendaModelConfiguration
         builder.Entity<HorarioAgendaPsicologo>(e=>{
             e.ToTable("HorariosAgendaPsicologo",t=>{
                 t.HasCheckConstraint("CK_Agenda_Horas","\"Inicio\" >= TIME '08:00' AND \"Fin\" <= TIME '18:00' AND \"Fin\" > \"Inicio\"");
-                t.HasCheckConstraint("CK_Agenda_Duracion","\"DuracionMinutos\" IN (15,30,45,50,60)");
-                t.HasCheckConstraint("CK_Agenda_Modalidad","\"Modalidad\" IN ('Presencial','Virtual')");
+                // Preserve previously saved 45/60-minute ranges; new forms offer 0 (unspecified), 15, 30 and 50.
+                t.HasCheckConstraint("CK_Agenda_Duracion","\"DuracionMinutos\" IN (0,15,30,45,50,60)");
+                t.HasCheckConstraint("CK_Agenda_Modalidad","\"Modalidad\" IN ('Presencial','Virtual','Ambas')");
             });
             e.HasKey(x=>x.Id); e.Property(x=>x.Modalidad).HasMaxLength(10);
             e.HasOne(x=>x.Dia).WithMany(x=>x.Horarios).HasForeignKey(x=>x.DiaId).OnDelete(DeleteBehavior.Restrict);
