@@ -6,9 +6,6 @@
     <link rel="stylesheet" href="~/css/bigfive.css" asp-append-version="true" />
 }
 <div class="psych-dashboard">
-    @if(ViewData["ResultadosConectados"] is not true) {
-    <p class="dash-notice"><span class="dash-badge">Vista previa</span> Algunas secciones de atención y seguimiento aún están en preparación. La disponibilidad se guarda en Agenda y Big Five se consulta en Resultados.</p>
-    }
     @RenderBody()
     @if(ViewData["ResultadosConectados"] is not true){<partial name="_Modales" />}
 </div>

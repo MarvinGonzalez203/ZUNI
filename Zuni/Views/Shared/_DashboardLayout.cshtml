@@ -24,7 +24,7 @@
             <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><img src="~/images/zuni-logo-transparent.png" alt="" /> ZUNI<span>.</span></a>
             <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" aria-label="Cerrar menú"></button>
         </div>
-        <p class="dash-sidebar-caption">Tu espacio universitario</p>
+        @if (inicio != "Psicologo") { <p class="dash-sidebar-caption">Tu espacio universitario</p> }
         @if (navegacion is not null)
         {
             @await Html.PartialAsync(navegacion)
@@ -61,7 +61,7 @@
                 <div class="dash-notice" role="status">@mensaje</div>
             }
             @RenderBody()
-            <footer class="dash-footer"><span>ZUNI · Bienestar y acompañamiento estudiantil</span><span>Tu espacio. Tu ritmo.</span></footer>
+            <footer class="dash-footer"><span>ZUNI · Bienestar y acompañamiento estudiantil</span>@if (inicio is not ("Psicologo" or "Estudiante")) { <span>Tu espacio. Tu ritmo.</span> }</footer>
         </main>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

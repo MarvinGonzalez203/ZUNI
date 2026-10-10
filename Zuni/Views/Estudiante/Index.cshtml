@@ -11,7 +11,6 @@
 <div class="student-dashboard">
 <header class="dash-welcome">
     <div class="dash-welcome-copy">
-        <span class="dash-eyebrow">BIENVENIDO A TU ESPACIO</span>
         <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
         <p>Este es tu espacio en ZUNI. Consulta tu información y accede a los servicios disponibles.</p>
         <div class="dash-welcome-actions">
@@ -23,34 +22,6 @@
 </header>
 
 <partial name="_ProgresoPerfil" model="Model.DatosPerfil" />
-<section class="student-actions" aria-labelledby="acciones-title">
-    <div class="dash-section-heading"><h2 id="acciones-title">Acciones rápidas</h2></div>
-    <nav class="student-action-links" aria-label="Acciones rápidas">
-        <a class="dash-button" asp-controller="MiCuenta" asp-action="Index">Consultar mis datos</a>
-        <a class="dash-button" asp-controller="MiCuenta" asp-action="Editar">@(Model.PerfilCompleto ? "Editar mis datos" : "Completar mis datos")</a>
-        <a class="dash-button" asp-controller="Estudiante" asp-action="Evaluaciones">Evaluaciones</a>
-        <a class="dash-button" asp-controller="Estudiante" asp-action="Resultados">Resultados</a>
-        <a class="dash-button" asp-controller="Estudiante" asp-action="Citas">Citas</a>
-    </nav>
-</section>
-
-<div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2><span>Todo en un solo lugar</span></div>
-<section class="dash-summary-grid" aria-label="Resumen de servicios">
-    <a class="dash-card dash-summary dash-summary-profile dash-card-link" asp-controller="MiCuenta" asp-action="Index" aria-label="Ver mi cuenta">
-        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><span class="dash-eyebrow">MI CUENTA</span></div>
-        <h3>@(Model.PerfilCompleto ? "Completo" : "Incompleto")</h3>
-        <p>@(Model.PerfilCompleto ? "Tus datos básicos están completos." : "Completa tus datos académicos y de contacto.")</p>
-        <span class="dash-text-link">Ver cuenta <partial name="_DashboardIcon" model='@("arrow")' /></span>
-    </a>
-    @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Aquí aparecerán las recomendaciones de tu psicólogo.", "Resultados"), ("calendar", "CITAS", "Consulta el calendario al finalizar Big Five.", "Citas") })
-    {
-        <a class="dash-card dash-summary dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4" aria-label="@item.Item4">
-            <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><span class="dash-eyebrow">@item.Item2</span></div>
-            <h3>@(item.Item4 == "Resultados" ? "Pendiente" : item.Item4 == "Citas" ? "Calendario" : "Disponible")</h3><p>@item.Item3</p><span class="dash-module-label">Ir al módulo</span>
-        </a>
-    }
-</section>
-
 <section class="dash-card dash-evaluations" aria-labelledby="evaluaciones-title">
     <div class="dash-section-heading"><div><h2 id="evaluaciones-title">Resumen de mis evaluaciones</h2><p>Un espacio para conocer tu recorrido.</p></div><a class="dash-text-link" asp-action="Evaluaciones">Consultar evaluaciones</a></div>
     <div class="dash-chart-placeholder">
@@ -64,12 +35,5 @@
 <div class="dash-section-heading"><h2>Tu información</h2><a class="dash-text-link" asp-controller="MiCuenta" asp-action="Index">Ver mi cuenta <partial name="_DashboardIcon" model='@("arrow")' /></a></div>
 <partial name="_DatosPerfil" model="Model.DatosPerfil" />
 
-<div class="dash-section-heading"><h2>Servicios para tu bienestar</h2><span>A tu ritmo</span></div>
-<section class="dash-services" aria-label="Próximos servicios">
-    @foreach (var item in new[] { ("clipboard", "Evaluaciones", "Un espacio para realizar las evaluaciones que se habiliten para ti.", "Evaluaciones"), ("results", "Resultados", "Aquí aparecerán las recomendaciones de tu psicólogo.", "Resultados"), ("calendar", "Citas psicológicas", "Consulta los horarios de tu psicólogo después de finalizar Big Five.", "Citas") })
-    {
-        <a class="dash-card dash-service dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><h3>@item.Item2</h3><p>@item.Item3</p><span class="dash-badge">@(item.Item4 == "Resultados" ? "Pendiente" : "Ir al módulo")</span></a>
-    }
-</section>
 
 </div>

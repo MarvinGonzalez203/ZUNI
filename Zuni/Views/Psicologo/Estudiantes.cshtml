@@ -1,7 +1,7 @@
 @model Zuni.Models.SeguimientoEstudiantesViewModel
 @{ ViewData["Title"]="Estudiantes y seguimiento"; ViewData["ResultadosConectados"]=true; }
 <link rel="stylesheet" href="~/css/seguimiento-estudiantes.css" asp-append-version="true" />
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Mis estudiantes</h1><p>Un espacio para conocer sus resultados, consultar sus citas y dar seguimiento a cada atención.</p></div></header>
+<header class="dash-profile-heading"><div><h1>Mis estudiantes</h1></div></header>
 <div class="student-overview"><article class="dash-card"><span>Estudiantes vinculados</span><strong>@Model.Total</strong></article><article class="dash-card"><span>Big Five completado y disponible</span><strong>@Model.Completados</strong></article><article class="dash-card student-future"><span>Próximas citas</span><strong>@Model.Proximas</strong><small>Estudiantes con cita futura</small></article></div>
 <section class="dash-card mt-4">
 <form asp-action="Estudiantes" method="get" class="student-filters">
