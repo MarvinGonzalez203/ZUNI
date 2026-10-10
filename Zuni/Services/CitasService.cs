@@ -89,6 +89,9 @@ public sealed class CitasService(ApplicationDbContext db,BigFiveService bigFive,
         if(range is null||range.Dia.PsicologoId!=psychologist||range.Dia.Ocupado||range.Dia.Fecha!=initial.Fecha)
             throw new EvaluacionOperacionException("El psicólogo cambió la disponibilidad. Elige otro horario.");
         var dateOf=range.Dia.Fecha;var start=input.Inicio;
+        if(await db.Set<Cita>().AnyAsync(c=>c.EstudianteId==student&&c.PruebaLocal==bigFive.PruebaLocal&&c.Fecha==dateOf&&
+            (previous==null||c.Id!=previous.Id)&&(c.Estado==EstadoCita.Solicitada||c.Estado==EstadoCita.Confirmada||c.Estado==EstadoCita.Terminada||c.Estado==EstadoCita.NoAsistio),ct))
+            throw new EvaluacionOperacionException("Ya tienes una cita para ese día. Reprograma la existente o elige otra fecha.");
         var variable=range.DuracionMinutos==0;
         var end=variable?range.Fin:start.AddMinutes(range.DuracionMinutos);
         var aligned=variable?(start.ToTimeSpan()-range.Inicio.ToTimeSpan()).TotalMinutes%5==0:

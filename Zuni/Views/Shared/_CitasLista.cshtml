@@ -1,26 +1,37 @@
 @model IReadOnlyList<Zuni.Models.CitaResumen>
 @using Zuni.Models
-@{var professional=User.IsInRole("Psicologo");var culture=System.Globalization.CultureInfo.GetCultureInfo("es-GT");}
+@{var professional=User.IsInRole("Psicologo");var key="cita-gestion-"+Guid.NewGuid().ToString("N");}
 @if(Model.Count==0){<p class="student-muted">Todavía no hay citas registradas.</p>}
+else{
+<div class="citas-table-wrap"><table class="citas-table"><caption class="visually-hidden">Listado de citas</caption><thead><tr><th>Fecha y hora</th>@if(!professional){<th>Psicólogo</th>}<th>Modalidad</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
 @foreach(var cita in Model){
-<article class="dash-card cita-card mb-3">
-<h3 class="h5">@(professional?cita.Estudiante:cita.Psicologo)</h3>
-<p><strong>@cita.Fecha.ToString("dddd dd MMMM yyyy",culture) · @cita.Inicio.ToString("HH:mm")–@cita.Fin.ToString("HH:mm")</strong> · @cita.Modalidad</p>
-<p class="student-status">@CitaTextos.Estado(cita.Estado)</p>
-@if(cita.Variable){<p>Duración de atención variable. El intervalo queda reservado para esta cita.</p>}
-@if(cita.Estado==EstadoCita.Solicitada){<p>El horario está reservado mientras el psicólogo revisa la solicitud.</p>}
-@if(professional){<a class="dash-button" asp-controller="Citas" asp-action="Detalle" asp-route-id="@cita.Id">Ver cita y registrar atención →</a>}
-@if(CitaTextos.Activa(cita.Estado)&&cita.InicioUtc>DateTime.UtcNow){
-    @if(professional&&cita.Estado==EstadoCita.Solicitada){
-    <form asp-controller="Citas" asp-action="Gestionar" method="post" class="mt-3"><input type="hidden" name="id" value="@cita.Id" /><input type="hidden" name="revision" value="@cita.Revision" /><button class="dash-button" name="accion" value="confirmar">Aceptar cita</button></form>
-    }
-    @if(!professional){<a class="dash-button mt-3" asp-controller="Estudiante" asp-action="Citas" asp-route-reprogramar="@cita.Id">Reprogramar</a>}
-    <details class="mt-3"><summary>Cancelar@(professional&&cita.Estado==EstadoCita.Solicitada?" o rechazar solicitud":" cita")</summary>
-    <form asp-controller="Citas" asp-action="Gestionar" method="post" class="agenda-form mt-3"><input type="hidden" name="id" value="@cita.Id" /><input type="hidden" name="revision" value="@cita.Revision" /><label>Motivo breve<input name="motivo" maxlength="300" required /></label><button class="dash-button" name="accion" value="cancelar">Cancelar cita</button>@if(professional&&cita.Estado==EstadoCita.Solicitada){<button class="dash-button" name="accion" value="rechazar">Rechazar solicitud</button>}</form>
-    </details>
+var upcoming=CitaTextos.Activa(cita.Estado)&&cita.InicioUtc>DateTime.UtcNow;
+<tr><td><strong>@cita.Fecha.ToString("dd/MM/yyyy")</strong><small>@cita.Inicio.ToString("HH:mm")–@cita.Fin.ToString("HH:mm")@(cita.Variable?" · Variable":"")</small></td>
+@if(!professional){<td>@cita.Psicologo</td>}
+<td>@cita.Modalidad</td><td><span class="cita-badge">@(cita.Estado==EstadoCita.Solicitada?"Pendiente de aprobación":CitaTextos.Estado(cita.Estado))</span></td><td><div class="citas-actions">
+@if(professional&&cita.Estado==EstadoCita.Solicitada&&upcoming){<form asp-controller="Citas" asp-action="Gestionar" method="post"><input type="hidden" name="id" value="@cita.Id" /><input type="hidden" name="revision" value="@cita.Revision" /><button class="dash-button" name="accion" value="confirmar">Aceptar</button></form>}
+@if(upcoming||professional&&cita.Estado==EstadoCita.Solicitada){<button class="dash-button" type="button" data-bs-toggle="modal" data-bs-target="#@key-@cita.Id">Gestionar</button>}
+@if(professional&&(cita.Estado is EstadoCita.Terminada or EstadoCita.NoAsistio||cita.Estado==EstadoCita.Confirmada&&Zuni.Services.CitasService.Utc(cita.Fecha,cita.Fin)<=DateTime.UtcNow)){<a class="dash-button" asp-controller="Citas" asp-action="Detalle" asp-route-id="@cita.Id">@(cita.Estado==EstadoCita.Confirmada?"Registrar atención":"Ver atención")</a>}
+@if(!professional&&cita.Estado==EstadoCita.Terminada){<a asp-controller="Estudiante" asp-action="Resultados">Ver resultado</a>}
+@if(!professional&&cita.Estado==EstadoCita.NoAsistio&&!string.IsNullOrWhiteSpace(cita.Resena)){<button class="dash-button" type="button" data-bs-toggle="modal" data-bs-target="#@key-@cita.Id">Ver reseña</button>}
+@if(professional&&cita.Estado==EstadoCita.Confirmada&&Zuni.Services.CitasService.Utc(cita.Fecha,cita.Fin)>DateTime.UtcNow){<small>Atención después de la cita</small>}
+</div></td></tr>
 }
-@if(!professional&&cita.Estado==EstadoCita.Terminada){<a asp-controller="Estudiante" asp-action="Resultados">Ver reseña y recomendaciones</a>}
-@if(professional&&cita.Estado==EstadoCita.Solicitada&&cita.InicioUtc<=DateTime.UtcNow){<p>Esta solicitud pasó su horario sin confirmación. Recházala y coordina una nueva fecha.</p><form asp-controller="Citas" asp-action="Gestionar" method="post" class="agenda-form"><input type="hidden" name="id" value="@cita.Id" /><input type="hidden" name="revision" value="@cita.Revision" /><label>Motivo<input name="motivo" maxlength="300" required /></label><button class="dash-button" name="accion" value="rechazar">Rechazar solicitud vencida</button></form>}
-@if(!professional&&cita.Estado==EstadoCita.NoAsistio&&!string.IsNullOrWhiteSpace(cita.Resena)){<p>@cita.Resena</p>}
-</article>
+</tbody></table></div>
+@foreach(var cita in Model){
+var upcoming=CitaTextos.Activa(cita.Estado)&&cita.InicioUtc>DateTime.UtcNow;
+if(!upcoming&&!(professional&&cita.Estado==EstadoCita.Solicitada)&&!(cita.Estado==EstadoCita.NoAsistio&&!professional&&!string.IsNullOrWhiteSpace(cita.Resena))){continue;}
+<div class="modal fade cita-real" id="@key-@cita.Id" tabindex="-1" aria-labelledby="@key-@cita.Id-title" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="@key-@cita.Id-title">Cita del @cita.Fecha.ToString("dd/MM/yyyy")</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div><div class="modal-body">
+<p>@cita.Inicio.ToString("HH:mm")–@cita.Fin.ToString("HH:mm") · @cita.Modalidad · @CitaTextos.Estado(cita.Estado)</p>
+@if(cita.Variable){<p>Duración variable. El intervalo completo queda reservado para esta cita.</p>}
+@if(cita.Estado==EstadoCita.Solicitada){<p>El horario se reserva mientras el psicólogo revisa la solicitud.</p>}
+@if(!professional&&upcoming){<a class="dash-button mb-3" asp-controller="Estudiante" asp-action="Citas" asp-route-reprogramar="@cita.Id">Reprogramar cita</a>}
+@if(upcoming||professional&&cita.Estado==EstadoCita.Solicitada){
+<form asp-controller="Citas" asp-action="Gestionar" method="post" class="agenda-form"><input type="hidden" name="id" value="@cita.Id" /><input type="hidden" name="revision" value="@cita.Revision" /><label>Motivo breve<input name="motivo" maxlength="300" required /></label>
+@if(upcoming){<button class="dash-button" name="accion" value="cancelar">Cancelar cita</button>}
+@if(professional&&cita.Estado==EstadoCita.Solicitada){<button class="dash-button" name="accion" value="rechazar">Rechazar solicitud</button>}
+</form>}
+@if(!professional&&cita.Estado==EstadoCita.NoAsistio){<p class="cita-texto">@cita.Resena</p>}
+</div><div class="modal-footer">@if(professional&&ViewData["FichaEstudiante"] is true){<button class="dash-button" type="button" data-bs-toggle="modal" data-bs-target="#student-record">Volver a ficha</button>}else{<button class="dash-button" type="button" data-bs-dismiss="modal">Cerrar</button>}</div></div></div></div>
+}
 }

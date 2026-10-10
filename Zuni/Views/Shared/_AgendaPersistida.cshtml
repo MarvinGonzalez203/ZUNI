@@ -49,7 +49,11 @@
     }
     @if(!Model.Editor&&day?.Ocupado!=true){
         <h3 class="h5 mt-3">Solicitar cita</h3>
-        foreach(var slot in Model.Franjas.Where(f=>f.Fecha==date)){
+        var ownDay=Model.Citas.FirstOrDefault(c=>c.Fecha==date&&c.Id!=Model.Reprogramar?.Id&&c.Estado is Zuni.Models.EstadoCita.Solicitada or Zuni.Models.EstadoCita.Confirmada or Zuni.Models.EstadoCita.Terminada or Zuni.Models.EstadoCita.NoAsistio);
+        if(ownDay is not null){<p>Ya tienes una cita para este día. Solo se permite una cita por estudiante y fecha.</p>
+        if(Zuni.Models.CitaTextos.Activa(ownDay.Estado)&&ownDay.InicioUtc>DateTime.UtcNow){<a class="dash-button" asp-controller="Estudiante" asp-action="Citas" asp-route-reprogramar="@ownDay.Id">Reprogramar mi cita</a>}
+        }
+        else foreach(var slot in Model.Franjas.Where(f=>f.Fecha==date)){
         <div class="agenda-slot @(slot.Reservada?"cita-reservada":"")"><p><strong>@slot.Inicio.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</strong> · @(slot.Variable?"Duración variable":$"{(slot.Fin-slot.Inicio).TotalMinutes:0} minutos") · @(slot.Modalidad=="Ambas"?"Presencial o virtual":slot.Modalidad)</p>
         @if(slot.Reservada){<p>Reservado / ocupado</p>}
         else{
@@ -71,7 +75,7 @@
         <input type="hidden" name="operacion" value="agregar" /><input type="hidden" name="Fecha" value="@date.ToString("yyyy-MM-dd")" />
         <label>Inicio<input type="time" name="Inicio" min="08:00" max="18:00" step="300" value="08:00" required /></label>
         <label>Fin<input type="time" name="Fin" min="08:00" max="18:00" step="300" value="12:00" required /></label>
-        <label>Duración de cada cita<select name="DuracionMinutos">@foreach(var duration in new[]{15,30,50}){<option value="@duration">@duration minutos</option>}<option value="0">Sin duración establecida</option></select></label>
+        <label>Duración de cada cita<select name="DuracionMinutos">@foreach(var duration in new[]{15,30,50}){<option value="@duration" selected="@(duration==50)">@duration minutos</option>}<option value="0">Sin duración establecida</option></select></label>
         <label>Modalidad<select name="Modalidad"><option>Presencial</option><option>Virtual</option><option value="Ambas">Ambas (presencial o virtual)</option></select></label>
         <button class="dash-button" type="submit">Guardar horario</button>
         </form>

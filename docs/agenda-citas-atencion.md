@@ -5,12 +5,12 @@
 1. El psicólogo publica intervalos en **Agenda**. La hora corresponde a Guatemala. Se admiten duraciones de 15, 30 o 50 minutos, o duración variable; modalidad presencial, virtual o ambas.
 2. El estudiante, con Big Five finalizado, consentimiento vigente y vínculo activo, abre **Citas**, pulsa un día y solicita una franja. Si se ofrecen ambas modalidades, elige una.
 3. La solicitud **reserva inmediatamente el horario**. Los demás estudiantes ven «Reservado / ocupado», sin conocer quién lo reservó. Una transacción y un bloqueo por psicólogo/día comprueban de nuevo la disponibilidad, incluso cuando hay solicitudes simultáneas.
-4. El psicólogo acepta o rechaza la solicitud en Agenda o en la ficha del estudiante. Una solicitud no constituye todavía una cita confirmada.
+4. El psicólogo acepta o rechaza la solicitud en la ficha del estudiante, dentro de Estudiantes y seguimiento. Agenda se dedica a configurar disponibilidad. Una solicitud no constituye todavía una cita confirmada.
 5. Estudiante o psicólogo pueden cancelar antes del inicio, indicando un motivo. Rechazar o cancelar libera la franja. El estudiante puede reprogramar seleccionando otro horario: la anterior queda como Reprogramada, la nueva vuelve a Solicitada y requiere aceptación. Si el nuevo horario ya está ocupado, se conserva la cita original.
 6. Después del fin del horario de una cita confirmada, el psicólogo registra asistencia. Si asistió, escribe el resultado clínico **privado**, la reseña/recomendaciones y un resultado breve **para compartir**. Puede recomendar seguimiento e indicar una próxima cita; esta se solicita y confirma normalmente, sin crear reservas automáticas.
 7. Al cerrar, el estudiante ve únicamente los textos compartidos en **Mis resultados**. Una inasistencia no genera un diagnóstico ni resultado clínico. El historial individual y el general muestran los mismos registros; solo el profesional que atendió puede abrir su detalle privado.
 
-El listado de estudiantes se ordena por la próxima cita futura, dejando al final a quienes no tienen cita. Incluye filtros de Big Five, solicitudes, confirmadas, pendientes, reprogramadas, canceladas, terminadas e inasistencia.
+El listado se ordena por la próxima cita futura confirmada, dejando al final a quienes no tienen fecha confirmada. Las solicitudes muestran «Pendiente de aprobación». Incluye filtros de Big Five, solicitudes, confirmadas, pendientes, reprogramadas, canceladas, terminadas e inasistencia.
 
 ## Reglas de esta primera versión
 
@@ -48,3 +48,5 @@ Las comprobaciones de `tests/BigFive.Checks` usan una base PostgreSQL temporal y
 Resultado local: 219 comprobaciones Big Five/citas/PostgreSQL/HTTP, 30 de modelo/migraciones y 35 de perfil aprobadas (284 en total). JavaScript pasó la comprobación de sintaxis. Compilación sin errores; NuGet emitió NU1900 porque la consulta de auditoría de dependencias no estuvo disponible por red. Se revisaron visualmente el calendario con reserva y el formulario de atención mediante páginas de prueba ficticias.
 
 En esta computadora se aplicó la migración a `zuni`, con cero migraciones pendientes. Reiniciar la aplicación que estaba abierta permite cargar el código nuevo.
+
+Actualización: Mis citas y la ficha usan tablas compactas y ventanas para gestionar reservas. Solo se admite una cita solicitada, confirmada, terminada o con inasistencia por estudiante y día; cancelar o rechazar permite volver a solicitar. La atención se abre cuando el horario confirmado terminó. Para una prueba manual sin esperar, consultar `docs/prueba-atencion-citas-pasadas.md`.

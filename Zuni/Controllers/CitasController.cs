@@ -13,7 +13,7 @@ public sealed class CitasController(CitasService citas,BigFiveService bigFive):C
     private string Actor=>User.FindFirstValue(ClaimTypes.NameIdentifier)!;
     private bool Profesional=>User.IsInRole("Psicologo");
     private bool Permitido=>!bigFive.PruebaLocal||(HttpContext.Connection.RemoteIpAddress is {} ip&&System.Net.IPAddress.IsLoopback(ip));
-    private IActionResult Volver(Guid? id=null)=>Profesional&&id is not null?RedirectToAction(nameof(Detalle),new{id}):RedirectToAction(Profesional?"Agenda":"Citas",Profesional?"Psicologo":"Estudiante");
+    private IActionResult Volver(Guid? id=null)=>Profesional&&id is not null?RedirectToAction(nameof(Detalle),new{id}):RedirectToAction(Profesional?"Estudiantes":"Citas",Profesional?"Psicologo":"Estudiante");
     private async Task<bool> Ejecutar(Func<Task> accion)
     {
         if(!ModelState.IsValid){TempData["CitaError"]="Revisa los campos del formulario.";return false;}
@@ -31,7 +31,9 @@ public sealed class CitasController(CitasService citas,BigFiveService bigFive):C
     [HttpPost,ValidateAntiForgeryToken]
     public async Task<IActionResult> Gestionar(Guid id,int revision,string accion,string? motivo,CancellationToken ct)
     {
-        if(!Permitido)return Forbid();await Ejecutar(()=>citas.Gestionar(Actor,Profesional,id,revision,accion,motivo,ct));return Volver();
+        if(!Permitido)return Forbid();await Ejecutar(()=>citas.Gestionar(Actor,Profesional,id,revision,accion,motivo,ct));
+        if(Profesional){var profile=await citas.PropiasProfesional(Actor).Where(c=>c.Id==id).Select(c=>(Guid?)c.Estudiante.PerfilEstudiante!.Id).SingleOrDefaultAsync(ct);return RedirectToAction("Estudiantes","Psicologo",new{estudiante=profile,seccion="citas"});}
+        return Volver();
     }
     [HttpGet,Authorize(Roles="Psicologo")]
     public async Task<IActionResult> Detalle(Guid id,CancellationToken ct)

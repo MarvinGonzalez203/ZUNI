@@ -5,7 +5,7 @@
 <h1>Cita de @cita.Estudiante</h1>
 <a asp-controller="Psicologo" asp-action="Estudiantes" asp-route-estudiante="@cita.PerfilEstudianteId">Abrir ficha del estudiante</a>
 <partial name="_CitaMensajes" />
-<partial name="_CitasLista" model="@(new CitaResumen[]{cita})" />
+<p>@cita.Fecha.ToString("dd/MM/yyyy") · @cita.Inicio.ToString("HH:mm")–@cita.Fin.ToString("HH:mm") · @cita.Modalidad · @CitaTextos.Estado(cita.Estado)</p>
 @if(cita.Estado==EstadoCita.Confirmada){
 <section class="dash-card"><h2>Registrar atención</h2>
 @if(Zuni.Services.CitasService.Utc(cita.Fecha,cita.Fin)>DateTime.UtcNow){<p>Podrás registrar la asistencia y el resultado cuando termine el horario confirmado.</p>}

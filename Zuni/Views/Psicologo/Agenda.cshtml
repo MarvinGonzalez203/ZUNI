@@ -7,4 +7,3 @@
 @if(TempData["AgendaMensaje"] is string message){<p class="dash-notice" role="status">@message</p>}
 @if(!Model.Habilitado){<section class="dash-card"><p>Tu cuenta no está habilitada para configurar disponibilidad.</p></section>}
 else {<partial name="_AgendaPersistida" model="Model" />}
-<section class="mt-4"><h2>Solicitudes y citas</h2><p>Las solicitudes reservan el horario desde su envío. Revisa cada una y acepta o rechaza; al terminar una cita confirmada, registra la asistencia y atención.</p><partial name="_CitasLista" model="Model.Citas" /></section>
