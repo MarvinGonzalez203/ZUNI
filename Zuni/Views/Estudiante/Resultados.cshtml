@@ -1,3 +1,5 @@
+@model IReadOnlyList<Zuni.Models.CitaResumen>
 @{ ViewData["Title"]="Resultados"; }
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">TU ESPACIO</span><h1>Mis resultados</h1></div></header>
-<section class="dash-card"><p>Aún no hay recomendaciones de tu psicólogo para mostrar.</p></section>
+@if(Model.Count==0){<section class="dash-card"><p>Aún no hay recomendaciones de tu psicólogo para mostrar.</p></section>}
+@foreach(var cita in Model){<section class="dash-card mb-4"><h2>Atención del @cita.Fecha.ToString("dd/MM/yyyy")</h2><p>@cita.Psicologo · @cita.Modalidad</p><h3 class="h5">Reseña y recomendaciones</h3><p style="white-space:pre-wrap">@cita.Resena</p><h3 class="h5">Resultado compartido por tu psicólogo</h3><p style="white-space:pre-wrap">@cita.ResultadoPublicable</p>@if(cita.ProximaCita){<h3 class="h5">Próxima cita recomendada</h3><p style="white-space:pre-wrap">@cita.Indicaciones</p><a class="dash-button" asp-action="Citas">Solicitar próxima cita</a>}</section>}

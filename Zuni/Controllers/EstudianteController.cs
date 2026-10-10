@@ -10,7 +10,7 @@ namespace Zuni.Controllers;
 [Authorize(Roles = "Estudiante")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("Estudiante")]
-public sealed class EstudianteController(ApplicationDbContext db, Zuni.Services.BigFiveService? bigFive = null, Zuni.Services.AgendaService? agenda = null) : Controller
+public sealed class EstudianteController(ApplicationDbContext db, Zuni.Services.BigFiveService? bigFive = null, Zuni.Services.AgendaService? agenda = null, Zuni.Services.CitasService? citas = null) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -33,14 +33,22 @@ public sealed class EstudianteController(ApplicationDbContext db, Zuni.Services.
     public IActionResult Evaluaciones() => View();
 
     [HttpGet("Resultados")]
-    public IActionResult Resultados() => View();
+    public async Task<IActionResult> Resultados(CancellationToken ct)
+    {
+        if(bigFive?.PruebaLocal==true && (HttpContext.Connection.RemoteIpAddress is not {} ip || !System.Net.IPAddress.IsLoopback(ip)))return Forbid();
+        try{return View(citas is null?Array.Empty<CitaResumen>():await citas.Resultados(User.FindFirstValue(ClaimTypes.NameIdentifier)!,ct));}
+        catch(Zuni.Services.EvaluacionOperacionException){return Forbid();}
+    }
 
     [HttpGet("Citas")]
-    public async Task<IActionResult> Citas(DateOnly? mes,CancellationToken ct)
+    public async Task<IActionResult> Citas(DateOnly? mes,CancellationToken ct,Guid? reprogramar=null)
     {
         if(bigFive?.PruebaLocal==true && (HttpContext.Connection.RemoteIpAddress is not {} address || !System.Net.IPAddress.IsLoopback(address))) return StatusCode(403);
-        return View(agenda is null ? new AgendaCalendario(Zuni.Services.AgendaService.Mes(mes),"",false,false,[]) :
-            await agenda.Leer(User.FindFirstValue(ClaimTypes.NameIdentifier)!,false,mes,ct));
+        try{
+            var model=agenda is null ? new AgendaCalendario(Zuni.Services.AgendaService.Mes(mes),"",false,false,[]) :await agenda.Leer(User.FindFirstValue(ClaimTypes.NameIdentifier)!,false,mes,ct);
+            if(reprogramar is not null){var previous=model.Citas.SingleOrDefault(c=>c.Id==reprogramar&&CitaTextos.Activa(c.Estado)&&c.InicioUtc>DateTime.UtcNow);if(previous is null)return NotFound();model=model with{Reprogramar=previous};}
+            return View(model);
+        }catch(Zuni.Services.EvaluacionOperacionException){return Forbid();}
     }
     private static MiPerfilViewModel CrearPerfilViewModel(ApplicationUser usuario)
     {

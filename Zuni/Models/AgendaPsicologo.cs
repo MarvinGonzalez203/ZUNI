@@ -28,4 +28,9 @@ public sealed class HorarioAgendaInput
     public int DuracionMinutos { get; set; } = 50;
     [Required] public string Modalidad { get; set; } = "Presencial";
 }
-public sealed record AgendaCalendario(DateOnly Mes, string NombrePsicologo, bool Habilitado, bool Editor, IReadOnlyList<DiaAgendaPsicologo> Dias);
+public sealed record AgendaCalendario(DateOnly Mes, string NombrePsicologo, bool Habilitado, bool Editor, IReadOnlyList<DiaAgendaPsicologo> Dias)
+{
+    public IReadOnlyList<FranjaCita> Franjas { get; init; }=[];
+    public IReadOnlyList<CitaResumen> Citas { get; init; }=[];
+    public CitaResumen? Reprogramar { get; init; }
+}

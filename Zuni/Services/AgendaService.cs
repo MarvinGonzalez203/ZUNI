@@ -35,12 +35,14 @@ public sealed class AgendaService(ApplicationDbContext db, BigFiveService bigFiv
         if(!editor && bigFive.Disponible)
             psychologist=await bigFive.Vigentes().Where(p=>p.Asignacion.EstudianteId==id&&p.Asignacion.Estado==EstadoEvaluacion.Finalizada&&p.Apertura!=null)
                 .Select(p=>p.PsicologoId).SingleOrDefaultAsync(ct);
-        if(psychologist is null)return new(month,"",false,editor,[]);
+        var citasService=new CitasService(db,bigFive,TimeProvider.System);
+        var appointments=await citasService.Listar(id,editor,ct);
+        if(psychologist is null)return new(month,"",false,editor,[]){Citas=appointments};
         var name=await db.Users.Where(u=>u.Id==psychologist).Select(u=>u.FullName).SingleAsync(ct);
         var days=await db.Set<DiaAgendaPsicologo>().AsNoTracking().Include(d=>d.Horarios)
             .Where(d=>d.PsicologoId==psychologist&&d.Fecha>=month&&d.Fecha<month.AddMonths(1)).OrderBy(d=>d.Fecha).ToListAsync(ct);
-        // Only availability is passed to the view; never users, answers or appointment identities.
-        return new(month,name,true,editor,days);
+        // Shared slots contain no other student's identity; appointment summaries are scoped to the actor.
+        return new(month,name,true,editor,days){Franjas=await citasService.Franjas(psychologist,days,ct),Citas=appointments};
     }
     public async Task Cambiar(string psychologist,DateOnly date,string action,HorarioAgendaInput? input,Guid? range,CancellationToken ct)
     {
@@ -57,6 +59,14 @@ public sealed class AgendaService(ApplicationDbContext db, BigFiveService bigFiv
         var key=psychologist+":"+date.ToString("yyyy-MM-dd");
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({key}, 803501502))",ct);
         var day=await db.Set<DiaAgendaPsicologo>().Include(d=>d.Horarios).SingleOrDefaultAsync(d=>d.PsicologoId==psychologist&&d.Fecha==date,ct);
+        if(action is "bloquear" or "limpiar" or "quitar"){
+            var busy=db.Set<Cita>().Where(c=>c.PsicologoId==psychologist&&c.PruebaLocal==bigFive.PruebaLocal&&c.Fecha==date&&(c.Estado==EstadoCita.Solicitada||c.Estado==EstadoCita.Confirmada));
+            if(action=="quitar"){
+                var chosen=day?.Horarios.SingleOrDefault(h=>h.Id==range);
+                if(chosen is not null)busy=busy.Where(c=>c.Inicio<chosen.Fin&&c.Fin>chosen.Inicio);
+            }
+            if(await busy.AnyAsync(ct))throw new EvaluacionOperacionException("Hay citas solicitadas o confirmadas en ese horario. Cancélalas o reprograma con el estudiante antes de modificar su disponibilidad.");
+        }
         if(action=="agregar")
         {
             if(day?.Ocupado==true)throw new EvaluacionOperacionException("Habilita el día antes de añadir horarios.");

@@ -2,9 +2,12 @@
 @{ ViewData["Title"]="Citas"; }
 @section Styles {<link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/agenda.css" asp-append-version="true" />}
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">TU ESPACIO</span><h1>Calendario de tu psicólogo</h1></div></header>
+<partial name="_CitaMensajes" />
+@if(Model.Reprogramar is {} previous){<p class="dash-notice">Reprogramando tu cita del @previous.Fecha.ToString("dd/MM/yyyy") a las @previous.Inicio.ToString("HH:mm"). El horario anterior se conservará hasta que elijas y guardes uno nuevo.</p><a asp-action="Citas">Salir de reprogramación</a>}
 @if(!Model.Habilitado){
 <section class="dash-card"><h2>Primero completa Big Five</h2><p>El calendario se habilita cuando finalizas el cuestionario y tienes un psicólogo asignado. Si ya lo finalizaste y no aparece, consulta con la coordinación.</p><a class="dash-button" asp-controller="BigFive" asp-action="Index">Ir al cuestionario</a></section>
 } else {
-<section class="dash-card mb-4"><h2>@Model.NombrePsicologo</h2><p>Estos son los días y horarios definidos por tu psicólogo, en hora de Guatemala. La reserva de citas estará disponible en una siguiente etapa.</p></section>
+<section class="dash-card mb-4"><h2>@Model.NombrePsicologo</h2><p>Selecciona un día y solicita un horario disponible, en hora de Guatemala. Quedará reservado mientras tu psicólogo lo acepta. Si ofrece ambas modalidades, podrás elegir presencial o virtual.</p></section>
 <partial name="_AgendaPersistida" model="Model" />
 }
+<section class="mt-4"><h2>Mis citas</h2><partial name="_CitasLista" model="Model.Citas" /></section>

@@ -26,6 +26,8 @@ builder.Services.AddScoped<EvaluacionesService>();
 builder.Services.AddScoped<BigFiveService>();
 builder.Services.AddScoped<AgendaService>();
 builder.Services.AddScoped<SeguimientoEstudiantesService>();
+builder.Services.AddScoped<CitasService>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(

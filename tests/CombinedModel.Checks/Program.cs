@@ -30,7 +30,7 @@ var latest=assembly.CreateMigration(assembly.Migrations[assembly.Migrations.Keys
 var linkTarget=initializer.Initialize(latest.TargetModel,designTime:true);
 Check(!differ.HasDifferences(linkTarget.GetRelationalModel(),current.GetRelationalModel()),"TargetModel de última migración coincide con modelo combinado");
 var additions=differ.GetDifferences(target.GetRelationalModel(),current.GetRelationalModel());
-Check(additions.OfType<CreateTableOperation>().Select(t=>t.Name).Order().SequenceEqual(new[]{"AsignacionesEstudiantePsicologo","ParticipacionesBigFive","AccesosBigFive","DiasAgendaPsicologo","HorariosAgendaPsicologo"}.Order())&&additions.All(op=>op is CreateTableOperation or CreateIndexOperation),"Desde Evaluaciones solo se agregan asignaciones, Big Five, agenda e índices");
+Check(additions.OfType<CreateTableOperation>().Select(t=>t.Name).Order().SequenceEqual(new[]{"AsignacionesEstudiantePsicologo","ParticipacionesBigFive","AccesosBigFive","DiasAgendaPsicologo","HorariosAgendaPsicologo","Citas","EventosCita","AccesosAtencion"}.Order())&&additions.All(op=>op is CreateTableOperation or CreateIndexOperation),"Desde Evaluaciones solo se agregan asignaciones, Big Five, agenda e índices");
 Check(linkMigration.UpOperations.OfType<CreateTableOperation>().Select(t=>t.Name).SequenceEqual(new[]{"AsignacionesEstudiantePsicologo"})&&linkMigration.UpOperations.All(op=>op is CreateTableOperation or CreateIndexOperation),"Migración de asignaciones únicamente agrega su tabla e índices");
 var migrator=db.GetService<IMigrator>();
 var freshSql=migrator.GenerateScript(null,null,MigrationsSqlGenerationOptions.Idempotent);

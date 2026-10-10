@@ -141,7 +141,7 @@ try
     Check(rosterHtml.Contains("20262001")&&!rosterHtml.Contains("20262002")&&!rosterHtml.Contains("Motivo FICTICIO"),"Lista solo vinculados sin cargar sus perfiles Big Five");
     Check((await pClient.GetAsync("/Psicologo/Resultados")).StatusCode==HttpStatusCode.Redirect,"Resultados antiguos redirigen a estudiantes");
     Check((await pClient.GetAsync("/Psicologo/Atencion")).StatusCode==HttpStatusCode.Redirect,"Atención antigua redirige a estudiantes");
-    Check((await Page(pClient,"/Psicologo/Historial")).Contains("Historial pendiente de conectar"),"Historial general conserva su vista independiente");
+    Check(WebUtility.HtmlDecode(await Page(pClient,"/Psicologo/Historial")).Contains("Aún no hay atenciones con estos filtros"),"Historial general conserva su vista independiente");
     Check((await Page(pClient,"/Psicologo/Estudiantes?filtro=completado")).Contains("20262001"),"Filtro de test completado incluye al titular");
     Check(!(await Page(pClient,"/Psicologo/Estudiantes?filtro=sinresultado")).Contains("20262001"),"Filtro sin resultado excluye al completado");
     Check(!(await Page(pClient,"/Psicologo/Estudiantes?busqueda=nombreinexistente")).Contains("20262001"),"Búsqueda filtra el listado sin abandonar la cuenta propia");
@@ -224,6 +224,111 @@ try
     await using(var db=Db())Check(!await db.Set<DiaAgendaPsicologo>().AnyAsync(d=>d.Fecha==date),"Quitar configuración elimina solo el día propio");
     Check(!(await Page(owner,"/Estudiante/Evaluaciones")).Contains("DEMO"),"Panel de evaluaciones sin demostraciones");
     Check(WebUtility.HtmlDecode(await Page(owner,"/Estudiante/Resultados")).Contains("Aún no hay recomendaciones"),"Resultados sin puntuaciones automáticas");
+    // Citas: únicamente datos ficticios en la base temporal.
+    var bookingDate=date.AddDays(1);Guid bookingRange;
+    await using(var db=Db()){
+        bookingRange=await db.Set<HorarioAgendaPsicologo>().Where(h=>h.Dia.Fecha==bookingDate).Select(h=>h.Id).SingleAsync();
+        await Reject(async()=>await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(other,new(){HorarioId=bookingRange,Inicio=new(9,0),Modalidad="Presencial"},default),"No reserva sin Big Five finalizado");
+        db.AsignacionesEstudiantePsicologo.Add(new(){PerfilEstudianteId=await db.PerfilesEstudiante.Where(p=>p.UsuarioId==other).Select(p=>p.Id).SingleAsync(),PsicologoUsuarioId=psych,FechaAsignacionUtc=DateTime.UtcNow});await db.SaveChangesAsync();
+    }
+    Guid otherAssignment;await using(var db=Db())otherAssignment=await Bf(db).Aceptar(other,new(){Acepto=true,MayorDeEdad=true,MotivoConsulta="Prueba ficticia de reserva"},default);
+    await using(var db=Db()){
+        var evaluation=new EvaluacionesService(db,Bf(db));await evaluation.Guardar(otherAssignment,other,await db.Set<AsignacionEvaluacion>().Where(a=>a.Id==otherAssignment).Select(a=>a.Revision).SingleAsync(),Ipip50.Items.ToDictionary(i=>i.Id,i=>(int?)3),default);
+    }
+    await using(var db=Db())await new EvaluacionesService(db,Bf(db)).Finalizar(otherAssignment,other,await db.Set<AsignacionEvaluacion>().Where(a=>a.Id==otherAssignment).Select(a=>a.Revision).SingleAsync(),true,default);
+    async Task<Guid?> Race(string actor){await using var db=Db();try{return await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(actor,new(){HorarioId=bookingRange,Inicio=new(9,0),Modalidad="Presencial"},default);}catch(EvaluacionOperacionException){return null;}}
+    var race=await Task.WhenAll(Race(student),Race(other));Check(race.Count(id=>id!=null)==1,"Dos estudiantes simultáneos: una sola reserva");
+    var raceId=race.First(id=>id!=null)!.Value;
+    await using(var db=Db()){
+        var appointment=await db.Set<Cita>().SingleAsync(c=>c.Id==raceId);Check(appointment.Estado==EstadoCita.Solicitada,"Solicitud reserva antes de aceptación");
+        var cal=await new AgendaService(db,Bf(db)).Leer(student,false,month,default);Check(cal.Franjas.Single(f=>f.HorarioId==bookingRange&&f.Inicio==new TimeOnly(9,0)).Reservada,"Reserva aparece ocupada para todos");
+        await Reject(()=>new AgendaService(db,Bf(db)).Cambiar(psych,bookingDate,"bloquear",null,null,default),"No bloquea día con cita activa");
+    }
+    await using(var db=Db())await Reject(()=>new AgendaService(db,Bf(db)).Cambiar(psych,bookingDate,"quitar",null,bookingRange,default),"No elimina horario con reserva activa");
+    await using(var db=Db())await new CitasService(db,Bf(db),TimeProvider.System).Gestionar(psych,true,raceId,1,"rechazar","Prueba ficticia",default);
+    await using(var db=Db())Check(!(await new AgendaService(db,Bf(db)).Leer(student,false,month,default)).Franjas.Single(f=>f.HorarioId==bookingRange&&f.Inicio==new TimeOnly(9,0)).Reservada,"Rechazo libera horario");
+    await using(var db=Db())await Reject(async()=>await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(student,new(){HorarioId=bookingRange,Inicio=new(9,10),Modalidad="Presencial"},default),"No permite hora inventada entre franjas");
+    await using(var db=Db())await Reject(async()=>await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(student,new(){HorarioId=bookingRange,Inicio=new(9,0),Modalidad="Ambas"},default),"Solicitud exige modalidad concreta");
+    Check((await owner.PostAsync("/Citas/Solicitar",new FormUrlEncodedContent(new Dictionary<string,string>()))).StatusCode==HttpStatusCode.BadRequest,"Reserva exige antifalsificación");
+    await Post(owner,"/Citas/Solicitar",new(){{"HorarioId",bookingRange.ToString()},{"Inicio","09:00"},{"Modalidad","Presencial"}},studentPath);
+    Guid first;await using(var db=Db())first=await db.Set<Cita>().Where(c=>c.EstudianteId==student&&c.Estado==EstadoCita.Solicitada).Select(c=>c.Id).SingleAsync();
+    var occupiedCalendar=await Page(otherClient,studentPath);
+    Check(WebUtility.HtmlDecode(occupiedCalendar).Contains("Reservado / ocupado")&&!occupiedCalendar.Contains("FICTICIO Estudiante titular"),"Calendario de otro estudiante muestra reserva sin identidad del titular");
+    Check(Regex.Matches(occupiedCalendar,"name=\"HorarioId\"").Count==1&&!occupiedCalendar.Contains("if(slot."),"Franja reservada sin formulario; solo el espacio libre permite solicitar");
+    await File.WriteAllTextAsync(".visual-check/bigfive/appointment-reserved.html",occupiedCalendar);
+    Check((await strangerClient.GetAsync("/Citas/Detalle/"+first)).StatusCode==HttpStatusCode.NotFound,"Psicólogo ajeno no accede a cita");
+    Check((await owner.GetAsync("/Citas/Detalle/"+first)).StatusCode==HttpStatusCode.Redirect,"Estudiante no accede a detalle clínico");
+    Check((await adminClient.GetAsync("/Citas/Detalle/"+first)).StatusCode==HttpStatusCode.Redirect,"Administrador no accede a detalle clínico");
+    await using(var db=Db())await Reject(()=>new CitasService(db,Bf(db),TimeProvider.System).Gestionar(other,false,first,1,"cancelar","Ajena",default),"Otro estudiante no cancela cita por ID");
+    await Post(pClient,"/Citas/Gestionar",new(){{"id",first.ToString()},{"revision","1"},{"accion","confirmar"}},agendaPath);
+    await using(var db=Db())Check((await db.Set<Cita>().SingleAsync(c=>c.Id==first)).Estado==EstadoCita.Confirmada,"Profesional acepta por HTTP");
+    await using(var db=Db())await Reject(()=>new CitasService(db,Bf(db),TimeProvider.System).Gestionar(student,false,first,1,"cancelar","Obsoleta",default),"Revisión obsoleta no cambia cita");
+    await using(var db=Db())await Reject(()=>new CitasService(db,Bf(db),TimeProvider.System).Cerrar(psych,new(){Id=first,Revision=2,Asistio=true,ResultadoClinicoPrivado="CLINICO PRIVADO FICTICIO",ResenaEstudiante="RESEÑA PUBLICA FICTICIA",ResultadoPublicable="RESULTADO PUBLICO FICTICIO"},default),"No cierra atención futura");
+    Guid busyId;await using(var db=Db())busyId=await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(other,new(){HorarioId=bookingRange,Inicio=new(9,50),Modalidad="Presencial"},default);
+    await using(var db=Db()){
+        var ordered=await new SeguimientoEstudiantesService(db,Bf(db)).Leer(psych,null,null,1,null,default);
+        Check(ordered.Estudiantes[0].Id==studentProfile&&ordered.Estudiantes[0].ProximaCitaUtc<ordered.Estudiantes[1].ProximaCitaUtc,"Listado ordena por cita más cercana antes que nombre");
+    }
+    await using(var db=Db())await Reject(async()=>await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(student,new(){HorarioId=bookingRange,Inicio=new(9,50),Modalidad="Presencial",ReprogramarId=first,RevisionAnterior=2},default),"Reprogramar a espacio ocupado falla");
+    await using(var db=Db()){
+        Check((await db.Set<Cita>().SingleAsync(c=>c.Id==first)).Estado==EstadoCita.Confirmada,"Reprogramación fallida conserva reserva original");
+        await new CitasService(db,Bf(db),TimeProvider.System).Gestionar(other,false,busyId,1,"cancelar","Prueba cancelación",default);
+    }
+    await Post(owner,"/Citas/Solicitar",new(){{"HorarioId",bookingRange.ToString()},{"Inicio","09:50"},{"Modalidad","Presencial"},{"ReprogramarId",first.ToString()},{"RevisionAnterior","2"}},studentPath+"&reprogramar="+first);
+    Guid moved;await using(var db=Db()){
+        var old=await db.Set<Cita>().SingleAsync(c=>c.Id==first);var newer=await db.Set<Cita>().SingleAsync(c=>c.CitaAnteriorId==first);moved=newer.Id;
+        Check(old.Estado==EstadoCita.Reprogramada&&newer.Estado==EstadoCita.Solicitada,"Reprogramación conserva historial y pide nueva aceptación");
+        var slots=(await new AgendaService(db,Bf(db)).Leer(student,false,month,default)).Franjas;Check(!slots.Single(f=>f.HorarioId==bookingRange&&f.Inicio==new TimeOnly(9,0)).Reservada&&slots.Single(f=>f.HorarioId==bookingRange&&f.Inicio==new TimeOnly(9,50)).Reservada,"Reprogramación libera original y reserva nuevo");
+    }
+    var pendingRoster=await Page(pClient,"/Psicologo/Estudiantes?filtro=solicitada");Check(pendingRoster.Contains("20262001"),"Filtro estudiantes con solicitudes real");
+    Check((await Page(pClient,"/Psicologo/Estudiantes?filtro=reprogramada")).Contains("20262001"),"Filtro reprogramadas conserva movimiento anterior");
+    await using(var db=Db())await new CitasService(db,Bf(db),TimeProvider.System).Gestionar(psych,true,moved,1,"confirmar",null,default);
+    var after=new AppointmentClock(CitasService.Utc(bookingDate,new(12,0)));
+    await using(var db=Db())await Reject(()=>new CitasService(db,Bf(db),after).Cerrar(psych,new(){Id=moved,Revision=2,Asistio=true},default),"Asistencia requiere resultado profesional y reseña");
+    await using(var db=Db())await new CitasService(db,Bf(db),after).Cerrar(psych,new(){Id=moved,Revision=2,Asistio=true,ResultadoClinicoPrivado="CLINICO PRIVADO FICTICIO",ResenaEstudiante="RESEÑA PUBLICA FICTICIA",ResultadoPublicable="RESULTADO PUBLICO FICTICIO",RecomiendaProximaCita=true,IndicacionesProximaCita="SEGUIMIENTO FICTICIO"},default);
+    await using(var db=Db())await Reject(()=>new CitasService(db,Bf(db),after).Cerrar(psych,new(){Id=moved,Revision=2,Asistio=true,ResultadoClinicoPrivado="Otro texto",ResenaEstudiante="Otra reseña",ResultadoPublicable="Otro resultado"},default),"No duplica ni sobrescribe atención cerrada");
+    var publicResults=WebUtility.HtmlDecode(await Page(owner,"/Estudiante/Resultados"));Check(publicResults.Contains("RESULTADO PUBLICO FICTICIO")&&publicResults.Contains("RESEÑA PUBLICA FICTICIA")&&publicResults.Contains("SEGUIMIENTO FICTICIO")&&!publicResults.Contains("CLINICO PRIVADO"),"Estudiante ve solo reseña, resultado compartido y seguimiento");
+    Check(!(await Page(otherClient,"/Estudiante/Resultados")).Contains("RESULTADO PUBLICO FICTICIO"),"Resultados de cita no se filtran a otro estudiante");
+    var clinicalHtml=await Page(pClient,"/Citas/Detalle/"+moved);Check(clinicalHtml.Contains("CLINICO PRIVADO FICTICIO"),"Profesional propio ve resultado privado");
+    await File.WriteAllTextAsync(".visual-check/bigfive/appointment-attention.html",clinicalHtml);
+    var history=await Page(pClient,"/Psicologo/Historial");Check(history.Contains(moved.ToString())&&!history.Contains("CLINICO PRIVADO"),"Historial general conectado sin exponer notas en tabla");
+    await File.WriteAllTextAsync(".visual-check/bigfive/appointment-history.html",history);
+    Check(!(await Page(strangerClient,"/Psicologo/Historial")).Contains(moved.ToString()),"Historial profesional ajeno vacío");
+    await File.WriteAllTextAsync(".visual-check/bigfive/students.html",await Page(pClient,"/Psicologo/Estudiantes"));
+    await File.WriteAllTextAsync(".visual-check/bigfive/appointment-student.html",await Page(owner,studentPath));
+    await File.WriteAllTextAsync(".visual-check/bigfive/appointment-results.html",await Page(owner,"/Estudiante/Resultados"));
+    await using(var db=Db()){
+        Check(await db.Set<AccesoAtencion>().CountAsync()==1,"Consulta clínica profesional auditada");
+        Check(await db.Set<EventoCita>().CountAsync(e=>e.CitaId==moved)==3,"Solicitud, confirmación y cierre quedan auditados");
+        var institutional=new BigFiveService(db,new ConfigurationBuilder().Build(),new LocalEnvironment{EnvironmentName="Production"},new AsignacionPsicologoService(db));
+        Check((await new CitasService(db,institutional,TimeProvider.System).Listar(student,false,default)).Count==0,"Citas de prueba aisladas de producción");
+    }
+    // Una reserva con duración variable ocupa todo el intervalo ofrecido.
+    Guid variableId;await using(var db=Db()){
+        await new AgendaService(db,Bf(db)).Cambiar(psych,bookingDate,"agregar",new(){Inicio=new(12,0),Fin=new(14,0),DuracionMinutos=0,Modalidad="Ambas"},null,default);
+        variableId=await db.Set<HorarioAgendaPsicologo>().Where(h=>h.Dia.Fecha==bookingDate&&h.DuracionMinutos==0).Select(h=>h.Id).SingleAsync();
+    }
+    Guid variableBooking;await using(var db=Db())variableBooking=await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(student,new(){HorarioId=variableId,Inicio=new(12,0),Modalidad="Virtual"},default);
+    await using(var db=Db())await Reject(async()=>await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(other,new(){HorarioId=variableId,Inicio=new(13,0),Modalidad="Presencial"},default),"Duración variable evita segunda reserva dentro del intervalo");
+    await using(var db=Db()){
+        await new CitasService(db,Bf(db),TimeProvider.System).Gestionar(psych,true,variableBooking,1,"confirmar",null,default);
+        await new CitasService(db,Bf(db),new AppointmentClock(CitasService.Utc(bookingDate,new(15,0)))).Cerrar(psych,new(){Id=variableBooking,Revision=2,Asistio=false,ResultadoClinicoPrivado="NO DEBE GUARDARSE",ResultadoPublicable="NO DEBE PUBLICARSE",ResenaEstudiante="INASISTENCIA FICTICIA"},default);
+        db.ChangeTracker.Clear();var absent=await db.Set<Cita>().SingleAsync(c=>c.Id==variableBooking);Check(absent.Estado==EstadoCita.NoAsistio&&absent.ResultadoClinicoPrivado==""&&absent.ResultadoPublicable=="","Inasistencia no genera resultado clínico");
+    }
+    // Prueba HTTP del formulario de atención, con una cita pasada ficticia.
+    Guid pastId=Guid.NewGuid();var pastDate=AgendaService.Hoy.AddDays(-1);
+    await using(var db=Db()){
+        db.Add(new Cita{Id=pastId,EstudianteId=student,PsicologoId=psych,HorarioOriginalId=Guid.NewGuid(),Fecha=pastDate,Inicio=new(9,0),Fin=new(9,50),InicioUtc=CitasService.Utc(pastDate,new(9,0)),FinUtc=CitasService.Utc(pastDate,new(9,50)),Estado=EstadoCita.Confirmada,PruebaLocal=true});await db.SaveChangesAsync();
+    }
+    var pastPath="/Citas/Detalle/"+pastId;
+    await File.WriteAllTextAsync(".visual-check/bigfive/appointment-form.html",await Page(pClient,pastPath));
+    var incompleteAttention=await Post(pClient,"/Citas/Cerrar",new(){{"Id",pastId.ToString()},{"Revision","1"},{"Asistio","true"},{"ResultadoClinicoPrivado","BORRADOR PRIVADO FICTICIO"}},pastPath);
+    Check(incompleteAttention.StatusCode==HttpStatusCode.OK&&(await incompleteAttention.Content.ReadAsStringAsync()).Contains("BORRADOR PRIVADO FICTICIO"),"Validación conserva el texto del profesional en el formulario");
+    await using(var db=Db())Check((await db.Set<Cita>().SingleAsync(c=>c.Id==pastId)).ResultadoClinicoPrivado=="","Formulario inválido no guarda atención parcial");
+    await Post(pClient,"/Citas/Cerrar",new(){{"Id",pastId.ToString()},{"Revision","1"},{"Asistio","true"},{"ResultadoClinicoPrivado","HTTP PRIVADO FICTICIO"},{"ResenaEstudiante","HTTP RESEÑA FICTICIA"},{"ResultadoPublicable","HTTP PUBLICO FICTICIO"}},pastPath);
+    await using(var db=Db())Check((await db.Set<Cita>().SingleAsync(c=>c.Id==pastId)).Estado==EstadoCita.Terminada,"Formulario HTTP guarda asistencia y atención profesional");
+    Check(WebUtility.HtmlDecode(await Page(owner,"/Estudiante/Resultados")).Contains("HTTP PUBLICO FICTICIO")&&!(await Page(owner,"/Estudiante/Resultados")).Contains("HTTP PRIVADO FICTICIO"),"Publicación HTTP mantiene separado el resultado clínico privado");
+    Guid keepForWithdrawal;await using(var db=Db())keepForWithdrawal=await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(student,new(){HorarioId=bookingRange,Inicio=new(9,0),Modalidad="Presencial"},default);
     await Post(owner,"/Estudiante/BigFive/retirar",new(),"/Estudiante/BigFive");
     Check(!WebUtility.HtmlDecode(await Page(owner,studentPath)).Contains("agenda-persistida"),"Retiro de consentimiento vuelve a cerrar calendario");
     Check(!(await Page(pClient,detailPath)).Contains("Motivo FICTICIO"),"Retiro oculta el perfil dentro de la ficha profesional");
@@ -234,6 +339,9 @@ try
         Check(await db.Set<AccesoBigFive>().CountAsync()==1,"Sin nuevo acceso a perfil retirado");
         Check(!await Bf(db).PuedeSolicitarCita(student,default),"Retiro suspende requisito del futuro flujo de citas");
     }
+    await using(var db=Db())await Reject(async()=>await new CitasService(db,Bf(db),TimeProvider.System).Solicitar(student,new(){HorarioId=bookingRange,Inicio=new(9,50),Modalidad="Presencial"},default),"Retiro impide nuevas reservas");
+    await using(var db=Db())await new CitasService(db,Bf(db),TimeProvider.System).Gestionar(student,false,keepForWithdrawal,1,"cancelar","Consentimiento retirado",default);
+    await using(var db=Db())Check((await db.Set<Cita>().SingleAsync(c=>c.Id==keepForWithdrawal)).Estado==EstadoCita.Cancelada,"Retiro permite cancelar reservas previas");
     Console.WriteLine($"APROBADAS: {checks} comprobaciones Big Five, PostgreSQL y HTTP.");
 }
 finally
@@ -252,3 +360,5 @@ sealed class LocalEnvironment : IWebHostEnvironment
     public string ContentRootPath{get;set;}="";
     public IFileProvider ContentRootFileProvider{get;set;}=new NullFileProvider();
 }
+
+sealed class AppointmentClock(DateTime now):TimeProvider {public override DateTimeOffset GetUtcNow()=>new DateTimeOffset(now,TimeSpan.Zero);}

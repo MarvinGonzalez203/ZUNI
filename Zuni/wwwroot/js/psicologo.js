@@ -1,7 +1,7 @@
 (() => {
     'use strict';
-    document.querySelectorAll('.modal:not(.agenda-modal) form').forEach(form => form.addEventListener('submit', event => event.preventDefault()));
-    document.querySelectorAll('.modal:not(.agenda-modal)').forEach(modal => modal.addEventListener('hidden.bs.modal', () => modal.querySelectorAll('form').forEach(form => form.reset())));
+    document.querySelectorAll('.modal:not(.agenda-modal):not(.student-record):not(.cita-real) form').forEach(form => form.addEventListener('submit', event => event.preventDefault()));
+    document.querySelectorAll('.modal:not(.agenda-modal):not(.student-record):not(.cita-real)').forEach(modal => modal.addEventListener('hidden.bs.modal', () => modal.querySelectorAll('form').forEach(form => form.reset())));
     const levelSelect = document.getElementById('resultado-evaluacion');
     if (levelSelect) {
         levelSelect.addEventListener('change', () => {

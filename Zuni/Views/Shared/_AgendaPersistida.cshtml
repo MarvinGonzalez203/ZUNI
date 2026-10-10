@@ -7,9 +7,9 @@
 }
 <section class="dash-card agenda-persistida">
 <nav class="agenda-month" aria-label="Mes del calendario">
-@if(first>min){<a class="dash-button" href="?mes=@first.AddMonths(-1).ToString("yyyy-MM-dd")">← Anterior</a>}
+@if(first>min){<a class="dash-button" href="?mes=@first.AddMonths(-1).ToString("yyyy-MM-dd")&amp;reprogramar=@Model.Reprogramar?.Id">← Anterior</a>}
 <h2>@first.ToString("MMMM yyyy",culture)</h2>
-@if(first<min.AddMonths(12)){<a class="dash-button" href="?mes=@first.AddMonths(1).ToString("yyyy-MM-dd")">Siguiente →</a>}
+@if(first<min.AddMonths(12)){<a class="dash-button" href="?mes=@first.AddMonths(1).ToString("yyyy-MM-dd")&amp;reprogramar=@Model.Reprogramar?.Id">Siguiente →</a>}
 </nav>
 <p>🟢 Disponible · 🔴 Ocupado · ⚪ Sin horarios definidos</p>
 <p class="agenda-hint">@(Model.Editor?"Pulsa un día para consultar o editar su disponibilidad.":"Pulsa un día para consultar sus horarios.")</p>
@@ -18,10 +18,11 @@
 @for(var blank=0;blank<offset;blank++){<span aria-hidden="true"></span>}
 @for(var n=1;n<=count;n++){
     var date=first.AddDays(n-1);var day=Model.Dias.SingleOrDefault(d=>d.Fecha==date);
-    var free=day is {Ocupado:false} && day.Horarios.Any(h=>AgendaService.InicioDisponible(h,date,now)!=null);
-    var label=date<today ? "Pasado" : day?.Ocupado==true ? "Ocupado" : free ? "Disponible" : "Sin horarios";
+    var slots=Model.Franjas.Where(f=>f.Fecha==date).ToArray();var free=slots.Any(f=>!f.Reservada);
+    var busy=day?.Ocupado==true||slots.Length>0&&!free;
+    var label=date<today ? "Pasado" : busy ? "Ocupado" : free ? "Disponible" : "Sin horarios";
     if(date>=today && date<=today.AddMonths(12)){
-    <button type="button" class="agenda-day @(free?"is-free":day?.Ocupado==true?"is-busy":"")" data-bs-toggle="modal" data-bs-target="#agenda-dia-@date.ToString("yyyy-MM-dd")" aria-label="@date.ToString("dd MMMM",culture): @label"><strong>@n</strong><span>@label</span></button>
+    <button type="button" class="agenda-day @(free?"is-free":busy?"is-busy":"")" data-bs-toggle="modal" data-bs-target="#agenda-dia-@date.ToString("yyyy-MM-dd")" aria-label="@date.ToString("dd MMMM",culture): @label"><strong>@n</strong><span>@label</span></button>
     } else {<span class="agenda-day" aria-label="@date.ToString("dd MMMM",culture): @label"><strong>@n</strong><span>@label</span></span>}
 }
 </div>
@@ -43,6 +44,23 @@
         foreach(var h in horarios){
         <div class="agenda-slot"><p><strong>@(Model.Editor?h.Inicio.ToString("HH:mm"):AgendaService.InicioDisponible(h,date,now)?.ToString("HH:mm"))–@h.Fin.ToString("HH:mm")</strong> · @(h.Modalidad=="Ambas"?"Presencial o virtual":h.Modalidad) · @(h.DuracionMinutos==0?"Sin duración establecida; puede variar":$"citas de {h.DuracionMinutos} minutos")</p>
         @if(Model.Editor){<form asp-controller="Psicologo" asp-action="Disponibilidad" method="post"><input type="hidden" name="Fecha" value="@date.ToString("yyyy-MM-dd")" /><input type="hidden" name="operacion" value="quitar" /><input type="hidden" name="horario" value="@h.Id" /><button class="dash-button" type="submit">Quitar horario</button></form>}
+        </div>
+        }
+    }
+    @if(!Model.Editor&&day?.Ocupado!=true){
+        <h3 class="h5 mt-3">Solicitar cita</h3>
+        foreach(var slot in Model.Franjas.Where(f=>f.Fecha==date)){
+        <div class="agenda-slot @(slot.Reservada?"cita-reservada":"")"><p><strong>@slot.Inicio.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</strong> · @(slot.Variable?"Duración variable":$"{(slot.Fin-slot.Inicio).TotalMinutes:0} minutos") · @(slot.Modalidad=="Ambas"?"Presencial o virtual":slot.Modalidad)</p>
+        @if(slot.Reservada){<p>Reservado / ocupado</p>}
+        else{
+        <form asp-controller="Citas" asp-action="Solicitar" method="post" class="agenda-form">
+        <input type="hidden" name="HorarioId" value="@slot.HorarioId" /><input type="hidden" name="Inicio" value="@slot.Inicio.ToString("HH:mm")" />
+        @if(Model.Reprogramar is {} prior){<input type="hidden" name="ReprogramarId" value="@prior.Id" /><input type="hidden" name="RevisionAnterior" value="@prior.Revision" />}
+        <label>Modalidad<select name="Modalidad">@if(slot.Modalidad is "Presencial" or "Ambas"){<option>Presencial</option>}@if(slot.Modalidad is "Virtual" or "Ambas"){<option>Virtual</option>}</select></label>
+        <button class="dash-button">@(Model.Reprogramar is null?"Solicitar este horario":"Reprogramar a este horario")</button>
+        </form>
+        @if(slot.Variable){<p class="agenda-hint">Se reserva el intervalo completo para evitar cruces; la duración de atención puede variar.</p>}
+        }
         </div>
         }
     }

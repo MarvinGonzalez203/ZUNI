@@ -1,0 +1,32 @@
+@model Zuni.Models.AtencionDetalle
+@using Zuni.Models
+@{Layout="~/Views/Psicologo/_PsicologoLayout.cshtml";ViewData["DashboardController"]="Psicologo";ViewData["DashboardNavigation"]="~/Views/Psicologo/_Navegacion.cshtml";ViewData["ResultadosConectados"]=true;ViewData["Title"]="Atención de cita";var cita=Model.Cita;var attempted=ViewData["AtencionIntentada"] as CerrarAtencionInput;}
+<link rel="stylesheet" href="~/css/agenda.css" asp-append-version="true" />
+<h1>Cita de @cita.Estudiante</h1>
+<a asp-controller="Psicologo" asp-action="Estudiantes" asp-route-estudiante="@cita.PerfilEstudianteId">Abrir ficha del estudiante</a>
+<partial name="_CitaMensajes" />
+<partial name="_CitasLista" model="@(new CitaResumen[]{cita})" />
+@if(cita.Estado==EstadoCita.Confirmada){
+<section class="dash-card"><h2>Registrar atención</h2>
+@if(Zuni.Services.CitasService.Utc(cita.Fecha,cita.Fin)>DateTime.UtcNow){<p>Podrás registrar la asistencia y el resultado cuando termine el horario confirmado.</p>}
+else{
+<form asp-action="Cerrar" method="post" class="cita-atencion">
+<input type="hidden" name="Id" value="@cita.Id" /><input type="hidden" name="Revision" value="@cita.Revision" />
+<label>¿Asistió el estudiante?<select name="Asistio" required><option value="">Selecciona una opción</option><option value="true" selected="@(attempted?.Asistio==true)">Sí, asistió</option><option value="false" selected="@(attempted?.Asistio==false)">No asistió</option></select></label>
+<p>Si asistió, completa el resultado privado y los dos textos para el estudiante. Si no asistió, registra únicamente una breve reseña si corresponde.</p>
+<label>Resultado clínico profesional · privado<textarea name="ResultadoClinicoPrivado" maxlength="4000" rows="5">@attempted?.ResultadoClinicoPrivado</textarea></label>
+<label>Reseña y recomendaciones para el estudiante<textarea name="ResenaEstudiante" maxlength="1500" rows="3">@attempted?.ResenaEstudiante</textarea></label>
+<label>Resultado breve para compartir con el estudiante<textarea name="ResultadoPublicable" maxlength="1500" rows="3">@attempted?.ResultadoPublicable</textarea></label>
+<label><input type="checkbox" name="RecomiendaProximaCita" value="true" checked="@(attempted?.RecomiendaProximaCita==true)" /> Recomiendo otra cita</label>
+<label>Indicaciones para la próxima cita<textarea name="IndicacionesProximaCita" maxlength="1000" rows="2">@attempted?.IndicacionesProximaCita</textarea></label>
+<p>Al cerrar la atención, los textos para compartir aparecerán en Mis resultados. La próxima cita deberá solicitarse y confirmarse en la agenda.</p>
+<button class="dash-button">Guardar y cerrar atención</button>
+</form>}
+</section>}
+@if(cita.Estado is EstadoCita.Terminada or EstadoCita.NoAsistio){
+<section class="dash-card"><h2>Atención registrada</h2><p>@CitaTextos.Estado(cita.Estado)</p>
+@if(cita.Estado==EstadoCita.Terminada){<h3 class="h5">Resultado clínico privado</h3><p class="cita-texto">@Model.ResultadoClinicoPrivado</p>}
+<h3 class="h5">Reseña para el estudiante</h3><p class="cita-texto">@cita.Resena</p><h3 class="h5">Resultado compartido</h3><p class="cita-texto">@cita.ResultadoPublicable</p>
+@if(cita.ProximaCita){<h3 class="h5">Seguimiento recomendado</h3><p class="cita-texto">@cita.Indicaciones</p>}
+</section>}
+<section class="dash-card mt-4"><h2>Movimientos de esta cita</h2><ul>@foreach(var item in Model.Eventos){<li>@TimeZoneInfo.ConvertTimeFromUtc(item.FechaUtc,TimeZoneInfo.FindSystemTimeZoneById("America/Guatemala")).ToString("dd/MM/yyyy HH:mm") · @item.Accion @item.Motivo</li>}</ul></section>
