@@ -38,7 +38,12 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
     {
         var perfil = await PerfilSolicitanteAsync(ct);
         if (perfil is null) return PerfilRequerido();
-        if (await TieneSolicitudActivaAsync(perfil.Id, ct)) return SolicitudExistente();
+        var activa = await db.SolicitudesAtencion.AsNoTracking()
+            .Where(s => s.PerfilEstudianteId == perfil.Id &&
+                (s.Estado == EstadoSolicitudAtencion.Pendiente || s.Estado == EstadoSolicitudAtencion.Asignada))
+            .Select(s => new EstadoSolicitudViewModel { Estado = s.Estado, FechaSolicitudUtc = s.FechaSolicitudUtc })
+            .SingleOrDefaultAsync(ct);
+        if (activa is not null) return View("EstadoSolicitud", activa);
         return View(new SolicitarAtencionViewModel());
     }
 

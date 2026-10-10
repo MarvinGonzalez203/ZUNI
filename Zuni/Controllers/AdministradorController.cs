@@ -27,10 +27,40 @@ public sealed class AdministradorController : Controller
 
     [HttpGet]
     public async Task<IActionResult> Index(
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, string? buscar = null, string? rol = null, string? estado = null)
     {
-        var usuarios = await _db.Users
-            .AsNoTracking()
+        if (!await EsAdministradorActivoAsync(User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken))
+            return Forbid();
+        buscar = buscar?.Trim();
+        rol = string.IsNullOrWhiteSpace(rol) ? null : rol;
+        estado = string.IsNullOrWhiteSpace(estado) ? null : estado;
+        if (buscar?.Length > 200 || (rol is not null && !CambiarRolViewModel.RolesPermitidos.Contains(rol)) ||
+            (estado is not null && estado is not ("Activos" or "Inactivos")))
+            return BadRequest("Filtros inválidos.");
+
+        // Resumen global de cuentas: no depende de los filtros ni consulta tablas clínicas.
+        var resumen = await _db.Users.AsNoTracking().GroupBy(u => 1)
+            .Select(g => new { Total = g.Count(), Activos = g.Count(u => u.IsActive) })
+            .SingleOrDefaultAsync(cancellationToken);
+        var porRol = await (from ur in _db.UserRoles.AsNoTracking()
+            join r in _db.Roles.AsNoTracking() on ur.RoleId equals r.Id
+            group ur by r.Name into g
+            select new { Rol = g.Key!, Total = g.Select(ur => ur.UserId).Distinct().Count() })
+            .ToDictionaryAsync(x => x.Rol, x => x.Total, cancellationToken);
+        var consulta = _db.Users.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(buscar))
+        {
+            // Contains trata el texto como literal, no como patrón LIKE proporcionado por el cliente.
+            var texto = buscar.ToLowerInvariant();
+            consulta = consulta.Where(u => u.FullName.ToLower().Contains(texto) ||
+                (u.Email != null && u.Email.ToLower().Contains(texto)));
+        }
+        if (rol is not null)
+            consulta = consulta.Where(u => _db.UserRoles.Any(ur => ur.UserId == u.Id &&
+                _db.Roles.Any(r => r.Id == ur.RoleId && r.Name == rol)));
+        if (estado is not null) consulta = consulta.Where(u => u.IsActive == (estado == "Activos"));
+
+        var usuarios = await consulta
             .OrderBy(usuario => usuario.FullName)
             .ThenBy(usuario => usuario.Id)
             .Select(usuario => new UsuarioAdminViewModel
@@ -51,7 +81,11 @@ public sealed class AdministradorController : Controller
             })
             .ToListAsync(cancellationToken);
 
-        return View(usuarios);
+        return View(new PanelAdministradorViewModel
+        {
+            Buscar = buscar, Rol = rol, Estado = estado, Total = resumen?.Total ?? 0,
+            Activos = resumen?.Activos ?? 0, UsuariosPorRol = porRol, Usuarios = usuarios
+        });
     }
 
     [HttpGet]

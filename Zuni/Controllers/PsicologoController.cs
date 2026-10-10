@@ -13,9 +13,25 @@ namespace Zuni.Controllers;
 public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionClinicaService autorizacion) : Controller
 {
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Index(CancellationToken ct)
     {
-        return View();
+        var id = await autorizacion.ObtenerPsicologoAutorizadoAsync(User, ct);
+        if (id is null) return Forbid();
+        var perfiles = from a in db.AsignacionesEstudiantePsicologo.AsNoTracking()
+            join p in db.PerfilesEstudiante.AsNoTracking() on a.PerfilEstudianteId equals p.Id
+            join u in db.Users.AsNoTracking() on p.UsuarioId equals u.Id
+            where a.PsicologoUsuarioId == id && a.FechaFinalizacionUtc == null && p.Activo && u.IsActive
+            select p.Id;
+        var solicitudes = db.SolicitudesAtencion.AsNoTracking()
+            .Where(s => perfiles.Contains(s.PerfilEstudianteId));
+        return View(new PsicologoDashboardViewModel
+        {
+            EstudiantesAsignados = await perfiles.Distinct().CountAsync(ct),
+            SolicitudesAsignadas = await solicitudes.CountAsync(s => s.Estado == EstadoSolicitudAtencion.Asignada, ct),
+            ExpedientesDisponibles = await solicitudes.CountAsync(s =>
+                db.ConsentimientosAtencion.Any(c => c.SolicitudAtencionId == s.Id && c.Aceptado) &&
+                db.ExpedientesIniciales.Any(e => e.SolicitudAtencionId == s.Id), ct)
+        });
     }
 
     [HttpGet]

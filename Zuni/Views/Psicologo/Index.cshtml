@@ -1,3 +1,4 @@
+@model Zuni.Models.Atencion.PsicologoDashboardViewModel
 @{
     ViewData["Title"] = "Tablero";
     var primero = (User.Identity?.Name ?? "Psicólogo").Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Psicólogo";
@@ -7,19 +8,28 @@
     <div class="dash-welcome-copy">
         <span class="dash-eyebrow">TU ESPACIO DE ACOMPAÑAMIENTO</span>
         <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
-        <p>Gestiona tu agenda, estudiantes y seguimiento de atención desde un solo lugar.</p>
-        <a class="dash-button" asp-action="Agenda">Ver agenda <partial name="_DashboardIcon" model='@("arrow")' /></a>
+        <p>Consulta tus estudiantes asignados y sus expedientes iniciales autorizados.</p>
+        <a class="dash-button" asp-action="Estudiantes">Ver estudiantes <partial name="_DashboardIcon" model='@("arrow")' /></a>
     </div>
     <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>Acompañar y conectar.</span></div>
 </header>
 <div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2></div>
 <section class="dash-summary-grid" aria-label="Accesos rápidos">
-    @foreach (var item in new[] { ("Agenda", "Agenda", "calendar", "Consulta la agenda y el formato de disponibilidad."), ("Estudiantes", "Estudiantes", "user", "Accede al espacio de estudiantes asignados o referidos."), ("Resultados", "Resultados", "results", "Consulta la estructura de resultados exploratorios."), ("Atencion", "Atención", "clipboard", "Accede al formato de reseña y seguimiento.") })
+    <a class="dash-card dash-summary dash-card-link" asp-action="Estudiantes">
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><h2>Estudiantes asignados</h2></div>
+        <strong class="fs-2">@Model.EstudiantesAsignados</strong>
+        <p>@(Model.EstudiantesAsignados == 1 ? "Estudiante asignado actualmente" : "Estudiantes asignados actualmente")</p><span class="dash-text-link">Ver estudiantes</span>
+    </a>
+    <div class="dash-card dash-summary"><h2>Solicitudes asignadas</h2><strong class="fs-2">@Model.SolicitudesAsignadas</strong><p>De estudiantes con asignación vigente a tu cuenta.</p></div>
+    <div class="dash-card dash-summary"><h2>Expedientes disponibles</h2><strong class="fs-2">@Model.ExpedientesDisponibles</strong><p>Con consentimiento aceptado y asignación vigente. Consulta desde Estudiantes.</p></div>
+</section>
+<div class="dash-section-heading"><h2>Herramientas de atención</h2></div>
+<section class="dash-summary-grid" aria-label="Módulos de atención">
+    @foreach (var item in new[] { ("Agenda", "Agenda", "calendar", "Agenda disponible próximamente."), ("Resultados", "Resultados", "results", "Sin instrumentos configurados."), ("Estudiantes", "Atención", "clipboard", "Accede al expediente desde tus estudiantes asignados."), ("Historial", "Historial", "book", "El registro de sesiones aún no está disponible.") })
     {
         <a class="dash-card dash-summary dash-card-link" asp-action="@item.Item1">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item3" /></span><h2>@item.Item2</h2></div>
-            <p>@item.Item4</p><span class="dash-module-label">Sin datos disponibles</span>
+            <p>@item.Item4</p>
         </a>
     }
 </section>
-<partial name="_Agenda" />

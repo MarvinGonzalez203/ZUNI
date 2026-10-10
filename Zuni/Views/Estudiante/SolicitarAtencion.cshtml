@@ -1,7 +1,12 @@
 @model Zuni.Models.Atencion.SolicitarAtencionViewModel
 @using Zuni.Models.Atencion
 @using Zuni.Resources
-@{ ViewData["Title"] = "Solicitar atención"; }
+@{
+    ViewData["Title"] = "Solicitar atención";
+    // Solo presentación inicial; conservar cualquier valor enviado y sus errores de validación.
+    if (!ViewData.ModelState.ContainsKey(nameof(Model.Edad)) && Model.Edad == 0)
+        ViewData.ModelState.SetModelValue(nameof(Model.Edad), "", "");
+}
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Solicitar atención</h1><p>Formulario inicial para personas mayores de edad. No es una evaluación ni un diagnóstico.</p></div></header>
 <section class="dash-card mb-4" aria-labelledby="consentimiento-title">
     <h2 id="consentimiento-title" class="h4">Consentimiento informado</h2>
@@ -20,7 +25,7 @@
     <div class="mb-3"><label asp-for="Direccion" class="form-label"></label><input asp-for="Direccion" class="form-control" maxlength="300" required /><span asp-validation-for="Direccion" class="text-danger"></span></div>
     <div class="mb-3"><label asp-for="MotivoConsulta" class="form-label"></label><textarea asp-for="MotivoConsulta" class="form-control" rows="4" maxlength="2000" required></textarea><span asp-validation-for="MotivoConsulta" class="text-danger"></span></div>
     <div class="mb-3"><label asp-for="TipoIngreso" class="form-label"></label><select asp-for="TipoIngreso" class="form-select"><option value="0">Iniciativa propia</option><option value="1">Referencia</option></select><span asp-validation-for="TipoIngreso" class="text-danger"></span></div>
-    <fieldset class="mb-4"><legend class="h5">Solo si el ingreso es por referencia</legend>
+    <fieldset class="mb-4" id="campos-referencia"><legend class="h5">Solo si el ingreso es por referencia</legend>
         <div class="mb-3"><label asp-for="NombreReferente" class="form-label"></label><input asp-for="NombreReferente" class="form-control" maxlength="150" /><span asp-validation-for="NombreReferente" class="text-danger"></span></div>
         <label asp-for="MotivoReferencia" class="form-label"></label><textarea asp-for="MotivoReferencia" class="form-control" rows="3" maxlength="1000"></textarea><span asp-validation-for="MotivoReferencia" class="text-danger"></span>
     </fieldset>
@@ -38,3 +43,6 @@
     <button class="dash-button" type="submit">Enviar solicitud de atención</button>
     <a class="dash-text-link ms-3" asp-action="Index">Cancelar</a>
 </form>
+@section Scripts {
+    <script src="~/js/solicitar-atencion.js" asp-append-version="true"></script>
+}

@@ -5,11 +5,8 @@
     <link rel="stylesheet" href="~/css/psicologo-dashboard.css" asp-append-version="true" />
 }
 <div class="psych-dashboard">
-    <p class="dash-notice"><span class="dash-badge">Vista previa</span> Sin datos de estudiantes. Los filtros y formularios son de demostración y no guardan información.</p>
     @RenderBody()
-    <partial name="_Modales" />
 </div>
 @section Scripts {
-    <script src="~/js/psicologo.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 }
