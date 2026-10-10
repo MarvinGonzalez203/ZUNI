@@ -1,0 +1,29 @@
+/* Presentación acotada al listado y estados vacíos del psicólogo. */
+.psych-assigned { min-width: 0; overflow: hidden; }
+.psych-assigned-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.psych-assigned-heading h2 { margin: 0; font-size: 1.1rem; }
+.psych-assigned-scroll { max-width: 100%; overflow-x: auto; border-radius: 12px; }
+.psych-assigned-table { width: 100%; min-width: 740px; border-collapse: collapse; color: #111111; }
+.psych-assigned-table thead { background: rgba(237, 232, 208, .4); }
+.psych-assigned-table th, .psych-assigned-table td { padding: 14px 12px; text-align: left; vertical-align: middle; }
+.psych-assigned-table thead th { font-size: .78rem; font-weight: 600; color: #59515f; }
+.psych-assigned-table tbody tr { border-bottom: 1px solid rgba(17, 17, 17, .08); }
+.psych-assigned-table tbody tr:last-child { border-bottom: 0; }
+.psych-assigned-table tbody tr:hover, .psych-assigned-table tbody tr:focus-within { background: rgba(206, 162, 253, .09); }
+.psych-assigned-person { display: flex; align-items: center; gap: 12px; min-width: 190px; max-width: 300px; overflow-wrap: anywhere; font-size: .9rem; font-weight: 600; }
+.psych-assigned-avatar { display: grid; place-items: center; flex: 0 0 38px; height: 38px; border-radius: 50%; background: rgba(206, 162, 253, .3); color: #111111; }
+.psych-assigned-table td { font-size: .85rem; overflow-wrap: anywhere; max-width: 260px; }
+.psych-assigned-carne { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.psych-assigned-date { white-space: nowrap; }
+.psych-assigned-date small { display: block; margin-top: 4px; color: #59515f; }
+.psych-assigned-link { white-space: nowrap; padding: 9px 12px; font-size: .8rem; }
+.psych-assigned-muted { color: #59515f; }
+.psych-empty { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: clamp(24px, 5vw, 56px) 16px; text-align: center; border-radius: 18px; background: linear-gradient(135deg, rgba(237, 232, 208, .3), rgba(206, 162, 253, .1)); overflow-wrap: anywhere; }
+.psych-empty h2 { margin: 0; max-width: 560px; font-size: clamp(1.1rem, 2vw, 1.4rem); }
+.psych-empty p { margin: 0; max-width: 540px; color: #59515f; line-height: 1.7; }
+.psych-assigned :focus-visible, .psych-empty :focus-visible { outline: 3px solid #70428f; outline-offset: 3px; }
+@media (max-width: 575.98px) {
+    .psych-assigned { padding: 16px; }
+    .psych-assigned-table th, .psych-assigned-table td { padding: 12px 10px; }
+    .psych-empty { padding: 28px 12px; }
+}

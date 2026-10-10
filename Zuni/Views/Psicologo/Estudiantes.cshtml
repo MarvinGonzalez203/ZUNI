@@ -1,26 +1,47 @@
 @model IReadOnlyList<Zuni.Models.Atencion.EstudianteAsignadoViewModel>
 @{ ViewData["Title"] = "Estudiantes asignados"; Layout = "_DashboardLayout"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Estudiantes asignados</h1><p>Únicamente asignaciones vigentes de tu cuenta.</p></div></header>
-<section class="dash-card">
+@section Styles {
+    <link rel="stylesheet" href="~/css/psicologo-listado.css" asp-append-version="true" />
+}
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Estudiantes asignados</h1><p>Consulta tus asignaciones vigentes y accede al expediente autorizado.</p></div></header>
+<section class="dash-card psych-assigned" aria-label="Estudiantes con asignación vigente">
 @if (Model.Count == 0)
 {
-    <p>No tienes estudiantes con asignación vigente.</p>
+    <div class="psych-empty">
+        <span class="dash-icon-tile" aria-hidden="true"><partial name="_DashboardIcon" model='@("user")' /></span>
+        <h2>No tienes estudiantes asignados actualmente.</h2>
+        <p>Cuando tengas una asignación vigente, aparecerá en este espacio.</p>
+        <a class="dash-text-link" asp-action="Index">Volver al tablero</a>
+    </div>
 }
 else
 {
-    <div class="table-responsive"><table class="table align-middle"><caption>Estudiantes con asignación vigente</caption>
-    <thead><tr><th scope="col">Nombre</th><th scope="col">Carné</th><th scope="col">Carrera</th><th scope="col">Fecha de asignación (UTC)</th><th scope="col">Acciones</th></tr></thead>
-    <tbody>
-    @foreach (var estudiante in Model)
-    {
-        <tr><td>@estudiante.Nombre</td><td>@Zuni.Helpers.CarneHelper.Formatear(estudiante.Carne)</td><td>@(estudiante.Carrera ?? "Sin registrar")</td><td>@estudiante.FechaAsignacionUtc.ToString("dd/MM/yyyy HH:mm")</td><td>
-        @if (estudiante.SolicitudId is Guid solicitudId)
-        {
-            <a class="dash-text-link" asp-controller="Psicologo" asp-action="Expediente" asp-route-solicitudId="@solicitudId">Ver expediente</a>
-        }
-        else { <span>Sin solicitud disponible</span> }
-        </td></tr>
-    }
-    </tbody></table></div>
+    <div class="psych-assigned-heading"><h2>Asignaciones vigentes</h2><span class="dash-badge">@Model.Count @(Model.Count == 1 ? "estudiante" : "estudiantes")</span></div>
+    <div class="psych-assigned-scroll" role="region" aria-label="Listado de estudiantes; desplázate horizontalmente para ver todas las columnas" tabindex="0">
+        <table class="psych-assigned-table">
+            <caption class="visually-hidden">Estudiantes con asignación vigente. Las fechas se muestran en UTC.</caption>
+            <thead><tr><th scope="col">Nombre</th><th scope="col">Carné</th><th scope="col">Carrera</th><th scope="col">Asignación (UTC)</th><th scope="col">Acciones</th></tr></thead>
+            <tbody>
+            @foreach (var estudiante in Model)
+            {
+                var nombre = estudiante.Nombre?.Trim() ?? string.Empty;
+                var inicial = string.IsNullOrEmpty(nombre) ? "—" : System.Globalization.StringInfo.GetNextTextElement(nombre).ToUpperInvariant();
+                <tr>
+                    <th scope="row"><div class="psych-assigned-person"><span class="psych-assigned-avatar" aria-hidden="true">@inicial</span><span>@estudiante.Nombre</span></div></th>
+                    <td class="psych-assigned-carne">@Zuni.Helpers.CarneHelper.Formatear(estudiante.Carne)</td>
+                    <td>@(estudiante.Carrera ?? "Sin registrar")</td>
+                    <td class="psych-assigned-date">@estudiante.FechaAsignacionUtc.ToString("dd/MM/yyyy")<small>@estudiante.FechaAsignacionUtc.ToString("HH:mm") UTC</small></td>
+                    <td>
+                    @if (estudiante.SolicitudId is Guid solicitudId)
+                    {
+                        <a class="dash-button psych-assigned-link" asp-controller="Psicologo" asp-action="Expediente" asp-route-solicitudId="@solicitudId" aria-label="Ver expediente de @estudiante.Nombre">Ver expediente <partial name="_DashboardIcon" model='@("arrow")' /></a>
+                    }
+                    else { <span class="psych-assigned-muted">Sin solicitud disponible</span> }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 }
 </section>
