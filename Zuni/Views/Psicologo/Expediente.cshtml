@@ -1,0 +1,32 @@
+@model Zuni.Models.Atencion.ExpedienteConsultaViewModel
+@using Zuni.Models.Atencion
+@{ ViewData["Title"] = "Expediente inicial"; Layout = "_DashboardLayout"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">CONTENIDO CONFIDENCIAL · SOLO LECTURA</span><h1>Expediente inicial</h1><p>Esta consulta queda registrada. No compartas el contenido fuera de la atención autorizada.</p></div></header>
+<section class="dash-card">
+    <h2 class="h4">Datos básicos</h2>
+    <dl class="row">
+        <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">@Model.Nombre</dd>
+        <dt class="col-sm-4">Carné</dt><dd class="col-sm-8">@Zuni.Helpers.CarneHelper.Formatear(Model.Carne)</dd>
+        <dt class="col-sm-4">Carrera</dt><dd class="col-sm-8">@Model.Carrera</dd>
+        <dt class="col-sm-4">Fecha de solicitud (UTC)</dt><dd class="col-sm-8">@Model.FechaSolicitudUtc.ToString("dd/MM/yyyy HH:mm")</dd>
+        <dt class="col-sm-4">Edad / mayoría de edad</dt><dd class="col-sm-8">@Model.Edad años · @(Model.EsMayorEdad ? "Confirmada" : "No confirmada")</dd>
+        <dt class="col-sm-4">Sexo</dt><dd class="col-sm-8">@(Model.Sexo ?? "No indicado")</dd>
+        <dt class="col-sm-4">Dirección</dt><dd class="col-sm-8 text-break">@Model.Direccion</dd>
+        <dt class="col-sm-4">Idioma preferido</dt><dd class="col-sm-8">@Model.IdiomaPreferido</dd>
+        <dt class="col-sm-4">Tipo de ingreso</dt><dd class="col-sm-8">@(Model.TipoIngreso == TipoIngresoAtencion.Referencia ? "Referencia" : "Iniciativa propia")</dd>
+    </dl>
+    <h2 class="h4">Motivo de consulta</h2><p class="text-break" style="white-space: pre-line">@Model.MotivoConsulta</p>
+    @if (Model.TipoIngreso == TipoIngresoAtencion.Referencia)
+    {
+        <h2 class="h4">Referencia</h2><p class="text-break">@Model.NombreReferente</p><p class="text-break" style="white-space: pre-line">@Model.MotivoReferencia</p>
+    }
+    <h2 class="h4">Contactos de emergencia</h2>
+    <div class="table-responsive"><table class="table"><thead><tr><th scope="col">Nombre</th><th scope="col">Relación</th><th scope="col">Teléfono</th></tr></thead><tbody>
+    @foreach (var contacto in Model.Contactos)
+    {
+        <tr><td>@contacto.Nombre</td><td>@contacto.Relacion</td><td>@contacto.Telefono</td></tr>
+    }
+    </tbody></table></div>
+    <h2 class="h4">Consideraciones de atención</h2><p class="text-break" style="white-space: pre-line">@(Model.ConsideracionesAtencion ?? "No indicadas")</p>
+    <a class="dash-button" asp-controller="Psicologo" asp-action="Estudiantes">Volver a estudiantes</a>
+</section>

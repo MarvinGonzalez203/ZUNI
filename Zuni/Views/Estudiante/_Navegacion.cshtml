@@ -6,6 +6,7 @@
     <a class="dash-nav-link @(accion == "Index" ? "is-active" : "")" asp-controller="Estudiante" asp-action="Index" aria-current="@(accion == "Index" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
     <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
     <span class="dash-nav-label dash-nav-label-spaced">SERVICIOS</span>
+    <a class="dash-nav-link @(accion == "SolicitarAtencion" ? "is-active" : "")" asp-controller="Estudiante" asp-action="SolicitarAtencion" aria-current="@(accion == "SolicitarAtencion" ? "page" : null)"><partial name="_DashboardIcon" model='@("shield")' /><span>Solicitar atención</span></a>
     @foreach (var item in new[] { ("clipboard", "Evaluaciones"), ("results", "Resultados"), ("calendar", "Citas") })
     {
         <a class="dash-nav-link @(accion == item.Item2 ? "is-active" : "")" asp-controller="Estudiante" asp-action="@item.Item2" aria-current="@(accion == item.Item2 ? "page" : null)"><partial name="_DashboardIcon" model="item.Item1" /><span>@item.Item2<small>Próximamente</small></span></a>

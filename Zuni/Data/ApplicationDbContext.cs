@@ -1,11 +1,18 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Zuni.Models;
+using Zuni.Models.Atencion;
 
 namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<SolicitudAtencion> SolicitudesAtencion => Set<SolicitudAtencion>();
+        public DbSet<ConsentimientoAtencion> ConsentimientosAtencion => Set<ConsentimientoAtencion>();
+        public DbSet<ExpedienteInicial> ExpedientesIniciales => Set<ExpedienteInicial>();
+        public DbSet<ContactoEmergenciaExpediente> ContactosEmergenciaExpediente => Set<ContactoEmergenciaExpediente>();
+        public DbSet<AsignacionEstudiantePsicologo> AsignacionesEstudiantePsicologo => Set<AsignacionEstudiantePsicologo>();
+        public DbSet<EventoAccesoClinico> EventosAccesoClinico => Set<EventoAccesoClinico>();
         public DbSet<PasswordResetToken> PasswordResetTokens =>
             Set<PasswordResetToken>();
 
@@ -23,6 +30,90 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<SolicitudAtencion>(e =>
+            {
+                e.ToTable("SolicitudesAtencion", t =>
+                {
+                    t.HasCheckConstraint("CK_SolicitudesAtencion_Estado", "\"Estado\" IN (0, 1, 2)");
+                    t.HasCheckConstraint("CK_SolicitudesAtencion_TipoIngreso", "\"TipoIngreso\" IN (0, 1)");
+                });
+                e.HasKey(x => x.Id);
+                e.Property(x => x.FechaSolicitudUtc).HasColumnType("timestamp with time zone");
+                e.Property(x => x.Estado).HasConversion<int>();
+                e.Property(x => x.TipoIngreso).HasConversion<int>();
+                e.HasOne<PerfilEstudiante>().WithMany().HasForeignKey(x => x.PerfilEstudianteId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UsuarioReferenteId).OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => x.PerfilEstudianteId).IsUnique()
+                    .HasFilter("\"Estado\" IN (0, 1)").HasDatabaseName("UX_SolicitudesAtencion_Activa");
+            });
+            builder.Entity<ConsentimientoAtencion>(e =>
+            {
+                e.ToTable("ConsentimientosAtencion", t => t.HasCheckConstraint("CK_ConsentimientosAtencion_Aceptado", "\"Aceptado\" = TRUE"));
+                e.HasKey(x => x.Id);
+                e.Property(x => x.VersionConsentimiento).HasMaxLength(50).IsRequired();
+                e.Property(x => x.FechaRespuestaUtc).HasColumnType("timestamp with time zone");
+                e.HasOne<SolicitudAtencion>().WithOne().HasForeignKey<ConsentimientoAtencion>(x => x.SolicitudAtencionId).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<ExpedienteInicial>(e =>
+            {
+                e.ToTable("ExpedientesIniciales", t =>
+                {
+                    t.HasCheckConstraint("CK_ExpedientesIniciales_MayorEdad", "\"Edad\" BETWEEN 18 AND 120 AND \"EsMayorEdad\" = TRUE");
+                    t.HasCheckConstraint("CK_ExpedientesIniciales_Requeridos", "length(btrim(\"Direccion\")) > 0 AND length(btrim(\"IdiomaPreferido\")) > 0 AND length(btrim(\"MotivoConsulta\")) > 0");
+                });
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Sexo).HasMaxLength(50);
+                e.Property(x => x.Direccion).HasMaxLength(300).IsRequired();
+                e.Property(x => x.IdiomaPreferido).HasMaxLength(80).IsRequired();
+                e.Property(x => x.MotivoConsulta).HasMaxLength(2000).IsRequired();
+                e.Property(x => x.NombreReferente).HasMaxLength(150);
+                e.Property(x => x.MotivoReferencia).HasMaxLength(1000);
+                e.Property(x => x.ConsideracionesAtencion).HasMaxLength(1500);
+                e.Property(x => x.FechaCreacionUtc).HasColumnType("timestamp with time zone");
+                e.HasOne<SolicitudAtencion>().WithOne().HasForeignKey<ExpedienteInicial>(x => x.SolicitudAtencionId).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<ContactoEmergenciaExpediente>(e =>
+            {
+                e.ToTable("ContactosEmergenciaExpediente", t =>
+                {
+                    t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_Orden", "\"Orden\" BETWEEN 1 AND 3");
+                    t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_Telefono", "\"Telefono\" ~ '^[0-9]{8}$'");
+                    t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_NombreRelacion", "length(btrim(\"Nombre\")) > 0 AND length(btrim(\"Relacion\")) > 0");
+                });
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Nombre).HasMaxLength(150).IsRequired();
+                e.Property(x => x.Relacion).HasMaxLength(60).IsRequired();
+                e.Property(x => x.Telefono).HasMaxLength(8).IsRequired();
+                e.HasIndex(x => new { x.ExpedienteInicialId, x.Orden }).IsUnique();
+                e.HasOne<ExpedienteInicial>().WithMany().HasForeignKey(x => x.ExpedienteInicialId).OnDelete(DeleteBehavior.Restrict);
+            });
+            builder.Entity<AsignacionEstudiantePsicologo>(e =>
+            {
+                e.ToTable("AsignacionesEstudiantePsicologo", t =>
+                    t.HasCheckConstraint("CK_AsignacionesEstudiantePsicologo_Fechas", "\"FechaFinalizacionUtc\" IS NULL OR \"FechaFinalizacionUtc\" >= \"FechaAsignacionUtc\""));
+                e.HasKey(x => x.Id);
+                e.Property(x => x.PsicologoUsuarioId).IsRequired();
+                e.Property(x => x.FechaAsignacionUtc).HasColumnType("timestamp with time zone");
+                e.Property(x => x.FechaFinalizacionUtc).HasColumnType("timestamp with time zone");
+                e.HasOne<PerfilEstudiante>().WithMany().HasForeignKey(x => x.PerfilEstudianteId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.PsicologoUsuarioId).OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => x.PerfilEstudianteId).IsUnique()
+                    .HasFilter("\"FechaFinalizacionUtc\" IS NULL").HasDatabaseName("UX_AsignacionesEstudiantePsicologo_Vigente");
+                e.HasIndex(x => new { x.PsicologoUsuarioId, x.FechaFinalizacionUtc });
+            });
+            builder.Entity<EventoAccesoClinico>(e =>
+            {
+                e.ToTable("EventosAccesoClinico");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.UsuarioId).IsRequired();
+                e.Property(x => x.TipoAcceso).HasMaxLength(50).IsRequired();
+                e.Property(x => x.FechaUtc).HasColumnType("timestamp with time zone");
+                e.HasIndex(x => new { x.UsuarioId, x.FechaUtc });
+                e.HasIndex(x => new { x.SolicitudAtencionId, x.FechaUtc });
+                e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne<SolicitudAtencion>().WithMany().HasForeignKey(x => x.SolicitudAtencionId).OnDelete(DeleteBehavior.Restrict);
+            });
 
             builder.Entity<AuditoriaUsuario>(entity =>
             {

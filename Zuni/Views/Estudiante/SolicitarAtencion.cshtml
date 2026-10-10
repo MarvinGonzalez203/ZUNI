@@ -1,0 +1,40 @@
+@model Zuni.Models.Atencion.SolicitarAtencionViewModel
+@using Zuni.Models.Atencion
+@using Zuni.Resources
+@{ ViewData["Title"] = "Solicitar atención"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Solicitar atención</h1><p>Formulario inicial para personas mayores de edad. No es una evaluación ni un diagnóstico.</p></div></header>
+<section class="dash-card mb-4" aria-labelledby="consentimiento-title">
+    <h2 id="consentimiento-title" class="h4">Consentimiento informado</h2>
+    <p class="small">Versión @ConsentimientoInformado.Version · Provisional para demostración académica</p>
+    <p class="text-break" style="white-space: pre-line">@ConsentimientoInformado.Texto</p>
+</section>
+<form asp-controller="Estudiante" asp-action="SolicitarAtencion" method="post" asp-antiforgery="true" class="dash-card" autocomplete="off">
+    <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+    <div class="form-check mb-3"><input asp-for="AceptaConsentimiento" class="form-check-input" /><label asp-for="AceptaConsentimiento" class="form-check-label">He leído y acepto el consentimiento informado.</label><span asp-validation-for="AceptaConsentimiento" class="text-danger d-block"></span></div>
+    <div class="form-check mb-3"><input asp-for="EsMayorEdad" class="form-check-input" /><label asp-for="EsMayorEdad" class="form-check-label"></label><span asp-validation-for="EsMayorEdad" class="text-danger d-block"></span></div>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4"><label asp-for="Edad" class="form-label"></label><input asp-for="Edad" class="form-control" type="number" min="18" max="120" required /><span asp-validation-for="Edad" class="text-danger"></span></div>
+        <div class="col-md-4"><label asp-for="Sexo" class="form-label">Sexo (opcional)</label><input asp-for="Sexo" class="form-control" maxlength="50" /><span asp-validation-for="Sexo" class="text-danger"></span></div>
+        <div class="col-md-4"><label asp-for="IdiomaPreferido" class="form-label"></label><input asp-for="IdiomaPreferido" class="form-control" maxlength="80" required /><span asp-validation-for="IdiomaPreferido" class="text-danger"></span></div>
+    </div>
+    <div class="mb-3"><label asp-for="Direccion" class="form-label"></label><input asp-for="Direccion" class="form-control" maxlength="300" required /><span asp-validation-for="Direccion" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="MotivoConsulta" class="form-label"></label><textarea asp-for="MotivoConsulta" class="form-control" rows="4" maxlength="2000" required></textarea><span asp-validation-for="MotivoConsulta" class="text-danger"></span></div>
+    <div class="mb-3"><label asp-for="TipoIngreso" class="form-label"></label><select asp-for="TipoIngreso" class="form-select"><option value="0">Iniciativa propia</option><option value="1">Referencia</option></select><span asp-validation-for="TipoIngreso" class="text-danger"></span></div>
+    <fieldset class="mb-4"><legend class="h5">Solo si el ingreso es por referencia</legend>
+        <div class="mb-3"><label asp-for="NombreReferente" class="form-label"></label><input asp-for="NombreReferente" class="form-control" maxlength="150" /><span asp-validation-for="NombreReferente" class="text-danger"></span></div>
+        <label asp-for="MotivoReferencia" class="form-label"></label><textarea asp-for="MotivoReferencia" class="form-control" rows="3" maxlength="1000"></textarea><span asp-validation-for="MotivoReferencia" class="text-danger"></span>
+    </fieldset>
+    <h2 class="h4">Contactos de emergencia</h2><p>Completa al menos uno. Los contactos segundo y tercero son opcionales; si agregas uno, completa sus tres campos.</p>
+    <span asp-validation-for="Contactos" class="text-danger"></span>
+    @for (var i = 0; i < 3; i++)
+    {
+        <fieldset class="border rounded-3 p-3 mb-3"><legend class="h6">Contacto @(i + 1)</legend><div class="row g-3">
+            <div class="col-md-5"><label asp-for="Contactos[i].Nombre" class="form-label"></label><input asp-for="Contactos[i].Nombre" class="form-control" maxlength="150" /><span asp-validation-for="Contactos[i].Nombre" class="text-danger"></span></div>
+            <div class="col-md-4"><label asp-for="Contactos[i].Relacion" class="form-label"></label><input asp-for="Contactos[i].Relacion" class="form-control" maxlength="60" /><span asp-validation-for="Contactos[i].Relacion" class="text-danger"></span></div>
+            <div class="col-md-3"><label asp-for="Contactos[i].Telefono" class="form-label"></label><input asp-for="Contactos[i].Telefono" type="tel" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" class="form-control" /><span asp-validation-for="Contactos[i].Telefono" class="text-danger"></span></div>
+        </div></fieldset>
+    }
+    <div class="mb-4"><label asp-for="ConsideracionesAtencion" class="form-label"></label><textarea asp-for="ConsideracionesAtencion" class="form-control" rows="3" maxlength="1500"></textarea><span asp-validation-for="ConsideracionesAtencion" class="text-danger"></span></div>
+    <button class="dash-button" type="submit">Enviar solicitud de atención</button>
+    <a class="dash-text-link ms-3" asp-action="Index">Cancelar</a>
+</form>

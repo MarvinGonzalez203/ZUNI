@@ -1,5 +1,26 @@
-@{
-    ViewData["Title"] = "Estudiantes";
+@model IReadOnlyList<Zuni.Models.Atencion.EstudianteAsignadoViewModel>
+@{ ViewData["Title"] = "Estudiantes asignados"; Layout = "_DashboardLayout"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Estudiantes asignados</h1><p>Únicamente asignaciones vigentes de tu cuenta.</p></div></header>
+<section class="dash-card">
+@if (Model.Count == 0)
+{
+    <p>No tienes estudiantes con asignación vigente.</p>
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Estudiantes</h1></div></header>
-<partial name="_Estudiantes" />
+else
+{
+    <div class="table-responsive"><table class="table align-middle"><caption>Estudiantes con asignación vigente</caption>
+    <thead><tr><th scope="col">Nombre</th><th scope="col">Carné</th><th scope="col">Carrera</th><th scope="col">Fecha de asignación (UTC)</th><th scope="col">Acciones</th></tr></thead>
+    <tbody>
+    @foreach (var estudiante in Model)
+    {
+        <tr><td>@estudiante.Nombre</td><td>@Zuni.Helpers.CarneHelper.Formatear(estudiante.Carne)</td><td>@(estudiante.Carrera ?? "Sin registrar")</td><td>@estudiante.FechaAsignacionUtc.ToString("dd/MM/yyyy HH:mm")</td><td>
+        @if (estudiante.SolicitudId is Guid solicitudId)
+        {
+            <a class="dash-text-link" asp-controller="Psicologo" asp-action="Expediente" asp-route-solicitudId="@solicitudId">Ver expediente</a>
+        }
+        else { <span>Sin solicitud disponible</span> }
+        </td></tr>
+    }
+    </tbody></table></div>
+}
+</section>

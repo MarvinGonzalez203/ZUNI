@@ -5,5 +5,6 @@ public sealed class EstudianteDashboardViewModel
 {
     public string Nombre { get; init; } = string.Empty;
     public bool PerfilCompleto { get; init; }
+    public Zuni.Models.Atencion.EstadoSolicitudAtencion? EstadoAtencion { get; init; }
     public MiPerfilViewModel DatosPerfil { get; init; } = new();
 }

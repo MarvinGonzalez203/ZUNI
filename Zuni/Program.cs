@@ -19,6 +19,8 @@ builder.Services.AddScoped<
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<Zuni.Services.IAsignacionPsicologoService, Zuni.Services.AsignacionPsicologoService>();
+builder.Services.AddScoped<Zuni.Services.IAutorizacionClinicaService, Zuni.Services.AutorizacionClinicaService>();
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(

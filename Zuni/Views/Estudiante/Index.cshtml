@@ -23,6 +23,27 @@
 </header>
 
 <partial name="_ProgresoPerfil" model="Model.DatosPerfil" />
+@if (TempData["Error"] is string errorAtencion)
+{
+    <p class="dash-notice" role="alert">@errorAtencion</p>
+}
+@if (TempData["Info"] is string infoAtencion)
+{
+    <p class="dash-notice" role="status">@infoAtencion</p>
+}
+<section class="dash-card mb-4" aria-labelledby="atencion-title">
+    <h2 id="atencion-title" class="h4">Solicitud de atención</h2>
+    @if (Model.EstadoAtencion is { } estado)
+    {
+        <p role="status">Estado: <strong>@estado</strong></p>
+        <p>Tu solicitud ya está registrada. No es necesario enviarla nuevamente.</p>
+    }
+    else
+    {
+        <p>Solicita acompañamiento y completa el formulario inicial con consentimiento informado.</p>
+        <a class="dash-button" asp-action="SolicitarAtencion">Solicitar atención</a>
+    }
+</section>
 <section class="student-actions" aria-labelledby="acciones-title">
     <div class="dash-section-heading"><h2 id="acciones-title">Acciones rápidas</h2></div>
     <nav class="student-action-links" aria-label="Acciones rápidas">
