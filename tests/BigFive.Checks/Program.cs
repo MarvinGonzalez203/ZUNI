@@ -105,9 +105,10 @@ try
     Check((await owner.PostAsync("/Estudiante/BigFive/aceptar",new FormUrlEncodedContent(new Dictionary<string,string>()))).StatusCode==HttpStatusCode.BadRequest,"Antifalsificación exige token");
     var consent=await Post(owner,"/Estudiante/BigFive/aceptar",new(){{"Acepto","true"},{"MayorDeEdad","true"},{"MotivoConsulta","Motivo FICTICIO de integración"},{"Referencia","Docente"}},"/Estudiante/BigFive");
     Check(consent.StatusCode==HttpStatusCode.Redirect,"Consentimiento por HTTP");
-    Guid assignment;await using(var db=Db())
+    Guid assignment;Guid studentProfile;await using(var db=Db())
     {
         var participation=await Bf(db).Propia(student,default);Check(participation!=null && participation.PsicologoId==psych,"Asignación automática al único profesional");assignment=participation!.AsignacionId;
+        studentProfile=await db.PerfilesEstudiante.Where(p=>p.UsuarioId==student).Select(p=>p.Id).SingleAsync();
         Check(participation.PruebaLocal && participation.TextoConsentimiento.Contains("PRUEBA LOCAL")&&participation.VersionConsentimiento==BigFiveService.ConsentimientoVersion,"Consentimiento versionado y texto conservado");
     }
     var questionnaire=await Page(owner,"/Estudiante/BigFive/cuestionario");
@@ -135,7 +136,18 @@ try
         Check(await Bf(db).PuedeSolicitarCita(student,default),"Finalizado cumple requisito del futuro flujo de citas");
         await Reject(async ()=>await new EvaluacionesService(db,Bf(db)).Administrar(assignment,administrator,await Revision(),"reabrir",default),"Administrador no reabre Big Five");
     }
-    var summaryHtml=await Page(pClient,"/Psicologo/Resultados");
+    var rosterHtml=await Page(pClient,"/Psicologo/Estudiantes");
+    await File.WriteAllTextAsync(".visual-check/bigfive/students.html",rosterHtml);
+    Check(rosterHtml.Contains("20262001")&&!rosterHtml.Contains("20262002")&&!rosterHtml.Contains("Motivo FICTICIO"),"Lista solo vinculados sin cargar sus perfiles Big Five");
+    Check((await pClient.GetAsync("/Psicologo/Resultados")).StatusCode==HttpStatusCode.Redirect,"Resultados antiguos redirigen a estudiantes");
+    Check((await pClient.GetAsync("/Psicologo/Atencion")).StatusCode==HttpStatusCode.Redirect,"Atención antigua redirige a estudiantes");
+    Check((await pClient.GetAsync("/Psicologo/Historial")).StatusCode==HttpStatusCode.Redirect,"Historial antiguo redirige a estudiantes");
+    Check((await Page(pClient,"/Psicologo/Estudiantes?filtro=completado")).Contains("20262001"),"Filtro de test completado incluye al titular");
+    Check(!(await Page(pClient,"/Psicologo/Estudiantes?filtro=sinresultado")).Contains("20262001"),"Filtro sin resultado excluye al completado");
+    Check(!(await Page(pClient,"/Psicologo/Estudiantes?busqueda=nombreinexistente")).Contains("20262001"),"Búsqueda filtra el listado sin abandonar la cuenta propia");
+    await using(var db=Db())Check(await db.Set<AccesoBigFive>().CountAsync()==0,"Listar y filtrar no leen ni auditan resultados individuales");
+    var detailPath="/Psicologo/Estudiantes?estudiante="+studentProfile;
+    var summaryHtml=await Page(pClient,detailPath);
     await File.WriteAllTextAsync(".visual-check/bigfive/results.html",summaryHtml);
     var summary=WebUtility.HtmlDecode(summaryHtml);Check(summary.Contains("4.00")||summary.Contains("4,00"),"Psicólogo recibe medias");
     Check(summary.Contains("Motivo FICTICIO de integración")&&!summary.Contains(Ipip50.Items[0].Texto)&&!summary.Contains("respuestas["),"Resumen sin preguntas ni respuestas individuales");
@@ -152,7 +164,9 @@ try
         var u=await db.Users.SingleAsync(u=>u.Id==stranger);u.IsActive=true;await db.SaveChangesAsync();
     }
     await Login(strangerClient,stranger);
-    var alienSummary=await Page(strangerClient,"/Psicologo/Resultados");Check(!alienSummary.Contains("Motivo FICTICIO"),"Otro psicólogo no recibe perfil");
+    var alienSummary=await Page(strangerClient,"/Psicologo/Estudiantes");Check(!alienSummary.Contains("Motivo FICTICIO")&&!alienSummary.Contains("20262001"),"Otro psicólogo no recibe estudiante ni perfil");
+    Check((await strangerClient.GetAsync(detailPath)).StatusCode==HttpStatusCode.NotFound,"Otro psicólogo no abre ficha por su identificador");
+    Check((await owner.GetAsync(detailPath)).StatusCode==HttpStatusCode.Redirect,"Estudiante no abre ficha profesional");
     await using(var db=Db())await Reject(()=>Bf(db).Aceptar(other,new(){Acepto=true,MayorDeEdad=true,MotivoConsulta="Ejemplo ficticio"},default),"Múltiples psicólogos no asignan arbitrariamente");
     var end=await Page(owner,"/Estudiante/BigFive/cuestionario");Check(end.Contains("Comprobante")&&!end.Contains("id=\"bigfive-form\""),"Finalizado bloquea edición");
     Check(WebUtility.HtmlDecode(await Page(owner,"/Estudiante/Citas")).Contains("agenda-persistida"),"Citas habilita calendario tras finalizar");
@@ -212,7 +226,8 @@ try
     Check(WebUtility.HtmlDecode(await Page(owner,"/Estudiante/Resultados")).Contains("Aún no hay recomendaciones"),"Resultados sin puntuaciones automáticas");
     await Post(owner,"/Estudiante/BigFive/retirar",new(),"/Estudiante/BigFive");
     Check(!WebUtility.HtmlDecode(await Page(owner,studentPath)).Contains("agenda-persistida"),"Retiro de consentimiento vuelve a cerrar calendario");
-    Check(!(await Page(pClient,"/Psicologo/Resultados")).Contains("Motivo FICTICIO"),"Retiro oculta el perfil al profesional");
+    Check(!(await Page(pClient,detailPath)).Contains("Motivo FICTICIO"),"Retiro oculta el perfil dentro de la ficha profesional");
+    Check((await Page(pClient,"/Psicologo/Estudiantes?filtro=sinresultado")).Contains("20262001"),"Retiro conserva vínculo y lista como sin resultado disponible");
     await using(var db=Db())
     {
         await Reject(async ()=>await new EvaluacionesService(db,Bf(db)).Guardar(assignment,student,await Revision(),new(),default),"No guarda tras retirar consentimiento");

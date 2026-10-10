@@ -113,10 +113,10 @@ public sealed class BigFiveService(ApplicationDbContext db, IConfiguration confi
         await tx.CommitAsync(ct);
     }
 
-    public async Task<IReadOnlyList<ResumenBigFive>> Resumenes(string psychologist,CancellationToken ct)
+    public async Task<IReadOnlyList<ResumenBigFive>> Resumenes(string psychologist,CancellationToken ct,string? student=null)
     {
         // Proyección: jamás enviar entidades, respuestas ni el banco de preguntas al navegador del psicólogo.
-        var rows=await Vigentes().AsNoTracking().Where(p=>p.PsicologoId==psychologist && p.Asignacion.Estado==EstadoEvaluacion.Finalizada && p.Apertura!=null)
+        var rows=await Vigentes().AsNoTracking().Where(p=>p.PsicologoId==psychologist && (student==null||p.Asignacion.EstudianteId==student) && p.Asignacion.Estado==EstadoEvaluacion.Finalizada && p.Apertura!=null)
             .OrderByDescending(p=>p.Asignacion.FechaFinalizacionUtc).Take(100)
             .Select(p=>new {p.AsignacionId,Nombre=p.Asignacion.Estudiante.FullName,p.Asignacion.FechaFinalizacionUtc,p.MotivoConsulta,p.Referencia,
                 p.Apertura,p.Responsabilidad,p.Extraversion,p.Amabilidad,p.Neuroticismo}).ToListAsync(ct);

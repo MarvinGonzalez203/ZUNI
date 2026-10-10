@@ -1,0 +1,11 @@
+@model Zuni.Models.Evaluaciones.ResumenBigFive
+<h3 class="h5">Resumen Big Five · @Model.Estudiante</h3>
+<p class="student-muted">Finalizado: @Model.FinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC · IPIP50-ES-ZUNI-1</p>
+<p class="dash-notice">Resumen descriptivo, sin diagnóstico. Medias de 1 a 5; las barras no son percentiles ni valoraciones de qué rasgo es mejor. @if(ViewData["PruebaLocal"] is true){<span>Prueba local con datos ficticios; adaptación pendiente de revisión profesional.</span>}</p>
+<div class="bf-traits">
+@foreach(var trait in Model.Dimensiones){
+    var width=((trait.Media-1)*25).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture);
+    <article><div class="bf-trait-heading"><strong>@trait.Nombre</strong><span>@trait.Media.ToString("0.00") / 5</span></div><div class="bf-scale" role="meter" aria-label="@trait.Nombre" aria-valuemin="1" aria-valuemax="5" aria-valuenow="@trait.Media.ToString(System.Globalization.CultureInfo.InvariantCulture)"><span style="width:@(width)%"></span></div><div class="bf-extremes"><span>@trait.ExtremoInferior</span><span>@trait.ExtremoSuperior</span></div></article>
+}
+</div><details class="mt-4"><summary>Motivo de consulta y referencia</summary><p class="bf-consent">@Model.MotivoConsulta</p><p>Referencia: @Model.Referencia</p></details>
+<p class="bf-source mt-3">Fuente: <a href="https://ipip.ori.org/newBigFive5broadKey.htm" target="_blank" rel="noopener">IPIP, marcadores de Goldberg</a>. Neuroticismo se expresa en dirección inversa a estabilidad emocional. Interpretar con contexto y criterio profesional.</p>

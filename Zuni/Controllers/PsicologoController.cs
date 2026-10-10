@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Zuni.Controllers;
 
 [Authorize(Roles = "Psicologo")]
-public sealed class PsicologoController(Zuni.Services.BigFiveService bigFive, Zuni.Services.AgendaService agenda) : Controller
+public sealed class PsicologoController(Zuni.Services.BigFiveService bigFive, Zuni.Services.AgendaService agenda, Zuni.Services.SeguimientoEstudiantesService seguimiento) : Controller
 {
     [HttpGet]
     public IActionResult Index()
@@ -29,20 +29,22 @@ public sealed class PsicologoController(Zuni.Services.BigFiveService bigFive, Zu
     }
 
     [HttpGet]
-    public IActionResult Estudiantes() => View();
-
-    [HttpGet]
-    public async Task<IActionResult> Resultados(CancellationToken ct)
+    [ResponseCache(NoStore=true, Location=ResponseCacheLocation.None)]
+    public async Task<IActionResult> Estudiantes(string? busqueda,string? filtro,int pagina=1,Guid? estudiante=null,CancellationToken ct=default)
     {
-        ViewData["PruebaLocal"] = bigFive.PruebaLocal;
-        if (bigFive.PruebaLocal && (HttpContext.Connection.RemoteIpAddress is not { } address || !System.Net.IPAddress.IsLoopback(address))) return StatusCode(403);
-        if (!bigFive.Disponible) return View(Array.Empty<Zuni.Models.Evaluaciones.ResumenBigFive>());
-        return View(await bigFive.Resumenes(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value, ct));
+        ViewData["PruebaLocal"]=bigFive.PruebaLocal;
+        if(bigFive.PruebaLocal && (HttpContext.Connection.RemoteIpAddress is not {} address || !System.Net.IPAddress.IsLoopback(address)))return StatusCode(403);
+        var model=await seguimiento.Leer(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value,busqueda,filtro,pagina,estudiante,ct);
+        if(estudiante is not null&&model.Seleccionado is null)return NotFound();
+        return View(model);
     }
 
     [HttpGet]
-    public IActionResult Atencion() => View();
+    public IActionResult Resultados() => RedirectToAction(nameof(Estudiantes));
 
     [HttpGet]
-    public IActionResult Historial() => View();
+    public IActionResult Atencion() => RedirectToAction(nameof(Estudiantes));
+
+    [HttpGet]
+    public IActionResult Historial() => RedirectToAction(nameof(Estudiantes));
 }
