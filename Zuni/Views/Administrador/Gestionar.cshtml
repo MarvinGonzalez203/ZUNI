@@ -1,0 +1,77 @@
+@model Zuni.Models.Administrador.GestionarUsuarioViewModel
+@using Zuni.Helpers
+@{
+    ViewData["Title"] = "Gestionar usuario";
+    string Visible(string rol) => rol switch { "Psicologo" => "Psicólogo", "Catedratico" => "Catedrático", _ => rol };
+    var estado = Model.IsActive ? "Activo" : Model.PendienteActivacion ? "Pendiente de activación" : "Inactivo";
+}
+
+<section class="container py-4 py-md-5" aria-labelledby="gestionar-title">
+    <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
+         style="max-width: 820px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+            <div>
+                <p class="small fw-semibold mb-2">Panel Administrador · Gestionar usuario</p>
+                <h1 id="gestionar-title" class="h2 fw-bold mb-0 text-break">@Model.FullName</h1>
+            </div>
+            <a asp-action="@Model.AccionVolver" class="btn btn-outline-dark">Volver al listado</a>
+        </div>
+
+        @foreach (var tipo in new[] { "Info", "Error" })
+        {
+            if (TempData[tipo] is string mensaje)
+            {
+                <div class="alert @(tipo == "Error" ? "alert-danger" : "alert-light") border" role="status">@mensaje</div>
+            }
+        }
+
+        <h2 class="h5">Datos del usuario</h2>
+        <dl class="row mb-4">
+            <dt class="col-sm-4">Correo</dt><dd class="col-sm-8 text-break">@(Model.Email ?? "Sin correo")</dd>
+            <dt class="col-sm-4">Rol actual</dt><dd class="col-sm-8" id="rol-actual">@(Model.Roles.Count == 0 ? "Sin rol" : string.Join(", ", Model.Roles.Select(Visible)))</dd>
+            <dt class="col-sm-4">Estado</dt><dd class="col-sm-8" id="estado-cuenta">@estado</dd>
+            <dt class="col-sm-4">Cuenta creada</dt><dd class="col-sm-8">@Model.CreatedAtUtc.ToString("dd/MM/yyyy") (UTC)</dd>
+            @if (Model.DebeCambiarContrasena) { <dt class="col-sm-4">Contraseña</dt><dd class="col-sm-8">Debe cambiarla al iniciar sesión</dd> }
+            @if (Model.BloqueadoTemporalmente) { <dt class="col-sm-4">Acceso</dt><dd class="col-sm-8">Bloqueado temporalmente por intentos fallidos</dd> }
+            @if (Model.Roles.Contains("Estudiante"))
+            {
+                <dt class="col-sm-4">Carné</dt><dd class="col-sm-8">@(CarneHelper.Formatear(Model.Carne) ?? "—")</dd>
+                <dt class="col-sm-4">Carrera</dt><dd class="col-sm-8 text-break">@(Model.Carrera ?? "—")</dd>
+            }
+            @if (Model.Roles.Contains("Psicologo"))
+            {
+                <dt class="col-sm-4">Asignaciones vigentes</dt><dd class="col-sm-8" id="asignaciones-vigentes">@Model.AsignacionesVigentes</dd>
+            }
+        </dl>
+        <p class="small">Solo datos administrativos. La información clínica no está disponible para el Administrador.</p>
+
+        <h2 class="h5 mt-4">Acciones</h2>
+        <div class="d-flex flex-wrap gap-2" role="group" aria-label="Acciones sobre el usuario">
+            @if (Model.IsActive)
+            {
+                <a asp-action="CambiarRol" asp-route-id="@Model.Id" class="btn btn-outline-dark">Cambiar rol</a>
+            }
+            else
+            {
+                <button type="button" class="btn btn-outline-dark" disabled title="Requiere un usuario activo">Cambiar rol</button>
+            }
+            @if (!(Model.IsActive && Model.EsUnoMismo))
+            {
+                <a asp-action="ConfirmarEstado" asp-route-id="@Model.Id" asp-route-activar="@(!Model.IsActive)" class="btn btn-outline-dark">@(Model.IsActive ? "Desactivar" : Model.PendienteActivacion ? "Activar registro" : "Reactivar")</a>
+            }
+            @if (!Model.EsUnoMismo)
+            {
+                <a asp-action="ContrasenaTemporal" asp-route-id="@Model.Id" class="btn btn-outline-dark">Asignar contraseña temporal</a>
+            }
+            <a asp-action="Historial" asp-route-id="@Model.Id" class="btn btn-outline-dark">Ver historial</a>
+        </div>
+        @if (Model.EsUnoMismo)
+        {
+            <p class="small mt-3">Es tu propia cuenta: no puedes desactivarla ni asignarte una contraseña temporal. Usa Mi cuenta para cambiar tu contraseña.</p>
+        }
+        @if (Model.AsignacionesVigentes > 0)
+        {
+            <p class="small mt-3">Este psicólogo tiene estudiantes asignados. Para cambiarle el rol, primero finaliza o reasigna sus asignaciones en Solicitudes de atención.</p>
+        }
+    </div>
+</section>

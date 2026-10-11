@@ -17,7 +17,7 @@
                     <dd class="text-break">@(Model.Email ?? "Sin correo")</dd>
                 </dl>
             </div>
-            <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-dark">Volver a usuarios</a>
+            <a asp-controller="Administrador" asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="btn btn-outline-dark">Volver al usuario</a>
         </div>
 
         @if (Model.Eventos.Count == 0)
