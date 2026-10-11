@@ -2,12 +2,12 @@
 @using Zuni.Models.Agenda
 @using Zuni.Services.Agenda
 @{ ViewData["Title"] = "Historial de citas"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Historial de citas</h1><p>Consulta tus citas completadas, canceladas y con inasistencia.</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Historial de citas</h1><p>Consulta tus citas completadas, canceladas, rechazadas y con inasistencia.</p></div></header>
 <section class="dash-card agenda-card" aria-label="Historial">
     <form method="get" class="agenda-actions">
         <label for="busqueda">Estudiante</label><input id="busqueda" name="busqueda" value="@Model.Busqueda" maxlength="80" class="form-control" />
         <label for="estado">Estado</label><select id="estado" name="estado" class="form-select"><option value="">Todos</option>
-            @foreach (var estado in new[] { EstadoCita.Completada, EstadoCita.Cancelada, EstadoCita.NoAsistio }) { <option value="@estado" selected="@(Model.Estado == estado)">@(estado == EstadoCita.NoAsistio ? "No asistió" : estado.ToString())</option> }
+            @foreach (var estado in new[] { EstadoCita.Completada, EstadoCita.Cancelada, EstadoCita.NoAsistio, EstadoCita.Rechazada }) { <option value="@estado" selected="@(Model.Estado == estado)">@(estado == EstadoCita.NoAsistio ? "No asistió" : estado.ToString())</option> }
         </select><button type="submit" class="dash-button">Filtrar</button>
     </form>
     <p class="mt-3">Horarios de Guatemala (UTC−6).</p>
@@ -15,7 +15,19 @@
     else
     {
         <div class="table-responsive"><table><thead><tr><th>Fecha y hora</th><th>Estudiante</th><th>Modalidad</th><th>Estado</th></tr></thead><tbody>
-        @foreach (var cita in Model.Citas) { <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span></td></tr> }
+        @foreach (var cita in Model.Citas)
+        {
+            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span>
+            @if (cita.Estado == EstadoCita.Cancelada)
+            {
+                <p class="small text-muted text-break mt-2 mb-0">Motivo de cancelación: @(string.IsNullOrWhiteSpace(cita.MotivoCancelacion) ? "Motivo no registrado" : cita.MotivoCancelacion)</p>
+            }
+            @if (cita.TieneRegistroAtencion && cita.Estado is EstadoCita.Completada or EstadoCita.NoAsistio)
+            {
+                <p class="mt-2 mb-0"><a asp-action="VerAtencion" asp-route-citaId="@cita.Id">Ver atención</a></p>
+            }
+            </td></tr>
+        }
         </tbody></table></div>
     }
     <nav class="agenda-pagination" aria-label="Páginas del historial">

@@ -1,16 +1,24 @@
-@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
-@{
-    ViewData["Title"] = "Mis resultados";
+@model IReadOnlyList<Zuni.Models.Agenda.ResultadoAtencionEstudianteViewModel>
+@using Zuni.Services.Agenda
+@{ ViewData["Title"] = "Mis resultados"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Mis resultados</h1><p>Consulta la información que tu profesional compartió contigo después de cada atención.</p></div></header>
+@if (Model.Count == 0)
+{
+    <section class="dash-card agenda-card"><p>No tienes resultados de atención disponibles.</p></section>
 }
-<header class="dash-profile-heading">
-    <div><span class="dash-eyebrow">SERVICIOS</span><h1>Mis resultados</h1><p>Aquí podrás consultar los resultados que se encuentren disponibles.</p></div>
-    <span class="dash-badge">Próximamente</span>
-</header>
-<section class="dash-card student-empty" aria-label="Mis resultados: próximamente">
-    <div class="dash-chart-placeholder">
-        <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("results")' /></div>
-        <p>Todavía no hay resultados disponibles. Este módulo está pendiente de integración.</p>
-    </div>
-</section>
-
-<div class="student-back"><a class="dash-button" asp-controller="Estudiante" asp-action="Index">Volver al tablero</a></div>
+@foreach (var resultado in Model)
+{
+    <article class="dash-card agenda-card atencion-card">
+        <h2>Atención del @AgendaReglas.Local(resultado.InicioUtc).ToString("dd/MM/yyyy HH:mm")</h2><p>@resultado.Modalidad · Hora de Guatemala</p>
+        <h2>Resultado breve</h2><p class="atencion-texto">@resultado.ResultadoBreveEstudiante</p>
+        <h2>Reseña y recomendaciones</h2><p class="atencion-texto">@resultado.ResenaRecomendacionesEstudiante</p>
+        @if (resultado.RecomiendaOtraCita)
+        {
+            <p><strong>El profesional recomienda programar otra cita.</strong></p>
+            <p class="atencion-texto">@resultado.IndicacionesProximaCita</p>
+            <a class="dash-button" asp-action="Citas">Solicitar otra cita</a>
+        }
+    </article>
+}
+<p class="mt-3"><a class="dash-button" asp-action="Index">Volver al tablero</a></p>
+@section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/atencion-cita.css" asp-append-version="true" /> }

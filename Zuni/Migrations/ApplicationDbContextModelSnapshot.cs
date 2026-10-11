@@ -196,23 +196,50 @@ namespace Zuni.Migrations
                     b.HasIndex("PerfilEstudianteId", "FechaHoraInicioUtc")
                         .IsUnique()
                         .HasDatabaseName("UX_Citas_Estudiante_InicioReservado")
-                        .HasFilter("\"Estado\" = 0");
+                        .HasFilter("\"Estado\" IN (0, 4, 5)");
 
                     b.HasIndex("PsicologoUsuarioId", "FechaHoraInicioUtc")
                         .IsUnique()
                         .HasDatabaseName("UX_Citas_Psicologo_InicioReservado")
-                        .HasFilter("\"Estado\" = 0");
+                        .HasFilter("\"Estado\" IN (0, 4, 5)");
 
                     b.HasIndex("PsicologoUsuarioId", "Estado", "FechaHoraInicioUtc");
 
                     b.ToTable("Citas", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3)");
+                            t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3, 4, 5, 6)");
 
                             t.HasCheckConstraint("CK_Citas_Fechas", "\"FechaHoraFinUtc\" > \"FechaHoraInicioUtc\"");
 
                             t.HasCheckConstraint("CK_Citas_Modalidad", "\"Modalidad\" IN (0, 1)");
                         });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.ConfiguracionAgendaDia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Bloqueado")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<string>("PsicologoUsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("UsaBaseSemanal")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PsicologoUsuarioId", "Fecha")
+                        .IsUnique();
+
+                    b.ToTable("ConfiguracionesAgendaDia", (string)null);
                 });
 
             modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
@@ -223,6 +250,9 @@ namespace Zuni.Migrations
 
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
+
+                    b.Property<Guid?>("ConfiguracionAgendaDiaId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("DiaSemana")
                         .HasColumnType("integer");
@@ -245,17 +275,71 @@ namespace Zuni.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ConfiguracionAgendaDiaId");
+
                     b.HasIndex("PsicologoUsuarioId", "DiaSemana", "Activo");
 
                     b.ToTable("DisponibilidadesPsicologo", null, t =>
                         {
                             t.HasCheckConstraint("CK_Disponibilidad_Dia", "\"DiaSemana\" BETWEEN 0 AND 6");
 
-                            t.HasCheckConstraint("CK_Disponibilidad_Duracion", "\"DuracionMinutos\" BETWEEN 15 AND 120 AND \"DuracionMinutos\" % 5 = 0");
+                            t.HasCheckConstraint("CK_Disponibilidad_Duracion", "(\"DuracionMinutos\" = 0 AND \"ConfiguracionAgendaDiaId\" IS NOT NULL) OR (\"DuracionMinutos\" BETWEEN 15 AND 120 AND \"DuracionMinutos\" % 5 = 0)");
 
                             t.HasCheckConstraint("CK_Disponibilidad_Horas", "\"HoraFin\" > \"HoraInicio\"");
 
                             t.HasCheckConstraint("CK_Disponibilidad_Modalidad", "\"Modalidad\" IN (0, 1, 2)");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.RegistroAtencionCita", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Asistio")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("CitaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaCierreUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IndicacionesProximaCita")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("RecomiendaOtraCita")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ResenaRecomendacionesEstudiante")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("ResultadoBreveEstudiante")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("ResultadoProfesionalPrivado")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid>("SolicitudAtencionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CitaId")
+                        .IsUnique();
+
+                    b.HasIndex("SolicitudAtencionId");
+
+                    b.ToTable("RegistrosAtencionCita", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RegistroAtencion_Asistencia", "(\"Asistio\" AND length(trim(coalesce(\"ResultadoProfesionalPrivado\", ''))) > 0 AND length(trim(coalesce(\"ResenaRecomendacionesEstudiante\", ''))) > 0 AND length(trim(coalesce(\"ResultadoBreveEstudiante\", ''))) > 0) OR (NOT \"Asistio\" AND \"ResultadoProfesionalPrivado\" IS NULL AND \"ResultadoBreveEstudiante\" IS NULL AND NOT \"RecomiendaOtraCita\")");
+
+                            t.HasCheckConstraint("CK_RegistroAtencion_Recomendacion", "(\"RecomiendaOtraCita\" AND \"Asistio\" AND length(trim(coalesce(\"IndicacionesProximaCita\", ''))) > 0) OR (NOT \"RecomiendaOtraCita\" AND \"IndicacionesProximaCita\" IS NULL)");
                         });
                 });
 
@@ -892,11 +976,40 @@ namespace Zuni.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
+            modelBuilder.Entity("Zuni.Models.Agenda.ConfiguracionAgendaDia", b =>
                 {
                     b.HasOne("Zuni.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
+                {
+                    b.HasOne("Zuni.Models.Agenda.ConfiguracionAgendaDia", null)
+                        .WithMany()
+                        .HasForeignKey("ConfiguracionAgendaDiaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.RegistroAtencionCita", b =>
+                {
+                    b.HasOne("Zuni.Models.Agenda.Cita", null)
+                        .WithOne()
+                        .HasForeignKey("Zuni.Models.Agenda.RegistroAtencionCita", "CitaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.Atencion.SolicitudAtencion", null)
+                        .WithMany()
+                        .HasForeignKey("SolicitudAtencionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

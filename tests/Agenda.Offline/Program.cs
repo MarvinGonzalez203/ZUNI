@@ -51,7 +51,9 @@ foreach (var input in new[] {
     new DisponibilidadInput { HoraInicio = new(9,0), HoraFin = new(10,0), DiaSemana = (DayOfWeek)8 },
     new DisponibilidadInput { HoraInicio = new(9,0), HoraFin = new(10,0), Modalidad = (ModalidadDisponibilidad)9 }
 }) Rechaza(() => AgendaReglas.ValidarDisponibilidad(input), "Disponibilidad inválida");
-Rechaza(() => AgendaReglas.FechaPermitida(dia.AddDays(91), reloj.Ahora.UtcDateTime), "Horizonte máximo");
+Rechaza(() => AgendaReglas.FechaPermitida(dia.AddMonths(12).AddDays(1), reloj.Ahora.UtcDateTime), "Horizonte máximo");
+Check(AgendaReglas.FechaPermitida(dia.AddMonths(12), reloj.Ahora.UtcDateTime) == dia.AddMonths(12), "12 meses inclusive");
+Rechaza(() => AgendaReglas.FechaPermitida(dia.AddDays(-1), reloj.Ahora.UtcDateTime), "Fecha pasada");
 
 // Datos solo en memoria: no carga appsettings, secretos ni ejecuta Program de Zuni.
 await using var connection = new SqliteConnection("Data Source=:memory:");
@@ -79,6 +81,12 @@ var perfil = new PerfilEstudiante { UsuarioId = "est", Carne = "0000000001", Car
 var otro = new PerfilEstudiante { UsuarioId = "otro-est", Carne = "0000000002", Carrera = "Offline", Telefono = "12345678" };
 var sin = new PerfilEstudiante { UsuarioId = "sin-asignar", Carne = "0000000003", Carrera = "Offline", Telefono = "12345678" };
 db.PerfilesEstudiante.AddRange(perfil, otro, sin);
+foreach (var estudiantePerfil in new[] { perfil, otro })
+{
+    var solicitudAtencion = new SolicitudAtencion { PerfilEstudianteId = estudiantePerfil.Id, FechaSolicitudUtc = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc) };
+    db.SolicitudesAtencion.Add(solicitudAtencion);
+    db.ConsentimientosAtencion.Add(new ConsentimientoAtencion { SolicitudAtencionId = solicitudAtencion.Id, Aceptado = true, VersionConsentimiento = "offline" });
+}
 db.AsignacionesEstudiantePsicologo.AddRange(
     new AsignacionEstudiantePsicologo { PerfilEstudianteId = perfil.Id, PsicologoUsuarioId = "psi" },
     new AsignacionEstudiantePsicologo { PerfilEstudianteId = otro.Id, PsicologoUsuarioId = "psi" });
@@ -111,17 +119,17 @@ Check((await service.LeerAgenda(otroPsicologo, dia, ct)).Citas.Count == 0, "Agen
 Check((await service.LeerCitas(segundo, dia, 1, ct)).Citas.Count == 0, "Estudiante no ve citas ajenas");
 await RechazaAsync<AgendaOperacionException>(() => service.Reservar(segundo, Reserva(), ct), "Otro estudiante no duplica psicólogo/hora");
 await RechazaAsync<AgendaAccesoException>(() => service.GestionarCita(otroPsicologo, new() { CitaId = cita.Id, Estado = EstadoCita.Cancelada }, ct), "ID ajeno denegado");
-await RechazaAsync<AgendaAccesoException>(() => service.CancelarEstudiante(segundo, cita.Id, ct), "Cancelación ajena denegada");
+await RechazaAsync<AgendaAccesoException>(() => service.CancelarEstudiante(segundo, cita.Id, "Cambio de horario.", ct), "Cancelación ajena denegada");
 await RechazaAsync<AgendaOperacionException>(() => service.CambiarDisponibilidad(psicologo, horarioId, false, ct), "No desactiva con reservas");
 await RechazaAsync<AgendaOperacionException>(() => service.GestionarCita(psicologo, new() { CitaId = cita.Id, Estado = EstadoCita.Completada }, ct), "No completa cita futura");
 db.ChangeTracker.Clear();
-await service.Reservar(estudiante, Reserva(inicio.AddMinutes(50)), ct); db.ChangeTracker.Clear();
-Check(await db.Citas.CountAsync() == 2, "Permite citas contiguas");
-await service.CancelarEstudiante(estudiante, cita.Id, ct); db.ChangeTracker.Clear();
-await RechazaAsync<AgendaOperacionException>(() => service.CancelarEstudiante(estudiante, cita.Id, ct), "No repite transición final");
+await RechazaAsync<AgendaOperacionException>(() => service.Reservar(estudiante, Reserva(inicio.AddMinutes(50)), ct), "Una sola cita activa por estudiante y día");
+await service.CancelarEstudiante(estudiante, cita.Id, "Cambio de horario.", ct); db.ChangeTracker.Clear();
+await RechazaAsync<AgendaOperacionException>(() => service.CancelarEstudiante(estudiante, cita.Id, "Cambio de horario.", ct), "No repite transición final");
 db.ChangeTracker.Clear();
 await service.Reservar(segundo, Reserva(), ct); db.ChangeTracker.Clear();
-Check(await db.Citas.CountAsync(c => c.Estado == EstadoCita.Reservada) == 2, "Cancelación libera horario");
+await service.Reservar(estudiante, Reserva(inicio.AddMinutes(50)), ct); db.ChangeTracker.Clear();
+Check(await db.Citas.CountAsync(c => c.Estado == EstadoCita.Solicitada) == 2, "Cancelación libera horario; nueva cita solicitada");
 Check((await service.Historial(psicologo, "est", EstadoCita.Cancelada, 1, ct)).Citas.Count == 1, "Historial filtra estado y estudiante");
 Check((await service.Historial(otroPsicologo, null, null, 1, ct)).Citas.Count == 0, "Historial privado");
 await RechazaAsync<AgendaOperacionException>(() => service.Historial(psicologo, null, EstadoCita.Reservada, 1, ct), "No acepta estado fuera de historial");
@@ -163,15 +171,21 @@ p = await db.PerfilesEstudiante.SingleAsync(x => x.Id == perfil.Id); p.Activo = 
 var asignacion = await db.AsignacionesEstudiantePsicologo.SingleAsync(x => x.PerfilEstudianteId == perfil.Id);
 asignacion.PsicologoUsuarioId = "otro-psi"; await db.SaveChangesAsync(); db.ChangeTracker.Clear();
 await RechazaAsync<AgendaOperacionException>(() => service.Reservar(estudiante, Reserva(inicio.AddMinutes(50)), ct), "Evita cruce del estudiante con otro psicólogo");
-var pendiente = await db.Citas.AsNoTracking().SingleAsync(x => x.PerfilEstudianteId == perfil.Id && x.Estado == EstadoCita.Reservada);
-await service.CancelarEstudiante(estudiante, pendiente.Id, ct); db.ChangeTracker.Clear();
+var pendiente = await db.Citas.AsNoTracking().SingleAsync(x => x.PerfilEstudianteId == perfil.Id && x.Estado == EstadoCita.Solicitada);
+await RechazaAsync<AgendaAccesoException>(() => service.GestionarCita(psicologo, new() { CitaId = pendiente.Id, Estado = EstadoCita.Confirmada }, ct), "Asignación anterior no puede aceptar");
+await service.CancelarEstudiante(estudiante, pendiente.Id, "Cambio de horario.", ct); db.ChangeTracker.Clear();
 Check((await db.Citas.AsNoTracking().SingleAsync(x => x.Id == pendiente.Id)).Estado == EstadoCita.Cancelada, "Puede cancelar cita propia de asignación anterior");
 await service.Reservar(estudiante, Reserva(inicio.AddMinutes(50)), ct); db.ChangeTracker.Clear();
-reloj.Ahora = new DateTimeOffset(inicio.AddMinutes(151));
-var realizadas = await db.Citas.AsNoTracking().Where(x => x.Estado == EstadoCita.Reservada).ToListAsync();
+var realizadas = await db.Citas.AsNoTracking().Where(x => x.Estado == EstadoCita.Solicitada).ToListAsync();
 foreach (var c in realizadas)
-    await service.GestionarCita(Sesion(c.PsicologoUsuarioId, "Psicologo"), new() { CitaId = c.Id,
-        Estado = c.PsicologoUsuarioId == "psi" ? EstadoCita.Completada : EstadoCita.NoAsistio }, ct);
+    await service.GestionarCita(Sesion(c.PsicologoUsuarioId, "Psicologo"), new() { CitaId = c.Id, Estado = EstadoCita.Confirmada }, ct);
+db.ChangeTracker.Clear();
+Check(await db.Citas.CountAsync(x => x.Estado == EstadoCita.Confirmada) == 2, "Aceptar solicitudes propias");
+reloj.Ahora = new DateTimeOffset(inicio.AddMinutes(151));
+foreach (var c in realizadas)
+    await service.RegistrarAtencion(Sesion(c.PsicologoUsuarioId, "Psicologo"), new() { CitaId = c.Id,
+        Asistio = c.PsicologoUsuarioId == "psi", ResultadoProfesionalPrivado = "Nota privada de prueba",
+        ResultadoBreveEstudiante = "Resumen de prueba", ResenaRecomendacionesEstudiante = "Reseña de prueba" }, ct);
 db.ChangeTracker.Clear();
 Check(await db.Citas.CountAsync(x => x.Estado == EstadoCita.Completada) == 1 && await db.Citas.CountAsync(x => x.Estado == EstadoCita.NoAsistio) == 1, "Asistencia después del fin");
 await service.CambiarDisponibilidad(psicologo, horarioId, false, ct); db.ChangeTracker.Clear();
@@ -194,6 +208,13 @@ Check(migration.UpOperations.All(o => o is CreateTableOperation || o is CreateIn
 Check(migration.DownOperations.Count == 2 && migration.DownOperations.All(o => o is DropTableOperation t && allowed.Contains(t.Name)), "Down limitado a nuevas tablas");
 Check(migration.UpOperations.OfType<CreateTableOperation>().SelectMany(t => t.ForeignKeys).All(f => f.OnDelete == ReferentialAction.Restrict), "FK sin cascadas destructivas");
 Check(migration.UpOperations.OfType<CreateIndexOperation>().Count(i => i.IsUnique && i.Filter == "\"Estado\" = 0") == 2, "Unicidad filtrada reservas");
+var calendarioMigration = assembly.CreateMigration(assembly.Migrations.Single(m => m.Key.EndsWith("_MejorarAgendaCalendario")).Value, pg.Database.ProviderName!);
+Check(!calendarioMigration.UpOperations.Any(o => o is DropTableOperation or DropColumnOperation or DeleteDataOperation or UpdateDataOperation), "Nueva migración no elimina ni transforma datos existentes");
+Check(calendarioMigration.UpOperations.OfType<CreateTableOperation>().Single().Name == "ConfiguracionesAgendaDia", "Única tabla diaria nueva");
+Check(calendarioMigration.UpOperations.OfType<AddColumnOperation>().Single() is { Name: "ConfiguracionAgendaDiaId", IsNullable: true }, "FK diaria nullable preserva reglas semanales");
+Check(calendarioMigration.UpOperations.OfType<CreateIndexOperation>().Count(i => i.IsUnique && i.Filter == "\"Estado\" IN (0, 4, 5)") == 2, "Índices cubren todos los estados activos");
+Check(calendarioMigration.UpOperations.OfType<AddForeignKeyOperation>().All(f => f.OnDelete == ReferentialAction.Restrict), "Nueva FK sin cascada");
+Check(calendarioMigration.DownOperations.First() is SqlOperation guard && guard.Sql.Contains("IF EXISTS") && guard.Sql.Contains("RAISE EXCEPTION") && guard.Sql.Contains("LOCK TABLE"), "Down condicional protege datos antes de revertir");
 var design = pg.GetService<IDesignTimeModel>().Model;
 var snapshot = pg.GetService<IModelRuntimeInitializer>().Initialize(assembly.ModelSnapshot!.Model, designTime: true);
 Check(!pg.GetService<IMigrationsModelDiffer>().HasDifferences(snapshot.GetRelationalModel(), design.GetRelationalModel()), "Snapshot sincronizado");
@@ -202,8 +223,22 @@ var resumenMethod = typeof(AgendaCitasService).GetMethod("ResumenPsicologo", Sys
 var query = (IQueryable<CitaResumen>)resumenMethod.Invoke(servicioPg, new object[] { "psi" })!;
 var sql = query.Where(c => c.Estado == EstadoCita.Completada && c.Nombre.ToLower().Contains("est")).OrderByDescending(c => c.InicioUtc).Skip(20).Take(20).ToQueryString();
 Check(sql.Contains("LIMIT") && sql.Contains("PsicologoUsuarioId") && sql.Contains("WHERE"), "Filtros e historial traducidos a PostgreSQL");
+Check(!sql.Contains("ResultadoProfesionalPrivado"), "Listado no precarga texto privado");
+var atencionMigration = assembly.CreateMigration(assembly.Migrations.Single(m => m.Key.EndsWith("_AddRegistroAtencionCita")).Value, pg.Database.ProviderName!);
+Check(atencionMigration.UpOperations.OfType<CreateTableOperation>().Single().Name == "RegistrosAtencionCita" &&
+    atencionMigration.UpOperations.All(o => o is CreateTableOperation || o is CreateIndexOperation i && i.Table == "RegistrosAtencionCita"), "Migración solo nueva tabla atención e índices");
+Check(atencionMigration.UpOperations.OfType<CreateTableOperation>().Single().ForeignKeys.All(f => f.OnDelete == ReferentialAction.Restrict), "Atención FK Restrict");
+Check(atencionMigration.UpOperations.OfType<CreateIndexOperation>().Any(i => i.IsUnique && i.Columns.SequenceEqual(new[] { "CitaId" })), "Cierre único en PostgreSQL");
+Check(atencionMigration.DownOperations.Single() is DropTableOperation { Name: "RegistrosAtencionCita" }, "Down solo tabla nueva");
+var compartidosMethod = typeof(AgendaCitasService).GetMethod("ResultadosCompartidos", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+var compartidos = (IQueryable<ResultadoAtencionEstudianteViewModel>)compartidosMethod.Invoke(servicioPg, new object[] { perfil.Id })!;
+var sqlCompartidos = compartidos.ToQueryString();
+Check(!sqlCompartidos.Contains("ResultadoProfesionalPrivado") && sqlCompartidos.Contains("PerfilEstudianteId") && sqlCompartidos.Contains("WHERE"), "SQL estudiante nunca selecciona columna privada");
 reloj.Ahora = new DateTimeOffset(2030, 1, 7, 12, 0, 0, TimeSpan.Zero);
+checks += await CalendarioChecks.Run(db, service, estudiante, segundo, psicologo, otroPsicologo, reloj, ct);
+checks += await CancelacionChecks.Run(db, service, estudiante, segundo, otroPsicologo, psicologo, reloj, ct);
 checks += await HttpSmoke.Run(db, reloj);
+checks += await AtencionChecks.Run(db, service, estudiante, segundo, otroPsicologo, psicologo, reloj, ct);
 Console.WriteLine($"OK: {checks} comprobaciones Agenda offline. PostgreSQL no fue abierto ni modificado. Concurrencia real PostgreSQL pendiente de validación en entorno de pruebas.");
 
 sealed class Reloj : TimeProvider
@@ -219,12 +254,22 @@ sealed class Transacciones : DbTransactionInterceptor
 }
 sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options) : ApplicationDbContext(options)
 {
+    public bool FallarDespuesDeGuardarAtencion { get; set; }
+    public bool FallarAuditoria { get; set; }
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var fallar = (FallarDespuesDeGuardarAtencion && ChangeTracker.Entries<RegistroAtencionCita>().Any(e => e.State == EntityState.Added)) ||
+            (FallarAuditoria && ChangeTracker.Entries<EventoAccesoClinico>().Any(e => e.State == EntityState.Added));
+        var result = await base.SaveChangesAsync(cancellationToken);
+        if (fallar) throw new DbUpdateException("Fallo offline simulado después de escribir; debe revertirse.");
+        return result;
+    }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         // SQLite no admite regex PostgreSQL en tablas previas. Se mantienen checks de Agenda.
         foreach (var entity in builder.Model.GetEntityTypes())
-            foreach (var constraint in entity.GetCheckConstraints().Where(c => c.Name != null && !c.Name.StartsWith("CK_Citas_") && !c.Name.StartsWith("CK_Disponibilidad_")).ToArray())
+            foreach (var constraint in entity.GetCheckConstraints().Where(c => c.Name != null && !c.Name.StartsWith("CK_Citas_") && !c.Name.StartsWith("CK_Disponibilidad_") && !c.Name.StartsWith("CK_RegistroAtencion_")).ToArray())
                 entity.RemoveCheckConstraint(constraint.Name!);
     }
 }

@@ -8,11 +8,13 @@ using Zuni.Models.Agenda;
 
 namespace Zuni.Services.Agenda;
 
-public sealed class AgendaCitasService(ApplicationDbContext db,
+public sealed partial class AgendaCitasService(ApplicationDbContext db,
     IAutorizacionClinicaService autorizacion, TimeProvider reloj)
 {
     private DateTime Ahora => reloj.GetUtcNow().UtcDateTime;
     private const int TamanoPagina = 20;
+    private static readonly EstadoCita[] EstadosActivos = [EstadoCita.Reservada, EstadoCita.Solicitada, EstadoCita.Confirmada];
+    private static readonly EstadoCita[] EstadosFinales = [EstadoCita.Cancelada, EstadoCita.Completada, EstadoCita.NoAsistio, EstadoCita.Rechazada];
 
     private async Task<string> Psicologo(ClaimsPrincipal sesion, CancellationToken ct) =>
         await autorizacion.ObtenerPsicologoAutorizadoAsync(sesion, ct) ?? throw new AgendaAccesoException();
@@ -61,6 +63,12 @@ public sealed class AgendaCitasService(ApplicationDbContext db,
             db.ChangeTracker.Clear();
             throw new AgendaOperacionException("El horario o la cita cambió mientras confirmabas. Actualiza la página y revisa antes de volver a intentarlo.");
         }
+        catch
+        {
+            await tx.RollbackAsync(CancellationToken.None);
+            db.ChangeTracker.Clear();
+            throw;
+        }
     }
 
     private static bool Conflicto(Exception ex)
@@ -75,7 +83,7 @@ public sealed class AgendaCitasService(ApplicationDbContext db,
         AgendaReglas.ValidarDisponibilidad(input);
         var inicio = input.HoraInicio!.Value;
         var fin = input.HoraFin!.Value;
-        if (await db.DisponibilidadesPsicologo.AnyAsync(d => d.PsicologoUsuarioId == id && d.Activo &&
+        if (await db.DisponibilidadesPsicologo.AnyAsync(d => d.PsicologoUsuarioId == id && d.ConfiguracionAgendaDiaId == null && d.Activo &&
             d.DiaSemana == input.DiaSemana && d.HoraInicio < fin && inicio < d.HoraFin, ct))
             throw new AgendaOperacionException("El horario se superpone con otra disponibilidad activa.");
         db.DisponibilidadesPsicologo.Add(new DisponibilidadPsicologo
@@ -88,14 +96,14 @@ public sealed class AgendaCitasService(ApplicationDbContext db,
     public Task CambiarDisponibilidad(ClaimsPrincipal sesion, Guid disponibilidadId, bool activo, CancellationToken ct) => Escribir(async () =>
     {
         var id = await Psicologo(sesion, ct);
-        var d = await db.DisponibilidadesPsicologo.SingleOrDefaultAsync(x => x.Id == disponibilidadId && x.PsicologoUsuarioId == id, ct)
+        var d = await db.DisponibilidadesPsicologo.SingleOrDefaultAsync(x => x.Id == disponibilidadId && x.PsicologoUsuarioId == id && x.ConfiguracionAgendaDiaId == null, ct)
             ?? throw new AgendaAccesoException();
         if (d.Activo == activo) return;
         var ahora = Ahora;
         if (!activo && await db.Citas.AnyAsync(c => c.DisponibilidadPsicologoId == d.Id &&
-            c.Estado == EstadoCita.Reservada && c.FechaHoraFinUtc > ahora, ct))
+            EstadosActivos.Contains(c.Estado) && c.FechaHoraFinUtc > ahora, ct))
             throw new AgendaOperacionException("Este horario tiene citas pendientes. Gestiona esas citas antes de desactivarlo.");
-        if (activo && await db.DisponibilidadesPsicologo.AnyAsync(x => x.Id != d.Id && x.PsicologoUsuarioId == id &&
+        if (activo && await db.DisponibilidadesPsicologo.AnyAsync(x => x.Id != d.Id && x.PsicologoUsuarioId == id && x.ConfiguracionAgendaDiaId == null &&
             x.Activo && x.DiaSemana == d.DiaSemana && x.HoraInicio < d.HoraFin && d.HoraInicio < x.HoraFin, ct))
             throw new AgendaOperacionException("El horario se superpone con otra disponibilidad activa.");
         d.Activo = activo;
@@ -104,18 +112,20 @@ public sealed class AgendaCitasService(ApplicationDbContext db,
     public async Task<AgendaPsicologoViewModel> LeerAgenda(ClaimsPrincipal sesion, DateOnly? fecha, CancellationToken ct)
     {
         var id = await Psicologo(sesion, ct);
-        var dia = fecha ?? AgendaReglas.Hoy(Ahora);
-        if (dia < AgendaReglas.Hoy(Ahora).AddDays(-365) || dia > AgendaReglas.Hoy(Ahora).AddDays(90))
-            throw new AgendaOperacionException("Consulta la agenda entre el último año y los próximos 90 días; las citas anteriores están en Historial.");
-        var inicio = AgendaReglas.Utc(dia, TimeOnly.MinValue);
-        var fin = AgendaReglas.Utc(dia.AddDays(1), TimeOnly.MinValue);
+        var calendario = await LeerCalendario(id, fecha, true, null, ct);
+        var inicio = AgendaReglas.Utc(calendario.Mes, TimeOnly.MinValue);
+        var fin = AgendaReglas.Utc(calendario.Mes.AddMonths(1), TimeOnly.MinValue);
         return new AgendaPsicologoViewModel
         {
-            Fecha = dia,
-            Disponibilidades = await db.DisponibilidadesPsicologo.AsNoTracking().Where(d => d.PsicologoUsuarioId == id)
+            Fecha = calendario.Mes, Calendario = calendario,
+            Disponibilidades = await db.DisponibilidadesPsicologo.AsNoTracking()
+                .Where(d => d.PsicologoUsuarioId == id && d.ConfiguracionAgendaDiaId == null)
                 .OrderBy(d => d.DiaSemana).ThenBy(d => d.HoraInicio)
                 .Select(d => new DisponibilidadResumen(d.Id, d.DiaSemana, d.HoraInicio, d.HoraFin, d.DuracionMinutos, d.Modalidad, d.Activo)).ToListAsync(ct),
-            Citas = await ResumenPsicologo(id).Where(c => c.InicioUtc >= inicio && c.InicioUtc < fin)
+            // Las citas activas antiguas no deben quedar inaccesibles al cambiar el mes:
+            // todavía necesitan cancelación/rechazo o registro de asistencia.
+            Citas = await ResumenPsicologo(id).Where(c => (c.InicioUtc >= inicio && c.InicioUtc < fin) ||
+                (c.InicioUtc < inicio && EstadosActivos.Contains(c.Estado)))
                 .OrderBy(c => c.InicioUtc).ToListAsync(ct)
         };
     }
@@ -126,47 +136,34 @@ public sealed class AgendaCitasService(ApplicationDbContext db,
         join u in db.Users.AsNoTracking() on p.UsuarioId equals u.Id
         where c.PsicologoUsuarioId == id
         select new CitaResumen { Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
-            FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado };
+            FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
+            MotivoCancelacion = c.Estado == EstadoCita.Cancelada ? c.MotivoCancelacion : null,
+            TieneRegistroAtencion = db.RegistrosAtencionCita.Any(r => r.CitaId == c.Id) };
 
     public async Task<CitasEstudianteViewModel> LeerCitas(ClaimsPrincipal sesion, DateOnly? fecha, int pagina, CancellationToken ct)
     {
         var perfil = await Estudiante(sesion, ct);
         var ahora = Ahora;
-        var dia = AgendaReglas.FechaPermitida(fecha, ahora);
+        var dia = fecha ?? AgendaReglas.Hoy(ahora);
         var psicologo = await Asignado(perfil.Id, ct);
-        var horarios = new List<HorarioDisponible>();
-        if (psicologo is not null && perfil.EstaCompleto)
-        {
-            var inicioDia = AgendaReglas.Utc(dia, TimeOnly.MinValue);
-            var finDia = AgendaReglas.Utc(dia.AddDays(1), TimeOnly.MinValue);
-            var ocupados = await db.Citas.AsNoTracking().Where(c => c.Estado == EstadoCita.Reservada &&
-                (c.PsicologoUsuarioId == psicologo || c.PerfilEstudianteId == perfil.Id) &&
-                c.FechaHoraInicioUtc < finDia && c.FechaHoraFinUtc > inicioDia)
-                .Select(c => new { c.FechaHoraInicioUtc, c.FechaHoraFinUtc }).ToListAsync(ct);
-            var disponibilidad = await db.DisponibilidadesPsicologo.AsNoTracking().Where(d =>
-                d.PsicologoUsuarioId == psicologo && d.Activo && d.DiaSemana == dia.DayOfWeek).OrderBy(d => d.HoraInicio).ToListAsync(ct);
-            foreach (var d in disponibilidad)
-                for (var minuto = 0; minuto + d.DuracionMinutos <= (d.HoraFin - d.HoraInicio).TotalMinutes; minuto += d.DuracionMinutos)
-                {
-                    var desde = AgendaReglas.Utc(dia, d.HoraInicio.AddMinutes(minuto));
-                    var hasta = desde.AddMinutes(d.DuracionMinutos);
-                    if (desde > ahora && !ocupados.Any(c => AgendaReglas.Cruza(desde, hasta, c.FechaHoraInicioUtc, c.FechaHoraFinUtc)))
-                        horarios.Add(new(desde, hasta, d.Modalidad));
-                }
-        }
+        var calendario = await LeerCalendario(psicologo, fecha, false, perfil.Id, ct);
+        var horarios = calendario.Dias.Where(d => d.Fecha == dia && !d.Bloqueado)
+            .SelectMany(d => d.Franjas).Where(f => !f.Ocupada)
+            .Select(f => new HorarioDisponible(f.InicioUtc, f.FinUtc, f.Modalidad)).ToArray();
         var propias = from c in db.Citas.AsNoTracking()
                       join u in db.Users.AsNoTracking() on c.PsicologoUsuarioId equals u.Id
                       where c.PerfilEstudianteId == perfil.Id
                       select new CitaResumen { Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
-                          FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado };
+                          FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
+                          MotivoCancelacion = c.Estado == EstadoCita.Cancelada ? c.MotivoCancelacion : null };
         var paginas = Math.Max(1, (await propias.CountAsync(ct) + TamanoPagina - 1) / TamanoPagina);
         pagina = Math.Clamp(pagina, 1, paginas);
         return new CitasEstudianteViewModel
         {
-            Fecha = dia, PuedeReservar = psicologo is not null && perfil.EstaCompleto,
+            Fecha = calendario.Mes, Calendario = calendario, PuedeReservar = psicologo is not null && perfil.EstaCompleto,
             Psicologo = psicologo is null ? null : await db.Users.Where(u => u.Id == psicologo).Select(u => u.FullName).SingleAsync(ct),
             Horarios = horarios, Pagina = pagina, Paginas = paginas,
-            Citas = await propias.OrderBy(c => c.Estado != EstadoCita.Reservada).ThenByDescending(c => c.InicioUtc)
+            Citas = await propias.OrderBy(c => !EstadosActivos.Contains(c.Estado)).ThenByDescending(c => c.InicioUtc)
                 .Skip((pagina - 1) * TamanoPagina).Take(TamanoPagina).ToListAsync(ct)
         };
     }
@@ -182,43 +179,71 @@ public sealed class AgendaCitasService(ApplicationDbContext db,
         var ahora = Ahora;
         if (inicio <= ahora) throw new AgendaOperacionException("El horario debe ser futuro.");
         var dia = AgendaReglas.FechaPermitida(DateOnly.FromDateTime(AgendaReglas.Local(inicio)), ahora);
-        var disponibles = await db.DisponibilidadesPsicologo.AsNoTracking().Where(d => d.PsicologoUsuarioId == psicologo &&
-            d.Activo && d.DiaSemana == dia.DayOfWeek).ToListAsync(ct);
+        var configuracion = await db.ConfiguracionesAgendaDia.AsNoTracking()
+            .SingleOrDefaultAsync(d => d.PsicologoUsuarioId == psicologo && d.Fecha == dia, ct);
+        if (configuracion?.Bloqueado == true) throw new AgendaOperacionException("El día está bloqueado.");
+        var disponibles = await Intervalos(psicologo, dia, configuracion).AsNoTracking().ToListAsync(ct);
+        var inicioDia = AgendaReglas.Utc(dia, TimeOnly.MinValue);
+        var finDia = AgendaReglas.Utc(dia.AddDays(1), TimeOnly.MinValue);
+        if (await db.Citas.AnyAsync(c => c.PerfilEstudianteId == perfil.Id && EstadosActivos.Contains(c.Estado) &&
+            c.FechaHoraInicioUtc >= inicioDia && c.FechaHoraInicioUtc < finDia, ct))
+            throw new AgendaOperacionException("Ya tienes una cita activa para esta fecha.");
         var horario = disponibles.FirstOrDefault(d => AgendaReglas.Encaja(d, inicio) && AgendaReglas.Permite(d.Modalidad, input.Modalidad))
             ?? throw new AgendaOperacionException("El horario o la modalidad ya no están disponibles.");
-        var fin = inicio.AddMinutes(horario.DuracionMinutos);
-        if (await db.Citas.AnyAsync(c => c.Estado == EstadoCita.Reservada &&
+        var fin = horario.DuracionMinutos == 0 ? AgendaReglas.Utc(dia, horario.HoraFin) : inicio.AddMinutes(horario.DuracionMinutos);
+        if (await db.Citas.AnyAsync(c => EstadosActivos.Contains(c.Estado) &&
             (c.PsicologoUsuarioId == psicologo || c.PerfilEstudianteId == perfil.Id) &&
             c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio, ct))
             throw new AgendaOperacionException("Ya existe una cita que se superpone con ese horario.");
         db.Citas.Add(new Cita
         {
             PerfilEstudianteId = perfil.Id, PsicologoUsuarioId = psicologo, DisponibilidadPsicologoId = horario.Id,
-            FechaHoraInicioUtc = inicio, FechaHoraFinUtc = fin, Modalidad = input.Modalidad, FechaCreacionUtc = ahora
+            FechaHoraInicioUtc = inicio, FechaHoraFinUtc = fin, Modalidad = input.Modalidad, FechaCreacionUtc = ahora,
+            Estado = EstadoCita.Solicitada
         });
     }, ct);
 
     public Task GestionarCita(ClaimsPrincipal sesion, CambiarCitaInput input, CancellationToken ct) => Escribir(async () =>
     {
         var id = await Psicologo(sesion, ct);
+        if (input.Estado is EstadoCita.Completada or EstadoCita.NoAsistio)
+            throw new AgendaOperacionException("Utiliza Registrar atención para cerrar esta cita.");
         var cita = await db.Citas.SingleOrDefaultAsync(c => c.Id == input.CitaId && c.PsicologoUsuarioId == id, ct)
             ?? throw new AgendaAccesoException();
+        if (input.Estado is EstadoCita.Confirmada or EstadoCita.Rechazada)
+        {
+            if (await Asignado(cita.PerfilEstudianteId, ct) != id ||
+                !await db.PerfilesEstudiante.AnyAsync(p => p.Id == cita.PerfilEstudianteId && p.Activo &&
+                    p.Usuario.IsActive && !p.Usuario.DebeCambiarContrasena, ct))
+                throw new AgendaAccesoException();
+            var usuario = await db.PerfilesEstudiante.Where(p => p.Id == cita.PerfilEstudianteId).Select(p => p.UsuarioId).SingleAsync(ct);
+            var roles = await (from ur in db.UserRoles join r in db.Roles on ur.RoleId equals r.Id
+                where ur.UserId == usuario select r.NormalizedName).ToListAsync(ct);
+            if (!roles.Contains("ESTUDIANTE") || roles.Any(r => r is "ADMINISTRADOR" or "DIRECTOR" or "CATEDRATICO"))
+                throw new AgendaAccesoException();
+        }
         AplicarCambio(cita, input.Estado, input.MotivoCancelacion);
     }, ct);
 
-    public Task CancelarEstudiante(ClaimsPrincipal sesion, Guid citaId, CancellationToken ct) => Escribir(async () =>
+    public Task CancelarEstudiante(ClaimsPrincipal sesion, Guid citaId, string? motivoCancelacion, CancellationToken ct) => Escribir(async () =>
     {
         var perfil = await Estudiante(sesion, ct);
         var cita = await db.Citas.SingleOrDefaultAsync(c => c.Id == citaId && c.PerfilEstudianteId == perfil.Id, ct)
             ?? throw new AgendaAccesoException();
         // Puede cancelar una cita propia futura aunque posteriormente cambie su asignación.
-        AplicarCambio(cita, EstadoCita.Cancelada, "Cancelada por el estudiante.");
+        AplicarCambio(cita, EstadoCita.Cancelada, motivoCancelacion);
     }, ct);
 
     private void AplicarCambio(Cita cita, EstadoCita estado, string? motivo)
     {
         AgendaReglas.ValidarCambio(cita, estado, Ahora);
-        if (motivo?.Length > 300) throw new AgendaOperacionException("El motivo admite hasta 300 caracteres.");
+        if (estado == EstadoCita.Cancelada)
+        {
+            if (string.IsNullOrWhiteSpace(motivo))
+                throw new AgendaOperacionException("Debes indicar un motivo de cancelación.");
+            if (motivo.Length > 300)
+                throw new AgendaOperacionException("El motivo de cancelación no puede superar los 300 caracteres.");
+        }
         cita.Estado = estado;
         cita.MotivoCancelacion = estado == EstadoCita.Cancelada ? motivo?.Trim() : null;
     }
@@ -226,11 +251,11 @@ public sealed class AgendaCitasService(ApplicationDbContext db,
     public async Task<HistorialCitasViewModel> Historial(ClaimsPrincipal sesion, string? busqueda, EstadoCita? estado, int pagina, CancellationToken ct)
     {
         var id = await Psicologo(sesion, ct);
-        if (estado.HasValue && estado is not (EstadoCita.Cancelada or EstadoCita.Completada or EstadoCita.NoAsistio))
+        if (estado.HasValue && estado is not (EstadoCita.Cancelada or EstadoCita.Completada or EstadoCita.NoAsistio or EstadoCita.Rechazada))
             throw new AgendaOperacionException("Selecciona un estado de historial válido.");
         var texto = (busqueda ?? string.Empty).Trim();
         if (texto.Length > 80) throw new AgendaOperacionException("La búsqueda admite hasta 80 caracteres.");
-        var query = ResumenPsicologo(id).Where(c => c.Estado != EstadoCita.Reservada);
+        var query = ResumenPsicologo(id).Where(c => EstadosFinales.Contains(c.Estado));
         if (estado.HasValue) query = query.Where(c => c.Estado == estado.Value);
         if (texto.Length > 0) query = query.Where(c => c.Nombre.ToLower().Contains(texto.ToLower()));
         var paginas = Math.Max(1, (await query.CountAsync(ct) + TamanoPagina - 1) / TamanoPagina);

@@ -1,0 +1,6 @@
+.atencion-card { max-width: 960px; margin-bottom: 1.5rem; }
+.atencion-card .form-control, .atencion-card .form-select { border-radius: 12px; border-color: rgba(17,17,17,.18); background: rgba(237,232,208,.2); }
+.atencion-card .form-control:focus, .atencion-card .form-select:focus { border-color: #cea2fd; box-shadow: 0 0 0 .2rem rgba(206,162,253,.18); }
+.atencion-texto { white-space: pre-wrap; overflow-wrap: anywhere; }
+.atencion-privada { border-left: 3px solid #cea2fd; padding: 1rem; background: rgba(206,162,253,.09); border-radius: 12px; margin-block: 1.5rem; }
+.atencion-card h2 { font-size: 1.25rem; margin-top: 1.5rem; }

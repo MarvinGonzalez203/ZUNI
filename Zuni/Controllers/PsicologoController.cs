@@ -58,6 +58,28 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
     [HttpPost]
     [ValidateAntiForgeryToken]
     [AgendaExceptionFilter]
+    public async Task<IActionResult> AgregarHorarioDia([FromServices] AgendaCitasService agenda, HorarioDiaInput input, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Revisa la fecha y los datos del horario.");
+        await agenda.AgregarHorarioDia(User, input, ct);
+        TempData["Success"] = "Horario guardado para la fecha seleccionada.";
+        return RedirectToAction(nameof(Agenda), new { fecha = input.Fecha?.ToString("yyyy-MM-dd") });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> CambiarDia([FromServices] AgendaCitasService agenda, DateOnly? fecha, string operacion, Guid? horarioId, CancellationToken ct)
+    {
+        if (!ModelState.IsValid || fecha is null) throw new AgendaOperacionException("Fecha u horario no válido.");
+        await agenda.CambiarDia(User, fecha.Value, operacion, horarioId, ct);
+        TempData["Success"] = "Disponibilidad del día actualizada.";
+        return RedirectToAction(nameof(Agenda), new { fecha = fecha.Value.ToString("yyyy-MM-dd") });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
     public async Task<IActionResult> CambiarDisponibilidad([FromServices] AgendaCitasService agenda, Guid disponibilidadId, bool activo, CancellationToken ct)
     {
         if (!ModelState.IsValid) throw new AgendaOperacionException("Disponibilidad no válida.");
@@ -151,6 +173,36 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
 
     [HttpGet]
     public IActionResult Atencion() => View();
+
+    [HttpGet]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> RegistrarAtencion([FromServices] AgendaCitasService agenda, Guid citaId, CancellationToken ct)
+    {
+        var cita = await agenda.PrepararAtencion(User, citaId, ct);
+        if (cita.Cerrada) return RedirectToAction(nameof(VerAtencion), new { citaId });
+        ViewData["Cita"] = cita;
+        return View(new RegistrarAtencionInput { CitaId = citaId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> RegistrarAtencion([FromServices] AgendaCitasService agenda, RegistrarAtencionInput input, CancellationToken ct)
+    {
+        // Revalidar acceso incluso cuando el formulario no supera validación MVC.
+        var cita = await agenda.PrepararAtencion(User, input.CitaId, ct);
+        if (cita.Cerrada) return RedirectToAction(nameof(VerAtencion), new { citaId = input.CitaId });
+        ViewData["Cita"] = cita;
+        if (!ModelState.IsValid) return View(input);
+        await agenda.RegistrarAtencion(User, input, ct);
+        TempData["Success"] = "La atención fue registrada y la cita quedó cerrada.";
+        return RedirectToAction(nameof(Historial));
+    }
+
+    [HttpGet]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> VerAtencion([FromServices] AgendaCitasService agenda, Guid citaId, CancellationToken ct) =>
+        View(await agenda.ConsultarAtencion(User, citaId, ct));
 
     [HttpGet]
     [AgendaExceptionFilter]

@@ -21,7 +21,8 @@ public sealed class CambiarCitaInput
 {
     public Guid CitaId { get; set; }
     [EnumDataType(typeof(EstadoCita))] public EstadoCita Estado { get; set; }
-    [StringLength(300)] public string? MotivoCancelacion { get; set; }
+    // Validación condicional en el servicio: solo la transición a Cancelada exige motivo.
+    public string? MotivoCancelacion { get; set; }
 }
 
 public sealed record DisponibilidadResumen(Guid Id, DayOfWeek DiaSemana, TimeOnly HoraInicio,
@@ -35,16 +36,20 @@ public sealed class CitaResumen
     public DateTime FinUtc { get; init; }
     public ModalidadCita Modalidad { get; init; }
     public EstadoCita Estado { get; init; }
+    public string? MotivoCancelacion { get; init; }
+    public bool TieneRegistroAtencion { get; init; }
 }
 
 public sealed class AgendaPsicologoViewModel
 {
+    public CalendarioAgendaViewModel Calendario { get; init; } = new();
     public DateOnly Fecha { get; init; }
     public IReadOnlyList<DisponibilidadResumen> Disponibilidades { get; init; } = [];
     public IReadOnlyList<CitaResumen> Citas { get; init; } = [];
 }
 public sealed class CitasEstudianteViewModel
 {
+    public CalendarioAgendaViewModel Calendario { get; init; } = new();
     public DateOnly Fecha { get; init; }
     public bool PuedeReservar { get; init; }
     public string? Psicologo { get; init; }
@@ -52,6 +57,40 @@ public sealed class CitasEstudianteViewModel
     public IReadOnlyList<CitaResumen> Citas { get; init; } = [];
     public int Pagina { get; init; } = 1;
     public int Paginas { get; init; } = 1;
+}
+
+public sealed class HorarioDiaInput
+{
+    [Required] public DateOnly? Fecha { get; set; }
+    [Required] public TimeOnly? HoraInicio { get; set; }
+    [Required] public TimeOnly? HoraFin { get; set; }
+    public int DuracionMinutos { get; set; } = 50;
+    [EnumDataType(typeof(ModalidadDisponibilidad))] public ModalidadDisponibilidad Modalidad { get; set; }
+}
+
+// DTO de franjas: deliberadamente no contiene identidades de estudiantes ni citas ajenas.
+public sealed record FranjaAgenda(DateTime InicioUtc, DateTime FinUtc, ModalidadDisponibilidad Modalidad,
+    bool Ocupada, bool Variable);
+public sealed record IntervaloAgenda(Guid Id, TimeOnly Inicio, TimeOnly Fin, int DuracionMinutos,
+    ModalidadDisponibilidad Modalidad, bool TieneCitasActivas);
+public sealed class DiaAgendaViewModel
+{
+    public DateOnly Fecha { get; init; }
+    public bool Editable { get; init; }
+    public bool Bloqueado { get; init; }
+    public bool UsaBaseSemanal { get; init; }
+    public bool TieneCitasActivas { get; init; }
+    public bool CitaPropiaActiva { get; init; }
+    public string Estado { get; init; } = "Sin horarios";
+    public IReadOnlyList<IntervaloAgenda> Intervalos { get; init; } = [];
+    public IReadOnlyList<FranjaAgenda> Franjas { get; init; } = [];
+}
+public sealed class CalendarioAgendaViewModel
+{
+    public DateOnly Mes { get; init; }
+    public DateOnly Hoy { get; init; }
+    public bool Editor { get; init; }
+    public IReadOnlyList<DiaAgendaViewModel> Dias { get; init; } = [];
 }
 public sealed class HistorialCitasViewModel
 {

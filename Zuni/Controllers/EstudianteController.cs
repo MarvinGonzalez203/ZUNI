@@ -166,7 +166,9 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
     }
 
     [HttpGet("Resultados")]
-    public IActionResult Resultados() => View();
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> Resultados([FromServices] AgendaCitasService agenda, CancellationToken ct) =>
+        View(await agenda.ResultadosAtencion(User, ct));
 
     [HttpGet("Citas")]
     [AgendaExceptionFilter]
@@ -183,17 +185,17 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
     {
         if (!ModelState.IsValid) throw new AgendaOperacionException("Selecciona un horario y una modalidad válidos.");
         await agenda.Reservar(User, input, ct);
-        TempData["Success"] = "Tu cita quedó reservada.";
+        TempData["Success"] = "Tu solicitud de cita fue enviada. Tu psicólogo deberá confirmarla.";
         return RedirectToAction(nameof(Citas));
     }
 
     [HttpPost("Citas/Cancelar")]
     [ValidateAntiForgeryToken]
     [AgendaExceptionFilter]
-    public async Task<IActionResult> CancelarCita([FromServices] AgendaCitasService agenda, Guid citaId, CancellationToken ct)
+    public async Task<IActionResult> CancelarCita([FromServices] AgendaCitasService agenda, Guid citaId, string? motivoCancelacion, CancellationToken ct)
     {
         if (!ModelState.IsValid) throw new AgendaOperacionException("Cita no válida.");
-        await agenda.CancelarEstudiante(User, citaId, ct);
+        await agenda.CancelarEstudiante(User, citaId, motivoCancelacion, ct);
         TempData["Success"] = "Tu cita fue cancelada.";
         return RedirectToAction(nameof(Citas));
     }

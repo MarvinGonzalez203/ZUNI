@@ -1,19 +1,21 @@
 ﻿@model Zuni.Models.Agenda.AgendaPsicologoViewModel
 @using Zuni.Models.Agenda
 @using Zuni.Services.Agenda
+@inject TimeProvider Reloj
 @{
     ViewData["Title"] = "Agenda";
     var dias = new[] { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" };
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Mi agenda</h1><p>Administra tus horarios y las citas reservadas contigo.</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Mi disponibilidad</h1><p>Administra tus horarios y las solicitudes de cita.</p></div></header>
+<partial name="_AgendaCalendario" model="Model.Calendario" />
 <section class="dash-card agenda-card" aria-labelledby="horarios-title">
-    <h2 id="horarios-title">Mi disponibilidad</h2>
-    <p>Los horarios se repiten cada semana, en hora de Guatemala (UTC−6). Se pueden reservar hasta 90 días por adelantado.</p>
+    <details><summary id="horarios-title">Disponibilidad semanal base</summary>
+    <p>Los horarios se repiten cada semana, en hora de Guatemala (UTC−6). Las excepciones del calendario afectan solo la fecha seleccionada.</p>
     <details><summary>Agregar horario semanal</summary>
         <form asp-action="AgregarDisponibilidad" method="post" class="row g-3 mt-1">
             <div class="col-md-4"><label for="dia" class="form-label">Día</label><select name="DiaSemana" id="dia" class="form-select">@for (var i = 1; i <= 7; i++) { <option value="@(i % 7)">@dias[i % 7]</option> }</select></div>
-            <div class="col-md-4"><label for="inicio" class="form-label">Desde</label><input name="HoraInicio" id="inicio" type="time" class="form-control" step="60" required /></div>
-            <div class="col-md-4"><label for="fin" class="form-label">Hasta</label><input name="HoraFin" id="fin" type="time" class="form-control" step="60" required /></div>
+            <div class="col-md-4"><label for="inicio" class="form-label">Desde</label><input name="HoraInicio" id="inicio" type="time" class="form-control" min="08:00" max="18:00" step="300" required /></div>
+            <div class="col-md-4"><label for="fin" class="form-label">Hasta</label><input name="HoraFin" id="fin" type="time" class="form-control" min="08:00" max="18:00" step="300" required /></div>
             <div class="col-md-6"><label for="duracion" class="form-label">Duración por cita (minutos)</label><input name="DuracionMinutos" id="duracion" type="number" class="form-control" min="15" max="120" step="5" value="50" required /></div>
             <div class="col-md-6"><label for="modalidad" class="form-label">Modalidad</label><select name="Modalidad" id="modalidad" class="form-select"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Ambas">Ambas</option></select></div>
             <div><button type="submit" class="dash-button">Guardar horario</button></div>
@@ -30,27 +32,37 @@
         </tbody></table></div>
         <p class="mt-3">Para reemplazar un horario, desactívalo y agrega uno nuevo. Primero debes gestionar sus citas pendientes.</p>
     }
+    </details>
 </section>
 <section class="dash-card agenda-card" aria-labelledby="agenda-title">
-    <h2 id="agenda-title">Citas del día</h2>
-    <partial name="_AgendaFecha" model="Model.Fecha" />
-    @if (Model.Citas.Count == 0) { <div class="agenda-empty">No tienes citas registradas para esta fecha.</div> }
+    <h2 id="agenda-title">Citas del mes y pendientes anteriores</h2>
+    <p>Hora de Guatemala (UTC−6). Confirma las solicitudes antes del inicio de la cita.</p>
+    @if (Model.Citas.Count == 0) { <div class="agenda-empty">No tienes citas registradas para este mes.</div> }
     else
     {
         <div class="table-responsive mt-3"><table><thead><tr><th>Horario</th><th>Estudiante</th><th>Modalidad</th><th>Estado</th><th>Gestionar</th></tr></thead><tbody>
         @foreach (var cita in Model.Citas)
         {
-            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span></td><td>
-            @if (cita.Estado == EstadoCita.Reservada)
+            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span></td><td>
+            @if (cita.Estado == EstadoCita.Solicitada)
             {
-                @if (cita.InicioUtc > DateTime.UtcNow)
+                <form asp-action="GestionarCita" method="post" class="agenda-actions">
+                    <input type="hidden" name="CitaId" value="@cita.Id" />
+                    @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime) { <button type="submit" name="Estado" value="Confirmada" class="dash-button">Aceptar</button> }
+                    <button type="submit" name="Estado" value="Rechazada" class="btn btn-outline-secondary">Rechazar</button>
+                </form>
+            }
+            @if (AgendaReglas.Activa(cita.Estado))
+            {
+                @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime)
                 {
-                    <details><summary>Cancelar</summary><form asp-action="GestionarCita" method="post"><input type="hidden" name="CitaId" value="@cita.Id" /><input type="hidden" name="Estado" value="Cancelada" /><label for="motivo-@cita.Id">Motivo administrativo (opcional)</label><input id="motivo-@cita.Id" name="MotivoCancelacion" maxlength="300" class="form-control" /><p>Evita incluir información clínica.</p><button class="btn btn-outline-secondary" type="submit">Confirmar cancelación</button></form></details>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelar-cita-@cita.Id">Cancelar cita</button>
                 }
-                else if (cita.FinUtc <= DateTime.UtcNow)
+                else if (cita.FinUtc <= Reloj.GetUtcNow().UtcDateTime && cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada)
                 {
-                    <form asp-action="GestionarCita" method="post"><input type="hidden" name="CitaId" value="@cita.Id" /><label for="estado-@cita.Id">Asistencia</label><select id="estado-@cita.Id" name="Estado" class="form-select"><option value="Completada">Completada</option><option value="NoAsistio">No asistió</option></select><button type="submit" class="btn btn-outline-secondary mt-2">Guardar asistencia</button></form>
+                    <a asp-action="RegistrarAtencion" asp-route-citaId="@cita.Id" class="dash-button">Registrar atención</a>
                 }
+                else if (cita.Estado == EstadoCita.Solicitada) { <span>Solicitud sin confirmar; revisa su rechazo.</span> }
                 else { <span>Podrás registrar asistencia al finalizar el horario.</span> }
             }
             </td></tr>
@@ -59,4 +71,8 @@
     }
     <p class="mt-3"><a asp-action="Historial">Consultar historial de citas</a></p>
 </section>
+@foreach (var cita in Model.Citas.Where(c => AgendaReglas.Activa(c.Estado) && c.InicioUtc > Reloj.GetUtcNow().UtcDateTime))
+{
+    <partial name="_CancelarCitaModal" model="cita" />
+}
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }

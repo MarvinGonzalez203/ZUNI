@@ -1,0 +1,29 @@
+@model Zuni.Models.Agenda.CitaResumen
+@{
+    var estudiante = string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Estudiante", StringComparison.OrdinalIgnoreCase);
+    var clave = "cancelar-cita-" + Model.Id;
+}
+<div class="modal fade agenda-modal" id="@clave" tabindex="-1" aria-labelledby="@clave-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="@clave-titulo">Cancelar cita</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Volver"></button>
+            </div>
+            <form asp-controller="@(estudiante ? "Estudiante" : "Psicologo")" asp-action="@(estudiante ? "CancelarCita" : "GestionarCita")" method="post" class="d-flex flex-column overflow-hidden">
+                <div class="modal-body">
+                    <p id="@clave-ayuda">Indica brevemente por qué deseas cancelar esta cita.</p>
+                    <input type="hidden" name="CitaId" value="@Model.Id" />
+                    @if (!estudiante) { <input type="hidden" name="Estado" value="Cancelada" /> }
+                    <label for="@clave-motivo" class="form-label">Motivo de cancelación</label>
+                    <textarea id="@clave-motivo" name="MotivoCancelacion" class="form-control" rows="4" maxlength="300" required aria-describedby="@clave-ayuda @clave-limite"></textarea>
+                    <small id="@clave-limite" class="text-muted">Máximo 300 caracteres. Evita incluir información clínica innecesaria.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="dash-button">Cancelar cita</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -7,8 +7,10 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<Zuni.Models.Agenda.RegistroAtencionCita> RegistrosAtencionCita => Set<Zuni.Models.Agenda.RegistroAtencionCita>();
         public DbSet<Zuni.Models.Agenda.DisponibilidadPsicologo> DisponibilidadesPsicologo => Set<Zuni.Models.Agenda.DisponibilidadPsicologo>();
         public DbSet<Zuni.Models.Agenda.Cita> Citas => Set<Zuni.Models.Agenda.Cita>();
+        public DbSet<Zuni.Models.Agenda.ConfiguracionAgendaDia> ConfiguracionesAgendaDia => Set<Zuni.Models.Agenda.ConfiguracionAgendaDia>();
         public DbSet<Zuni.Models.BigFive.ParticipacionBigFive> ParticipacionesBigFive => Set<Zuni.Models.BigFive.ParticipacionBigFive>();
         public DbSet<Zuni.Models.BigFive.RespuestaBigFive> RespuestasBigFive => Set<Zuni.Models.BigFive.RespuestaBigFive>();
         public DbSet<SolicitudAtencion> SolicitudesAtencion => Set<SolicitudAtencion>();
@@ -36,6 +38,7 @@ namespace Zuni.Data
             base.OnModelCreating(builder);
             builder.ConfigurarBigFive();
             builder.ConfigurarAgendaCitas();
+            builder.ConfigurarRegistroAtencion();
 
             builder.Entity<SolicitudAtencion>(e =>
             {
