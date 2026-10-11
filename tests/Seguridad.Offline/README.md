@@ -15,6 +15,9 @@ El host reutiliza la configuración real de seguridad de Zuni (`SesionZuni`, `Po
 
 Cubre:
 
+- Director: catálogo, editor, dimensiones/preguntas/opciones, activación, asignaciones,
+  antiforgery, acceso por rol, duplicados y conservación de contenido asignado (`PruebasChecks.cs`).
+
 - Solicitudes de atención: más de un psicólogo, asignación manual, reasignación, finalizar asignación, cerrar,
   historial, bloqueo por citas activas, índice de asignación vigente única, auditoría sin contenido clínico,
   vistas administrativas sin datos clínicos y nueva solicitud después del cierre.

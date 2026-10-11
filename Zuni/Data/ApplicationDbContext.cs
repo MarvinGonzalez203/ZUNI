@@ -7,6 +7,8 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<Zuni.Models.Pruebas.Prueba> PruebasDirector => Set<Zuni.Models.Pruebas.Prueba>();
+        public DbSet<Zuni.Models.Pruebas.AsignacionPrueba> AsignacionesPrueba => Set<Zuni.Models.Pruebas.AsignacionPrueba>();
         public DbSet<Zuni.Models.Agenda.RegistroAtencionCita> RegistrosAtencionCita => Set<Zuni.Models.Agenda.RegistroAtencionCita>();
         public DbSet<Zuni.Models.Agenda.DisponibilidadPsicologo> DisponibilidadesPsicologo => Set<Zuni.Models.Agenda.DisponibilidadPsicologo>();
         public DbSet<Zuni.Models.Agenda.Cita> Citas => Set<Zuni.Models.Agenda.Cita>();
@@ -36,6 +38,7 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.ConfigurarPruebas();
             builder.ConfigurarBigFive();
             builder.ConfigurarAgendaCitas();
             builder.ConfigurarRegistroAtencion();

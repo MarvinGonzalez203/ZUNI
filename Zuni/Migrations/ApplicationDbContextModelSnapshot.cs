@@ -904,6 +904,163 @@ namespace Zuni.Migrations
                     b.ToTable("PerfilesEstudiante", (string)null);
                 });
 
+            modelBuilder.Entity("Zuni.Models.Pruebas.AsignacionPrueba", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AsignadaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DirectorUsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("PerfilEstudianteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PruebaId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DirectorUsuarioId");
+
+                    b.HasIndex("PerfilEstudianteId");
+
+                    b.HasIndex("PruebaId", "PerfilEstudianteId")
+                        .IsUnique();
+
+                    b.ToTable("AsignacionesPrueba", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.DimensionPrueba", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("PruebaId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PruebaId", "Nombre")
+                        .IsUnique();
+
+                    b.ToTable("DimensionesPrueba", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.OpcionPrueba", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PreguntaPruebaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int>("Valor")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PreguntaPruebaId", "Orden")
+                        .IsUnique();
+
+                    b.ToTable("OpcionesPrueba", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.PreguntaPrueba", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DimensionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PruebaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PruebaId", "DimensionId");
+
+                    b.HasIndex("PruebaId", "Orden")
+                        .IsUnique();
+
+                    b.ToTable("PreguntasPrueba", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.Prueba", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreadaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Fuente")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Idioma")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("Instrucciones")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PruebasDirector", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1131,11 +1288,78 @@ namespace Zuni.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("Zuni.Models.Pruebas.AsignacionPrueba", b =>
+                {
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("DirectorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.PerfilEstudiante", null)
+                        .WithMany()
+                        .HasForeignKey("PerfilEstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.Pruebas.Prueba", null)
+                        .WithMany()
+                        .HasForeignKey("PruebaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.DimensionPrueba", b =>
+                {
+                    b.HasOne("Zuni.Models.Pruebas.Prueba", null)
+                        .WithMany("Dimensiones")
+                        .HasForeignKey("PruebaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.OpcionPrueba", b =>
+                {
+                    b.HasOne("Zuni.Models.Pruebas.PreguntaPrueba", null)
+                        .WithMany("Opciones")
+                        .HasForeignKey("PreguntaPruebaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.PreguntaPrueba", b =>
+                {
+                    b.HasOne("Zuni.Models.Pruebas.Prueba", null)
+                        .WithMany("Preguntas")
+                        .HasForeignKey("PruebaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.Pruebas.DimensionPrueba", null)
+                        .WithMany()
+                        .HasForeignKey("PruebaId", "DimensionId")
+                        .HasPrincipalKey("PruebaId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Zuni.Models.ApplicationUser", b =>
                 {
                     b.Navigation("PasswordResetTokens");
 
                     b.Navigation("PerfilEstudiante");
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.PreguntaPrueba", b =>
+                {
+                    b.Navigation("Opciones");
+                });
+
+            modelBuilder.Entity("Zuni.Models.Pruebas.Prueba", b =>
+                {
+                    b.Navigation("Dimensiones");
+
+                    b.Navigation("Preguntas");
                 });
 #pragma warning restore 612, 618
         }

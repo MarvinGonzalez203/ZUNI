@@ -1,6 +1,6 @@
 @{
     ViewData["Title"] = "Tablero";
-    var nombreCompleto = User.Identity?.Name ?? "Director";
+    var nombreCompleto = ViewData["DashboardName"] as string ?? "Director";
     var primero = nombreCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Director";
     var nombre = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primero.ToLower());
 }
@@ -9,7 +9,7 @@
     <div class="dash-welcome-copy">
         <span class="dash-eyebrow">ESPACIO INSTITUCIONAL</span>
         <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
-        <p>Consulta el avance institucional y la participación estudiantil desde un solo lugar.</p>
+        <p>Gestiona instrumentos y prepara asignaciones para los estudiantes.</p>
     </div>
     <div class="dash-welcome-art" aria-hidden="true">
         <div class="dash-glass-orbit"></div>
@@ -18,6 +18,12 @@
         <span>Mirada institucional.</span>
     </div>
 </header>
+
+<section class="dash-card p-4 mb-3">
+    <h2>Gestión de pruebas</h2>
+    <p>Crea y revisa dimensiones, preguntas y opciones. Activa los instrumentos preparados y asígnalos a estudiantes.</p>
+    <a class="btn btn-primary" asp-controller="PruebasDirector" asp-action="Index">Abrir catálogo de pruebas</a>
+</section>
 
 <div class="dash-section-heading">
     <h2>Resumen institucional</h2>

@@ -1,0 +1,31 @@
+@model Zuni.Models.Pruebas.AsignarPruebaViewModel
+@{ ViewData["Title"] = "Asignaciones"; }
+<header class="dash-welcome"><div><a asp-action="Detalle" asp-route-id="@Model.Id">← Ver prueba</a><h1>Asignar: @Model.Nombre</h1><p>Registra qué estudiante debe recibir el instrumento.</p></div></header>
+<partial name="_Mensaje" />
+<section class="dash-card p-4 mb-3">
+    @if (ViewData["Activa"] is true)
+    {
+        @if (Model.Estudiantes.Count == 0) { <p>No hay estudiantes activos pendientes de asignación para esta prueba.</p> }
+        else
+        {
+            <form asp-action="Asignar" method="post">
+                <input asp-for="Id" type="hidden" /><input asp-for="Revision" type="hidden" />
+                <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+                <label asp-for="PerfilEstudianteId" class="form-label"></label>
+                <select asp-for="PerfilEstudianteId" asp-items="Model.Estudiantes" class="form-select mb-3"><option value="">Selecciona un estudiante</option></select>
+                <button class="btn btn-primary">Confirmar asignación</button>
+            </form>
+        }
+    }
+    else { <p>Esta prueba está inactiva. Actívala desde su detalle para registrar nuevas asignaciones.</p> }
+    <p class="mt-3 mb-0">Este flujo prepara las asignaciones. La aplicación del instrumento, el consentimiento específico y las respuestas se integrarán en el módulo del estudiante. Aquí no se generan diagnósticos.</p>
+</section>
+<section class="dash-card p-4"><h2>Asignaciones registradas</h2>
+    @if (Model.Asignaciones.Count == 0) { <p>Aún no hay asignaciones.</p> }
+    else
+    {
+        <div class="table-responsive"><table class="table"><thead><tr><th>Estudiante</th><th>Carné</th><th>Fecha (UTC)</th><th>Estado</th></tr></thead><tbody>
+        @foreach (var a in Model.Asignaciones) { <tr><td>@a.Estudiante</td><td>@a.Carne</td><td>@a.FechaUtc.ToString("yyyy-MM-dd HH:mm")</td><td>Asignada</td></tr> }
+        </tbody></table></div>
+    }
+</section>

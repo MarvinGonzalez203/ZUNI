@@ -98,6 +98,7 @@ async Task<(EstadoSolicitudAtencion Estado, int Vigentes, int Total, string? Psi
 
 // ------------------------------------------------------------------ datos
 var correoAdmin = await Usuario("admin", true, false, "Administrador");
+await Usuario("director", true, false, "Director");
 await Usuario("admin-inactivo", false, false, "Administrador");
 await Usuario("psi1", true, false, "Psicologo");
 await Usuario("psi2", true, false, "Psicologo");
@@ -474,6 +475,8 @@ using (var estudiante = HostPrueba.Cliente(app))
 }
 
 // --- Máximo absoluto de sesión (se ejecuta al final porque adelanta el reloj)
+await PruebasChecks.Run(app, opciones, clave, perfil, perfil2);
+
 using (var c = HostPrueba.Cliente(app))
 {
     await HostPrueba.Login(c, "est2@miumg.edu.gt", clave);
