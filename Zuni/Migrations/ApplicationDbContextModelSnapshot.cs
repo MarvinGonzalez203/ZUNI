@@ -154,6 +154,111 @@ namespace Zuni.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Zuni.Models.Agenda.Cita", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DisponibilidadPsicologoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaHoraFinUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaHoraInicioUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Modalidad")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MotivoCancelacion")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("PerfilEstudianteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PsicologoUsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DisponibilidadPsicologoId");
+
+                    b.HasIndex("PerfilEstudianteId", "FechaHoraInicioUtc")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Citas_Estudiante_InicioReservado")
+                        .HasFilter("\"Estado\" = 0");
+
+                    b.HasIndex("PsicologoUsuarioId", "FechaHoraInicioUtc")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Citas_Psicologo_InicioReservado")
+                        .HasFilter("\"Estado\" = 0");
+
+                    b.HasIndex("PsicologoUsuarioId", "Estado", "FechaHoraInicioUtc");
+
+                    b.ToTable("Citas", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3)");
+
+                            t.HasCheckConstraint("CK_Citas_Fechas", "\"FechaHoraFinUtc\" > \"FechaHoraInicioUtc\"");
+
+                            t.HasCheckConstraint("CK_Citas_Modalidad", "\"Modalidad\" IN (0, 1)");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DuracionMinutos")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly>("HoraFin")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("HoraInicio")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("Modalidad")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PsicologoUsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PsicologoUsuarioId", "DiaSemana", "Activo");
+
+                    b.ToTable("DisponibilidadesPsicologo", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Disponibilidad_Dia", "\"DiaSemana\" BETWEEN 0 AND 6");
+
+                            t.HasCheckConstraint("CK_Disponibilidad_Duracion", "\"DuracionMinutos\" BETWEEN 15 AND 120 AND \"DuracionMinutos\" % 5 = 0");
+
+                            t.HasCheckConstraint("CK_Disponibilidad_Horas", "\"HoraFin\" > \"HoraInicio\"");
+
+                            t.HasCheckConstraint("CK_Disponibilidad_Modalidad", "\"Modalidad\" IN (0, 1, 2)");
+                        });
+                });
+
             modelBuilder.Entity("Zuni.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -763,6 +868,36 @@ namespace Zuni.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.Cita", b =>
+                {
+                    b.HasOne("Zuni.Models.Agenda.DisponibilidadPsicologo", null)
+                        .WithMany()
+                        .HasForeignKey("DisponibilidadPsicologoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.PerfilEstudiante", null)
+                        .WithMany()
+                        .HasForeignKey("PerfilEstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
+                {
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

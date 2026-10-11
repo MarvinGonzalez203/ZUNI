@@ -6,6 +6,8 @@ using Zuni.Data;
 using Zuni.Models;
 using Zuni.Models.Atencion;
 using Zuni.Services;
+using Zuni.Models.Agenda;
+using Zuni.Services.Agenda;
 
 namespace Zuni.Controllers;
 
@@ -167,7 +169,34 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
     public IActionResult Resultados() => View();
 
     [HttpGet("Citas")]
-    public IActionResult Citas() => View();
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> Citas([FromServices] AgendaCitasService agenda, DateOnly? fecha, int pagina = 1, CancellationToken ct = default)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Revisa la fecha y la página solicitadas.");
+        return View(await agenda.LeerCitas(User, fecha, pagina, ct));
+    }
+
+    [HttpPost("Citas/Reservar")]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> ReservarCita([FromServices] AgendaCitasService agenda, ReservaCitaInput input, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Selecciona un horario y una modalidad válidos.");
+        await agenda.Reservar(User, input, ct);
+        TempData["Success"] = "Tu cita quedó reservada.";
+        return RedirectToAction(nameof(Citas));
+    }
+
+    [HttpPost("Citas/Cancelar")]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> CancelarCita([FromServices] AgendaCitasService agenda, Guid citaId, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Cita no válida.");
+        await agenda.CancelarEstudiante(User, citaId, ct);
+        TempData["Success"] = "Tu cita fue cancelada.";
+        return RedirectToAction(nameof(Citas));
+    }
 
     private static MiPerfilViewModel CrearPerfilViewModel(ApplicationUser usuario)
     {

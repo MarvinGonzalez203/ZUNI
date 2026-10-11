@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Zuni.Data;
 using Zuni.Models.Atencion;
 using Zuni.Services;
+using Zuni.Models.Agenda;
+using Zuni.Services.Agenda;
 
 namespace Zuni.Controllers;
 
@@ -35,7 +37,44 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
     }
 
     [HttpGet]
-    public IActionResult Agenda() => View();
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> Agenda([FromServices] AgendaCitasService agenda, DateOnly? fecha, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Fecha no válida.");
+        return View(await agenda.LeerAgenda(User, fecha, ct));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> AgregarDisponibilidad([FromServices] AgendaCitasService agenda, DisponibilidadInput input, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Revisa los datos de disponibilidad.");
+        await agenda.AgregarDisponibilidad(User, input, ct);
+        TempData["Success"] = "Disponibilidad semanal guardada.";
+        return RedirectToAction(nameof(Agenda));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> CambiarDisponibilidad([FromServices] AgendaCitasService agenda, Guid disponibilidadId, bool activo, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Disponibilidad no válida.");
+        await agenda.CambiarDisponibilidad(User, disponibilidadId, activo, ct);
+        return RedirectToAction(nameof(Agenda));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> GestionarCita([FromServices] AgendaCitasService agenda, CambiarCitaInput input, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Revisa el estado y el motivo administrativo.");
+        await agenda.GestionarCita(User, input, ct);
+        TempData["Success"] = "Estado de cita actualizado.";
+        return RedirectToAction(nameof(Agenda));
+    }
 
 
     [HttpGet]
@@ -114,5 +153,11 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
     public IActionResult Atencion() => View();
 
     [HttpGet]
-    public IActionResult Historial() => View();
+    [AgendaExceptionFilter]
+    public async Task<IActionResult> Historial([FromServices] AgendaCitasService agenda, string? busqueda,
+        EstadoCita? estado, int pagina = 1, CancellationToken ct = default)
+    {
+        if (!ModelState.IsValid) throw new AgendaOperacionException("Filtros no válidos.");
+        return View(await agenda.Historial(User, busqueda, estado, pagina, ct));
+    }
 }

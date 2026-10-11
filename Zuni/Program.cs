@@ -22,6 +22,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<Zuni.Services.BigFive.BigFiveService>();
 builder.Services.AddScoped<Zuni.Services.IAsignacionPsicologoService, Zuni.Services.AsignacionPsicologoService>();
 builder.Services.AddScoped<Zuni.Services.IAutorizacionClinicaService, Zuni.Services.AutorizacionClinicaService>();
+builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+builder.Services.AddScoped<Zuni.Services.Agenda.AgendaCitasService>();
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(

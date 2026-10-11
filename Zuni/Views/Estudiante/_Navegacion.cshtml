@@ -11,6 +11,6 @@
     @foreach (var item in new[] { ("clipboard", "Evaluaciones"), ("results", "Resultados"), ("calendar", "Citas") })
     {
         var activo = accion == item.Item2 || (enBigFive && item.Item2 == "Evaluaciones");
-        <a class="dash-nav-link @(activo ? "is-active" : "")" asp-controller="Estudiante" asp-action="@item.Item2" aria-current="@(activo ? "page" : null)"><partial name="_DashboardIcon" model="item.Item1" /><span>@item.Item2<small>@(item.Item2 == "Evaluaciones" ? "Big Five · opcional" : "Próximamente")</small></span></a>
+        <a class="dash-nav-link @(activo ? "is-active" : "")" asp-controller="Estudiante" asp-action="@item.Item2" aria-current="@(activo ? "page" : null)"><partial name="_DashboardIcon" model="item.Item1" /><span>@item.Item2<small>@(item.Item2 == "Evaluaciones" ? "Big Five · opcional" : item.Item2 == "Citas" ? "Reserva y seguimiento" : "Próximamente")</small></span></a>
     }
 </nav>

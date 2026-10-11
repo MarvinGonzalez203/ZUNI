@@ -1,12 +1,28 @@
-@{
-    ViewData["Title"] = "Historial de atención";
-}
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Historial de atención</h1></div></header>
-<section class="dash-card" aria-labelledby="psych-empty-title">
-    <div class="psych-empty">
-        <span class="dash-icon-tile" aria-hidden="true"><partial name="_DashboardIcon" model='@("book")' /></span>
-        <h2 id="psych-empty-title">No hay sesiones clínicas registradas.</h2>
-        <p>El registro de sesiones aún no está habilitado. Los accesos a expedientes no representan sesiones clínicas.</p>
-        <a class="dash-text-link" asp-action="Index">Volver al tablero <partial name="_DashboardIcon" model='@("arrow")' /></a>
-    </div>
+﻿@model Zuni.Models.Agenda.HistorialCitasViewModel
+@using Zuni.Models.Agenda
+@using Zuni.Services.Agenda
+@{ ViewData["Title"] = "Historial de citas"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Historial de citas</h1><p>Consulta tus citas completadas, canceladas y con inasistencia.</p></div></header>
+<section class="dash-card agenda-card" aria-label="Historial">
+    <form method="get" class="agenda-actions">
+        <label for="busqueda">Estudiante</label><input id="busqueda" name="busqueda" value="@Model.Busqueda" maxlength="80" class="form-control" />
+        <label for="estado">Estado</label><select id="estado" name="estado" class="form-select"><option value="">Todos</option>
+            @foreach (var estado in new[] { EstadoCita.Completada, EstadoCita.Cancelada, EstadoCita.NoAsistio }) { <option value="@estado" selected="@(Model.Estado == estado)">@(estado == EstadoCita.NoAsistio ? "No asistió" : estado.ToString())</option> }
+        </select><button type="submit" class="dash-button">Filtrar</button>
+    </form>
+    <p class="mt-3">Horarios de Guatemala (UTC−6).</p>
+    @if (Model.Citas.Count == 0) { <div class="agenda-empty">No hay citas que coincidan con estos filtros.</div> }
+    else
+    {
+        <div class="table-responsive"><table><thead><tr><th>Fecha y hora</th><th>Estudiante</th><th>Modalidad</th><th>Estado</th></tr></thead><tbody>
+        @foreach (var cita in Model.Citas) { <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span></td></tr> }
+        </tbody></table></div>
+    }
+    <nav class="agenda-pagination" aria-label="Páginas del historial">
+        @if (Model.Pagina > 1) { <a asp-action="Historial" asp-route-busqueda="@Model.Busqueda" asp-route-estado="@Model.Estado" asp-route-pagina="@(Model.Pagina - 1)">Anterior</a> }
+        <span>Página @Model.Pagina de @Model.Paginas</span>
+        @if (Model.Pagina < Model.Paginas) { <a asp-action="Historial" asp-route-busqueda="@Model.Busqueda" asp-route-estado="@Model.Estado" asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a> }
+    </nav>
+    <p class="mt-3"><a asp-action="Agenda">Volver a mi agenda</a></p>
 </section>
+@section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }
