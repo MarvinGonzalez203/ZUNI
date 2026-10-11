@@ -229,7 +229,15 @@ Check(atencionMigration.UpOperations.OfType<CreateTableOperation>().Single().Nam
     atencionMigration.UpOperations.All(o => o is CreateTableOperation || o is CreateIndexOperation i && i.Table == "RegistrosAtencionCita"), "Migración solo nueva tabla atención e índices");
 Check(atencionMigration.UpOperations.OfType<CreateTableOperation>().Single().ForeignKeys.All(f => f.OnDelete == ReferentialAction.Restrict), "Atención FK Restrict");
 Check(atencionMigration.UpOperations.OfType<CreateIndexOperation>().Any(i => i.IsUnique && i.Columns.SequenceEqual(new[] { "CitaId" })), "Cierre único en PostgreSQL");
-Check(atencionMigration.DownOperations.Single() is DropTableOperation { Name: "RegistrosAtencionCita" }, "Down solo tabla nueva");
+Check(atencionMigration.DownOperations.Count == 2 &&
+    atencionMigration.DownOperations[0] is SqlOperation { SuppressTransaction: false } atencionGuard &&
+    atencionGuard.Sql.Contains("LOCK TABLE \"RegistrosAtencionCita\" IN ACCESS EXCLUSIVE MODE") &&
+    atencionGuard.Sql.Contains("IF EXISTS (SELECT 1 FROM \"RegistrosAtencionCita\")") &&
+    atencionGuard.Sql.Contains("RAISE EXCEPTION") &&
+    atencionGuard.Sql.IndexOf("LOCK TABLE", StringComparison.Ordinal) < atencionGuard.Sql.IndexOf("IF EXISTS", StringComparison.Ordinal) &&
+    atencionGuard.Sql.IndexOf("IF EXISTS", StringComparison.Ordinal) < atencionGuard.Sql.IndexOf("RAISE EXCEPTION", StringComparison.Ordinal) &&
+    atencionMigration.DownOperations[1] is DropTableOperation { Name: "RegistrosAtencionCita" },
+    "Down condicional: bloquea, aborta si hay registros y solo después elimina la tabla nueva");
 var compartidosMethod = typeof(AgendaCitasService).GetMethod("ResultadosCompartidos", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
 var compartidos = (IQueryable<ResultadoAtencionEstudianteViewModel>)compartidosMethod.Invoke(servicioPg, new object[] { perfil.Id })!;
 var sqlCompartidos = compartidos.ToQueryString();

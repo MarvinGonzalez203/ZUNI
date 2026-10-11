@@ -100,14 +100,14 @@ Nueva migración: 20261011013849_AddRegistroAtencionCita.
 
 Up crea únicamente RegistrosAtencionCita e índices. No altera las tablas existentes. Se verificó mediante hashes que los 19 archivos previos de migraciones/Designer permanecieron intactos respecto al inicio de esta tarea.
 
-Down generado por EF elimina únicamente la tabla nueva. **Si se ejecutase tras registrar atenciones, se perderían sus datos.** No se ejecutó Down ni Up; cualquier reversión posterior requerirá revisar respaldo y conservación clínica. Los eventos de auditoría existentes no se borran mediante este Down.
+Down es condicional. Dentro de la transacción de migración de EF (suppressTransaction: false) primero ejecuta `LOCK TABLE "RegistrosAtencionCita" IN ACCESS EXCLUSIVE MODE` y un bloque `DO` que lanza `RAISE EXCEPTION` si `EXISTS (SELECT 1 FROM "RegistrosAtencionCita")`; solo si la tabla está vacía continúa con `DropTable("RegistrosAtencionCita")`. El bloqueo se mantiene hasta el DropTable, por lo que no pueden insertarse registros entre la comprobación y la eliminación. Así, una reversión nunca borra registros de atención: si existen, falla y la transacción se revierte. No se ejecutó Down ni Up; cualquier reversión con datos requerirá revisar respaldo y conservación clínica. Los eventos de auditoría existentes no se borran mediante este Down.
 
 Citas antiguas completadas sin registro siguen visibles en el historial sin enlace de atención. No se inventa ni se rellena contenido retrospectivo. Cancelación, solicitudes, confirmación, rechazo y calendario conservan su flujo; solo el cierre Completada/NoAsistio requiere el nuevo formulario.
 
 ## Compilación y pruebas
 
 - dotnet build Zuni/Zuni.sln -c Release --no-restore: correcto, **0 errores, 0 advertencias**.
-- dotnet run --project tests/Agenda.Offline -c Release --no-restore: **275 comprobaciones correctas**.
+- dotnet run --project tests/Agenda.Offline -c Release --no-restore: el resultado de 275 comprobaciones correspondía al Down original sin guard. Tras añadir el guard, la comprobación de la migración se actualizó para exigir SqlOperation de protección seguido de DropTable; **pendiente volver a ejecutar la suite**.
 - git diff --check: correcto.
 - Scripts de avance y reversión generados con EF y configuración offline apuntando a un destino ficticio, **sin abrir conexión**. No se ejecutaron esos scripts.
 - Snapshot comprobado contra el modelo EF: sincronizado.
@@ -196,6 +196,19 @@ namespace Zuni.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            // Mantener el bloqueo hasta DropTable evita inserciones entre la comprobación
+            // y la eliminación. Ambas operaciones usan la transacción de migración de EF.
+            migrationBuilder.Sql("""
+                LOCK TABLE "RegistrosAtencionCita" IN ACCESS EXCLUSIVE MODE;
+                DO $rollback$
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM "RegistrosAtencionCita") THEN
+                        RAISE EXCEPTION 'Reversión bloqueada para evitar pérdida de registros de atención: RegistrosAtencionCita contiene datos.';
+                    END IF;
+                END;
+                $rollback$;
+                """, suppressTransaction: false);
+
             migrationBuilder.DropTable(
                 name: "RegistrosAtencionCita");
         }
