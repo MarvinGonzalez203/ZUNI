@@ -1,0 +1,56 @@
+@model Zuni.Models.BigFive.EstadoBigFiveViewModel
+@using Zuni.Resources
+@using Zuni.Services.BigFive
+@{ ViewData["Title"] = "Big Five"; }
+@section Styles { <link rel="stylesheet" href="~/css/bigfive-apoyo.css" asp-append-version="true" /> }
+<div class="bf-module">
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">PARTICIPACIÓN VOLUNTARIA</span><h1>Big Five</h1><p>Herramienta opcional de apoyo · 50 afirmaciones · @Ipip50.Version</p></div></header>
+<partial name="_Limitaciones" />
+@if (TempData["BigFiveError"] is string error) { <p class="dash-notice" role="alert">@error</p> }
+@if (TempData["BigFiveSuccess"] is string success) { <p class="dash-notice" role="status">@success</p> }
+@if (Model.Id is Guid id)
+{
+    <section class="dash-card">
+        @if (Model.FechaRetiroConsentimientoUtc != null)
+        {
+            <h2>Participación retirada</h2><p>El cuestionario y la consulta del resumen están suspendidos desde @Model.FechaRetiroConsentimientoUtc?.ToString("dd/MM/yyyy HH:mm") UTC.</p>
+            <p>Los datos registrados no se borran automáticamente. Tu solicitud y atención permanecen independientes.</p>
+        }
+        else if (Model.FechaFinalizacionUtc != null)
+        {
+            <h2>Cuestionario completado</h2>
+            <dl><dt>Fecha (UTC)</dt><dd>@Model.FechaFinalizacionUtc?.ToString("dd/MM/yyyy HH:mm")</dd><dt>Versión</dt><dd>@Model.VersionInstrumento</dd><dt>Comprobante</dt><dd class="text-break">@id</dd></dl>
+            <p>Las respuestas están cerradas. El resumen solo podrá consultarlo el psicólogo autorizado.</p>
+        }
+        else if (Model.PuedeResponder)
+        {
+            <h2>Tu avance</h2><p>Puedes guardar tus respuestas y continuar más tarde.</p>
+            <a class="dash-button" asp-action="Cuestionario" asp-route-id="@id">Continuar cuestionario</a>
+        }
+        else { <h2>Participación no disponible para responder</h2><p>Necesitas que la solicitud asociada siga activa. No se creará otra participación automáticamente.</p> }
+        <details class="bf-details"><summary>Consentimiento que aceptaste</summary><p>Fecha: @Model.FechaConsentimientoUtc?.ToString("dd/MM/yyyy HH:mm") UTC.</p><p>@Model.TextoConsentimiento</p></details>
+        @if (Model.FechaRetiroConsentimientoUtc == null)
+        {
+            <details class="bf-details"><summary>Retirar participación Big Five</summary>
+                <p>Se impedirán nuevas respuestas y la consulta del resumen. No cancela tu atención y no elimina automáticamente datos ya registrados.</p>
+                <form asp-action="Retirar" method="post"><input type="hidden" name="id" value="@id" /><button type="submit" class="dash-button">Confirmar retiro del consentimiento</button></form>
+            </details>
+        }
+    </section>
+}
+else if (!Model.TieneSolicitudActiva)
+{
+    <section class="dash-card"><h2>Primero, tu solicitud de atención</h2><p>Para participar necesitas una solicitud activa. No necesitas tener psicólogo asignado. Completar Big Five nunca es requisito para recibir atención.</p><a class="dash-button" asp-controller="Estudiante" asp-action="SolicitarAtencion">Solicitar atención</a></section>
+}
+else
+{
+    <section class="dash-card"><h2>Antes de comenzar</h2><p>@ConsentimientoBigFive.Texto</p><p>Consentimiento: @ConsentimientoBigFive.Version</p>
+        <form asp-action="Aceptar" method="post" class="bf-consent-form">
+            <label><input type="checkbox" name="MayorDeEdad" value="true" required /> Confirmo que tengo 18 años o más.</label>
+            <label><input type="checkbox" name="Acepto" value="true" required /> Leí y acepto voluntariamente el consentimiento específico Big Five.</label>
+            <button type="submit" class="dash-button">Aceptar y comenzar</button>
+        </form>
+    </section>
+}
+<a class="dash-text-link bf-back" asp-controller="Estudiante" asp-action="Evaluaciones">Volver a evaluaciones</a>
+</div>

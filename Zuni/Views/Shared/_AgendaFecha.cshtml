@@ -1,0 +1,28 @@
+﻿@model DateOnly
+@using Zuni.Services.Agenda
+@{
+    var primero = new DateOnly(Model.Year, Model.Month, 1);
+    var espacios = ((int)primero.DayOfWeek + 6) % 7;
+    var hoy = AgendaReglas.Hoy(DateTime.UtcNow);
+    var minimo = User.IsInRole("Psicologo") ? hoy.AddDays(-365) : hoy;
+    var maximo = hoy.AddDays(90);
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-GT");
+}
+<p>Horarios de Guatemala (UTC−6).</p>
+<form method="get" class="agenda-actions">
+    <label for="agenda-fecha">Fecha</label>
+    <input id="agenda-fecha" class="form-control" type="date" name="fecha" value="@Model.ToString("yyyy-MM-dd")" min="@minimo.ToString("yyyy-MM-dd")" max="@maximo.ToString("yyyy-MM-dd")" required />
+    <button class="dash-button" type="submit">Consultar</button>
+</form>
+<details class="mt-3">
+    <summary>Calendario de @Model.ToString("MMMM yyyy", cultura)</summary>
+    <form method="get" class="agenda-calendar" aria-label="Calendario">
+        @foreach (var dia in new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" }) { <strong>@dia</strong> }
+        @for (var i = 0; i < espacios; i++) { <span></span> }
+        @for (var i = 1; i <= DateTime.DaysInMonth(Model.Year, Model.Month); i++)
+        {
+            var fecha = new DateOnly(Model.Year, Model.Month, i);
+            <button class="agenda-day @(fecha == Model ? "selected" : "")" type="submit" name="fecha" value="@fecha.ToString("yyyy-MM-dd")" aria-label="@fecha.ToString("D", cultura)" aria-pressed="@(fecha == Model ? "true" : "false")" disabled="@(fecha < minimo || fecha > maximo)">@i</button>
+        }
+    </form>
+</details>

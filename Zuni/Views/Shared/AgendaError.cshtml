@@ -1,0 +1,8 @@
+﻿@model string
+@{ ViewData["Title"] = "Revisar agenda"; }
+<section class="container py-4">
+    <h1>No se pudo completar la operación</h1>
+    <p role="alert">@Model</p>
+    @if (User.IsInRole("Estudiante")) { <a asp-controller="Estudiante" asp-action="Citas">Volver a mis citas</a> }
+    @if (User.IsInRole("Psicologo")) { <a asp-controller="Psicologo" asp-action="Agenda">Volver a mi agenda</a> }
+</section>

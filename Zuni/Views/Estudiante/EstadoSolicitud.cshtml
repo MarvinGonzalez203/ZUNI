@@ -1,0 +1,14 @@
+@model Zuni.Models.Atencion.EstadoSolicitudViewModel
+@using Zuni.Models.Atencion
+@{ ViewData["Title"] = "Solicitud de atención"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">TU ACOMPAÑAMIENTO</span><h1>Solicitud de atención</h1><p>Tu solicitud ya está registrada. No necesitas enviar otra.</p></div></header>
+<section class="dash-card" aria-labelledby="estado-title">
+    <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("shield")' /></span><h2 id="estado-title">Estado de tu solicitud</h2></div>
+    <p class="mt-3">Estado: <strong class="dash-badge">@Model.Estado</strong></p>
+    <p>Fecha de solicitud (UTC): <time datetime="@Model.FechaSolicitudUtc.ToString("O")">@Model.FechaSolicitudUtc.ToString("dd/MM/yyyy HH:mm")</time></p>
+    <p>@(Model.Estado == EstadoSolicitudAtencion.Pendiente ? "Tu solicitud está pendiente de asignación." : "Tu solicitud fue asignada para atención.")</p>
+    <div class="d-flex flex-wrap gap-3 mt-4">
+        <a class="dash-button" asp-controller="Estudiante" asp-action="Index">Volver al tablero</a>
+        <a class="dash-button" asp-controller="MiCuenta" asp-action="Index">Mi cuenta</a>
+    </div>
+</section>

@@ -1,5 +1,12 @@
 @{
-    ViewData["Title"] = "Resultados exploratorios";
+    ViewData["Title"] = "Resultados";
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Resultados exploratorios</h1></div></header>
-<partial name="_Resultados" />
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Resultados</h1></div></header>
+<section class="dash-card" aria-labelledby="psych-empty-title">
+    <div class="psych-empty">
+        <span class="dash-icon-tile" aria-hidden="true"><partial name="_DashboardIcon" model='@("results")' /></span>
+        <h2 id="psych-empty-title">No hay instrumentos configurados.</h2>
+        <p>Este módulo estará disponible cuando se integren instrumentos autorizados.</p>
+        <a class="dash-text-link" asp-action="Index">Volver al tablero <partial name="_DashboardIcon" model='@("arrow")' /></a>
+    </div>
+</section>

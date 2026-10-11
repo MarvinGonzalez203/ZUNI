@@ -9,5 +9,5 @@
     <a class="dash-nav-link @(accion == "ResultadosInstitucionales" ? "is-active" : "")" asp-controller="Director" asp-action="ResultadosInstitucionales" aria-current="@(accion == "ResultadosInstitucionales" ? "page" : null)"><partial name="_DashboardIcon" model='@("results")' /><span>Resultados institucionales</span></a>
     <a class="dash-nav-link @(accion == "Estadisticas" ? "is-active" : "")" asp-controller="Director" asp-action="Estadisticas" aria-current="@(accion == "Estadisticas" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Estadísticas</span></a>
     <span class="dash-nav-label dash-nav-label-spaced">CUENTA</span>
-    <span class="dash-nav-link is-unavailable" aria-disabled="true"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta<small>Próximamente</small></span></span>
+    <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
 </nav>

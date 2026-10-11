@@ -1,0 +1,8 @@
+@{ var accion = ViewContext.RouteData.Values["action"]?.ToString(); }
+<nav class="dash-nav" aria-label="Navegación del administrador">
+    <span class="dash-nav-label">PANEL ADMINISTRATIVO</span>
+    <a class="dash-nav-link @(accion == "Index" ? "is-active" : "")" asp-controller="Administrador" asp-action="Index" aria-current="@(accion == "Index" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero / Usuarios</span></a>
+    <a class="dash-nav-link @(accion == "AgregarUsuario" ? "is-active" : "")" asp-controller="Administrador" asp-action="AgregarUsuario" aria-current="@(accion == "AgregarUsuario" ? "page" : null)"><partial name="_DashboardIcon" model='@("user")' /><span>Agregar usuario</span></a>
+    <span class="dash-nav-label dash-nav-label-spaced">CUENTA</span>
+    <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
+</nav>

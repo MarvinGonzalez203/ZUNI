@@ -1,16 +1,60 @@
-@section Styles { <link rel="stylesheet" href="~/css/estudiante.css" asp-append-version="true" /> }
-@{
-    ViewData["Title"] = "Citas";
-}
-<header class="dash-profile-heading">
-    <div><span class="dash-eyebrow">SERVICIOS</span><h1>Citas</h1><p>Desde este espacio podrás consultar y gestionar tus citas cuando el servicio esté disponible.</p></div>
-    <span class="dash-badge">Próximamente</span>
-</header>
-<section class="dash-card student-empty" aria-label="Citas: próximamente">
-    <div class="dash-chart-placeholder">
-        <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("calendar")' /></div>
-        <p>Todavía no se pueden reservar ni solicitar citas, ni consultar disponibilidad real. El servicio está pendiente de integración.</p>
-    </div>
+﻿@model Zuni.Models.Agenda.CitasEstudianteViewModel
+@using Zuni.Models.Agenda
+@using Zuni.Services.Agenda
+@{ ViewData["Title"] = "Mis citas"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">TU ACOMPAÑAMIENTO</span><h1>Mis citas</h1><p>Reserva con tu psicólogo asignado. Completar Big Five es opcional.</p></div></header>
+<section class="dash-card agenda-card" aria-labelledby="disponibles-title">
+    <h2 id="disponibles-title">Horarios disponibles</h2>
+    @if (!Model.PuedeReservar)
+    {
+        <div class="agenda-empty"><h3>Aún no puedes reservar</h3><p>Necesitas tu perfil completo y una asignación vigente a un psicólogo disponible.</p><a asp-action="EstadoSolicitud">Consultar mi solicitud</a> · <a href="/MiCuenta">Revisar mi cuenta</a></div>
+    }
+    else
+    {
+        <p>Profesional asignado: <strong>@Model.Psicologo</strong></p>
+        <partial name="_AgendaFecha" model="Model.Fecha" />
+        @if (Model.Horarios.Count == 0) { <div class="agenda-empty">No hay horarios disponibles para esta fecha. Puedes consultar otro día.</div> }
+        <div class="agenda-slots">
+        @foreach (var horario in Model.Horarios)
+        {
+            var identificador = "modalidad-" + horario.InicioUtc.Ticks;
+            <form asp-action="ReservarCita" method="post" class="agenda-slot">
+                <input type="hidden" name="Inicio" value="@horario.InicioUtc.ToString("O")" />
+                <strong>@AgendaReglas.Local(horario.InicioUtc).ToString("HH:mm") – @AgendaReglas.Local(horario.FinUtc).ToString("HH:mm")</strong>
+                <p>@((horario.FinUtc - horario.InicioUtc).TotalMinutes) minutos</p>
+                <label for="@identificador">Modalidad</label>
+                <select id="@identificador" name="Modalidad" class="form-select" required>
+                    @if (horario.Modalidad is ModalidadDisponibilidad.Presencial or ModalidadDisponibilidad.Ambas) { <option value="Presencial">Presencial</option> }
+                    @if (horario.Modalidad is ModalidadDisponibilidad.Virtual or ModalidadDisponibilidad.Ambas) { <option value="Virtual">Virtual</option> }
+                </select>
+                <button type="submit" class="dash-button">Reservar cita</button>
+            </form>
+        }
+        </div>
+    }
 </section>
-
-<div class="student-back"><a class="dash-button" asp-controller="Estudiante" asp-action="Index">Volver al tablero</a></div>
+<section class="dash-card agenda-card" aria-labelledby="citas-title">
+    <h2 id="citas-title">Mis reservas</h2>
+    <p>Horarios de Guatemala (UTC−6). Puedes cancelar una cita antes de su hora de inicio.</p>
+    @if (Model.Citas.Count == 0) { <div class="agenda-empty">Todavía no tienes citas registradas.</div> }
+    else
+    {
+        <div class="table-responsive"><table><thead><tr><th>Fecha y hora</th><th>Psicólogo</th><th>Modalidad</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+        @foreach (var cita in Model.Citas)
+        {
+            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span></td><td>
+            @if (cita.Estado == EstadoCita.Reservada && cita.InicioUtc > DateTime.UtcNow)
+            {
+                <details><summary>Cancelar cita</summary><form asp-action="CancelarCita" method="post"><input type="hidden" name="citaId" value="@cita.Id" /><p>Se liberará este horario.</p><button type="submit" class="btn btn-outline-secondary">Confirmar cancelación</button></form></details>
+            }
+            </td></tr>
+        }
+        </tbody></table></div>
+        <nav class="agenda-pagination" aria-label="Páginas de mis citas">
+            @if (Model.Pagina > 1) { <a asp-action="Citas" asp-route-fecha="@Model.Fecha.ToString("yyyy-MM-dd")" asp-route-pagina="@(Model.Pagina - 1)">Anterior</a> }
+            <span>Página @Model.Pagina de @Model.Paginas</span>
+            @if (Model.Pagina < Model.Paginas) { <a asp-action="Citas" asp-route-fecha="@Model.Fecha.ToString("yyyy-MM-dd")" asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a> }
+        </nav>
+    }
+</section>
+@section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }

@@ -1,24 +1,58 @@
-@model IReadOnlyList<Zuni.Models.Administrador.UsuarioAdminViewModel>
+@model Zuni.Models.Administrador.PanelAdministradorViewModel
 @{
     ViewData["Title"] = "Panel Administrador · Usuarios";
+    var primero = (User.Identity?.Name ?? "Administrador").Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Administrador";
+    var nombre = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primero.ToLower());
 }
 
-<section class="container py-4 py-md-5" aria-labelledby="usuarios-title">
-    <div class="rounded-4 border shadow-sm p-3 p-md-4 p-lg-5"
-         style="background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
+<header class="dash-welcome">
+    <div class="dash-welcome-copy"><span class="dash-eyebrow">ESPACIO ADMINISTRATIVO</span>
+        <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
+        <p>Administra las cuentas, roles y accesos de ZUNI desde un solo lugar.</p>
+        <a class="dash-button" asp-action="AgregarUsuario">Agregar usuario <partial name="_DashboardIcon" model='@("arrow")' /></a>
+    </div>
+    <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>Conexión y confianza.</span></div>
+</header>
+<section class="dash-admin-panel" aria-labelledby="usuarios-title">
+    <div class="dash-card">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
             <div>
                 <p class="small fw-semibold mb-2">Panel Administrador</p>
                 <h1 id="usuarios-title" class="display-6 fw-bold mb-2">Usuarios</h1>
                 <p class="mb-0">Consulta las cuentas de ZUNI, su rol y su estado actual.</p>
             </div>
-            <a asp-action="AgregarUsuario" class="btn btn-zuni">Agregar usuario</a>
             <span class="rounded-pill px-3 py-2 small fw-semibold" style="background: rgba(206,162,253,.25);">
-                Total de usuarios: @Model.Count
+                Resultados del listado: @Model.Usuarios.Count
             </span>
         </div>
 
-        @foreach (var tipo in new[] { "Success", "Info", "Error" })
+        <div class="row g-2 mb-3" aria-label="Resumen global de cuentas">
+            @foreach (var dato in new[] { ("Total de usuarios", Model.Total), ("Usuarios activos", Model.Activos), ("Usuarios inactivos", Model.Inactivos) }
+                .Concat(new[] { ("Estudiantes", "Estudiante"), ("Psicólogos", "Psicologo"), ("Catedráticos", "Catedratico"), ("Directores", "Director"), ("Administradores", "Administrador") }
+                    .Select(r => (r.Item1, Model.UsuariosPorRol.GetValueOrDefault(r.Item2)))))
+            {
+                <div class="col-6 col-xl-3"><div class="dash-card dash-summary h-100">
+                    <div class="small">@dato.Item1</div><strong class="fs-3">@dato.Item2</strong>
+                </div></div>
+            }
+        </div>
+        <p class="small">Resumen global, independiente de los filtros. Una cuenta con varios roles se cuenta en cada rol.</p>
+        <form asp-action="Index" method="get" class="row g-3 align-items-end mb-4">
+            <div class="col-12 col-lg-5"><label for="buscar" class="form-label">Nombre o correo</label><input id="buscar" name="buscar" value="@Model.Buscar" maxlength="200" class="form-control" type="search" /></div>
+            <div class="col-6 col-lg-2"><label for="rol" class="form-label">Rol</label><select id="rol" name="rol" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var opcion in Zuni.Models.Administrador.CambiarRolViewModel.RolesPermitidos)
+                {
+                    <option value="@opcion" selected="@(Model.Rol == opcion)">@opcion</option>
+                }
+            </select></div>
+            <div class="col-6 col-lg-2"><label for="estado" class="form-label">Estado</label><select id="estado" name="estado" class="form-select">
+                <option value="">Todos</option><option value="Activos" selected="@(Model.Estado == "Activos")">Activos</option><option value="Inactivos" selected="@(Model.Estado == "Inactivos")">Inactivos</option>
+            </select></div>
+            <div class="col-12 col-lg-3 d-flex flex-wrap gap-2"><button class="dash-button" type="submit">Filtrar</button><a asp-action="Index" class="btn btn-outline-dark">Limpiar</a></div>
+        </form>
+
+        @foreach (var tipo in new[] { "Info", "Error" })
         {
             if (TempData[tipo] is string mensaje)
             {
@@ -29,9 +63,9 @@
             Puedes cambiar el rol de usuarios activos, desactivar o reactivar cuentas y consultar su historial.
         </p>
 
-        @if (Model.Count == 0)
+        @if (Model.Usuarios.Count == 0)
         {
-            <div class="rounded-3 border p-4">No hay usuarios registrados.</div>
+            <div class="rounded-3 border p-4">No hay usuarios que coincidan con los filtros seleccionados.</div>
         }
         else
         {
@@ -48,7 +82,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var usuario in Model)
+                        @foreach (var usuario in Model.Usuarios)
                         {
                             <tr>
                                 <th scope="row" class="p-3 fw-semibold text-break">@usuario.FullName</th>

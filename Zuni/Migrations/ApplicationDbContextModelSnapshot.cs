@@ -154,6 +154,111 @@ namespace Zuni.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Zuni.Models.Agenda.Cita", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DisponibilidadPsicologoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaHoraFinUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaHoraInicioUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Modalidad")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MotivoCancelacion")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("PerfilEstudianteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PsicologoUsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DisponibilidadPsicologoId");
+
+                    b.HasIndex("PerfilEstudianteId", "FechaHoraInicioUtc")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Citas_Estudiante_InicioReservado")
+                        .HasFilter("\"Estado\" = 0");
+
+                    b.HasIndex("PsicologoUsuarioId", "FechaHoraInicioUtc")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Citas_Psicologo_InicioReservado")
+                        .HasFilter("\"Estado\" = 0");
+
+                    b.HasIndex("PsicologoUsuarioId", "Estado", "FechaHoraInicioUtc");
+
+                    b.ToTable("Citas", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3)");
+
+                            t.HasCheckConstraint("CK_Citas_Fechas", "\"FechaHoraFinUtc\" > \"FechaHoraInicioUtc\"");
+
+                            t.HasCheckConstraint("CK_Citas_Modalidad", "\"Modalidad\" IN (0, 1)");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DuracionMinutos")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly>("HoraFin")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("HoraInicio")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("Modalidad")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PsicologoUsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PsicologoUsuarioId", "DiaSemana", "Activo");
+
+                    b.ToTable("DisponibilidadesPsicologo", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Disponibilidad_Dia", "\"DiaSemana\" BETWEEN 0 AND 6");
+
+                            t.HasCheckConstraint("CK_Disponibilidad_Duracion", "\"DuracionMinutos\" BETWEEN 15 AND 120 AND \"DuracionMinutos\" % 5 = 0");
+
+                            t.HasCheckConstraint("CK_Disponibilidad_Horas", "\"HoraFin\" > \"HoraInicio\"");
+
+                            t.HasCheckConstraint("CK_Disponibilidad_Modalidad", "\"Modalidad\" IN (0, 1, 2)");
+                        });
+                });
+
             modelBuilder.Entity("Zuni.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -231,6 +336,243 @@ namespace Zuni.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Zuni.Models.Atencion.AsignacionEstudiantePsicologo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaAsignacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaFinalizacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PerfilEstudianteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PsicologoUsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerfilEstudianteId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AsignacionesEstudiantePsicologo_Vigente")
+                        .HasFilter("\"FechaFinalizacionUtc\" IS NULL");
+
+                    b.HasIndex("PsicologoUsuarioId", "FechaFinalizacionUtc");
+
+                    b.ToTable("AsignacionesEstudiantePsicologo", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AsignacionesEstudiantePsicologo_Fechas", "\"FechaFinalizacionUtc\" IS NULL OR \"FechaFinalizacionUtc\" >= \"FechaAsignacionUtc\"");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.ConsentimientoAtencion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Aceptado")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("FechaRespuestaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SolicitudAtencionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VersionConsentimiento")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SolicitudAtencionId")
+                        .IsUnique();
+
+                    b.ToTable("ConsentimientosAtencion", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ConsentimientosAtencion_Aceptado", "\"Aceptado\" = TRUE");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.ContactoEmergenciaExpediente", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ExpedienteInicialId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Relacion")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpedienteInicialId", "Orden")
+                        .IsUnique();
+
+                    b.ToTable("ContactosEmergenciaExpediente", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_NombreRelacion", "length(btrim(\"Nombre\")) > 0 AND length(btrim(\"Relacion\")) > 0");
+
+                            t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_Orden", "\"Orden\" BETWEEN 1 AND 3");
+
+                            t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_Telefono", "\"Telefono\" ~ '^[0-9]{8}$'");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.EventoAccesoClinico", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SolicitudAtencionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TipoAcceso")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SolicitudAtencionId", "FechaUtc");
+
+                    b.HasIndex("UsuarioId", "FechaUtc");
+
+                    b.ToTable("EventosAccesoClinico", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.ExpedienteInicial", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConsideracionesAtencion")
+                        .HasMaxLength(1500)
+                        .HasColumnType("character varying(1500)");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<int>("Edad")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("EsMayorEdad")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IdiomaPreferido")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("MotivoConsulta")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("MotivoReferencia")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("NombreReferente")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Sexo")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("SolicitudAtencionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SolicitudAtencionId")
+                        .IsUnique();
+
+                    b.ToTable("ExpedientesIniciales", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ExpedientesIniciales_MayorEdad", "\"Edad\" BETWEEN 18 AND 120 AND \"EsMayorEdad\" = TRUE");
+
+                            t.HasCheckConstraint("CK_ExpedientesIniciales_Requeridos", "length(btrim(\"Direccion\")) > 0 AND length(btrim(\"IdiomaPreferido\")) > 0 AND length(btrim(\"MotivoConsulta\")) > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.SolicitudAtencion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaSolicitudUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PerfilEstudianteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TipoIngreso")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UsuarioReferenteId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PerfilEstudianteId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_SolicitudesAtencion_Activa")
+                        .HasFilter("\"Estado\" IN (0, 1)");
+
+                    b.HasIndex("UsuarioReferenteId");
+
+                    b.ToTable("SolicitudesAtencion", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SolicitudesAtencion_Estado", "\"Estado\" IN (0, 1, 2)");
+
+                            t.HasCheckConstraint("CK_SolicitudesAtencion_TipoIngreso", "\"TipoIngreso\" IN (0, 1)");
+                        });
+                });
+
             modelBuilder.Entity("Zuni.Models.AuditoriaUsuario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -272,6 +614,116 @@ namespace Zuni.Migrations
                     b.HasIndex("UsuarioAfectadoId");
 
                     b.ToTable("AuditoriaUsuarios", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.BigFive.ParticipacionBigFive", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Amabilidad")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)");
+
+                    b.Property<decimal?>("Apertura")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)");
+
+                    b.Property<decimal?>("Extraversion")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)");
+
+                    b.Property<DateTime>("FechaConsentimientoUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaFinalizacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaRetiroConsentimientoUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Neuroticismo")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)");
+
+                    b.Property<Guid>("PerfilEstudianteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Responsabilidad")
+                        .HasPrecision(3, 2)
+                        .HasColumnType("numeric(3,2)");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SolicitudAtencionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TextoConsentimiento")
+                        .IsRequired()
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)");
+
+                    b.Property<string>("VersionConsentimiento")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("VersionInstrumento")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SolicitudAtencionId");
+
+                    b.HasIndex("PerfilEstudianteId", "VersionInstrumento")
+                        .IsUnique();
+
+                    b.ToTable("ParticipacionesBigFive", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_BigFive_Consentimiento", "\"VersionInstrumento\" = 'IPIP50-ES-ZUNI-1' AND \"VersionConsentimiento\" = 'ZUNI-BIGFIVE-1' AND length(btrim(\"TextoConsentimiento\")) > 0 AND \"Revision\" >= 0");
+
+                            t.HasCheckConstraint("CK_BigFive_Fechas", "(\"FechaFinalizacionUtc\" IS NULL OR \"FechaFinalizacionUtc\" >= \"FechaConsentimientoUtc\") AND (\"FechaRetiroConsentimientoUtc\" IS NULL OR (\"FechaRetiroConsentimientoUtc\" >= \"FechaConsentimientoUtc\" AND (\"FechaFinalizacionUtc\" IS NULL OR \"FechaRetiroConsentimientoUtc\" >= \"FechaFinalizacionUtc\")))");
+
+                            t.HasCheckConstraint("CK_BigFive_Finalizacion", "(\"FechaFinalizacionUtc\" IS NULL AND \"Apertura\" IS NULL AND \"Responsabilidad\" IS NULL AND \"Extraversion\" IS NULL AND \"Amabilidad\" IS NULL AND \"Neuroticismo\" IS NULL) OR (\"FechaFinalizacionUtc\" IS NOT NULL AND \"Apertura\" IS NOT NULL AND \"Apertura\" BETWEEN 1 AND 5 AND \"Responsabilidad\" IS NOT NULL AND \"Responsabilidad\" BETWEEN 1 AND 5 AND \"Extraversion\" IS NOT NULL AND \"Extraversion\" BETWEEN 1 AND 5 AND \"Amabilidad\" IS NOT NULL AND \"Amabilidad\" BETWEEN 1 AND 5 AND \"Neuroticismo\" IS NOT NULL AND \"Neuroticismo\" BETWEEN 1 AND 5)");
+                        });
+                });
+
+            modelBuilder.Entity("Zuni.Models.BigFive.RespuestaBigFive", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaActualizacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ItemId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<Guid>("ParticipacionBigFiveId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Valor")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipacionBigFiveId", "ItemId")
+                        .IsUnique();
+
+                    b.ToTable("RespuestasBigFive", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_RespuestaBigFive_Item", "\"ItemId\" IN ('34ec9b83-e986-7b45-1212-a008b6464ac9', 'bc0f20a0-dcd5-4e12-f803-339b7e6e41f9', 'a7794b8c-b052-1596-eaeb-8502f29aa731', '8eae8870-b3f9-dd96-af90-1da7d58fbfb8', '6c32dd7d-b7e7-910e-7e79-f5c6f946f427', '85c36ac5-3f2b-e534-c1f0-5310794d032e', 'd24b91f5-65d9-49ff-84db-8602cb886d71', '672abc81-ee21-5adb-6083-01842a329dfa', 'dbff23a7-7441-3aec-0005-8594fb64b53c', '02fd1819-e710-5f78-fbfe-45e5eadf4b67', 'd43a3a0d-ccd3-5732-7bd5-7f92e5791beb', 'c08c2a34-2e02-24fc-2fa2-56c1eef3706e', '7483763b-a2fd-b70e-43c0-198a63e9125a', 'dc62784e-0b3c-5c5a-4e1e-e182276739a4', '1171a3bf-a7a4-abf8-b03f-5cd5e0594760', '6984d96b-503d-ada6-3ca5-c3c8f484962a', '0f8dfd92-9cc9-708c-806a-689c015c01a9', 'c553730a-0097-3365-aaa0-a972a774ea34', '4f937929-1e3a-d7fc-5767-f3114f4313dd', '11788183-ad65-2a99-834e-92c5be504237', 'afaf22c5-fb77-39a2-0701-786892bc192e', '13c41242-cad9-2539-f7e0-3c0fb857dd82', 'f2ec3f62-1e27-210c-a098-249a9ae255ad', 'fedc7ceb-7674-6ff8-a6e1-de94c5a48a7e', '15d0e94b-19a0-e471-d4c1-f466b32b5e8b', '75c97af0-e69a-d3a5-4665-d6f1d964601c', '2db6901a-a12c-9e34-bf5a-080e2620e041', 'f59fba24-ed04-0f4b-c2c7-01dc8ffd3230', 'fbcf06a9-dda5-07e5-f4a4-735c8df528e1', '86772d4e-210a-3a2c-eac4-2e367ab7a325', '3cc223e9-34c8-775c-993e-52007f1307d7', '4b758014-7f3b-3890-c104-9548f4502269', 'a8ec5bf8-ac26-312f-3fc4-cb6495c76cf9', 'd4fab853-3245-3ae9-6450-18c43b57bde2', 'd2b0b5c2-3134-2b84-e8e5-e533ea2305a9', 'e0f4fcc8-169d-ec18-6cb0-edede94551d0', 'ab00f0c4-e6ab-afc4-9e93-c5cf1b2ce3df', 'c40dd84b-9da3-abfa-fd1f-513bef322abe', '6ac8f479-263c-48e4-7d08-fb7043337bf3', '52654a58-5b8d-13d3-2b0d-0bf646c5e185', 'b5169765-88cd-d032-6101-f452f8ae17f1', '25b5a84f-6f37-91f2-2e71-37408a77cbe3', 'd9570eb2-facd-24ee-2e8d-beb1f4689b04', '99dae9f9-a45e-e4bb-088a-3649b235ad03', '7845b957-70de-3053-2580-f8aef412ea2b', '0763e5c4-6d3a-0af7-ebd3-9ce09893c65d', '22e9a86f-7cb7-5a81-53ed-f6445fb921d5', 'cb57fafb-1a23-1ce0-3a99-d76d230899e3', '66025095-c39b-77f9-bd66-3ec34a12362e', 'cdbe8f89-8ed4-6a17-ace1-5b9d0d76c8ed')");
+
+                            t.HasCheckConstraint("CK_RespuestaBigFive_Valor", "\"Valor\" BETWEEN 1 AND 5");
+                        });
                 });
 
             modelBuilder.Entity("Zuni.Models.PasswordResetToken", b =>
@@ -416,6 +868,131 @@ namespace Zuni.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.Cita", b =>
+                {
+                    b.HasOne("Zuni.Models.Agenda.DisponibilidadPsicologo", null)
+                        .WithMany()
+                        .HasForeignKey("DisponibilidadPsicologoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.PerfilEstudiante", null)
+                        .WithMany()
+                        .HasForeignKey("PerfilEstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
+                {
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.AsignacionEstudiantePsicologo", b =>
+                {
+                    b.HasOne("Zuni.Models.PerfilEstudiante", null)
+                        .WithMany()
+                        .HasForeignKey("PerfilEstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.ConsentimientoAtencion", b =>
+                {
+                    b.HasOne("Zuni.Models.Atencion.SolicitudAtencion", null)
+                        .WithOne()
+                        .HasForeignKey("Zuni.Models.Atencion.ConsentimientoAtencion", "SolicitudAtencionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.ContactoEmergenciaExpediente", b =>
+                {
+                    b.HasOne("Zuni.Models.Atencion.ExpedienteInicial", null)
+                        .WithMany()
+                        .HasForeignKey("ExpedienteInicialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.EventoAccesoClinico", b =>
+                {
+                    b.HasOne("Zuni.Models.Atencion.SolicitudAtencion", null)
+                        .WithMany()
+                        .HasForeignKey("SolicitudAtencionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.ExpedienteInicial", b =>
+                {
+                    b.HasOne("Zuni.Models.Atencion.SolicitudAtencion", null)
+                        .WithOne()
+                        .HasForeignKey("Zuni.Models.Atencion.ExpedienteInicial", "SolicitudAtencionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Atencion.SolicitudAtencion", b =>
+                {
+                    b.HasOne("Zuni.Models.PerfilEstudiante", null)
+                        .WithMany()
+                        .HasForeignKey("PerfilEstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioReferenteId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Zuni.Models.BigFive.ParticipacionBigFive", b =>
+                {
+                    b.HasOne("Zuni.Models.PerfilEstudiante", null)
+                        .WithMany()
+                        .HasForeignKey("PerfilEstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.Atencion.SolicitudAtencion", null)
+                        .WithMany()
+                        .HasForeignKey("SolicitudAtencionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.BigFive.RespuestaBigFive", b =>
+                {
+                    b.HasOne("Zuni.Models.BigFive.ParticipacionBigFive", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipacionBigFiveId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Resultados generales";
+}
+
+<section class="dash-card p-4 p-md-5"
+         aria-labelledby="resultados-titulo">
+
+    <div class="dash-section-heading">
+        <div>
+            <h1 id="resultados-titulo" class="h2 mb-2">
+                Resultados generales
+            </h1>
+
+            <p>
+                Este espacio está reservado para los resúmenes
+                de evaluaciones autorizados para tu rol.
+            </p>
+        </div>
+
+        <span class="dash-badge">Próximamente</span>
+    </div>
+
+    <div class="dash-chart-placeholder mt-4">
+        <div class="dash-empty-symbol" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <partial name="_DashboardIcon" model='@("results")' />
+        </div>
+
+        <h2 class="mb-3">Resultados aún no disponibles</h2>
+
+        <p>
+            Los resúmenes aparecerán cuando se definan las evaluaciones,
+            sus reglas de puntuación y la información que puede
+            consultar el Catedrático.
+        </p>
+
+        <small>
+            Por ahora no se muestran resultados, niveles
+            ni porcentajes.
+        </small>
+    </div>
+
+    <p class="small text-secondary mt-4">
+        Esta sección no permite consultar notas clínicas,
+        diagnósticos ni sesiones privadas.
+    </p>
+
+    <a class="dash-button mt-3"
+       asp-controller="Catedratico"
+       asp-action="Index">
+        Volver al tablero
+        <partial name="_DashboardIcon" model='@("arrow")' />
+    </a>
+</section>

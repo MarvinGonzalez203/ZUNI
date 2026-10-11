@@ -1,5 +1,62 @@
+﻿@model Zuni.Models.Agenda.AgendaPsicologoViewModel
+@using Zuni.Models.Agenda
+@using Zuni.Services.Agenda
 @{
     ViewData["Title"] = "Agenda";
+    var dias = new[] { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" };
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Agenda</h1></div></header>
-<partial name="_Agenda" />
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Mi agenda</h1><p>Administra tus horarios y las citas reservadas contigo.</p></div></header>
+<section class="dash-card agenda-card" aria-labelledby="horarios-title">
+    <h2 id="horarios-title">Mi disponibilidad</h2>
+    <p>Los horarios se repiten cada semana, en hora de Guatemala (UTC−6). Se pueden reservar hasta 90 días por adelantado.</p>
+    <details><summary>Agregar horario semanal</summary>
+        <form asp-action="AgregarDisponibilidad" method="post" class="row g-3 mt-1">
+            <div class="col-md-4"><label for="dia" class="form-label">Día</label><select name="DiaSemana" id="dia" class="form-select">@for (var i = 1; i <= 7; i++) { <option value="@(i % 7)">@dias[i % 7]</option> }</select></div>
+            <div class="col-md-4"><label for="inicio" class="form-label">Desde</label><input name="HoraInicio" id="inicio" type="time" class="form-control" step="60" required /></div>
+            <div class="col-md-4"><label for="fin" class="form-label">Hasta</label><input name="HoraFin" id="fin" type="time" class="form-control" step="60" required /></div>
+            <div class="col-md-6"><label for="duracion" class="form-label">Duración por cita (minutos)</label><input name="DuracionMinutos" id="duracion" type="number" class="form-control" min="15" max="120" step="5" value="50" required /></div>
+            <div class="col-md-6"><label for="modalidad" class="form-label">Modalidad</label><select name="Modalidad" id="modalidad" class="form-select"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Ambas">Ambas</option></select></div>
+            <div><button type="submit" class="dash-button">Guardar horario</button></div>
+        </form>
+    </details>
+    @if (Model.Disponibilidades.Count == 0) { <div class="agenda-empty">Aún no has agregado horarios.</div> }
+    else
+    {
+        <div class="table-responsive mt-3"><table><thead><tr><th>Día y horario</th><th>Duración</th><th>Modalidad</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+        @foreach (var d in Model.Disponibilidades)
+        {
+            <tr><td>@dias[(int)d.DiaSemana] @d.HoraInicio.ToString("HH:mm") – @d.HoraFin.ToString("HH:mm")</td><td>@d.DuracionMinutos min</td><td>@d.Modalidad</td><td>@(d.Activo ? "Activo" : "Inactivo")</td><td><form asp-action="CambiarDisponibilidad" method="post"><input type="hidden" name="disponibilidadId" value="@d.Id" /><input type="hidden" name="activo" value="@(!d.Activo ? "true" : "false")" /><button type="submit" class="btn btn-outline-secondary">@(d.Activo ? "Desactivar" : "Activar")</button></form></td></tr>
+        }
+        </tbody></table></div>
+        <p class="mt-3">Para reemplazar un horario, desactívalo y agrega uno nuevo. Primero debes gestionar sus citas pendientes.</p>
+    }
+</section>
+<section class="dash-card agenda-card" aria-labelledby="agenda-title">
+    <h2 id="agenda-title">Citas del día</h2>
+    <partial name="_AgendaFecha" model="Model.Fecha" />
+    @if (Model.Citas.Count == 0) { <div class="agenda-empty">No tienes citas registradas para esta fecha.</div> }
+    else
+    {
+        <div class="table-responsive mt-3"><table><thead><tr><th>Horario</th><th>Estudiante</th><th>Modalidad</th><th>Estado</th><th>Gestionar</th></tr></thead><tbody>
+        @foreach (var cita in Model.Citas)
+        {
+            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span></td><td>
+            @if (cita.Estado == EstadoCita.Reservada)
+            {
+                @if (cita.InicioUtc > DateTime.UtcNow)
+                {
+                    <details><summary>Cancelar</summary><form asp-action="GestionarCita" method="post"><input type="hidden" name="CitaId" value="@cita.Id" /><input type="hidden" name="Estado" value="Cancelada" /><label for="motivo-@cita.Id">Motivo administrativo (opcional)</label><input id="motivo-@cita.Id" name="MotivoCancelacion" maxlength="300" class="form-control" /><p>Evita incluir información clínica.</p><button class="btn btn-outline-secondary" type="submit">Confirmar cancelación</button></form></details>
+                }
+                else if (cita.FinUtc <= DateTime.UtcNow)
+                {
+                    <form asp-action="GestionarCita" method="post"><input type="hidden" name="CitaId" value="@cita.Id" /><label for="estado-@cita.Id">Asistencia</label><select id="estado-@cita.Id" name="Estado" class="form-select"><option value="Completada">Completada</option><option value="NoAsistio">No asistió</option></select><button type="submit" class="btn btn-outline-secondary mt-2">Guardar asistencia</button></form>
+                }
+                else { <span>Podrás registrar asistencia al finalizar el horario.</span> }
+            }
+            </td></tr>
+        }
+        </tbody></table></div>
+    }
+    <p class="mt-3"><a asp-action="Historial">Consultar historial de citas</a></p>
+</section>
+@section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }

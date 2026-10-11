@@ -1,0 +1,31 @@
+.bf-module { min-width: 0; overflow-wrap: anywhere; }
+.bf-notice { padding: 18px 22px; margin: 20px 0; border: 1px solid rgba(206,162,253,.45); border-radius: 14px; background: linear-gradient(120deg,rgba(237,232,208,.5),rgba(206,162,253,.12)); color: #111111; line-height: 1.65; }
+.bf-notice p:last-child { margin-bottom: 0; }
+.bf-module h2 { font-size: 1.2rem; }
+.bf-module :focus-visible { outline: 3px solid #70428f; outline-offset: 3px; }
+.bf-consent-form { display: grid; gap: 18px; margin-top: 24px; }
+.bf-consent-form button { justify-self: start; }
+.bf-module input[type=checkbox] { accent-color: #70428f; margin-right: 8px; width: 18px; height: 18px; vertical-align: middle; }
+.bf-details { margin-top: 24px; }
+.bf-details summary { padding: 12px 0; cursor: pointer; font-weight: 600; }
+.bf-progress { margin: 20px 0; }
+.bf-progress progress { width: 100%; height: 16px; accent-color: #70428f; }
+.bf-question { margin-bottom: 16px; min-width: 0; }
+.bf-question legend { float: none; width: auto; font-size: 1rem; line-height: 1.5; padding: 0 8px; }
+.bf-question select { max-width: 420px; min-height: 46px; background-color: #fdfcf9; }
+.bf-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.bf-confirm { display: block; margin: 20px 0; }
+.bf-back { display: inline-flex; margin-top: 24px; }
+.bf-traits { display: grid; gap: 16px; margin: 24px 0; }
+.bf-trait-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.bf-trait-heading h2 { font-size: 1rem; }
+.bf-scale { height: 12px; background: #EDE8D0; border-radius: 12px; overflow: hidden; margin-top: 12px; }
+.bf-scale span { display: block; height: 100%; background: #CEA2FD; }
+@media (max-width: 575.98px) {
+    .bf-notice, .bf-question { padding: 16px; }
+    .bf-actions { display: grid; grid-template-columns: 1fr; }
+    .bf-module .dash-button { min-height: 46px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bf-module .dash-button { transition: none; transform: none; }
+}
