@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Zuni.Data;
 using Zuni.Models;
+using Zuni.Services.Administracion;
+using Zuni.Seguridad;
 
 namespace Zuni.Controllers;
 
@@ -19,13 +22,27 @@ namespace Zuni.Controllers;
 public sealed class CuentaController(
     IWebHostEnvironment environment,
     ApplicationDbContext db,
-    IPasswordHasher<ApplicationUser> passwordHasher) : Controller
+    IPasswordHasher<ApplicationUser> passwordHasher,
+    TimeProvider reloj) : Controller
 {
     private static readonly TimeSpan PasswordResetTokenLifetime =
         TimeSpan.FromMinutes(30);
 
-    private static readonly TimeSpan SessionLifetime =
-        TimeSpan.FromMinutes(30);
+    // Bloqueo por intentos fallidos (columnas Identity existentes, sin esquema nuevo).
+    public const int MaximoIntentosFallidos = 5;
+    public static readonly TimeSpan DuracionBloqueo = TimeSpan.FromMinutes(15);
+
+    // Un único mensaje para cuenta inexistente, contraseña incorrecta o cuenta bloqueada.
+    public const string MensajeCredencialesInvalidas =
+        "Correo o contraseña incorrectos. Si fallaste varias veces, espera unos minutos antes de intentarlo de nuevo.";
+
+    public const string MensajePendienteActivacion =
+        "Tu cuenta está pendiente de activación por un administrador.";
+
+    // Hash ficticio válido (mismo algoritmo y costo) para que un correo inexistente
+    // o una cuenta bloqueada tarden lo mismo que una verificación real.
+    private static readonly ApplicationUser UsuarioFicticio = new() { Id = "zuni-usuario-ficticio" };
+    private static string? hashFicticio;
 
     [HttpGet("AccesoDenegado")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
@@ -53,6 +70,7 @@ public sealed class CuentaController(
 
     [HttpPost("IniciarSesion")]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(PoliticasAcceso.Login)]
     public async Task<IActionResult> IniciarSesion(LoginViewModel model)
     {
         if (User.Identity?.IsAuthenticated == true)
@@ -63,33 +81,38 @@ public sealed class CuentaController(
 
         var email = model.Email.Trim();
         var normalizedEmail = email.ToUpperInvariant();
+        var ahora = reloj.GetUtcNow();
 
         var dbUser = await db.Users
             .FirstOrDefaultAsync(u =>
                 u.NormalizedEmail == normalizedEmail);
 
-        if (dbUser is null || !dbUser.IsActive)
+        if (dbUser is null)
         {
-            ModelState.AddModelError(
-                string.Empty,
-                "El correo o la contraseña son incorrectos.");
-
-            return View(model);
+            // Mismo costo que una verificación real; no se crea ningún registro.
+            VerificarFicticio(model.Password);
+            return CredencialesInvalidas(model);
         }
 
-        var passwordResult =
-            passwordHasher.VerifyHashedPassword(
+        // Bloqueada: no se vuelve a verificar la contraseña real (comparación en memoria,
+        // compatible con cualquier proveedor).
+        if (dbUser.LockoutEnd is { } finBloqueo && finBloqueo > ahora)
+        {
+            VerificarFicticio(model.Password);
+            return CredencialesInvalidas(model);
+        }
+
+        var passwordResult = string.IsNullOrEmpty(dbUser.PasswordHash)
+            ? VerificarFicticio(model.Password)
+            : passwordHasher.VerifyHashedPassword(
                 dbUser,
-                dbUser.PasswordHash ?? string.Empty,
+                dbUser.PasswordHash,
                 model.Password);
 
         if (passwordResult == PasswordVerificationResult.Failed)
         {
-            ModelState.AddModelError(
-                string.Empty,
-                "El correo o la contraseña son incorrectos.");
-
-            return View(model);
+            await RegistrarFalloAsync(dbUser.Id, ahora);
+            return CredencialesInvalidas(model);
         }
 
         if (passwordResult ==
@@ -103,6 +126,27 @@ public sealed class CuentaController(
             await db.SaveChangesAsync();
         }
 
+        // Credenciales correctas: reinicia el contador aunque la cuenta no pueda entrar.
+        if (dbUser.AccessFailedCount != 0 || dbUser.LockoutEnd is not null)
+        {
+            await db.Users
+                .Where(u => u.Id == dbUser.Id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(u => u.AccessFailedCount, 0)
+                    .SetProperty(u => u.LockoutEnd, (DateTimeOffset?)null));
+        }
+
+        if (!dbUser.IsActive)
+        {
+            // Solo se revela "pendiente" después de una contraseña correcta.
+            if (await EstadoCuenta.EsRegistroPendienteAsync(db, dbUser.Id))
+            {
+                ModelState.AddModelError(string.Empty, MensajePendienteActivacion);
+                return View(model);
+            }
+            return CredencialesInvalidas(model);
+        }
+
         await SignInAsync(
             dbUser,
             model.RememberMe);
@@ -111,6 +155,35 @@ public sealed class CuentaController(
             return RedirectToAction(nameof(CambiarContrasenaObligatoria));
 
         return await RedirectAfterLogin(dbUser.Id, model.ReturnUrl);
+    }
+
+    private IActionResult CredencialesInvalidas(LoginViewModel model)
+    {
+        ModelState.AddModelError(string.Empty, MensajeCredencialesInvalidas);
+        return View(model);
+    }
+
+    private PasswordVerificationResult VerificarFicticio(string password)
+    {
+        hashFicticio ??= passwordHasher.HashPassword(UsuarioFicticio, Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
+        passwordHasher.VerifyHashedPassword(UsuarioFicticio, hashFicticio, password);
+        return PasswordVerificationResult.Failed;
+    }
+
+    private async Task RegistrarFalloAsync(string usuarioId, DateTimeOffset ahora)
+    {
+        // Incrementos atómicos: dos intentos simultáneos no pierden la cuenta.
+        await db.Users
+            .Where(u => u.Id == usuarioId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.AccessFailedCount, u => u.AccessFailedCount + 1)
+                .SetProperty(u => u.LockoutEnabled, true));
+
+        await db.Users
+            .Where(u => u.Id == usuarioId && u.AccessFailedCount >= MaximoIntentosFallidos)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.LockoutEnd, (DateTimeOffset?)ahora.Add(DuracionBloqueo))
+                .SetProperty(u => u.AccessFailedCount, 0));
     }
 
     // ============================================================
@@ -206,6 +279,7 @@ public sealed class CuentaController(
 
     [HttpPost("Registro")]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(PoliticasAcceso.Registro)]
     public async Task<IActionResult> Registro(
         RegisterViewModel model)
     {
@@ -288,7 +362,10 @@ public sealed class CuentaController(
             UserName = email,
             NormalizedUserName = normalizedEmail,
             CreatedAtUtc = DateTime.UtcNow,
-            IsActive = true,
+            // Sin verificación por correo: el autorregistro queda pendiente de activación
+            // por un Administrador (Administrador → Usuarios → Activar registro).
+            IsActive = false,
+            LockoutEnabled = true,
             SecurityStamp = Guid.NewGuid().ToString(),
             ConcurrencyStamp = Guid.NewGuid().ToString()
         };
@@ -327,6 +404,19 @@ public sealed class CuentaController(
 
         db.PerfilesEstudiante.Add(perfil);
 
+        // Marca el estado "pendiente de activación" sin columnas nuevas. El actor es el propio
+        // usuario; no se guarda contraseña ni dato sensible.
+        db.AuditoriaUsuarios.Add(new AuditoriaUsuario
+        {
+            UsuarioAfectadoId = user.Id,
+            AdministradorId = user.Id,
+            Accion = AccionesAuditoria.RegistroPendienteActivacion,
+            DatosAnteriores = null,
+            DatosNuevos = System.Text.Json.JsonSerializer.Serialize(new { Roles = new[] { "Estudiante" }, IsActive = false }),
+            Motivo = null,
+            FechaUtc = reloj.GetUtcNow().UtcDateTime
+        });
+
         try
         {
             await db.SaveChangesAsync();
@@ -357,14 +447,12 @@ public sealed class CuentaController(
             return View(model);
         }
 
-        await SignInAsync(user, false);
-
         TempData["Success"] =
-            "Tu cuenta fue creada correctamente.";
+            "Tu cuenta fue creada y está pendiente de activación por un administrador. " +
+            "Podrás iniciar sesión cuando sea activada.";
 
         return RedirectToAction(
-            "Index",
-            "Home");
+            nameof(IniciarSesion));
     }
 
     // ============================================================
@@ -380,6 +468,7 @@ public sealed class CuentaController(
 
     [HttpPost("RecuperarContrasena")]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(PoliticasAcceso.Recuperacion)]
     public async Task<IActionResult> RecuperarContrasena(
         ForgotPasswordViewModel model)
     {
@@ -468,6 +557,7 @@ public sealed class CuentaController(
 
     [HttpPost("RestablecerContrasena")]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(PoliticasAcceso.Recuperacion)]
     public async Task<IActionResult> RestablecerContrasena(
         ResetPasswordViewModel model)
     {
@@ -540,6 +630,8 @@ public sealed class CuentaController(
         user.SecurityStamp = Guid.NewGuid().ToString();
         user.ConcurrencyStamp = Guid.NewGuid().ToString();
         user.DebeCambiarContrasena = false;
+        user.AccessFailedCount = 0;
+        user.LockoutEnd = null;
 
         await db.SaveChangesAsync();
         await transaction.CommitAsync();
@@ -551,6 +643,17 @@ public sealed class CuentaController(
         return RedirectToAction(
             nameof(IniciarSesion));
     }
+
+    // ============================================================
+    // MANTENER SESIÓN (actividad mientras se escribe un formulario largo)
+    // ============================================================
+
+    // La renovación la hace SlidingExpiration; esta acción solo genera actividad autenticada.
+    // No extiende el máximo absoluto ni omite SecurityStamp o el cambio obligatorio.
+    [Authorize]
+    [HttpGet("MantenerSesion")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public IActionResult MantenerSesion() => NoContent();
 
     // ============================================================
     // CERRAR SESIÓN
@@ -592,7 +695,10 @@ public sealed class CuentaController(
 
             new(
                 "Zuni.SecurityStamp",
-                user.SecurityStamp ?? string.Empty)
+                user.SecurityStamp ?? string.Empty),
+
+            // Inicio de la sesión: permite el máximo absoluto aunque la cookie se renueve.
+            SesionZuni.CrearClaimInicio(reloj.GetUtcNow())
         };
 
         // Obtener roles desde PostgreSQL.
@@ -614,10 +720,6 @@ public sealed class CuentaController(
                     role!));
         }
 
-        System.Diagnostics.Debug.WriteLine(
-            $"Roles cargados para la sesión: " +
-            $"{string.Join(", ", roles)}");
-
         var identity = new ClaimsIdentity(
             claims,
             CookieAuthenticationDefaults.AuthenticationScheme);
@@ -631,11 +733,10 @@ public sealed class CuentaController(
                 // Mantiene el comportamiento actual de "Recordarme".
                 IsPersistent = persistent,
 
-                // La sesión tendrá una vigencia máxima de 30 minutos.
-                ExpiresUtc = DateTimeOffset.UtcNow.Add(SessionLifetime),
-
-                // Evita renovar automáticamente la sesión.
-                AllowRefresh = false
+                // 30 minutos de inactividad; la cookie se renueva con la actividad
+                // (SlidingExpiration) hasta el máximo absoluto de SesionZuni.
+                ExpiresUtc = reloj.GetUtcNow().Add(SesionZuni.Inactividad),
+                AllowRefresh = true
             };
 
         await HttpContext.SignInAsync(

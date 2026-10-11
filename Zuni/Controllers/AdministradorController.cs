@@ -11,6 +11,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Npgsql;
 using Microsoft.AspNetCore.Identity;
+using Zuni.Services.Administracion;
 
 namespace Zuni.Controllers;
 
@@ -18,11 +19,16 @@ namespace Zuni.Controllers;
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class AdministradorController : Controller
 {
-    private readonly ApplicationDbContext _db;
+    public const string MensajePsicologoConAsignaciones =
+        "Este psicólogo tiene estudiantes asignados actualmente. Finaliza o reasigna sus asignaciones antes de cambiar el rol.";
 
-    public AdministradorController(ApplicationDbContext db)
+    private readonly ApplicationDbContext _db;
+    private readonly TimeProvider _reloj;
+
+    public AdministradorController(ApplicationDbContext db, TimeProvider reloj)
     {
         _db = db;
+        _reloj = reloj;
     }
 
     [HttpGet]
@@ -35,7 +41,7 @@ public sealed class AdministradorController : Controller
         rol = string.IsNullOrWhiteSpace(rol) ? null : rol;
         estado = string.IsNullOrWhiteSpace(estado) ? null : estado;
         if (buscar?.Length > 200 || (rol is not null && !CambiarRolViewModel.RolesPermitidos.Contains(rol)) ||
-            (estado is not null && estado is not ("Activos" or "Inactivos")))
+            (estado is not null && estado is not ("Activos" or "Inactivos" or "Pendientes")))
             return BadRequest("Filtros inválidos.");
 
         // Resumen global de cuentas: no depende de los filtros ni consulta tablas clínicas.
@@ -58,7 +64,13 @@ public sealed class AdministradorController : Controller
         if (rol is not null)
             consulta = consulta.Where(u => _db.UserRoles.Any(ur => ur.UserId == u.Id &&
                 _db.Roles.Any(r => r.Id == ur.RoleId && r.Name == rol)));
-        if (estado is not null) consulta = consulta.Where(u => u.IsActive == (estado == "Activos"));
+        if (estado is "Activos" or "Inactivos") consulta = consulta.Where(u => u.IsActive == (estado == "Activos"));
+        // Pendiente de activación = inactiva y su último evento de estado es el autorregistro.
+        if (estado == "Pendientes")
+            consulta = consulta.Where(u => !u.IsActive && _db.AuditoriaUsuarios
+                .Where(a => a.UsuarioAfectadoId == u.Id && (a.Accion == AccionesAuditoria.RegistroPendienteActivacion ||
+                    a.Accion == AccionesAuditoria.UsuarioDesactivado || a.Accion == AccionesAuditoria.UsuarioReactivado))
+                .OrderByDescending(a => a.FechaUtc).Select(a => a.Accion).FirstOrDefault() == AccionesAuditoria.RegistroPendienteActivacion);
 
         var usuarios = await consulta
             .OrderBy(usuario => usuario.FullName)
@@ -69,6 +81,10 @@ public sealed class AdministradorController : Controller
                 FullName = usuario.FullName,
                 Email = usuario.Email,
                 IsActive = usuario.IsActive,
+                PendienteActivacion = !usuario.IsActive && _db.AuditoriaUsuarios
+                    .Where(a => a.UsuarioAfectadoId == usuario.Id && (a.Accion == AccionesAuditoria.RegistroPendienteActivacion ||
+                        a.Accion == AccionesAuditoria.UsuarioDesactivado || a.Accion == AccionesAuditoria.UsuarioReactivado))
+                    .OrderByDescending(a => a.FechaUtc).Select(a => a.Accion).FirstOrDefault() == AccionesAuditoria.RegistroPendienteActivacion,
 
                 Rol = (
                     from asignacion in _db.UserRoles.AsNoTracking()
@@ -251,6 +267,19 @@ public sealed class AdministradorController : Controller
                     "Debe existir al menos un Administrador activo.");
             }
 
+            // Quitar el rol Psicologo dejaría a sus estudiantes con una asignación vigente
+            // inutilizable (sin acceso clínico ni agenda). Se valida en servidor, dentro de la
+            // misma transacción SERIALIZABLE.
+            if (model.NuevoRol != "Psicologo" &&
+                await _db.AsignacionesEstudiantePsicologo.AsNoTracking().AnyAsync(
+                    a => a.PsicologoUsuarioId == usuario.Id && a.FechaFinalizacionUtc == null,
+                    cancellationToken))
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    MensajePsicologoConAsignaciones);
+            }
+
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -419,7 +448,8 @@ public sealed class AdministradorController : Controller
         {
             UsuarioId = usuario.Id,
             NombreUsuario = usuario.FullName,
-            EstadoActual = usuario.IsActive
+            EstadoActual = usuario.IsActive,
+            PendienteActivacion = await EstadoCuenta.EsRegistroPendienteAsync(_db, usuario.Id, cancellationToken)
         });
     }
 
@@ -459,6 +489,7 @@ public sealed class AdministradorController : Controller
             // Estos datos siempre se reconstruyen desde PostgreSQL.
             model.NombreUsuario = usuario.FullName;
             model.EstadoActual = usuario.IsActive;
+            model.PendienteActivacion = await EstadoCuenta.EsRegistroPendienteAsync(_db, usuario.Id, cancellationToken);
 
             if (usuario.IsActive == activar)
             {
@@ -504,9 +535,11 @@ public sealed class AdministradorController : Controller
 
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-            TempData["Success"] = activar
-                ? "El usuario fue reactivado correctamente."
-                : "El usuario fue desactivado correctamente.";
+            TempData["Success"] = !activar
+                ? "El usuario fue desactivado correctamente."
+                : model.PendienteActivacion
+                    ? "El registro fue activado. El estudiante ya puede iniciar sesión."
+                    : "El usuario fue reactivado correctamente.";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex) when (ex is DbUpdateException or NpgsqlException or InvalidOperationException)
@@ -617,6 +650,7 @@ public sealed class AdministradorController : Controller
                 CreatedAtUtc = DateTime.UtcNow,
                 IsActive = true,
                 DebeCambiarContrasena = true,
+                LockoutEnabled = true,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 ConcurrencyStamp = Guid.NewGuid().ToString()
             };
@@ -680,6 +714,123 @@ public sealed class AdministradorController : Controller
             return MostrarAltaConErrores(model);
         }
         // Toda salida sin Commit revierte la transacción al disponerla.
+    }
+
+    // ============================================================
+    // CONTRASEÑA TEMPORAL (sin correo): se muestra UNA sola vez.
+    // ============================================================
+
+    [HttpGet]
+    public async Task<IActionResult> ContrasenaTemporal(string id, CancellationToken cancellationToken)
+    {
+        var administradorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!await EsAdministradorActivoAsync(administradorId, cancellationToken))
+            return Forbid();
+        var usuario = await _db.Users.AsNoTracking()
+            .SingleOrDefaultAsync(u => u.Id == id, cancellationToken);
+        if (usuario is null)
+            return NotFound();
+        if (usuario.Id == administradorId)
+        {
+            TempData["Error"] = "Para cambiar tu propia contraseña usa Mi cuenta.";
+            return RedirectToAction(nameof(Index));
+        }
+        return View(new ContrasenaTemporalViewModel
+        {
+            UsuarioId = usuario.Id,
+            NombreUsuario = usuario.FullName,
+            Email = usuario.Email,
+            Activo = usuario.IsActive
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ContrasenaTemporal(
+        ContrasenaTemporalViewModel model,
+        [FromServices] IPasswordHasher<ApplicationUser> passwordHasher,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(model.UsuarioId))
+            return BadRequest("Debes seleccionar un usuario.");
+
+        var administradorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await using var transaction = await _db.Database.BeginTransactionAsync(
+            IsolationLevel.Serializable, cancellationToken);
+        try
+        {
+            if (!await EsAdministradorActivoAsync(administradorId, cancellationToken))
+                return Forbid();
+
+            var usuario = await _db.Users.SingleOrDefaultAsync(
+                u => u.Id == model.UsuarioId, cancellationToken);
+            if (usuario is null)
+                return NotFound();
+
+            model.NombreUsuario = usuario.FullName;
+            model.Email = usuario.Email;
+            model.Activo = usuario.IsActive;
+
+            if (usuario.Id == administradorId)
+                ModelState.AddModelError(string.Empty, "Para cambiar tu propia contraseña usa Mi cuenta.");
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var temporal = ContrasenaTemporalHelper.Generar();
+            usuario.PasswordHash = passwordHasher.HashPassword(usuario, temporal);
+            usuario.DebeCambiarContrasena = true;
+            // Invalida todas las sesiones abiertas del usuario (Program.cs compara el stamp).
+            usuario.SecurityStamp = Guid.NewGuid().ToString();
+            usuario.ConcurrencyStamp = Guid.NewGuid().ToString();
+            // Un bloqueo por intentos fallidos no debe impedir usar la nueva contraseña.
+            usuario.AccessFailedCount = 0;
+            usuario.LockoutEnd = null;
+            usuario.LockoutEnabled = true;
+            // IsActive NO cambia: una cuenta desactivada o pendiente sigue sin acceso.
+
+            var ahora = _reloj.GetUtcNow().UtcDateTime;
+            await _db.PasswordResetTokens
+                .Where(t => t.UserId == usuario.Id && t.UsedAtUtc == null)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.UsedAtUtc, ahora), cancellationToken);
+
+            // La auditoría nunca contiene la contraseña ni su hash.
+            _db.AuditoriaUsuarios.Add(new AuditoriaUsuario
+            {
+                UsuarioAfectadoId = usuario.Id,
+                AdministradorId = administradorId!,
+                Accion = AccionesAuditoria.ContrasenaTemporalAsignada,
+                DatosAnteriores = null,
+                DatosNuevos = JsonSerializer.Serialize(new
+                {
+                    DebeCambiarContrasena = true,
+                    SesionesInvalidadas = true,
+                    IsActive = usuario.IsActive
+                }),
+                Motivo = string.IsNullOrWhiteSpace(model.Motivo) ? null : model.Motivo.Trim(),
+                FechaUtc = ahora
+            });
+
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            // Respuesta directa (no TempData, no redirección, no logs): no-store por
+            // ResponseCache del controlador y ContenidoPrivadoNoCacheMiddleware.
+            ModelState.Clear();
+            return View("ContrasenaTemporalGenerada", new ContrasenaTemporalGeneradaViewModel
+            {
+                NombreUsuario = usuario.FullName,
+                Email = usuario.Email,
+                Activo = usuario.IsActive,
+                ContrasenaTemporal = temporal
+            });
+        }
+        catch (Exception ex) when (ex is DbUpdateException or NpgsqlException or InvalidOperationException)
+        {
+            await transaction.RollbackAsync(CancellationToken.None);
+            _db.ChangeTracker.Clear();
+            TempData["Error"] = "No se pudo asignar la contraseña temporal. No se guardaron cambios; vuelve a intentarlo.";
+            return RedirectToAction(nameof(Index));
+        }
     }
 
     private ViewResult MostrarAltaConErrores(AgregarUsuarioViewModel model)

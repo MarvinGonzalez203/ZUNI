@@ -14,6 +14,9 @@ public sealed class CambiarEstadoUsuarioViewModel
     [BindNever]
     public bool EstadoActual { get; set; }
 
+    [BindNever]
+    public bool PendienteActivacion { get; set; }
+
     [StringLength(500, ErrorMessage = "El motivo no puede superar los 500 caracteres.")]
     public string? Motivo { get; set; }
 }

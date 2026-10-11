@@ -1,23 +1,28 @@
 @model Zuni.Models.Administrador.CambiarEstadoUsuarioViewModel
 @{
     var operacion = Model.EstadoActual ? "Desactivar" : "Reactivar";
-    ViewData["Title"] = operacion + " usuario";
+    var titulo = Model.PendienteActivacion ? "Activar registro" : operacion + " usuario";
+    ViewData["Title"] = titulo;
 }
 
 <section class="container py-4 py-md-5" aria-labelledby="estado-title">
     <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
          style="max-width: 720px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
-        <h1 id="estado-title" class="h2 fw-bold mb-4">@operacion usuario</h1>
+        <h1 id="estado-title" class="h2 fw-bold mb-4">@titulo</h1>
         <dl>
             <dt>Usuario seleccionado</dt>
             <dd class="text-break">@Model.NombreUsuario</dd>
             <dt>Estado actual</dt>
-            <dd>@(Model.EstadoActual ? "Activo" : "Inactivo")</dd>
+            <dd>@(Model.EstadoActual ? "Activo" : Model.PendienteActivacion ? "Pendiente de activación (autorregistro)" : "Inactivo")</dd>
         </dl>
         <p>
             @if (Model.EstadoActual)
             {
                 <text>¿Confirmas que deseas desactivar esta cuenta? El usuario perderá el acceso y sus sesiones se invalidarán.</text>
+            }
+            else if (Model.PendienteActivacion)
+            {
+                <text>Esta cuenta fue creada por autorregistro. Verifica que el correo y el carné correspondan a un estudiante real antes de activarla. Al activarla podrá iniciar sesión.</text>
             }
             else
             {
@@ -34,7 +39,7 @@
                 <span asp-validation-for="Motivo" class="text-danger small"></span>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" class="dash-button px-4">Confirmar: @operacion.ToLowerInvariant()</button>
+                <button type="submit" class="dash-button px-4">Confirmar: @(Model.PendienteActivacion ? "activar registro" : operacion.ToLowerInvariant())</button>
                 <a asp-action="Index" class="btn btn-outline-dark px-4">Cancelar</a>
             </div>
         </form>

@@ -15,3 +15,18 @@ Zuni/obj/
 bin/
 obj/
 .vs/
+
+# Datos sensibles y claves locales (nunca versionar ni publicar)
+**/App_Data/
+**/App_Data/keys/
+**/users.json
+secrets.json
+*.pfx
+*.pem
+*.key
+.env
+.env.*
+
+# Carpetas de comprobación locales (cualquier variante .*-check y .verification-*)
+.*-check/
+.verification-*/

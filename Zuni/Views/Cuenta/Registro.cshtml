@@ -3,7 +3,7 @@
 
 <a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
 <h1 class="h2 fw-bold mb-2">Crea tu cuenta</h1>
-<p class="text-secondary mb-4">Solo tomará un minuto.</p>
+<p class="text-secondary mb-4">Solo tomará un minuto. Un administrador revisará y activará tu cuenta antes de que puedas iniciar sesión.</p>
 <form method="post" novalidate class="auth-form-fields">
     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
     <div class="form-floating mb-3"><input asp-for="FullName" class="form-control" placeholder="Nombre" autocomplete="name" /><label asp-for="FullName"></label><span asp-validation-for="FullName" class="text-danger small"></span></div>

@@ -1,17 +1,24 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using Zuni.Data;
 using Zuni.Models;
+using Zuni.Seguridad;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// La cadena de conexión NUNCA se escribe en el repositorio: User Secrets en Development y
+// variable de entorno ConnectionStrings__DefaultConnection en Production.
+var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(cadenaConexion))
+    throw new InvalidOperationException(
+        "Falta ConnectionStrings:DefaultConnection. Configúrala con User Secrets (Development) " +
+        "o con la variable de entorno ConnectionStrings__DefaultConnection (Production).");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(cadenaConexion));
 
 builder.Services.AddScoped<
     IPasswordHasher<ApplicationUser>,
@@ -24,87 +31,46 @@ builder.Services.AddScoped<Zuni.Services.IAsignacionPsicologoService, Zuni.Servi
 builder.Services.AddScoped<Zuni.Services.IAutorizacionClinicaService, Zuni.Services.AutorizacionClinicaService>();
 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddScoped<Zuni.Services.Agenda.AgendaCitasService>();
+builder.Services.AddScoped<Zuni.Services.Administracion.GestionSolicitudesService>();
+
+// Claves de Data Protection: carpeta persistente configurable (DataProtection:KeysPath o
+// variable de entorno DataProtection__KeysPath). Por defecto se mantiene App_Data/keys, así las
+// claves existentes siguen siendo válidas. Esa carpeta NUNCA se versiona ni se copia entre entornos.
+var carpetaClaves = builder.Configuration["DataProtection:KeysPath"];
+carpetaClaves = string.IsNullOrWhiteSpace(carpetaClaves)
+    ? Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys")
+    : Path.GetFullPath(carpetaClaves, builder.Environment.ContentRootPath);
 
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(
-        new DirectoryInfo(
-            Path.Combine(
-                builder.Environment.ContentRootPath,
-                "App_Data",
-                "keys")))
+    .PersistKeysToFileSystem(new DirectoryInfo(carpetaClaves))
     .SetApplicationName("Zuni");
 
+// Cookie de sesión: 30 min de inactividad (sliding) + máximo absoluto de 8 h,
+// HttpOnly, SameSite=Lax, Secure fuera de Development y revalidación de SecurityStamp.
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+    .AddCookie(options => SesionZuni.Configurar(options, builder.Environment.IsDevelopment()));
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+});
+
+builder.Services.AddZuniLimitesAcceso(builder.Configuration);
+
+// Detrás de un proxy inverso (Nginx, Caddy, etc.) habilitar Zuni:ProxyInverso=true para usar la
+// IP y el esquema reales (necesario para el rate limiting por IP y para HTTPS).
+var proxyInverso = builder.Configuration.GetValue<bool>("Zuni:ProxyInverso");
+if (proxyInverso)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
-        options.LoginPath = "/Cuenta/IniciarSesion";
-        options.AccessDeniedPath = "/Cuenta/AccesoDenegado";
-
-        // La sesión dura como máximo 30 minutos.
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-
-        // No renovar automáticamente la sesión.
-        options.SlidingExpiration = false;
-
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
-            ? CookieSecurePolicy.SameAsRequest
-            : CookieSecurePolicy.Always;
-
-        // Revalidar la sesión contra PostgreSQL.
-        options.Events.OnValidatePrincipal = async context =>
-        {
-            var userId = context.Principal?
-                .FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var cookieSecurityStamp = context.Principal?
-                .FindFirstValue("Zuni.SecurityStamp");
-
-            // Una cookie sin los datos necesarios ya no es válida.
-            if (string.IsNullOrWhiteSpace(userId) ||
-                string.IsNullOrWhiteSpace(cookieSecurityStamp))
-            {
-                context.RejectPrincipal();
-
-                await context.HttpContext.SignOutAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme);
-
-                return;
-            }
-
-            var db = context.HttpContext.RequestServices
-                .GetRequiredService<ApplicationDbContext>();
-
-            var usuario = await db.Users
-                .AsNoTracking()
-                .Where(u => u.Id == userId)
-                .Select(u => new
-                {
-                    u.IsActive,
-                    u.SecurityStamp
-                })
-                .SingleOrDefaultAsync();
-
-            // Invalidar la cookie si:
-            // - el usuario ya no existe;
-            // - fue desactivado;
-            // - cambió su SecurityStamp.
-            if (usuario is null ||
-                !usuario.IsActive ||
-                !string.Equals(
-                    usuario.SecurityStamp,
-                    cookieSecurityStamp,
-                    StringComparison.Ordinal))
-            {
-                context.RejectPrincipal();
-
-                await context.HttpContext.SignOutAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme);
-            }
-        };
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        // Si el proxy no corre en la misma máquina, agregar su IP en KnownProxies.
     });
+}
 
 builder.Services.AddAuthorization();
 
@@ -116,7 +82,21 @@ using (var scope = app.Services.CreateScope())
         .GetRequiredService<ApplicationDbContext>();
 
     await DbInitializer.SeedRolesAsync(dbContext);
+
+    // Comando manual de un solo uso (ver docs/deployment.md). Solo actúa si no existe ningún
+    // Administrador activo y nunca guarda la contraseña generada.
+    if (PrimerAdministrador.Solicitado(args))
+    {
+        Environment.ExitCode = await PrimerAdministrador.EjecutarAsync(scope.ServiceProvider, args, Console.Out);
+        return;
+    }
 }
+
+if (proxyInverso)
+    app.UseForwardedHeaders();
+
+// Cabeceras de seguridad en todas las respuestas, incluidas páginas de error.
+app.UseMiddleware<CabecerasSeguridadMiddleware>();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -128,6 +108,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Después de UseRouting para respetar [EnableRateLimiting] por endpoint.
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseMiddleware<Zuni.Middleware.ContenidoPrivadoNoCacheMiddleware>();

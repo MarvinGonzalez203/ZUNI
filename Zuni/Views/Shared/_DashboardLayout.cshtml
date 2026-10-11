@@ -64,6 +64,10 @@
             }
         });
     </script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="~/js/sesion-activa.js" asp-append-version="true" data-url="@Url.Action("MantenerSesion", "Cuenta")"></script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

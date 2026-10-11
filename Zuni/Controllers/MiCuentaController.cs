@@ -275,8 +275,9 @@ public sealed class MiCuentaController(
             foreach (var claim in identidad.FindAll(identidad.NameClaimType).ToArray())
                 identidad.RemoveClaim(claim);
             identidad.AddClaim(new Claim(identidad.NameClaimType, nombre));
-            // Se preservan IssuedUtc, ExpiresUtc, persistencia, roles y SecurityStamp.
-            ticket.Properties.AllowRefresh = false;
+            // Se preservan IssuedUtc, ExpiresUtc, persistencia, roles, SecurityStamp y el inicio de
+            // sesión (máximo absoluto). La renovación por actividad sigue habilitada.
+            ticket.Properties.AllowRefresh = true;
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, ticket.Properties);
         }
         TempData["Success"] = "Tus datos fueron actualizados correctamente.";

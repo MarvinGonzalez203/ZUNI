@@ -47,7 +47,7 @@
                 }
             </select></div>
             <div class="col-6 col-lg-2"><label for="estado" class="form-label">Estado</label><select id="estado" name="estado" class="form-select">
-                <option value="">Todos</option><option value="Activos" selected="@(Model.Estado == "Activos")">Activos</option><option value="Inactivos" selected="@(Model.Estado == "Inactivos")">Inactivos</option>
+                <option value="">Todos</option><option value="Activos" selected="@(Model.Estado == "Activos")">Activos</option><option value="Inactivos" selected="@(Model.Estado == "Inactivos")">Inactivos</option><option value="Pendientes" selected="@(Model.Estado == "Pendientes")">Pendientes de activación</option>
             </select></div>
             <div class="col-12 col-lg-3 d-flex flex-wrap gap-2"><button class="dash-button" type="submit">Filtrar</button><a asp-action="Index" class="btn btn-outline-dark">Limpiar</a></div>
         </form>
@@ -60,7 +60,7 @@
             }
         }
         <p id="acciones-aviso" class="small mb-3">
-            Puedes cambiar el rol de usuarios activos, desactivar o reactivar cuentas y consultar su historial.
+            Puedes cambiar el rol de usuarios activos, activar registros pendientes, desactivar o reactivar cuentas, asignar una contraseña temporal y consultar su historial.
         </p>
 
         @if (Model.Usuarios.Count == 0)
@@ -91,7 +91,7 @@
                                 <td class="p-3">
                                     <span class="badge rounded-pill border text-dark"
                                           style="background: @(usuario.IsActive ? "rgba(206,162,253,.25)" : "rgba(237,232,208,.65)");">
-                                        @(usuario.IsActive ? "Activo" : "Inactivo")
+                                        @(usuario.IsActive ? "Activo" : usuario.PendienteActivacion ? "Pendiente de activación" : "Inactivo")
                                     </span>
                                 </td>
                                 <td class="p-3">
@@ -104,7 +104,8 @@
                                         {
                                             <button type="button" class="btn btn-sm btn-outline-dark" disabled title="Requiere un usuario activo">Cambiar rol</button>
                                         }
-                                        <a asp-action="ConfirmarEstado" asp-route-id="@usuario.Id" asp-route-activar="@(!usuario.IsActive)" class="btn btn-sm btn-outline-dark">@(usuario.IsActive ? "Desactivar" : "Reactivar")</a>
+                                        <a asp-action="ConfirmarEstado" asp-route-id="@usuario.Id" asp-route-activar="@(!usuario.IsActive)" class="btn btn-sm btn-outline-dark">@(usuario.IsActive ? "Desactivar" : usuario.PendienteActivacion ? "Activar registro" : "Reactivar")</a>
+                                        <a asp-action="ContrasenaTemporal" asp-route-id="@usuario.Id" class="btn btn-sm btn-outline-dark">Asignar contraseña temporal</a>
                                         <a asp-action="Historial" asp-route-id="@usuario.Id" class="btn btn-sm btn-outline-dark">Ver historial</a>
                                     </div>
                                 </td>
