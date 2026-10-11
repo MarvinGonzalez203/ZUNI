@@ -92,11 +92,16 @@ internal static class CalendarioChecks
 
         var variable = fecha.AddDays(1);
         await service.AgregarHorarioDia(otroPsicologo, Horario(variable, duracion: 0), ct);
-        Check((await Dia(variable, true)).Franjas.Count == 1 && (await Dia(variable, true)).Franjas.Single().Variable, "Variable: una única franja");
-        await Rechaza(() => service.Reservar(estudiante, Reserva(variable, 9), ct), "Variable no permite inicio interior arbitrario");
-        await service.Reservar(estudiante, Reserva(variable, 8, ModalidadCita.Presencial), ct);
+        Check((await Dia(variable, true)).Franjas.Count == 1 && (await Dia(variable, true)).Franjas.Single().Variable, "Variable: un único hueco libre");
+        await Rechaza(() => service.Reservar(estudiante, Reserva(variable, 9), ct), "Variable exige elegir la duración de la cita");
+        ReservaCitaInput ReservaVariable(int hora, int minuto, int duracion, ModalidadCita modalidad = ModalidadCita.Presencial) => new()
+        { Inicio = new DateTimeOffset(AgendaReglas.Utc(variable, new(hora, minuto))), Modalidad = modalidad, DuracionMinutos = duracion };
+        await Rechaza(() => service.Reservar(estudiante, ReservaVariable(8, 10, 30), ct), "Variable: inicio fuera de la cuadrícula de 15 minutos");
+        await Rechaza(() => service.Reservar(estudiante, ReservaVariable(9, 0, 75), ct), "Variable: la cita no puede pasar del fin del rango");
+        await Rechaza(() => service.Reservar(estudiante, ReservaVariable(8, 0, 20), ct), "Variable: duración no permitida");
+        await service.Reservar(estudiante, ReservaVariable(8, 0, 120), ct);
         cita = await Cita(variable);
-        Check((cita.FechaHoraFinUtc - cita.FechaHoraInicioUtc).TotalMinutes == 120, "Variable reserva intervalo entero");
+        Check((cita.FechaHoraFinUtc - cita.FechaHoraInicioUtc).TotalMinutes == 120, "Variable: el fin es inicio + duración elegida");
         Check((await Dia(variable, true)).Estado == "Ocupado", "Todas las franjas ocupadas");
         await service.GestionarCita(otroPsicologo, new() { CitaId = cita.Id, Estado = EstadoCita.Confirmada }, ct);
         Check(!(await service.Historial(otroPsicologo, null, null, 1, ct)).Citas.Any(c => c.Id == cita.Id), "Confirmada fuera del historial");

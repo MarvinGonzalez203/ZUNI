@@ -63,7 +63,7 @@
                     <a asp-action="RegistrarAtencion" asp-route-citaId="@cita.Id" class="dash-button">Registrar atención</a>
                 }
                 else if (cita.Estado == EstadoCita.Solicitada) { <span>Solicitud sin confirmar; revisa su rechazo.</span> }
-                else { <span>Podrás registrar asistencia al finalizar el horario.</span> }
+                else { <span>Podrás registrar la atención desde las @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm"), al finalizar esta cita.</span> }
             }
             </td></tr>
         }

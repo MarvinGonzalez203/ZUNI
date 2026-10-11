@@ -15,6 +15,9 @@ public sealed class ReservaCitaInput
 {
     [Required] public DateTimeOffset? Inicio { get; set; }
     [EnumDataType(typeof(ModalidadCita))] public ModalidadCita Modalidad { get; set; }
+    // Solo para horarios "Sin duración establecida": duración de ESTA cita (15 a 120, múltiplos de 15).
+    // En horarios con duración fija se ignora y se usa la duración del horario.
+    [Range(15, 120)] public int? DuracionMinutos { get; set; }
 }
 
 public sealed class CambiarCitaInput

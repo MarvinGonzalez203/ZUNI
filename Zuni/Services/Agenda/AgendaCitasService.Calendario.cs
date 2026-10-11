@@ -44,10 +44,15 @@ public sealed partial class AgendaCitasService
             var desde = AgendaReglas.Utc(dia, TimeOnly.MinValue);
             var hasta = AgendaReglas.Utc(dia.AddDays(1), TimeOnly.MinValue);
             var citasDia = ocupadas.Where(c => c.Inicio < hasta && c.Fin > desde).ToArray();
-            var franjas = config?.Bloqueado == true ? [] : rangos.SelectMany(d => AgendaReglas.Franjas(d, dia)
-                .Where(f => f.Inicio > ahora)
-                .Select(f => new FranjaAgenda(f.Inicio, f.Fin, d.Modalidad,
-                    citasDia.Any(c => AgendaReglas.Cruza(f.Inicio, f.Fin, c.Inicio, c.Fin)), d.DuracionMinutos == 0)))
+            var franjas = config?.Bloqueado == true ? [] : rangos.SelectMany(d => d.DuracionMinutos == 0
+                    // Sin duración establecida: huecos libres y tramos ocupados reales; cada cita ocupa
+                    // solo su propio horario y el resto del rango sigue reservable.
+                    ? AgendaReglas.TramosVariables(d, dia, citasDia.Select(c => (c.Inicio, c.Fin)), ahora)
+                        .Select(t => new FranjaAgenda(t.Inicio, t.Fin, d.Modalidad, t.Ocupada, true))
+                    : AgendaReglas.Franjas(d, dia)
+                        .Where(f => f.Inicio > ahora)
+                        .Select(f => new FranjaAgenda(f.Inicio, f.Fin, d.Modalidad,
+                            citasDia.Any(c => AgendaReglas.Cruza(f.Inicio, f.Fin, c.Inicio, c.Fin)), false)))
                 .OrderBy(f => f.InicioUtc).ToArray();
             dias.Add(new DiaAgendaViewModel
             {
