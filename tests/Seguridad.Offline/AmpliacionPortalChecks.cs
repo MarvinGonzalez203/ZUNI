@@ -29,8 +29,9 @@ internal static class AmpliacionPortalChecks
         Check(!(await director.GetStringAsync("/Director")).Contains("Edad pendiente"),"alerta de edad exclusiva de administrador");
         await using(var db=new OfflineDb(options)){var v=await db.VerificacionesMayoriaEdad.SingleAsync(v=>v.PerfilEstudianteId==perfil);v.Estado=Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada;await db.SaveChangesAsync();}
         var hoy=AgendaReglas.Hoy(reloj.Ahora.UtcDateTime);
-        var cal=await director.GetStringAsync("/Director/Calendario?psicologoId=psi3");Check(cal.Contains("agenda-grid")&&cal.Contains("Proponer cita a un estudiante vinculado")&&!cal.Contains("MOTIVO-CLINICO-PRIVADO")&&!cal.Contains("SECRETO-NO-IMPRIMIR"),"calendario Director comparte diseño sin clínica");
-        Check((await director.GetAsync("/Director/Calendario?psicologoId=admin")).StatusCode==HttpStatusCode.Redirect,"calendario no acepta un administrador como profesional");
+        var cal=await director.GetStringAsync("/CitasProgramadas?psicologoId=psi3");Check(cal.Contains("agenda-grid")&&cal.Contains("Proponer cita a un estudiante vinculado")&&!cal.Contains("MOTIVO-CLINICO-PRIVADO")&&!cal.Contains("SECRETO-NO-IMPRIMIR"),"Programación del Director incluye el calendario compartido sin clínica");
+        Check((await director.GetStringAsync("/CitasProgramadas")).Contains("agenda-grid"),"entrada habitual muestra calendario sin parámetros");
+        Check((await director.GetAsync("/CitasProgramadas?psicologoId=admin")).StatusCode==HttpStatusCode.Redirect,"calendario no acepta un administrador como profesional");
         Check((await estudiante.GetAsync("/Director/Calendario")).StatusCode==HttpStatusCode.Redirect,"calendario institucional restringido");
         Check((await estudiante.GetStringAsync("/Estudiante/Citas?fecha="+hoy.AddMonths(-1).ToString("yyyy-MM-dd"))).Contains("agenda-grid"),"histórico del estudiante accesible");
         var cita=Guid.NewGuid();

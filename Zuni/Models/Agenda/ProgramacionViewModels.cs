@@ -17,7 +17,10 @@ public sealed class ProgramarCitaInput
 }
 public sealed record EstudianteProgramable(Guid Id,string Nombre,string Psicologo,bool EdadVerificada=false);
 public sealed record CitaProgramadaResumen(Guid Id,Guid Revision,string Estudiante,string Psicologo,DateTime InicioUtc,DateTime FinUtc,EstadoCita Estado,bool PuedeReprogramar);
-public sealed record ProgramacionListado(IReadOnlyList<CitaProgramadaResumen> Citas);
+public sealed record ProgramacionListado(IReadOnlyList<CitaProgramadaResumen> Citas)
+{
+    public CalendarioDirectorViewModel? CalendarioDirector { get; init; }
+}
 public sealed class NotificacionCita
 {
     public Guid Id { get; set; } = Guid.NewGuid();

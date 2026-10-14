@@ -8,7 +8,7 @@ Entrega en `feature/director-V2`, 14 de octubre de 2026.
 - Administrador → Catálogo de carreras: nueve carreras iniciales organizadas en cinco áreas. Admite pegar texto o subir TXT/CSV UTF-8, hasta 100 KB y 500 filas. Área seguida de «:» y una carrera por línea, o «Área;Carrera». Se omiten duplicados. Habilitar/deshabilitar no borra carreras de perfiles existentes.
 - Mi cuenta → Editar: la carrera se selecciona del catálogo. El servidor rechaza nuevos valores ajenos o inactivos, pero conserva el valor anterior de una cuenta que todavía no coincide con el catálogo.
 - Administrador: alerta superior «Edad pendiente» con cantidad y acceso directo a las revisiones. La cantidad refleja declaraciones pendientes de cuentas activas y se actualiza al navegar; no muestra documentos ni fechas de nacimiento y no desaparece por marcar otro aviso como leído.
-- Director → Calendario de citas: elegir psicólogo, consultar colores y franjas y proponer una cita a sus estudiantes vinculados. Conserva bloqueos y reglas de cruce. Muestra exclusivamente metadatos de agenda. Las propuestas del Director quedan Solicitadas para aceptación profesional.
+- Director → Programación de citas: elegir psicólogo, consultar el calendario con colores y franjas y proponer una cita a sus estudiantes vinculados. El calendario aparece arriba y el listado general debajo, aunque no haya citas activas. Conserva bloqueos y reglas de cruce. Muestra exclusivamente metadatos de agenda. Las propuestas del Director quedan Solicitadas para aceptación profesional.
 - Psicólogo → Notificaciones → Consultar / responder en mi agenda: abre el mes de la cita. Puede aceptar una presencial o preparar y confirmar una virtual. Para rechazar una propuesta del Director debe indicar un motivo administrativo de hasta 300 caracteres, sin detalles clínicos. El Director y el estudiante reciben el aviso de la decisión.
 
 Si una propuesta cambió de fecha o estado después de abrir la agenda, responder desde esa versión antigua se rechaza. El psicólogo debe recargar y revisar la fecha actual. El calendario usa un DTO separado que no admite motivos de cancelación, enlaces de reunión ni contenido clínico.
@@ -37,6 +37,8 @@ La migración `20261014193516_AddCarrerasPruebasAplicadas` agrega catálogo, met
 Las pruebas usan únicamente datos ficticios en SQLite y HTTP local. No aprueban estudiantes reales ni crean respuestas reales para demostrar el recorrido. El uso clínico de los ítems propuestos requiere revisión del equipo profesional.
 
 ## Verificación final
+
+Corrección posterior de navegación: se integró el calendario directamente en `/CitasProgramadas`, con selector de psicólogo y listado debajo. Se verificó esta entrada con 524 comprobaciones offline y 82 de navegador, incluido móvil. La ruta anterior reutiliza la misma vista parcial. Esta corrección no requiere cambios de base de datos.
 
 Compilación Release sin errores. Se aprobó el recorrido con 523 comprobaciones de seguridad y módulos offline, 315 de agenda y 82 de formularios en Edge: 920 en total. Se revisaron las pantallas en escritorio y móvil y la ocultación del resumen individual al imprimir. PostgreSQL confirmó nueve carreras y los niveles inactivos con 15, 35 y 55 preguntas después de aplicar la migración. EF confirmó que no hay cambios del modelo pendientes de migración.
 

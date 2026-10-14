@@ -1,6 +1,5 @@
 @model Zuni.Models.Agenda.CalendarioDirectorViewModel
 @{ ViewData["Title"]="Calendario de citas"; }
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">COORDINACIÓN INSTITUCIONAL</span><h1>Calendario de citas</h1><p>Consulta la disponibilidad por profesional y propone citas a sus estudiantes vinculados. El psicólogo confirma la atención.</p></div></header>
-<form method="get" class="dash-card mb-4"><label for="psicologoId" class="form-label">Psicólogo</label><select id="psicologoId" name="psicologoId" asp-items="Model.Psicologos" class="form-select mb-3"></select><input type="hidden" name="fecha" value="@Model.Calendario.Mes.ToString("yyyy-MM-dd")" /><button class="dash-button">Consultar calendario</button></form>
-@if(Model.Psicologos.Count == 0) { <section class="dash-card">No hay psicólogos disponibles.</section> } else { <partial name="_AgendaCalendario" model="Model.Calendario" /> }
+<partial name="_CalendarioDirector" model="Model" />
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }

@@ -1,0 +1,9 @@
+@model Zuni.Models.Agenda.CalendarioDirectorViewModel
+<form method="get" class="dash-card mb-4">
+    <label for="psicologoId" class="form-label">Psicólogo</label>
+    <select id="psicologoId" name="psicologoId" asp-items="Model.Psicologos" class="form-select mb-3"></select>
+    <input type="hidden" name="fecha" value="@Model.Calendario.Mes.ToString("yyyy-MM-dd")" />
+    <button class="dash-button">Consultar calendario</button>
+</form>
+@if(Model.Psicologos.Count==0){<section class="dash-card mb-4">No hay psicólogos disponibles para consultar su calendario.</section>}
+else{<partial name="_AgendaCalendario" model="Model.Calendario" />}
