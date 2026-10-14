@@ -15,6 +15,10 @@ El host reutiliza la configuración real de seguridad de Zuni (`SesionZuni`, `Po
 
 Cubre:
 
+- Configuración institucional: nombre, soporte, tres políticas de correo, dominio exacto,
+  registro pendiente, altas administrativas, cierre de registro, revisión concurrente, auditoría,
+  antiforgery y conservación del acceso de cuentas existentes (`InstitucionChecks.cs`).
+
 - Director: catálogo, editor, dimensiones/preguntas/opciones, activación, asignaciones,
   antiforgery, acceso por rol, duplicados y conservación de contenido asignado (`PruebasChecks.cs`).
 

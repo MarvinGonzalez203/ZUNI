@@ -10,7 +10,7 @@ namespace Zuni.Data;
 
 // Creación manual del PRIMER Administrador, sin credenciales en código ni en variables de entorno.
 //
-//   dotnet Zuni.dll --crear-primer-admin=true --correo nombre@miumg.edu.gt --nombre "Nombre Apellido"
+//   dotnet Zuni.dll --crear-primer-admin=true --correo nombre@correo.com --nombre "Nombre Apellido"
 //
 // - Solo actúa si NO existe ningún Administrador activo; en cualquier otro caso no cambia nada.
 // - Genera una contraseña temporal aleatoria, la muestra UNA vez en la consola y guarda solo su hash.
@@ -32,14 +32,13 @@ public static class PrimerAdministrador
         var nombre = Valor(args, "--nombre")?.Trim();
         if (string.IsNullOrWhiteSpace(correo) || string.IsNullOrWhiteSpace(nombre) || nombre.Length is < 2 or > 100)
         {
-            await salida.WriteLineAsync("Uso: --crear-primer-admin=true --correo nombre@miumg.edu.gt --nombre \"Nombre completo\" (2 a 100 caracteres).");
+            await salida.WriteLineAsync("Uso: --crear-primer-admin=true --correo nombre@correo.com --nombre \"Nombre completo\" (2 a 100 caracteres).");
             return 2;
         }
-        var separador = correo.LastIndexOf('@');
-        if (separador <= 0 || correo.IndexOf('@') != separador ||
-            !correo[(separador + 1)..].Equals("miumg.edu.gt", StringComparison.OrdinalIgnoreCase))
+        // El primer administrador debe poder configurar otra institución antes de fijar su política de correo.
+        if (!Zuni.Services.Institucion.PoliticaCorreoReglas.EsCorreoValido(correo))
         {
-            await salida.WriteLineAsync("El correo debe ser institucional (@miumg.edu.gt).");
+            await salida.WriteLineAsync("Ingresa un correo electrónico válido.");
             return 2;
         }
 

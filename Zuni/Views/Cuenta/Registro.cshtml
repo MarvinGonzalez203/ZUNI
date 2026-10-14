@@ -1,8 +1,15 @@
 @model RegisterViewModel
-@{ ViewData["Title"] = "Crear cuenta"; Layout = "_AuthLayout"; }
+@inject Zuni.Data.ApplicationDbContext DbInstitucion
+@{
+    ViewData["Title"] = "Crear cuenta"; Layout = "_AuthLayout";
+    var institucion = await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
+    ViewData["Institucion"] = institucion;
+}
 
 <a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
 <h1 class="h2 fw-bold mb-2">Crea tu cuenta</h1>
+<p class="fw-semibold">@institucion.Nombre</p>
+<p class="text-secondary">@Zuni.Services.Institucion.PoliticaCorreoReglas.Descripcion(institucion)</p>
 <p class="text-secondary mb-4">Solo tomará un minuto. Un administrador revisará y activará tu cuenta antes de que puedas iniciar sesión.</p>
 <form method="post" novalidate class="auth-form-fields">
     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>

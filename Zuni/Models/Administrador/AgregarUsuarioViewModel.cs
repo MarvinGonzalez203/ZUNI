@@ -40,12 +40,6 @@ public sealed class AgregarUsuarioViewModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        var correo = Correo?.Trim() ?? string.Empty;
-        var separador = correo.LastIndexOf('@');
-        if (separador <= 0 || correo.IndexOf('@') != separador ||
-            !correo[(separador + 1)..].Equals("miumg.edu.gt", StringComparison.OrdinalIgnoreCase))
-            yield return new ValidationResult("Debes utilizar tu correo institucional @miumg.edu.gt.", new[] { nameof(Correo) });
-
         if (!RolesPermitidos.Contains(Rol))
             yield return new ValidationResult("Selecciona un rol permitido.", new[] { nameof(Rol) });
 

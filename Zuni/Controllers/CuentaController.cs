@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Zuni.Data;
+using Zuni.Services.Institucion;
+using Zuni.Models.Institucion;
 using Zuni.Models;
 using Zuni.Services.Administracion;
 using Zuni.Seguridad;
@@ -269,11 +271,14 @@ public sealed class CuentaController(
     // Los registros nuevos se guardan directamente en PostgreSQL.
 
     [HttpGet("Registro")]
-    public IActionResult Registro()
+    public async Task<IActionResult> Registro()
     {
         if (User.Identity?.IsAuthenticated == true)
             return RedirectToAuthenticatedHome();
 
+        var configuracion = await ConfiguracionInstitucionService.ObtenerAsync(db);
+        if (configuracion.PoliticaCorreo == PoliticaCorreoInstitucion.SoloAltasAdministradas)
+            return View("RegistroNoDisponible", configuracion);
         return View(new RegisterViewModel());
     }
 
@@ -288,12 +293,14 @@ public sealed class CuentaController(
 
         var email = model.Email?.Trim() ?? string.Empty;
 
-        if (!EsCorreoInstitucional(email))
+        var configuracion = await ConfiguracionInstitucionService.ObtenerAsync(db);
+        if (configuracion.PoliticaCorreo == PoliticaCorreoInstitucion.SoloAltasAdministradas)
         {
-            ModelState.AddModelError(
-                nameof(model.Email),
-                "Debes utilizar tu correo institucional @miumg.edu.gt.");
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return View("RegistroNoDisponible", configuracion);
         }
+        var errorCorreo = PoliticaCorreoReglas.ValidarCorreo(configuracion, email, registroPublico: true);
+        if (errorCorreo is not null) ModelState.AddModelError(nameof(model.Email), errorCorreo);
 
         if (!CarneHelper.TryConstruir(
             model.CarneParte1,
@@ -391,7 +398,16 @@ public sealed class CuentaController(
         };
 
         await using var transaction =
-            await db.Database.BeginTransactionAsync();
+            await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+
+        // Volver a comprobar dentro de la transacción si la política cambió mientras se completaba el formulario.
+        var politicaActual = await ConfiguracionInstitucionService.ObtenerAsync(db);
+        var errorActual = PoliticaCorreoReglas.ValidarCorreo(politicaActual, email, registroPublico: true);
+        if (errorActual is not null)
+        {
+            ModelState.AddModelError(nameof(model.Email), errorActual);
+            return View(model);
+        }
 
         db.Users.Add(user);
 
@@ -444,6 +460,14 @@ public sealed class CuentaController(
                     "Ya existe una cuenta con este correo.");
             }
 
+            return View(model);
+        }
+        catch (Exception exception) when (exception is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure } ||
+            exception is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.SerializationFailure } })
+        {
+            await transaction.RollbackAsync();
+            db.ChangeTracker.Clear();
+            ModelState.AddModelError(string.Empty, "La configuración cambió durante el registro. Revisa los datos y vuelve a intentarlo.");
             return View(model);
         }
 
@@ -802,17 +826,6 @@ public sealed class CuentaController(
         return Convert.ToHexString(
             SHA256.HashData(
                 Encoding.UTF8.GetBytes(token)));
-    }
-
-    private static bool EsCorreoInstitucional(string email)
-    {
-        var separatorIndex = email.LastIndexOf('@');
-
-        return separatorIndex > 0 &&
-               email.IndexOf('@') == separatorIndex &&
-               email[(separatorIndex + 1)..].Equals(
-                   "miumg.edu.gt",
-                   StringComparison.OrdinalIgnoreCase);
     }
 
 

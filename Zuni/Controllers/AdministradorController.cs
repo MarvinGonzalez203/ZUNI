@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Npgsql;
 using Microsoft.AspNetCore.Identity;
 using Zuni.Services.Administracion;
+using Zuni.Services.Institucion;
 
 namespace Zuni.Controllers;
 
@@ -730,6 +731,9 @@ public sealed class AdministradorController : Controller
         {
             if (!await EsAdministradorActivoAsync(administradorId, cancellationToken))
                 return Forbid();
+            var politicaInstitucion = await ConfiguracionInstitucionService.ObtenerAsync(_db, cancellationToken);
+            var errorCorreo = PoliticaCorreoReglas.ValidarCorreo(politicaInstitucion, model.Correo, registroPublico: false);
+            if (errorCorreo is not null) ModelState.AddModelError(nameof(model.Correo), errorCorreo);
             if (!ModelState.IsValid)
                 return MostrarAltaConErrores(model);
 

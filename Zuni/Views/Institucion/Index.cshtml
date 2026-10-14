@@ -1,0 +1,45 @@
+@model Zuni.Models.Institucion.ConfiguracionInstitucionViewModel
+@{
+    ViewData["Title"] = "Configuración de la institución";
+}
+<section class="container py-4" aria-labelledby="institucion-title">
+    <h1 id="institucion-title">Configuración de la institución</h1>
+    <p>Define los datos de esta institución y cómo se crean sus cuentas.</p>
+    @foreach (var tipo in new[] { "Success", "Error" })
+    {
+        if (TempData[tipo] is string mensaje) { <p class="alert @(tipo == "Error" ? "alert-danger" : "alert-success")" role="status">@mensaje</p> }
+    }
+    <form asp-action="Index" method="post" style="max-width: 760px">
+        <input asp-for="Revision" type="hidden" />
+        <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+        <div class="mb-3">
+            <label asp-for="Nombre" class="form-label"></label>
+            <input asp-for="Nombre" class="form-control" maxlength="150" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="CorreoSoporte" class="form-label"></label>
+            <input asp-for="CorreoSoporte" class="form-control" type="email" maxlength="254" />
+            <small>Se muestra como contacto institucional. Guardarlo no activa el envío de correos.</small>
+            <span asp-validation-for="CorreoSoporte" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="PoliticaCorreo" class="form-label"></label>
+            <select asp-for="PoliticaCorreo" class="form-select">
+                <option value="0">Registro con dominios autorizados</option>
+                <option value="1">Registro con cualquier correo válido</option>
+                <option value="2">Solo cuentas creadas por el Administrador</option>
+            </select>
+            <span asp-validation-for="PoliticaCorreo" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="DominiosAutorizados" class="form-label"></label>
+            <textarea asp-for="DominiosAutorizados" class="form-control" rows="4" maxlength="2000" aria-describedby="dominios-help"></textarea>
+            <small id="dominios-help">Un dominio por línea, sin @@. Ejemplo: colegio.edu.gt. Solo se restringe el correo en el primer modo. No se admiten subdominios automáticamente.</small>
+            <span asp-validation-for="DominiosAutorizados" class="text-danger"></span>
+        </div>
+        <p>El registro público siempre requiere activación del Administrador. En el modo de altas administradas puedes crear cuentas con cualquier correo válido. Cambiar esta política no modifica cuentas existentes.</p>
+        <button class="btn btn-primary" type="submit">Guardar configuración</button>
+        <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-secondary">Volver al tablero</a>
+    </form>
+</section>

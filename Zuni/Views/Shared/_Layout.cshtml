@@ -1,4 +1,9 @@
 ﻿<!DOCTYPE html>
+@inject Zuni.Data.ApplicationDbContext DbInstitucion
+@{
+    var configuracionInstitucion = ViewData["Institucion"] as Zuni.Models.Institucion.ConfiguracionInstitucion
+        ?? await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
+}
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -45,7 +50,10 @@
                         else
                         {
                             <a class="btn btn-link text-dark text-decoration-none" asp-controller="Cuenta" asp-action="IniciarSesion">Iniciar sesión</a>
-                            <a class="btn btn-zuni" asp-controller="Cuenta" asp-action="Registro">Crear cuenta</a>
+                            @if (configuracionInstitucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas)
+                            {
+                                <a class="btn btn-zuni" asp-controller="Cuenta" asp-action="Registro">Crear cuenta</a>
+                            }
                         }
                     </div>
                 </div>

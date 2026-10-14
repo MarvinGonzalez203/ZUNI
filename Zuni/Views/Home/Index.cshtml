@@ -1,7 +1,10 @@
 @model HomeViewModel
+@inject Zuni.Data.ApplicationDbContext DbInstitucion
 @{
     ViewData["Title"] = "Inicio";
     ViewData["BodyClass"] = "home-page";
+    var institucion = await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
+    ViewData["Institucion"] = institucion;
 }
 @if (TempData["Success"] is string message)
 {
@@ -14,6 +17,7 @@
     <div class="hero-content">
         <div class="hero-kicker"><span></span> BIENESTAR Y ACOMPAÑAMIENTO ESTUDIANTIL</div>
         <h1 id="hero-title">Bienvenido a <em>ZUNI</em></h1>
+        <p class="fw-semibold">@institucion.Nombre</p>
         <p class="hero-lead">Un espacio de apoyo, conexión y bienestar para tu desarrollo estudiantil.</p>
         @if (User.Identity?.IsAuthenticated == true)
         {
@@ -35,7 +39,17 @@
         }
         else
         {
-            <div class="hero-cta"><a asp-controller="Cuenta" asp-action="Registro" class="btn btn-zuni btn-lg">Crear mi cuenta <span>→</span></a><a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-crystal btn-lg">Iniciar sesión</a></div>
+            <div class="hero-cta">
+                @if (institucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas)
+                {
+                    <a asp-controller="Cuenta" asp-action="Registro" class="btn btn-zuni btn-lg">Crear mi cuenta <span>→</span></a>
+                }
+                <a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-crystal btn-lg">Iniciar sesión</a>
+            </div>
+            @if (institucion.PoliticaCorreo == Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas)
+            {
+                <p>Solicita tu cuenta al Administrador de la institución.</p>
+            }
         }
     </div>
 
@@ -55,5 +69,5 @@
         </div>
     </div>
 
-    <div class="hero-foot"><span><i></i> Privado y confidencial</span><span>Diseñado para la comunidad universitaria</span><span>Bienestar · Conexión · Confianza</span></div>
+    <div class="hero-foot"><span><i></i> Privado y confidencial</span><span>Diseñado para la comunidad educativa</span><span>Bienestar · Conexión · Confianza</span></div>
 </section>

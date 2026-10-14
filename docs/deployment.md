@@ -71,7 +71,7 @@ Este endurecimiento **no agregó migraciones** ni cambios de esquema.
 ZUNI crea los roles al iniciar, pero no crea usuarios. Si la base de producción no tiene ningún Administrador activo:
 
 ```
-dotnet Zuni.dll --crear-primer-admin=true --correo <correo>@miumg.edu.gt --nombre "<Nombre completo>"
+dotnet Zuni.dll --crear-primer-admin=true --correo <correo-valido> --nombre "<Nombre completo>"
 ```
 
 (o `dotnet run --project Zuni -- --crear-primer-admin=true --correo ... --nombre "..."` desde el código fuente).
@@ -81,6 +81,10 @@ dotnet Zuni.dll --crear-primer-admin=true --correo <correo>@miumg.edu.gt --nombr
 - Ejecutarlo de forma interactiva (no como servicio) para que la contraseña no quede en registros.
 - No hay credenciales en código ni en variables de entorno.
 - Después, el Administrador crea el resto de cuentas desde el panel.
+- El primer Administrador puede usar cualquier correo válido para configurar una institución diferente.
+  Después debe abrir **Configuración de la institución** y elegir la política de registro y correo.
+  La configuración inicial conserva `miumg.edu.gt` para los registros y altas ordinarias.
+  Ver [Configuración institucional](configuracion-institucion.md).
 
 ## 8. Qué NO subir al servidor ni a Git
 

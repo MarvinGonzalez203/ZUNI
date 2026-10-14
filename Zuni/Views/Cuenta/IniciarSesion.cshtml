@@ -1,8 +1,14 @@
 @model LoginViewModel
-@{ ViewData["Title"] = "Iniciar sesión"; Layout = "_AuthLayout"; }
+@inject Zuni.Data.ApplicationDbContext DbInstitucion
+@{
+    ViewData["Title"] = "Iniciar sesión"; Layout = "_AuthLayout";
+    var institucion = await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
+    ViewData["Institucion"] = institucion;
+}
 
 <a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
 <h1 class="h2 fw-bold mb-2">Bienvenido de nuevo</h1>
+<p class="fw-semibold">@institucion.Nombre</p>
 <p class="text-secondary mb-4">Ingresa tus datos para continuar en ZUNI.</p>
 @if (TempData["Success"] is string mensajeExito)
 {
@@ -33,4 +39,15 @@
     </div>
     <button class="btn btn-zuni w-100 btn-lg" type="submit">Iniciar sesión</button>
 </form>
-<p class="text-center text-secondary mt-4 mb-0">¿Aún no tienes cuenta? <a asp-action="Registro" class="link-success fw-semibold">Crear cuenta</a></p>
+@if (institucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas)
+{
+    <p class="text-center text-secondary mt-4 mb-0">¿Aún no tienes cuenta? <a asp-action="Registro" class="link-success fw-semibold">Crear cuenta</a></p>
+}
+else
+{
+    <p class="text-center text-secondary mt-4 mb-0">Solicita tu cuenta al Administrador de la institución.</p>
+}
+@if (!string.IsNullOrWhiteSpace(institucion.CorreoSoporte))
+{
+    <p class="text-center mt-3">Contacto institucional: <a href="mailto:@institucion.CorreoSoporte">@institucion.CorreoSoporte</a></p>
+}

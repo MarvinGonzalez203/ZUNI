@@ -7,6 +7,7 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<Zuni.Models.Institucion.ConfiguracionInstitucion> ConfiguracionInstitucion => Set<Zuni.Models.Institucion.ConfiguracionInstitucion>();
         public DbSet<Zuni.Models.Pruebas.Prueba> PruebasDirector => Set<Zuni.Models.Pruebas.Prueba>();
         public DbSet<Zuni.Models.Pruebas.AsignacionPrueba> AsignacionesPrueba => Set<Zuni.Models.Pruebas.AsignacionPrueba>();
         public DbSet<Zuni.Models.Agenda.RegistroAtencionCita> RegistrosAtencionCita => Set<Zuni.Models.Agenda.RegistroAtencionCita>();
@@ -38,6 +39,20 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<Zuni.Models.Institucion.ConfiguracionInstitucion>(e =>
+            {
+                e.ToTable("ConfiguracionInstitucion", t =>
+                {
+                    t.HasCheckConstraint("CK_Institucion_Unica", "\"Id\" = 1");
+                    t.HasCheckConstraint("CK_Institucion_PoliticaCorreo", "\"PoliticaCorreo\" IN (0, 1, 2)");
+                });
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).ValueGeneratedNever();
+                e.Property(x => x.Nombre).HasMaxLength(150).IsRequired();
+                e.Property(x => x.CorreoSoporte).HasMaxLength(254);
+                e.Property(x => x.DominiosAutorizados).HasMaxLength(2000).IsRequired();
+                e.Property(x => x.Revision).IsConcurrencyToken();
+            });
             builder.ConfigurarPruebas();
             builder.ConfigurarBigFive();
             builder.ConfigurarAgendaCitas();
