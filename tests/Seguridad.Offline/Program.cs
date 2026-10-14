@@ -507,7 +507,7 @@ Check(!vistaPsicologos.Contains("Cambiar rol") && vistaPsicologos.Contains("Gest
 
 var fichaPsi3 = await Vista("/Administrador/Gestionar/psi3");
 Check(fichaPsi3.Contains("id=\"asignaciones-vigentes\">1<") && fichaPsi3.Contains("/Administrador/CambiarRol/psi3") &&
-      fichaPsi3.Contains("/Administrador/ConfirmarEstado?id=psi3") && fichaPsi3.Contains("/Administrador/ContrasenaTemporal/psi3") &&
+      fichaPsi3.Contains("/Administrador/ConfirmarEstado/psi3?activar=False") && fichaPsi3.Contains("/Administrador/ContrasenaTemporal/psi3") &&
       fichaPsi3.Contains("/Administrador/Historial/psi3"), "Gestionar reúne datos, rol, estado y todas las acciones");
 Check((await admin.GetAsync("/Administrador/Gestionar/no-existe")).StatusCode == HttpStatusCode.NotFound, "Gestionar usuario inexistente: 404");
 var fichaPropia = await Vista("/Administrador/Gestionar/admin");
