@@ -42,6 +42,21 @@ public static class InformePdf
         var renderer = new PdfDocumentRenderer { Document = doc }; renderer.RenderDocument();
         using var stream = new MemoryStream(); renderer.PdfDocument.Save(stream, false); return stream.ToArray();
     }
+    public static byte[] CrearCompartido(Zuni.Models.Agenda.ReporteCompartido r)
+    {
+        var doc = new Document(); doc.Info.Title = "Reporte compartido de atención"; doc.Info.Author = r.Psicologo;
+        var normal = doc.Styles[StyleNames.Normal]!; normal.Font.Name = "ZuniVera"; normal.Font.Size = 10; normal.ParagraphFormat.SpaceAfter = Unit.FromPoint(8);
+        var s = doc.AddSection(); s.PageSetup.PageFormat = PageFormat.Letter; s.PageSetup.TopMargin = Unit.FromCentimeter(2); s.PageSetup.BottomMargin = Unit.FromCentimeter(2); s.PageSetup.LeftMargin = Unit.FromCentimeter(2); s.PageSetup.RightMargin = Unit.FromCentimeter(2);
+        var title = s.AddParagraph("Reporte compartido de atención"); title.Format.Font.Size = 18; title.Format.Font.Bold = true;
+        s.AddParagraph($"Estudiante: {r.Estudiante}\nCarné: {Zuni.Helpers.CarneHelper.Formatear(r.Carne)}\nPsicólogo: {r.Psicologo}");
+        s.AddParagraph($"Atención: {AgendaReglas.Local(r.InicioUtc):dd/MM/yyyy HH:mm} | Fin {(r.FinAproximado ? "aproximado" : "programado")}: {AgendaReglas.Local(r.FinUtc):HH:mm} (Guatemala)");
+        void Campo(string t, string v) { var h = s.AddParagraph(t); h.Format.Font.Bold = true; h.Format.KeepWithNext = true; s.AddParagraph(v); }
+        Campo("Resultado compartido", r.Resultado); Campo("Recomendaciones compartidas", r.Recomendaciones);
+        if (r.OtraCita) Campo("Seguimiento recomendado", r.Indicaciones ?? "");
+        s.AddParagraph("Contiene únicamente información compartida con el estudiante. No incluye notas profesionales privadas ni es un informe educativo autorizado para terceros.");
+        var footer = s.Footers.Primary.AddParagraph("ZUNI | Uso del estudiante y profesional autorizado | Página "); footer.AddPageField();
+        var renderer = new PdfDocumentRenderer { Document = doc }; renderer.RenderDocument(); using var output = new MemoryStream(); renderer.PdfDocument.Save(output, false); return output.ToArray();
+    }
     private sealed class FuenteInforme : IFontResolver
     {
         public FontResolverInfo ResolveTypeface(string familyName, bool bold, bool italic) => new(bold ? "VeraBd" : "Vera", false, italic);

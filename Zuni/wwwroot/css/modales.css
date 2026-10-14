@@ -1,0 +1,6 @@
+.modal-backdrop.show { opacity: 1; background-color: rgba(17,17,17,.38); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+@media print {
+    .atencion-privada, [data-contenido-privado] { display: none !important; }
+    .dashboard-sidebar, .dashboard-topbar, .dash-button, .btn { display: none !important; }
+    .dashboard-workspace { margin: 0 !important; }
+}

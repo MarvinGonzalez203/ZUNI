@@ -41,6 +41,7 @@ public sealed record PrepararAtencionViewModel(Guid CitaId, string Estudiante, D
 // Proyección exclusiva del estudiante: no tiene ningún campo profesional privado.
 public sealed class ResultadoAtencionEstudianteViewModel
 {
+    public Guid CitaId { get; init; }
     public DateTime InicioUtc { get; init; }
     public ModalidadCita Modalidad { get; init; }
     public string? ResenaRecomendacionesEstudiante { get; init; }

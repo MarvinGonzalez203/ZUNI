@@ -136,6 +136,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         join u in db.Users.AsNoTracking() on p.UsuarioId equals u.Id
         where c.PsicologoUsuarioId == id
         select new CitaResumen { Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
+            EsImprevista = c.EsImprevista, FinAproximado = c.FinAproximado,
             EnlacePreparado = c.EnlaceReunion != null,
             FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
             MotivoCancelacion = c.Estado == EstadoCita.Cancelada ? c.MotivoCancelacion : null,

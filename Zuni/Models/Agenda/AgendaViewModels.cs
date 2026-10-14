@@ -35,6 +35,8 @@ public sealed record DisponibilidadResumen(Guid Id, DayOfWeek DiaSemana, TimeOnl
 public sealed record HorarioDisponible(DateTime InicioUtc, DateTime FinUtc, ModalidadDisponibilidad Modalidad);
 public sealed class CitaResumen
 {
+    public bool EsImprevista { get; init; }
+    public bool FinAproximado { get; init; }
     public bool EnlacePreparado { get; init; }
     public Guid Id { get; init; }
     public string Nombre { get; init; } = string.Empty;
@@ -70,7 +72,7 @@ public sealed class HorarioDiaInput
 {
     [Required] public DateOnly? Fecha { get; set; }
     [Required] public TimeOnly? HoraInicio { get; set; }
-    [Required] public TimeOnly? HoraFin { get; set; }
+    public TimeOnly? HoraFin { get; set; }
     public int DuracionMinutos { get; set; } = 50;
     [EnumDataType(typeof(ModalidadDisponibilidad))] public ModalidadDisponibilidad Modalidad { get; set; }
 }
@@ -82,6 +84,8 @@ public sealed record IntervaloAgenda(Guid Id, TimeOnly Inicio, TimeOnly Fin, int
     ModalidadDisponibilidad Modalidad, bool TieneCitasActivas);
 public sealed class DiaAgendaViewModel
 {
+    public bool Consultable { get; init; }
+    public IReadOnlyList<CitaResumen> Citas { get; init; } = [];
     public DateOnly Fecha { get; init; }
     public bool Editable { get; init; }
     public bool Bloqueado { get; init; }
@@ -94,6 +98,7 @@ public sealed class DiaAgendaViewModel
 }
 public sealed class CalendarioAgendaViewModel
 {
+    public DateTime AhoraUtc { get; init; }
     public DateOnly Mes { get; init; }
     public DateOnly Hoy { get; init; }
     public bool Editor { get; init; }

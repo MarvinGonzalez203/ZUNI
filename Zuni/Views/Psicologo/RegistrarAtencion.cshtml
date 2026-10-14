@@ -16,7 +16,7 @@
             <select asp-for="Asistio" class="form-select" required><option value="">Selecciona una opción</option><option value="true">Sí</option><option value="false">No</option></select>
             <span asp-validation-for="Asistio" class="text-danger"></span>
         </div>
-        <div class="mb-4" data-con-asistencia>
+        <div class="mb-4" data-con-asistencia data-contenido-privado>
             <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResultadoProfesionalPrivado" class="form-label">Resultado profesional privado</label>
             <p id="privacidad-ayuda" class="small">Esta información es privada y solo puede ser consultada por el profesional autorizado.</p>
             <textarea asp-for="ResultadoProfesionalPrivado" class="form-control" rows="6" maxlength="4000" aria-describedby="privacidad-ayuda"></textarea>

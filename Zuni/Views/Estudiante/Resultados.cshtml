@@ -12,6 +12,7 @@
         <h2>Atención del @AgendaReglas.Local(resultado.InicioUtc).ToString("dd/MM/yyyy HH:mm")</h2><p>@resultado.Modalidad · Hora de Guatemala</p>
         <h2>Resultado breve</h2><p class="atencion-texto">@resultado.ResultadoBreveEstudiante</p>
         <h2>Reseña y recomendaciones</h2><p class="atencion-texto">@resultado.ResenaRecomendacionesEstudiante</p>
+        <a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@resultado.CitaId" class="dash-button">Ver reporte compartido y reimprimir</a>
         @if (resultado.RecomiendaOtraCita)
         {
             <p><strong>El profesional recomienda programar otra cita.</strong></p>

@@ -62,10 +62,10 @@
     <div class="quick-panel" aria-label="Accesos principales de ZUNI">
         <div class="quick-intro"><span class="quick-spark">✦</span><div><small>Tu espacio ZUNI</small><strong>¿Qué necesitas hoy?</strong></div></div>
         <div class="quick-actions">
-            <a asp-controller="Cuenta" asp-action="IniciarSesion"><span class="quick-icon">⌁</span><span><strong>Solicitar cita</strong><small>Encuentra acompañamiento</small></span></a>
-            <a asp-controller="Cuenta" asp-action="IniciarSesion"><span class="quick-icon">↗</span><span><strong>Ver seguimiento</strong><small>Conoce tu avance</small></span></a>
-            <a asp-controller="Cuenta" asp-action="IniciarSesion"><span class="quick-icon">◌</span><span><strong>Bienestar</strong><small>Recursos para ti</small></span></a>
-            <a asp-controller="Cuenta" asp-action="IniciarSesion"><span class="quick-icon">⬡</span><span><strong>Privacidad</strong><small>Entorno protegido</small></span></a>
+            <a asp-controller="Home" asp-action="Guia" asp-route-tema="cita"><span class="quick-icon">⌁</span><span><strong>Solicitar cita</strong><small>Conoce los pasos</small></span></a>
+            <a asp-controller="Home" asp-action="Guia" asp-route-tema="seguimiento"><span class="quick-icon">↗</span><span><strong>Ver seguimiento</strong><small>Aprende dónde consultar</small></span></a>
+            <a asp-controller="Home" asp-action="Guia" asp-route-tema="bienestar"><span class="quick-icon">◌</span><span><strong>Bienestar</strong><small>Consejos para organizarte</small></span></a>
+            <a asp-controller="Home" asp-action="Guia" asp-route-tema="privacidad"><span class="quick-icon">⬡</span><span><strong>Privacidad</strong><small>Conoce cómo se comparte</small></span></a>
         </div>
     </div>
 

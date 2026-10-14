@@ -59,6 +59,12 @@ namespace Zuni.Controllers
             return View();
         }
 
+        public IActionResult Guia(string tema = "cita")
+        {
+            if (tema is not ("cita" or "seguimiento" or "bienestar" or "privacidad")) return NotFound();
+            return View(model: tema);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

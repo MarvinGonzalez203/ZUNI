@@ -118,6 +118,7 @@ public sealed partial class AgendaCitasService
         orderby c.FechaHoraInicioUtc descending, c.Id
         select new ResultadoAtencionEstudianteViewModel
         {
+            CitaId = c.Id,
             InicioUtc = c.FechaHoraInicioUtc, Modalidad = c.Modalidad,
             ResultadoBreveEstudiante = r.ResultadoBreveEstudiante,
             ResenaRecomendacionesEstudiante = r.ResenaRecomendacionesEstudiante,

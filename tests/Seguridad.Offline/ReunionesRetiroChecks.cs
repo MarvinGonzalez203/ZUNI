@@ -71,7 +71,8 @@ internal static class ReunionesRetiroChecks
         await HostPrueba.Post(student, "/Estudiante/Citas", "/Estudiante/Citas/Cancelar", ("citaId", cita.Id.ToString()), ("MotivoCancelacion", "Cancelación de prueba"));
         Check((await Leer(cita.Id)).Estado == EstadoCita.Cancelada && (await student.GetAsync(Entrada(cita.Id))).StatusCode == HttpStatusCode.Conflict, "cancelación cierra acceso inmediato");
         reloj.Ahora = fechaOriginal;
-        await using (var db = Db()) Check(await db.EnlacesReunionUsados.CountAsync(e => e.CitaId == cita.Id) == 2 && await db.AuditoriaUsuarios.AnyAsync(a => a.Accion == "CITA_REUNION_ACCEDIDA" && a.DatosNuevos == cita.Id.ToString()) && !await db.AuditoriaUsuarios.AnyAsync(a => a.DatosNuevos != null && a.DatosNuevos.Contains("meet.google.com")), "registro antirreutilización y auditoría sin URL");
+        var referenciaJson = System.Text.Json.JsonSerializer.Serialize(cita.Id);
+        await using (var db = Db()) Check(await db.EnlacesReunionUsados.CountAsync(e => e.CitaId == cita.Id) == 2 && await db.AuditoriaUsuarios.AnyAsync(a => a.Accion == "CITA_REUNION_ACCEDIDA" && a.DatosNuevos == referenciaJson) && !await db.AuditoriaUsuarios.AnyAsync(a => a.DatosNuevos != null && a.DatosNuevos.Contains("meet.google.com")), "registro antirreutilización y auditoría sin URL");
 
         using var retired = HostPrueba.Cliente(app);
         var login = await HostPrueba.Login(retired, "retirado@miumg.edu.gt", clave);

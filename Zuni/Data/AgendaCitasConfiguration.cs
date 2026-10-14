@@ -42,6 +42,7 @@ public static class AgendaCitasConfiguration
                 t.HasCheckConstraint("CK_Citas_Fechas", "\"FechaHoraFinUtc\" > \"FechaHoraInicioUtc\"");
                 t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3, 4, 5, 6)");
                 t.HasCheckConstraint("CK_Citas_Modalidad", "\"Modalidad\" IN (0, 1)");
+                t.HasCheckConstraint("CK_Citas_Disponibilidad", "\"EsImprevista\" OR \"DisponibilidadPsicologoId\" IS NOT NULL");
             });
             e.HasKey(x => x.Id);
             e.Property(x => x.MotivoCancelacion).HasMaxLength(300);

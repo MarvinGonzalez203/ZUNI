@@ -56,6 +56,9 @@ internal static class CalendarioChecks
         try { AgendaReglas.ValidarHorarioDia(pasadoHoy, AgendaReglas.Utc(hoy, new(8, 45))); throw new Exception("Horario sin cita futura completa aceptado"); }
         catch (AgendaOperacionException) { checks++; }
         pasadoHoy.HoraFin = new(10, 0);
+        try { AgendaReglas.ValidarHorarioDia(pasadoHoy, AgendaReglas.Utc(hoy, new(8, 45))); throw new Exception("Inicio pasado aceptado"); }
+        catch (AgendaOperacionException) { checks++; }
+        pasadoHoy.HoraInicio = new(9, 0);
         AgendaReglas.ValidarHorarioDia(pasadoHoy, AgendaReglas.Utc(hoy, new(8, 45))); checks++;
         await service.AgregarHorarioDia(otroPsicologo, Horario(), ct);
         await service.AgregarHorarioDia(otroPsicologo, Horario(inicio: 14, fin: 17, duracion: 50), ct);

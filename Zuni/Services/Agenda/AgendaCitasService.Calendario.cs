@@ -19,7 +19,7 @@ public sealed partial class AgendaCitasService
     {
         var ahora = Ahora;
         var hoy = AgendaReglas.Hoy(ahora);
-        var mes = AgendaReglas.MesPermitido(fecha, ahora);
+        var mes = AgendaReglas.MesPermitido(fecha, ahora, editor);
         var siguiente = mes.AddMonths(1);
         var configuraciones = await db.ConfiguracionesAgendaDia.AsNoTracking()
             .Where(d => d.PsicologoUsuarioId == id && d.Fecha >= mes && d.Fecha < siguiente).ToListAsync(ct);
@@ -28,6 +28,7 @@ public sealed partial class AgendaCitasService
             (d.ConfiguracionAgendaDiaId == null || ids.Contains(d.ConfiguracionAgendaDiaId.Value))).ToListAsync(ct);
         var inicio = AgendaReglas.Utc(mes, TimeOnly.MinValue);
         var fin = AgendaReglas.Utc(siguiente, TimeOnly.MinValue);
+        var citasConsulta = editor && id is not null ? await ResumenPsicologo(id).Where(c => c.InicioUtc >= inicio && c.InicioUtc < fin).OrderBy(c => c.InicioUtc).ToListAsync(ct) : [];
         // Solo horas y pertenencia propia: nunca proyectar la identidad de otra persona al calendario.
         var ocupadas = await db.Citas.AsNoTracking().Where(c => EstadosActivos.Contains(c.Estado) &&
             (c.PsicologoUsuarioId == id || c.PerfilEstudianteId == perfilId) && c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio)
@@ -57,6 +58,8 @@ public sealed partial class AgendaCitasService
             dias.Add(new DiaAgendaViewModel
             {
                 Fecha = dia, Editable = dia >= hoy && dia <= hoy.AddMonths(12),
+                Consultable = editor || (dia >= hoy && dia <= hoy.AddMonths(12)),
+                Citas = citasConsulta.Where(c => c.InicioUtc >= desde && c.InicioUtc < hasta).ToArray(),
                 Bloqueado = config?.Bloqueado == true, UsaBaseSemanal = baseSemanal,
                 TieneCitasActivas = citasDia.Any(c => c.Profesional),
                 CitaPropiaActiva = citasDia.Any(c => c.Propia),
@@ -69,7 +72,7 @@ public sealed partial class AgendaCitasService
                         AgendaReglas.Cruza(AgendaReglas.Utc(dia, d.HoraInicio), AgendaReglas.Utc(dia, d.HoraFin), c.Inicio, c.Fin)))).ToArray()
             });
         }
-        return new CalendarioAgendaViewModel { Mes = mes, Hoy = hoy, Editor = editor, Dias = dias };
+        return new CalendarioAgendaViewModel { Mes = mes, Hoy = hoy, Editor = editor, Dias = dias, AhoraUtc = ahora };
     }
 
     // Materialización solo al editar intervalos de una fecha; bloquear/habilitar no duplica la base.

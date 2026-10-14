@@ -25,6 +25,7 @@
             @if (cita.TieneRegistroAtencion && cita.Estado is EstadoCita.Completada or EstadoCita.NoAsistio)
             {
                 <p class="mt-2 mb-0"><a asp-action="VerAtencion" asp-route-citaId="@cita.Id">Ver atención</a></p>
+                @if (cita.Estado == EstadoCita.Completada) { <p><a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@cita.Id">Ver reporte compartido y reimprimir</a></p> }
             }
             </td></tr>
         }

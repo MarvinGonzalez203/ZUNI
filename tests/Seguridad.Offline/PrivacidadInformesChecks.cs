@@ -111,7 +111,8 @@ internal static class PrivacidadInformesChecks
         Check(pdf.StatusCode == HttpStatusCode.OK && pdf.Content.Headers.ContentType?.MediaType == "application/pdf" && pdf.Headers.CacheControl?.NoStore == true, "PDF privado y sin caché para destinatario exacto");
         var bytes = await pdf.Content.ReadAsByteArrayAsync(); Check(bytes.Length > 1000 && System.Text.Encoding.ASCII.GetString(bytes[..5]) == "%PDF-", "PDF generado con fuente incluida");
         foreach (var cliente in new[] { otro, admin, anon, otroDirector }) Check((await cliente.GetAsync("/InformesEducativos/Pdf/" + version)).StatusCode == HttpStatusCode.Redirect, "PDF denegado a cuenta no autorizada");
-        await using (var db = Db()) Check(await db.AuditoriaUsuarios.AnyAsync(a => a.Accion == "INFORME_PDF_DESCARGADO" && a.DatosNuevos == version.ToString()) && !await db.AuditoriaUsuarios.AnyAsync(a => a.DatosNuevos != null && a.DatosNuevos.Contains("Dificultad observada")), "descarga auditada sin contenido educativo o clínico");
+        var referenciaJson = System.Text.Json.JsonSerializer.Serialize(version);
+        await using (var db = Db()) Check(await db.AuditoriaUsuarios.AnyAsync(a => a.Accion == "INFORME_PDF_DESCARGADO" && a.DatosNuevos == referenciaJson) && !await db.AuditoriaUsuarios.AnyAsync(a => a.DatosNuevos != null && a.DatosNuevos.Contains("Dificultad observada")), "descarga auditada sin contenido educativo o clínico");
         await HostPrueba.Post(psi, detalle, "/InformesEducativos/NuevaVersion", ("id", version.ToString()), ("revision", v1.Revision.ToString()));
         Guid segunda;
         await using (var db = Db()) segunda = await db.VersionesInformesEducativos.Where(v => v.Numero == 2).Select(v => v.Id).SingleAsync();

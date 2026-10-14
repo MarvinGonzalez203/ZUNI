@@ -114,13 +114,13 @@ public static class AgendaReglas
             throw new AgendaOperacionException("Registra la asistencia después de finalizar el horario de la cita.");
     }
 
-    public static DateOnly MesPermitido(DateOnly? fecha, DateTime ahoraUtc)
+    public static DateOnly MesPermitido(DateOnly? fecha, DateTime ahoraUtc, bool historico = false)
     {
         var hoy = Hoy(ahoraUtc);
         var valor = fecha ?? hoy;
         var mes = new DateOnly(valor.Year, valor.Month, 1);
         var minimo = new DateOnly(hoy.Year, hoy.Month, 1);
-        if (mes < minimo || mes > minimo.AddMonths(12))
+        if ((!historico && mes < minimo) || mes > minimo.AddMonths(12))
             throw new AgendaOperacionException("Consulta un mes dentro de los próximos 12 meses.");
         return mes;
     }
@@ -139,6 +139,13 @@ public static class AgendaReglas
     {
         if (input.Fecha is null) throw new AgendaOperacionException("Selecciona una fecha válida.");
         var fecha = FechaPermitida(input.Fecha, ahoraUtc);
+        if (input.HoraInicio is { } hora && Utc(fecha, hora) <= ahoraUtc)
+            throw new AgendaOperacionException("La disponibilidad normal debe comenzar después de la hora actual. Para registrar una atención ya ocurrida utiliza Atención imprevista.");
+        if (input.HoraFin is null && input.HoraInicio is { } desde)
+        {
+            var minutos = input.DuracionMinutos == 0 ? 50 : input.DuracionMinutos;
+            if (minutos > 0 && desde.ToTimeSpan().TotalMinutes + minutos <= 18 * 60) input.HoraFin = desde.AddMinutes(minutos);
+        }
         if (input.HoraInicio is not { } inicio || input.HoraFin is not { } fin ||
             inicio < new TimeOnly(8, 0) || fin > new TimeOnly(18, 0) || fin <= inicio ||
             inicio.Ticks % (5 * TimeSpan.TicksPerMinute) != 0 || fin.Ticks % (5 * TimeSpan.TicksPerMinute) != 0 ||

@@ -33,7 +33,7 @@ public static class PrivacidadService
     }
     public static void Auditar(ApplicationDbContext db, string usuario, string actor, string accion, TimeProvider reloj, Guid? referencia = null) =>
         db.AuditoriaUsuarios.Add(new AuditoriaUsuario { UsuarioAfectadoId = usuario, AdministradorId = actor, Accion = accion,
-            DatosNuevos = referencia?.ToString(), FechaUtc = reloj.GetUtcNow().UtcDateTime });
+            DatosNuevos = referencia is { } id ? System.Text.Json.JsonSerializer.Serialize(id) : null, FechaUtc = reloj.GetUtcNow().UtcDateTime });
 
     public static async Task PublicarAsync(ApplicationDbContext db, ClaimsPrincipal actor, PublicarPoliticaInput input, TimeProvider reloj, CancellationToken ct)
     {

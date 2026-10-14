@@ -160,12 +160,15 @@ namespace Zuni.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("DisponibilidadPsicologoId")
+                    b.Property<Guid?>("DisponibilidadPsicologoId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("EnlaceReunion")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<bool>("EsImprevista")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("Estado")
                         .HasColumnType("integer");
@@ -181,6 +184,9 @@ namespace Zuni.Migrations
 
                     b.Property<DateTime>("FechaHoraInicioUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("FinAproximado")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("Modalidad")
                         .HasColumnType("integer");
@@ -221,6 +227,8 @@ namespace Zuni.Migrations
 
                     b.ToTable("Citas", null, t =>
                         {
+                            t.HasCheckConstraint("CK_Citas_Disponibilidad", "\"EsImprevista\" OR \"DisponibilidadPsicologoId\" IS NOT NULL");
+
                             t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3, 4, 5, 6)");
 
                             t.HasCheckConstraint("CK_Citas_Fechas", "\"FechaHoraFinUtc\" > \"FechaHoraInicioUtc\"");
@@ -1554,8 +1562,7 @@ namespace Zuni.Migrations
                     b.HasOne("Zuni.Models.Agenda.DisponibilidadPsicologo", null)
                         .WithMany()
                         .HasForeignKey("DisponibilidadPsicologoId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Zuni.Models.PerfilEstudiante", null)
                         .WithMany()

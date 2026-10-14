@@ -1,0 +1,32 @@
+@model string
+@{
+    var titulo = Model switch { "cita" => "Cómo solicitar una cita", "seguimiento" => "Cómo consultar tu seguimiento", "bienestar" => "Bienestar y organización", _ => "Tu privacidad en ZUNI" };
+    ViewData["Title"] = titulo;
+}
+<section class="container py-4" style="max-width:900px">
+    <h1>@titulo</h1>
+    @if (Model == "cita") {
+        <p>ZUNI te ayuda a solicitar acompañamiento a tu psicólogo asignado. Puedes consultar estos pasos antes de crear una cuenta.</p>
+        <ol><li>Pulsa <strong>Crear cuenta</strong> en Inicio. Si la institución permite solo altas administradas, solicita tu cuenta al responsable.</li>
+        <li>Espera la activación de Administración, inicia sesión y completa <strong>Mi cuenta → Editar</strong>, incluidos tus datos de contacto.</li>
+        <li>Consulta <strong>Mayoría de edad</strong> y completa la declaración y revisión institucional.</li>
+        <li>En <strong>Mi solicitud de atención</strong>, explica tu motivo de consulta y revisa el consentimiento. Administración asignará un psicólogo.</li>
+        <li>Abre <strong>Citas</strong>, pulsa un día disponible, elige horario y modalidad y pulsa <strong>Solicitar cita</strong>. Revisa luego su confirmación.</li>
+        <li>Para una cita virtual confirmada, abre <strong>Consultar acceso virtual</strong>. El ingreso se habilita 15 minutos antes. Busca un lugar privado y sin ruido.</li></ol>
+        <p>Si no aparecen horarios, revisa que tu perfil, verificación y asignación estén listos. Si dice «Solicitada», todavía falta la confirmación del psicólogo.</p>
+    } else if (Model == "seguimiento") {
+        <p>El seguimiento permite revisar solicitudes, citas y recomendaciones que el profesional comparte contigo.</p>
+        <ol><li>Inicia sesión y abre <strong>Mi solicitud de atención</strong> para consultar su estado y tu asignación.</li><li>En <strong>Citas</strong> revisa fecha, modalidad y estado. «Completada» indica una atención cerrada; «No asistió» registra una inasistencia.</li>
+        <li>Abre <strong>Resultados de atención</strong> desde tu panel para leer el resumen y las recomendaciones compartidas.</li><li>En <strong>Informes educativos</strong>, revisa el contenido y destinatario antes de autorizar una versión. La autorización se aplica a esa versión y destinatario.</li></ol>
+        <p>Los resultados aparecen después del registro del profesional. Un resultado vacío no significa un diagnóstico ni una calificación. Si una recomendación no está clara, consúltala con tu psicólogo.</p>
+    } else if (Model == "bienestar") {
+        <p>Este espacio ofrece ideas sencillas para organizar tu jornada y preparar una conversación de acompañamiento.</p>
+        <ul><li>Divide las tareas grandes en pasos pequeños y anota una prioridad para hoy.</li><li>Planifica pausas entre actividades y un lugar adecuado para estudiar.</li><li>Anota las dificultades que quieres comentar, qué has intentado y qué apoyo necesitas.</li><li>Antes de una cita, revisa el horario y la modalidad. Para una reunión virtual, prueba tu conexión y busca privacidad.</li><li>Si necesitas acompañamiento, consulta la guía de solicitud y contacta a tu institución cuando no haya horarios.</li></ul>
+        <p>Estas ideas son orientativas. La atención individual y las recomendaciones de tu caso corresponden al profesional que te acompaña.</p>
+    } else {
+        <p>ZUNI separa la gestión institucional de la información profesional de cada atención.</p>
+        <ul><li>El estudiante puede consultar los resultados que el psicólogo decide compartir.</li><li>Las notas profesionales privadas se reservan al psicólogo autorizado y no se incluyen en los reportes compartidos.</li><li>El informe educativo dirigido a autoridades requiere autorización específica del estudiante por versión y destinatario.</li><li>En <strong>Privacidad y mis derechos</strong> puedes consultar tu política y presentar solicitudes de acceso, corrección o retiro.</li><li>Usa tu propia cuenta, evita compartir contraseñas y cierra sesión al terminar en un equipo compartido.</li></ul>
+        <a asp-controller="Privacidad" asp-action="Politica" class="btn btn-outline-secondary">Consultar política institucional</a>
+    }
+    <div class="mt-4"><a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-zuni">Iniciar sesión para realizar acciones</a> <a asp-action="Index" class="btn btn-outline-secondary">Volver a Inicio</a></div>
+</section>

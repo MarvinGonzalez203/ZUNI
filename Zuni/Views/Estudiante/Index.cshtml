@@ -54,11 +54,11 @@
         <p>@(Model.PerfilCompleto ? "Tus datos básicos están completos." : "Completa tus datos académicos y de contacto.")</p>
         <span class="dash-text-link">Ver cuenta <partial name="_DashboardIcon" model='@("arrow")' /></span>
     </a>
-    @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Disponibles cuando se integre este módulo.", "Resultados"), ("calendar", "CITAS", "Podrás consultar o solicitar tus citas.", "Citas") })
+    @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Consulta los resultados y reportes que tu psicólogo comparte contigo.", "Resultados"), ("calendar", "CITAS", "Consulta tus citas y solicita un horario disponible.", "Citas") })
     {
         <a class="dash-card dash-summary dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4" aria-label="@item.Item4">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><span class="dash-eyebrow">@item.Item2</span></div>
-            <h3>@(item.Item4 == "Evaluaciones" ? "Big Five" : "Próximamente")</h3><p>@(item.Item4 == "Evaluaciones" ? "Herramienta opcional de apoyo, sin diagnóstico." : item.Item3)</p><span class="dash-module-label">@(item.Item4 == "Evaluaciones" ? "Participación voluntaria" : "En preparación")</span>
+            <h3>@(item.Item4 == "Evaluaciones" ? "Big Five" : item.Item4 == "Resultados" ? "Mis resultados" : "Mis citas")</h3><p>@(item.Item4 == "Evaluaciones" ? "Herramienta opcional de apoyo, sin diagnóstico." : item.Item3)</p><span class="dash-module-label">@(item.Item4 == "Evaluaciones" ? "Participación voluntaria" : "Consulta desde tu perfil")</span>
         </a>
     }
 </section>

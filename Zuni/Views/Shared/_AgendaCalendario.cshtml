@@ -3,7 +3,8 @@
 @using Zuni.Services.Agenda
 @{
     var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-GT");
-    var minimo = new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1);
+    var minimo = Model.Editor ? DateOnly.MinValue : new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1);
+    var maximo = new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1).AddMonths(12);
     var offset = ((int)Model.Mes.DayOfWeek + 6) % 7;
 }
 <section class="dash-card agenda-card agenda-mensual" aria-label="Calendario mensual">
@@ -11,7 +12,7 @@
         @if (Model.Mes > minimo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(-1).ToString("yyyy-MM-dd")">← Anterior</a> }
         else { <span></span> }
         <h2>@Model.Mes.ToString("MMMM yyyy", cultura)</h2>
-        @if (Model.Mes < minimo.AddMonths(12)) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(1).ToString("yyyy-MM-dd")">Siguiente →</a> }
+        @if (Model.Mes < maximo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(1).ToString("yyyy-MM-dd")">Siguiente →</a> }
         else { <span></span> }
     </nav>
     <p class="agenda-legend"><span class="is-free">Disponible</span><span class="is-busy">Ocupado</span><span>Sin horarios</span></p>
@@ -22,11 +23,11 @@
         @foreach (var dia in Model.Dias)
         {
             var estado = dia.Estado == "Disponible" ? "is-free" : dia.Estado == "Ocupado" ? "is-busy" : "";
-            <button type="button" class="agenda-day @estado" disabled="@(!dia.Editable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @dia.Estado"><strong>@dia.Fecha.Day</strong><span>@dia.Estado</span></button>
+            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @dia.Estado"><strong>@dia.Fecha.Day</strong><span>@dia.Estado</span>@if (Model.Editor && dia.Citas.Count > 0) { <small>@dia.Citas.Count cita(s)</small> }</button>
         }
     </div>
 </section>
-@foreach (var dia in Model.Dias.Where(d => d.Editable))
+@foreach (var dia in Model.Dias.Where(d => d.Consultable))
 {
     var clave = "dia-" + dia.Fecha.ToString("yyyy-MM-dd");
     <div class="modal fade agenda-modal" id="@clave" tabindex="-1" aria-labelledby="@clave-titulo" aria-hidden="true">
@@ -35,7 +36,19 @@
             <div class="modal-body">
                 <p class="agenda-hint">Hora de Guatemala (UTC−6)</p><h3 class="h5">Horarios de este día</h3>
                 @if (dia.Bloqueado) { <p class="agenda-notice">Día bloqueado. La configuración se conserva y no admite solicitudes.</p> }
-                @if (Model.Editor)
+                @if (Model.Editor) {
+                    <h3 class="h5">Citas y actividades de este día</h3>
+                    @if (dia.Citas.Count == 0) { <p>No hay citas registradas para esta fecha.</p> }
+                    @foreach (var cita in dia.Citas) {
+                        <article class="agenda-slot"><strong>@cita.Nombre</strong><p>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(cita.FinUtc).ToString("HH:mm") · @cita.Estado @(cita.EsImprevista ? "· Atención imprevista" : "") @(cita.FinAproximado ? "· Fin aproximado" : "")</p>
+                        @if (cita.TieneRegistroAtencion && cita.Estado == EstadoCita.Completada) { <a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@cita.Id" class="dash-button">Ver reporte compartido y reimprimir</a> }
+                        else if (cita.TieneRegistroAtencion) { <a asp-controller="Psicologo" asp-action="VerAtencion" asp-route-citaId="@cita.Id">Consultar registro</a> }
+                        else if (cita.FinUtc <= Model.AhoraUtc && cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada) { <a asp-controller="Psicologo" asp-action="RegistrarAtencion" asp-route-citaId="@cita.Id" class="dash-button">Completar registro de atención</a> }
+                        </article>
+                    }
+                    @if (dia.Fecha <= Model.Hoy) { <a asp-controller="Atenciones" asp-action="Imprevista" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" class="dash-button mb-3">Registrar atención imprevista</a> }
+                }
+                @if (Model.Editor && dia.Editable)
                 {
                     <p class="agenda-hint">@(dia.UsaBaseSemanal ? "Se utiliza la disponibilidad semanal como base." : "Configuración exclusiva de esta fecha.")</p>
                     @if (dia.Intervalos.Count == 0) { <p>Sin horarios para esta fecha.</p> }
@@ -54,13 +67,14 @@
                     {
                         <h3 class="h5 mt-4">Añadir horario disponible</h3>
                         <p class="agenda-hint">De 08:00 a 18:00, en múltiplos de 5 minutos y sin superposiciones.</p>
-                        <form asp-controller="Psicologo" asp-action="AgregarHorarioDia" method="post" class="agenda-form">
+                        <form asp-controller="Psicologo" asp-action="AgregarHorarioDia" method="post" class="agenda-form" data-horario-dia="@dia.Fecha.ToString("yyyy-MM-dd")" autocomplete="off">
                             <input type="hidden" name="Fecha" value="@dia.Fecha.ToString("yyyy-MM-dd")" />
-                            <label for="@clave-inicio">Inicio<input id="@clave-inicio" type="time" name="HoraInicio" min="08:00" max="18:00" step="300" value="08:00" required /></label>
-                            <label for="@clave-fin">Fin<input id="@clave-fin" type="time" name="HoraFin" min="08:00" max="18:00" step="300" value="12:00" required /></label>
+                            <label for="@clave-inicio">Inicio<input id="@clave-inicio" type="time" name="HoraInicio" min="08:00" max="18:00" step="300" required /></label>
+                            <label for="@clave-fin">Fin aproximado (opcional)<input id="@clave-fin" type="time" name="HoraFin" min="08:00" max="18:00" step="300" /></label>
                             <label zuni-required="true" for="@clave-duracion">Duración de cada cita<select id="@clave-duracion" name="DuracionMinutos"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="50" selected>50 minutos</option><option value="0">Sin duración establecida</option></select></label>
                             <label zuni-required="true" for="@clave-modalidad">Modalidad<select id="@clave-modalidad" name="Modalidad"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Ambas">Ambas</option></select></label>
                             <button class="dash-button" type="submit">Guardar horario</button>
+                            <p class="agenda-hint" data-fin-estimado>El fin es opcional. Si lo omites se calcula con la duración elegida; sin duración establecida se estima un bloque de 50 minutos. Es planificación, no duración real de la sesión.</p>
                         </form>
                     }
                     <h3 class="h5 mt-4">Disponibilidad del día</h3>
@@ -72,7 +86,7 @@
                     <p class="agenda-hint mt-2">Bloquear conserva los horarios. Quitar la configuración deja solo esta fecha sin horarios; no elimina citas ni cambia otras fechas.</p>
                     @if (dia.TieneCitasActivas) { <p>Este día tiene citas activas. Debes gestionarlas antes de modificar sus horarios.</p> }
                 }
-                else if (!dia.Bloqueado)
+                else if (!Model.Editor && !dia.Bloqueado)
                 {
                     @if (dia.CitaPropiaActiva) { <p class="agenda-notice">Ya tienes una cita activa para esta fecha.</p> }
                     @if (dia.Franjas.Count == 0) { <p>No hay franjas futuras disponibles para esta fecha.</p> }

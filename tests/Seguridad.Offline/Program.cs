@@ -554,6 +554,7 @@ await MayoriaEdadChecks.Run(app, opciones, clave, reloj);
 await PrivacidadInformesChecks.Run(app, opciones, clave, reloj, perfil2);
 await ReunionesRetiroChecks.Run(app, opciones, clave, reloj, perfil2);
 await IdentidadChecks.Run(app, opciones, clave);
+await AgendaMejorasChecks.Run(app, opciones, clave, reloj, perfil2);
 
 using (var c = HostPrueba.Cliente(app))
 {
