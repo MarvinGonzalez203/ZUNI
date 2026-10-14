@@ -376,6 +376,7 @@ using (var c = HostPrueba.Cliente(app))
 // Cuenta creada por el Administrador: activa y con cambio obligatorio (comportamiento previo).
 var alta = await HostPrueba.Post(admin, "/Administrador/AgregarUsuario", "/Administrador/AgregarUsuario",
     ("NombreCompleto", "Psicologa Alta"), ("Correo", "alta@miumg.edu.gt"), ("Rol", "Psicologo"),
+    ("MayorEdadDeclarada", "true"),
     ("ContrasenaTemporal", clave), ("ConfirmarContrasenaTemporal", clave));
 Check(alta.StatusCode == HttpStatusCode.Redirect, "Alta por Administrador");
 await using (var db = Nuevo())
@@ -558,6 +559,7 @@ await AgendaMejorasChecks.Run(app, opciones, clave, reloj, perfil2);
 await ProgramacionChecks.Run(app, opciones, clave, reloj, perfil2);
 await AmpliacionPortalChecks.Run(app, opciones, clave, reloj, perfil2);
 await AlmuerzoRevisionChecks.Run(app, opciones, clave, reloj);
+await AdministradorEdicionChecks.Run(app, opciones, clave);
 
 using (var c = HostPrueba.Cliente(app))
 {

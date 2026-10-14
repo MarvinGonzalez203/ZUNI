@@ -34,6 +34,8 @@ public sealed class UsuariosPorRolViewModel
 
 public sealed class GestionarUsuarioViewModel
 {
+    public string Revision { get; init; } = string.Empty;
+    public bool? MayorEdadDeclarada { get; init; }
     public string Id { get; init; } = string.Empty;
     public string FullName { get; init; } = string.Empty;
     public string? Email { get; init; }

@@ -12,6 +12,9 @@ namespace Zuni.Models
 
         public bool DebeCambiarContrasena { get; set; } = false;
 
+        // Clasificación administrativa declarada al crear la cuenta. No acredita revisión documental.
+        public bool? MayorEdadDeclarada { get; set; }
+
         public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } =
             new List<PasswordResetToken>();
 

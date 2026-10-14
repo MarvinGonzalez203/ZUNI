@@ -125,7 +125,7 @@ public sealed class MiCuentaController(
         PrepararLayout(usuario, roles);
         return View(new MiCuentaViewModel
         {
-            NombreCompleto = usuario.FullName, Email = usuario.Email, Roles = roles,
+            NombreCompleto = usuario.FullName, Email = usuario.Email, Telefono = usuario.PhoneNumber, Roles = roles,
             Activo = usuario.IsActive, EsEstudiante = roles.Contains("Estudiante"),
             PerfilCompleto = usuario.PerfilEstudiante?.EstaCompleto == true,
             Estudiante = roles.Contains("Estudiante") && usuario.PerfilEstudiante is not null
@@ -144,6 +144,7 @@ public sealed class MiCuentaController(
         return View(new EditarMiCuentaViewModel
         {
             NombreCompleto = usuario.FullName,
+            PuedeEditarContacto = roles.Contains("Administrador"), Correo = usuario.Email, Telefono = usuario.PhoneNumber,
             PuedeEditarEstudiante = permitido,
             Carreras = permitido ? await Zuni.Services.CatalogoCarreras.Opciones(db, usuario.PerfilEstudiante?.Carrera, ct) : [],
             Estudiante = permitido ? usuario.PerfilEstudiante is { } perfil ? Datos(perfil) : new() : null,
@@ -170,6 +171,24 @@ public sealed class MiCuentaController(
             return Forbid();
 
         model.PuedeEditarEstudiante = roles.Contains("Estudiante");
+        model.PuedeEditarContacto = roles.Contains("Administrador");
+        if (model.PuedeEditarContacto)
+        {
+            var correo = model.Correo?.Trim();
+            if (!Zuni.Services.Institucion.PoliticaCorreoReglas.EsCorreoValido(correo))
+                ModelState.AddModelError(nameof(model.Correo), "Ingresa un correo electrónico válido.");
+            else
+            {
+                var normalizado = correo!.ToUpperInvariant();
+                if (await db.Users.AnyAsync(u => u.Id != usuario.Id && (u.NormalizedEmail == normalizado || u.NormalizedUserName == normalizado), ct))
+                    ModelState.AddModelError(nameof(model.Correo), "Ya existe una cuenta con este correo.");
+            }
+        }
+        else
+        {
+            model.Correo = usuario.Email; model.Telefono = usuario.PhoneNumber;
+            ModelState.Remove(nameof(model.Correo)); ModelState.Remove(nameof(model.Telefono));
+        }
         model.Carreras = model.PuedeEditarEstudiante ? await Zuni.Services.CatalogoCarreras.Opciones(db, usuario.PerfilEstudiante?.Carrera, ct) : [];
         model.SolicitarCarne = model.PuedeEditarEstudiante && string.IsNullOrWhiteSpace(usuario.PerfilEstudiante?.Carne);
         string? carneNuevo = null;
@@ -212,6 +231,22 @@ public sealed class MiCuentaController(
         if (!ModelState.IsValid) return View(model);
 
         var cambioNombre = usuario.FullName != nombre;
+        var cambioCorreo = model.PuedeEditarContacto && !string.Equals(usuario.Email, model.Correo!.Trim(), StringComparison.OrdinalIgnoreCase);
+        if (model.PuedeEditarContacto)
+        {
+            if (cambioCorreo)
+            {
+                var anterior = usuario.Email;
+                usuario.Email = model.Correo!.Trim(); usuario.UserName = usuario.Email;
+                usuario.NormalizedEmail = usuario.Email.ToUpperInvariant(); usuario.NormalizedUserName = usuario.NormalizedEmail;
+                usuario.EmailConfirmed = false; usuario.SecurityStamp = Guid.NewGuid().ToString();
+                db.AuditoriaUsuarios.Add(new AuditoriaUsuario { UsuarioAfectadoId = usuario.Id, AdministradorId = usuario.Id,
+                    Accion = "CORREO_PROPIO_ACTUALIZADO", DatosAnteriores = JsonSerializer.Serialize(new { Email = anterior }),
+                    DatosNuevos = JsonSerializer.Serialize(new { usuario.Email }), FechaUtc = DateTime.UtcNow });
+            }
+            if (usuario.PhoneNumber != Opcional(model.Telefono)) usuario.PhoneNumberConfirmed = false;
+            usuario.PhoneNumber = Opcional(model.Telefono);
+        }
         usuario.FullName = nombre;
         // Solo se genera en servidor; jamás se acepta el stamp desde el formulario.
         usuario.ConcurrencyStamp = Guid.NewGuid().ToString();
@@ -236,8 +271,17 @@ public sealed class MiCuentaController(
         }
         try
         {
+            if (cambioCorreo)
+                await db.PasswordResetTokens.Where(t => t.UserId == usuario.Id && t.UsedAtUtc == null)
+                    .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.UsedAtUtc, DateTime.UtcNow), ct);
             await db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
+        }
+        catch (DbUpdateException exception) when (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "UserNameIndex" or "EmailIndex" })
+        {
+            await transaction.RollbackAsync(ct);
+            ModelState.AddModelError(nameof(model.Correo), "Ya existe una cuenta con este correo.");
+            return View(model);
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -265,6 +309,12 @@ public sealed class MiCuentaController(
             return Conflicto();
         }
 
+        if (cambioCorreo)
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData["Success"] = "Correo actualizado. Inicia sesión con tu nuevo correo y tu contraseña actual.";
+            return RedirectToAction("IniciarSesion", "Cuenta");
+        }
         if (cambioNombre)
         {
             if (ticket.Properties?.ExpiresUtc is not { } expires || expires <= DateTimeOffset.UtcNow ||
@@ -331,7 +381,7 @@ public sealed class MiCuentaController(
     private static string RevisionActual(ApplicationUser usuario, List<string> roles) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
         {
-            usuario.Id, usuario.ConcurrencyStamp, usuario.SecurityStamp, usuario.FullName,
+            usuario.Id, usuario.ConcurrencyStamp, usuario.SecurityStamp, usuario.FullName, usuario.Email, usuario.PhoneNumber,
             Roles = roles, Perfil = usuario.PerfilEstudiante is { } perfil ? Datos(perfil) : null
         }))));
 

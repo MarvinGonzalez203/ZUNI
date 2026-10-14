@@ -38,6 +38,15 @@ function check(value, text) { assert.ok(value, text); checks++; }
             checks++;
         }
         await load('institucion');
+        for (const color of ['#111111','#b42332','#216e45','#2458a6','#cea2fd']) {
+            await page.locator(`[data-color-institucion="${color}"]`).click();
+            check(await page.locator('#ColorPrincipal').inputValue()===color,'color predefinido '+color);
+            check(await page.locator('#color-preview').evaluate(e=> {
+                const rgb=getComputedStyle(e).backgroundColor.match(/\d+/g).slice(0,3).map(Number).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+                const l=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+                return (getComputedStyle(e).color==='rgb(0, 0, 0)'?(l+.05)/.05:1.05/(l+.05))>=4.5;
+            }),'contraste legible '+color);
+        }
         await required('DominiosAutorizados', true);
         await page.selectOption('#PoliticaCorreo', '1');
         await required('DominiosAutorizados', false);
@@ -200,6 +209,59 @@ function check(value, text) { assert.ok(value, text); checks++; }
         for(const name of ['solicitud-estudiante','solicitudes-psicologo','expedientes-psicologo']){
             await load(name,['agenda-contexto.js']);check(await page.locator('.dash-nav a.is-active').count()===1,'submenú único '+name);await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde móvil '+name);await page.setViewportSize({width:1280,height:900});
         }
+        await load('demostracion-estudiante',['agenda-contexto.js']);
+        check(await page.locator('select[name^="Respuestas["]').count()===15,'demo tiene 15 respuestas');
+        check(await page.locator('.dash-nav a.is-active').count()===1,'demo con selección lateral exclusiva');
+        for(const select of await page.locator('select[name^="Respuestas["]').all()) await select.selectOption('5');
+        check(await page.locator('form[action="/Demostracion"]').evaluate(f=>!f.checkValidity()),'demo exige confirmación voluntaria');
+        await page.locator('#Consentimiento').check();
+        check(await page.locator('form[action="/Demostracion"]').evaluate(f=>f.checkValidity()),'demo permite finalizar 15 respuestas válidas');
+        await page.setViewportSize({width:390,height:844});
+        check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'demo sin desborde móvil');
+        await page.screenshot({path:path.join(fixtures,'demostracion-estudiante.png'),fullPage:false});
+        await page.setViewportSize({width:1280,height:900});
+        await load('login'); await page.addStyleTag({path:path.join(root,'css/site.css')});
+        check(await page.locator('.auth-brand .auth-logo').count()===0,'logo retirado solo del panel lateral del login');
+        check(await page.locator('.auth-brand-copy').evaluate(e=>{const a=e.closest('aside').getBoundingClientRect(),b=e.getBoundingClientRect();return Math.abs((a.y+a.height/2)-(b.y+b.height/2))<3;}),'texto de acceso centrado verticalmente');
+        await page.screenshot({path:path.join(fixtures,'login-sin-logo-lateral.png'),fullPage:false});
+        const touchContext = await browser.newContext({hasTouch:true,viewport:{width:1280,height:600}});
+        const touch = await touchContext.newPage();
+        const cssNav=['lib/bootstrap/dist/css/bootstrap.min.css','css/dashboard.css','css/agenda-contexto.css'].map(p=>fs.readFileSync(path.join(root,p),'utf8')).join('\n');
+        const navJs=fs.readFileSync(path.join(root,'js/agenda-contexto.js'),'utf8');
+        await touch.route('**/*',async route=> {
+            if(!route.request().isNavigationRequest()) return route.abort();
+            const pathname=new URL(route.request().url()).pathname;
+            const fixture=pathname.includes('Catedraticos')?'admin-retirados':pathname.includes('Psicologo')?'solicitudes-psicologo':'admin-tablero';
+            let html=fs.readFileSync(path.join(fixtures,fixture+'.html'),'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<link\b[^>]*>/gi,'');
+            html=html.replace('</head>','<style>'+cssNav+'</style></head>').replace('</body>','<script>'+navJs+'</script></body>');
+            await route.fulfill({contentType:'text/html',body:html});
+        });
+        await touch.goto('http://zuni.test/Administrador');
+        check(await touch.locator('a.dash-summary-link').count()>=6,'tarjetas completas son enlaces sin enlaces anidados');
+        check(await touch.locator('a.dash-summary-link a').count()===0,'sin enlaces anidados');
+        const studentCard=touch.locator('a[data-rol="Estudiante"]');const cardBox=await studentCard.boundingBox();
+        await Promise.all([touch.waitForURL('**/Administrador/Estudiantes'),touch.touchscreen.tap(cardBox.x+12,cardBox.y+12)]);
+        check(touch.url().endsWith('/Administrador/Estudiantes'),'touch en borde de tarjeta navega');
+        await touch.goto('http://zuni.test/Administrador');
+        await touch.locator('a[data-rol="Director"]').click();
+        check(touch.url().endsWith('/Administrador/Directores'),'clic en tarjeta navega');
+        await touch.goto('http://zuni.test/Administrador');
+        check(await touch.locator('#dashboard-sidebar').evaluate(e=>getComputedStyle(e).scrollbarWidth==='none'&&e.scrollHeight>e.clientHeight),'barra oculta conserva contenido desplazable');
+        await touch.locator('#dashboard-sidebar').evaluate(e=>e.scrollTop=140);
+        await touch.waitForTimeout(100);
+        const scrollBefore=await touch.locator('#dashboard-sidebar').evaluate(e=>e.scrollTop);
+        await touch.locator('.dash-nav a[href="/Administrador/Catedraticos"]').click();
+        await touch.waitForTimeout(100);
+        check(await touch.locator('#dashboard-sidebar').evaluate((e,b)=>Math.abs(e.scrollTop-b)<2,scrollBefore),'posición lateral conservada entre pestañas');
+        check(await touch.locator('.dash-nav a.is-active').count()===1 && await touch.locator('.dash-nav a.is-active').getAttribute('href')==='/Administrador/Catedraticos','selección exclusiva roles retirados');
+        await touch.goto('http://zuni.test/Psicologo/Solicitudes');
+        const summary=touch.locator('.dash-nav-group summary').first();
+        const indicator=()=>summary.evaluate(e=> {const s=getComputedStyle(e,'::after');return [s.content,s.right,s.top,s.width,s.height];});
+        const initialIndicator=await indicator();await summary.click();
+        check(JSON.stringify(initialIndicator)===JSON.stringify(await indicator()),'V conserva posición y tamaño al expandir');
+        check(initialIndicator[0]==='""','V dibujada sin glifo genérico');
+        await touch.screenshot({path:path.join(fixtures,'sidebar-admin-mejorada.png'),fullPage:false});
+        await touchContext.close();
         check(errors.length === 0, 'sin errores JavaScript: ' + errors.join(', '));
         console.log(`OK: ${checks} comprobaciones de formularios en navegador.`);
     } finally { await browser.close(); }

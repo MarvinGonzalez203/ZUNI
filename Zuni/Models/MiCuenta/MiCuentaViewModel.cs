@@ -4,6 +4,7 @@ public sealed class MiCuentaViewModel
 {
     public string NombreCompleto { get; init; } = string.Empty;
     public string? Email { get; init; }
+    public string? Telefono { get; init; }
     public IReadOnlyList<string> Roles { get; init; } = [];
     public bool Activo { get; init; }
     public bool EsEstudiante { get; init; }

@@ -106,6 +106,7 @@ internal static class InstitucionChecks
         }
         async Task<HttpResponseMessage> Add(string email) => await HostPrueba.Post(admin, "/Administrador/AgregarUsuario", "/Administrador/AgregarUsuario",
             ("NombreCompleto", "Cuenta Institucion"), ("Correo", email), ("Rol", "Director"),
+            ("MayorEdadDeclarada", "true"),
             ("ContrasenaTemporal", clave), ("ConfirmarContrasenaTemporal", clave));
         Check((await Add("admin-rechazado@personal.test")).StatusCode == HttpStatusCode.OK, "altas administrativas también restringen dominio");
         Check((await Add("director@otro.test")).StatusCode == HttpStatusCode.Redirect, "altas administrativas aceptan segundo dominio");

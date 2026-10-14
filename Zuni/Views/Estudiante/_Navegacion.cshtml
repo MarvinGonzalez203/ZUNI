@@ -1,4 +1,8 @@
+@inject Zuni.Data.ApplicationDbContext DbDemo
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment EntornoDemo
+@using System.Security.Claims
 @{
+    var demo = await Zuni.Services.DemostracionAcceso.Habilitada(DbDemo, User.FindFirstValue(ClaimTypes.NameIdentifier), EntornoDemo.IsDevelopment());
     var c=ViewContext.RouteData.Values["controller"]?.ToString();var a=ViewContext.RouteData.Values["action"]?.ToString();
     bool Es(string controller,params string[] actions)=>c==controller&&(actions.Length==0||actions.Contains(a));
     string Act(bool selected)=>selected?"is-active":"";
@@ -9,6 +13,7 @@
     <span class="dash-nav-label">MI ESPACIO</span>
     <a class="dash-nav-link @Act(Es("Estudiante","Index"))" asp-controller="Estudiante" asp-action="Index"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
     <a class="dash-nav-link @Act(Es("MiCuenta"))" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
+    @if(demo) { <a class="dash-nav-link @Act(Es("Demostracion"))" asp-controller="Demostracion" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Demostración · Nivel 1</span></a> }
     <a class="dash-nav-link @Act(Es("MayoriaEdad"))" asp-controller="MayoriaEdad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Mayoría de edad</span></a>
     <details class="dash-nav-group" open="@atencion"><summary><partial name="_DashboardIcon" model='@("calendar")' /><span>Atención y citas</span></summary><div class="dash-nav-children">
         <a class="dash-nav-link @Act(Es("Estudiante","SolicitarAtencion","EstadoSolicitud"))" asp-controller="Estudiante" asp-action="EstadoSolicitud"><span>Mi solicitud de atención</span></a>

@@ -31,6 +31,12 @@
                 </select>
                 <span asp-validation-for="Rol" class="text-danger small"></span>
             </div>
+            <div class="mb-3">
+                <label asp-for="MayorEdadDeclarada" class="form-label"></label>
+                <select asp-for="MayorEdadDeclarada" class="form-select" required><option value="">Selecciona...</option><option value="true">Mayor de edad (18 años o más)</option><option value="false">Menor de edad</option></select>
+                <span asp-validation-for="MayorEdadDeclarada" class="text-danger small"></span>
+                <p class="form-text">Clasificación administrativa. No sustituye la verificación de edad ni habilita la atención a menores.</p>
+            </div>
             <fieldset id="carne-estudiante" class="mb-3">
                 <legend class="fs-6" zuni-required="@(Model.Rol == "Estudiante")" data-required-conditional>Carné institucional (solo Estudiante)</legend>
                 <p class="small">Último bloque de 2 a 6 dígitos: 1590-18-25 o 7490-26-125678.</p>

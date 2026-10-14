@@ -32,6 +32,36 @@ public sealed class AdministradorController : Controller
         _reloj = reloj;
     }
 
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditarNombre(EditarNombreUsuarioViewModel model, CancellationToken cancellationToken)
+    {
+        await using var tx = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+        var actor = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!await EsAdministradorActivoAsync(actor, cancellationToken)) return Forbid();
+        var usuario = await _db.Users.SingleOrDefaultAsync(u => u.Id == model.UsuarioId, cancellationToken);
+        if (usuario is null) return NotFound();
+        if (usuario.Id == actor) return RedirectToAction("Editar", "MiCuenta");
+        var nombre = model.NombreCompleto?.Trim() ?? "";
+        if (!ModelState.IsValid || nombre.Length < 2 || model.Revision != usuario.ConcurrencyStamp)
+        {
+            TempData["Error"] = "Revisa el nombre o recarga la ficha: la cuenta pudo cambiar mientras editabas.";
+            return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
+        }
+        var anterior = usuario.FullName;
+        usuario.FullName = nombre;
+        usuario.ConcurrencyStamp = Guid.NewGuid().ToString();
+        usuario.SecurityStamp = Guid.NewGuid().ToString();
+        _db.AuditoriaUsuarios.Add(new AuditoriaUsuario {
+            UsuarioAfectadoId = usuario.Id, AdministradorId = actor!, Accion = "NOMBRE_USUARIO_CORREGIDO",
+            DatosAnteriores = JsonSerializer.Serialize(new { FullName = anterior }),
+            DatosNuevos = JsonSerializer.Serialize(new { usuario.FullName }), FechaUtc = _reloj.GetUtcNow().UtcDateTime
+        });
+        try { await _db.SaveChangesAsync(cancellationToken); await tx.CommitAsync(cancellationToken); TempData["Info"] = "Nombre actualizado. El usuario deberá iniciar sesión nuevamente."; }
+        catch (Exception ex) when (ex is DbUpdateConcurrencyException || ex is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure } || ex is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.SerializationFailure } })
+        { await tx.RollbackAsync(cancellationToken); TempData["Error"] = "La cuenta cambió durante la edición. Recarga la ficha."; }
+        return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
+    }
+
     // ============================================================
     // TABLERO: solo resúmenes por rol (sin tabla general de usuarios)
     // ============================================================
@@ -188,7 +218,7 @@ public sealed class AdministradorController : Controller
 
         var usuario = await _db.Users.AsNoTracking()
             .Where(u => u.Id == id)
-            .Select(u => new { u.Id, u.FullName, u.Email, u.IsActive, u.CreatedAtUtc, u.DebeCambiarContrasena, u.LockoutEnd })
+            .Select(u => new { u.Id, u.FullName, u.Email, u.IsActive, u.CreatedAtUtc, u.DebeCambiarContrasena, u.LockoutEnd, u.ConcurrencyStamp, u.MayorEdadDeclarada })
             .SingleOrDefaultAsync(cancellationToken);
         if (usuario is null)
             return NotFound();
@@ -207,6 +237,8 @@ public sealed class AdministradorController : Controller
         {
             Id = usuario.Id,
             FullName = usuario.FullName,
+            Revision = usuario.ConcurrencyStamp ?? string.Empty,
+            MayorEdadDeclarada = usuario.MayorEdadDeclarada,
             Email = usuario.Email,
             IsActive = usuario.IsActive,
             PendienteActivacion = await EstadoCuenta.EsRegistroPendienteAsync(_db, usuario.Id, cancellationToken),
@@ -766,6 +798,7 @@ public sealed class AdministradorController : Controller
             {
                 Id = Guid.NewGuid().ToString(),
                 FullName = model.NombreCompleto.Trim(),
+                MayorEdadDeclarada = model.MayorEdadDeclarada,
                 Email = correo,
                 UserName = correo,
                 NormalizedEmail = normalizado,
@@ -804,6 +837,7 @@ public sealed class AdministradorController : Controller
                 DatosNuevos = JsonSerializer.Serialize(new
                 {
                     Roles = new[] { model.Rol },
+                    model.MayorEdadDeclarada,
                     IsActive = true,
                     DebeCambiarContrasena = true
                 }),

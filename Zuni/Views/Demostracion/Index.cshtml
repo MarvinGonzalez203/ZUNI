@@ -1,0 +1,19 @@
+@model Zuni.Models.Pruebas.DemostracionViewModel
+@{ ViewData["Title"]="Demostración · Nivel 1"; var preguntas=Model.Prueba.Preguntas.OrderBy(q=>q.Orden).ToList(); }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">CUENTA FICTICIA · DEMOSTRACIÓN</span><h1>Prueba el recorrido del nivel 1</h1><p>Practica las instrucciones y la escala. Esta demostración no genera un expediente ni resultados para atención.</p></div></header>
+<section class="dash-card mb-4"><h2 class="h5">Cita de demostración</h2><dl class="notification-data"><div><dt>Fecha</dt><dd>13 de octubre de 2026</dd></div><div><dt>Horario de Guatemala</dt><dd>14:00–14:15 · 15 minutos</dd></div><div><dt>Profesional de ejemplo</dt><dd>Marito</dd></div><div><dt>Estado del ejemplo</dt><dd>Recorrido simulado completado</dd></div></dl><p>Esta tarjeta representa una cita ficticia para practicar. No acredita una atención ni una inducción profesional.</p></section>
+@if(Model.Concluida)
+{
+    <section class="dash-card" role="status"><h2>Demostración terminada</h2><p>Completaste las 15 preguntas. No hay respuestas correctas o incorrectas. Las respuestas de esta práctica no se guardaron ni se enviaron al psicólogo.</p><a asp-action="Index" class="dash-button">Volver a practicar</a></section>
+}
+else
+{
+    <section class="dash-card mb-4"><h2>@Model.Prueba.Nombre</h2><p>@Model.Prueba.Subtitulo</p><p>@Model.Prueba.Instrucciones</p><p>1: totalmente en desacuerdo / nada identificado. 10: totalmente de acuerdo / totalmente identificado.</p></section>
+    <form asp-action="Index" method="post"><div asp-validation-summary="All" class="text-danger" role="alert"></div>
+    @for(var i=0;i<preguntas.Count;i++)
+    {
+        var q=preguntas[i]; Model.Respuestas.TryGetValue(q.Id,out var elegida);
+        <section class="dash-card mb-3"><span class="dash-eyebrow">Pregunta @(i+1) de 15</span><h2 class="h5 mt-2">@q.Texto</h2><label for="demo-@i" class="form-label" zuni-required="true">Grado de identificación</label><select id="demo-@i" name="Respuestas[@q.Id]" class="form-select" required><option value="">Selecciona...</option>@foreach(var o in q.Opciones.OrderBy(o=>o.Valor)){<option value="@o.Valor" selected="@(elegida==o.Valor)">@o.Texto</option>}</select></section>
+    }
+    <section class="dash-card"><label class="d-block mb-3"><input asp-for="Consentimiento" required /> Comprendí las instrucciones y deseo realizar esta práctica ficticia.</label><span asp-validation-for="Consentimiento" class="text-danger"></span><div class="zuni-action-row"><button class="dash-button">Finalizar demostración</button><a asp-controller="Estudiante" asp-action="Index" class="btn btn-outline-secondary">Volver al tablero</a></div></section></form>
+}

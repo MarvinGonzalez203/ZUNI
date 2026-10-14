@@ -26,6 +26,13 @@
         <fieldset class="border rounded p-3 mb-3"><legend class="h5">Identidad visual</legend>
             <label asp-for="Lema" class="form-label"></label><input asp-for="Lema" class="form-control mb-3" maxlength="80" />
             <label asp-for="ColorPrincipal" class="form-label"></label><input asp-for="ColorPrincipal" type="color" class="form-control form-control-color mb-3" />
+            <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Colores de los botones">
+                @foreach (var (color, nombreColor) in new[] { ("#cea2fd", "Violeta ZUNI"), ("#111111", "Negro"), ("#b42332", "Rojo"), ("#216e45", "Verde"), ("#2458a6", "Azul") })
+                {
+                    <button type="button" data-color-institucion="@color" aria-pressed="@(Model.ColorPrincipal.Equals(color, StringComparison.OrdinalIgnoreCase) ? "true" : "false")" style="background:@color;color:@Zuni.Services.Institucion.IdentidadInstitucion.Texto(color);border:1px solid transparent;border-radius:9px;padding:.65rem 1rem">@nombreColor</button>
+                }
+            </div>
+            <span id="color-preview" class="d-inline-block px-3 py-2 rounded mb-2">Vista previa del texto</span>
             <p>El mismo color se utiliza en los botones de todos los perfiles. El texto se ajusta para mantener contraste.</p>
             <label asp-for="Logotipo" class="form-label"></label><input asp-for="Logotipo" type="file" accept="image/png" class="form-control mb-2" />
             <small>PNG de hasta 128 KB y 1024 × 1024 píxeles. Si no cargas otro archivo, se conserva el actual.</small>
@@ -49,13 +56,25 @@
             <span asp-validation-for="DominiosAutorizados" class="text-danger"></span>
         </div>
         <p>El registro público siempre requiere activación del Administrador. En el modo de altas administradas puedes crear cuentas con cualquier correo válido. Cambiar esta política no modifica cuentas existentes.</p>
-        <button class="btn btn-primary" type="submit">Guardar configuración</button>
-        <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-secondary">Volver al tablero</a>
+        <div class="zuni-action-row"><button class="btn btn-primary" type="submit">Guardar configuración</button>
+        <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-secondary">Volver al tablero</a></div>
     </form>
 </section>
 @section Scripts {
     <script>
         (() => {
+            const color = document.getElementById('ColorPrincipal');
+            const preview = document.getElementById('color-preview');
+            const swatches = [...document.querySelectorAll('[data-color-institucion]')];
+            const showColor = () => {
+                const rgb = color.value.slice(1).match(/../g).map(v => parseInt(v,16)/255).map(v => v <= .04045 ? v/12.92 : ((v+.055)/1.055)**2.4);
+                const luminance = .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+                preview.style.background = color.value;
+                preview.style.color = (luminance+.05)/.05 >= 1.05/(luminance+.05) ? '#000000' : '#ffffff';
+                swatches.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colorInstitucion === color.value.toLowerCase())));
+            };
+            swatches.forEach(b => b.addEventListener('click', () => {color.value = b.dataset.colorInstitucion; showColor();}));
+            color.addEventListener('input', showColor); showColor();
             const politica = document.getElementById('PoliticaCorreo');
             const dominios = document.getElementById('DominiosAutorizados');
             const actualizar = () => dominios.required = politica.value === '0';

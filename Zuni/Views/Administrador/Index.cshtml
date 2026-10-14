@@ -36,21 +36,21 @@
 <section class="dash-summary-grid" aria-label="Usuarios por rol">
     @foreach (var (titulo, rol, accion, icono) in tarjetas)
     {
-        <article class="dash-card dash-summary" data-rol="@rol">
+        <a class="dash-card dash-summary dash-summary-link" asp-action="@accion" data-rol="@rol">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="icono" /></span><span class="dash-eyebrow">ROL</span></div>
             <h3>@titulo</h3>
             <p class="fs-3 fw-bold mb-2">@Model.UsuariosPorRol.GetValueOrDefault(rol)</p>
-            <a class="dash-text-link" asp-action="@accion">Ver usuarios <partial name="_DashboardIcon" model='@("arrow")' /></a>
-        </article>
+            <span class="dash-text-link">Ver usuarios <partial name="_DashboardIcon" model='@("arrow")' /></span>
+        </a>
     }
     @if (Model.SinRol > 0)
     {
-        <article class="dash-card dash-summary" data-rol="SinRol">
+        <a class="dash-card dash-summary dash-summary-link" asp-action="SinRol" data-rol="SinRol">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><span class="dash-eyebrow">REVISAR</span></div>
             <h3>Sin rol</h3>
             <p class="fs-3 fw-bold mb-2">@Model.SinRol</p>
-            <a class="dash-text-link" asp-action="SinRol">Ver usuarios <partial name="_DashboardIcon" model='@("arrow")' /></a>
-        </article>
+            <span class="dash-text-link">Ver usuarios <partial name="_DashboardIcon" model='@("arrow")' /></span>
+        </a>
     }
 </section>
 @if (Model.UsuariosPorRol.GetValueOrDefault("Catedratico") > 0)
@@ -64,12 +64,12 @@
 </div>
 <section class="dash-summary-grid" aria-label="Resumen de cuentas">
     <article class="dash-card dash-summary"><h3>Total de usuarios</h3><p class="fs-3 fw-bold mb-0">@Model.Total</p><p class="small mb-0">@Model.Activos activos · @Model.Inactivos inactivos</p></article>
-    <article class="dash-card dash-summary">
+    <a class="dash-card dash-summary dash-summary-link" asp-action="Estudiantes" asp-route-estado="Pendientes">
         <h3>Pendientes de activación</h3><p class="fs-3 fw-bold mb-2">@Model.PendientesActivacion</p>
-        <a class="dash-text-link" asp-action="Estudiantes" asp-route-estado="Pendientes">Revisar autorregistros <partial name="_DashboardIcon" model='@("arrow")' /></a>
-    </article>
-    <article class="dash-card dash-summary">
+        <span class="dash-text-link">Revisar autorregistros <partial name="_DashboardIcon" model='@("arrow")' /></span>
+    </a>
+    <a class="dash-card dash-summary dash-summary-link" asp-controller="AdministradorSolicitudes" asp-action="Index" asp-route-estado="Pendiente">
         <h3>Solicitudes pendientes</h3><p class="fs-3 fw-bold mb-2">@Model.SolicitudesPendientes</p>
-        <a class="dash-text-link" asp-controller="AdministradorSolicitudes" asp-action="Index" asp-route-estado="Pendiente">Ver solicitudes <partial name="_DashboardIcon" model='@("arrow")' /></a>
-    </article>
+        <span class="dash-text-link">Ver solicitudes <partial name="_DashboardIcon" model='@("arrow")' /></span>
+    </a>
 </section>

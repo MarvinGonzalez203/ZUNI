@@ -9,5 +9,5 @@
     <label asp-for="HoraFin" class="form-label"></label><input asp-for="HoraFin" type="time" class="form-control mb-3" />
     <p>Si omites el fin se guarda una estimación de hasta 50 minutos, sin superar la hora actual ni el día indicado. No representa una medición de la duración real.</p>
     <label asp-for="Modalidad" class="form-label" zuni-required="true"></label><select asp-for="Modalidad" class="form-select mb-3"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option></select>
-    <button class="dash-button">Registrar actividad</button><a asp-controller="Psicologo" asp-action="Agenda" class="btn btn-outline-secondary">Volver a Agenda</a>
+    <div class="zuni-action-row"><button class="dash-button">Registrar actividad</button><a asp-controller="Psicologo" asp-action="Agenda" class="btn btn-outline-secondary">Volver a Agenda</a></div>
 </form></section>

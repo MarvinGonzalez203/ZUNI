@@ -2,6 +2,8 @@
     var accion = ViewContext.RouteData.Values["action"]?.ToString();
     var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
     var enAdministrador = controlador == "Administrador";
+    if (enAdministrador && ViewData.Model is Zuni.Models.Administrador.GestionarUsuarioViewModel ficha) accion = ficha.AccionVolver;
+    if (enAdministrador && ViewData.Model is Zuni.Models.Administrador.UsuariosPorRolViewModel listado) accion = listado.Accion;
     var enSolicitudes = controlador == "AdministradorSolicitudes";
     var roles = new[]
     {
@@ -24,7 +26,8 @@
     }
     <span class="dash-nav-label dash-nav-label-spaced">GESTIÓN</span>
     <a class="dash-nav-link @Activo(controlador == "CarrerasAdmin")" asp-controller="CarrerasAdmin" asp-action="Index"><partial name="_DashboardIcon" model='@("book")' /><span>Catálogo de carreras</span></a>
-    <a class="dash-nav-link" asp-controller="Administrador" asp-action="Catedraticos"><partial name="_DashboardIcon" model='@("book")' /><span>Revisar roles retirados</span></a>
+    <a class="dash-nav-link @Activo(enAdministrador && accion == "Catedraticos")" aria-current="@Actual(enAdministrador && accion == "Catedraticos")" asp-controller="Administrador" asp-action="Catedraticos"><partial name="_DashboardIcon" model='@("book")' /><span>Revisar roles retirados</span></a>
+    @if (enAdministrador && accion == "SinRol") { <a class="dash-nav-link is-active" aria-current="page" asp-controller="Administrador" asp-action="SinRol"><partial name="_DashboardIcon" model='@("user")' /><span>Usuarios sin rol</span></a> }
     <a class="dash-nav-link @Activo(controlador == "Privacidad" && accion == "Configurar")" asp-controller="Privacidad" asp-action="Configurar"><partial name="_DashboardIcon" model='@("shield")' /><span>Política de privacidad</span></a>
     <a class="dash-nav-link @Activo(controlador == "Privacidad" && accion == "Solicitudes")" asp-controller="Privacidad" asp-action="Solicitudes"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Solicitudes sobre datos</span></a>
     <a class="dash-nav-link @Activo(controlador == "MayoriaEdad")" asp-controller="MayoriaEdad" asp-action="Revisiones"><partial name="_DashboardIcon" model='@("shield")' /><span>Verificar mayoría de edad</span></a>

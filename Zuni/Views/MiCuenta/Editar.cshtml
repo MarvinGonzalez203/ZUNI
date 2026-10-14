@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Editar datos";
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">MI CUENTA</span><h1>Editar mis datos</h1><p>El correo, carné, roles y estado de tu cuenta no se pueden modificar aquí.</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">MI CUENTA</span><h1>Editar mis datos</h1><p>@(Model.PuedeEditarContacto ? "Mantén tu nombre, correo y teléfono actualizados. Al cambiar el correo deberás iniciar sesión nuevamente." : "Mantén tu nombre y datos de contacto actualizados.")</p></div></header>
 @if (TempData["Error"] is string error)
 {
     <div class="dash-notice" role="alert">@error</div>
@@ -15,6 +15,13 @@
         <input asp-for="NombreCompleto" class="form-control" autocomplete="name" maxlength="100" required aria-describedby="nombre-error" />
         <span asp-validation-for="NombreCompleto" id="nombre-error" class="text-danger small"></span>
     </div>
+    @if (Model.PuedeEditarContacto)
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-md-6"><label asp-for="Correo" zuni-required="true" class="form-label">Correo electrónico</label><input asp-for="Correo" class="form-control" type="email" required maxlength="254" autocomplete="email" /><span asp-validation-for="Correo" class="text-danger small"></span></div>
+            <div class="col-md-6"><label asp-for="Telefono" class="form-label">Teléfono (opcional)</label><input asp-for="Telefono" class="form-control" type="tel" pattern="[0-9]{8}" maxlength="8" autocomplete="tel" inputmode="numeric" /><span asp-validation-for="Telefono" class="text-danger small"></span></div>
+        </div>
+    }
     @if (Model.PuedeEditarEstudiante)
     {
         <fieldset>

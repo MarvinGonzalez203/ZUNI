@@ -26,7 +26,17 @@
         }
 
         <h2 class="h5">Datos del usuario</h2>
+        @if (!Model.EsUnoMismo)
+        {
+            <form asp-action="EditarNombre" method="post" class="mb-4">
+                <input type="hidden" name="UsuarioId" value="@Model.Id" /><input type="hidden" name="Revision" value="@Model.Revision" />
+                <label for="nombre-corregido" class="form-label" zuni-required="true">Nombre completo</label>
+                <input id="nombre-corregido" name="NombreCompleto" value="@Model.FullName" class="form-control" required minlength="2" maxlength="100" autocomplete="name" />
+                <button type="submit" class="dash-button mt-3">Guardar nombre</button>
+            </form>
+        }
         <dl class="row mb-4">
+            <dt class="col-sm-4">Edad declarada al crear cuenta</dt><dd class="col-sm-8">@(Model.MayorEdadDeclarada is null ? "Sin clasificación administrativa" : Model.MayorEdadDeclarada.Value ? "Mayor de edad" : "Menor de edad")</dd>
             <dt class="col-sm-4">Correo</dt><dd class="col-sm-8 text-break">@(Model.Email ?? "Sin correo")</dd>
             <dt class="col-sm-4">Rol actual</dt><dd class="col-sm-8" id="rol-actual">@(Model.Roles.Count == 0 ? "Sin rol" : string.Join(", ", Model.Roles.Select(Visible)))</dd>
             <dt class="col-sm-4">Estado</dt><dd class="col-sm-8" id="estado-cuenta">@estado</dd>

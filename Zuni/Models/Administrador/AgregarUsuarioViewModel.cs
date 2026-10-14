@@ -19,6 +19,9 @@ public sealed class AgregarUsuarioViewModel : IValidatableObject
     [Required(ErrorMessage = "Selecciona un rol.")]
     public string Rol { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Indica si el usuario es mayor o menor de edad."), Display(Name = "Clasificación de edad")]
+    public bool? MayorEdadDeclarada { get; set; }
+
     [Required(ErrorMessage = "Ingresa una contraseña temporal.")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Usa entre 8 y 100 caracteres.")]
     [DataType(DataType.Password)]
