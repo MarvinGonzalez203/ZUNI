@@ -3,6 +3,7 @@
 }
 <nav class="dash-nav" aria-label="Navegación del psicólogo">
     <span class="dash-nav-label">MI ESPACIO</span>
+    <a class="dash-nav-link" asp-controller="PruebasAplicadas" asp-action="Resultados"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Pruebas e inducción</span></a>
     <a class="dash-nav-link" asp-controller="CitasProgramadas" asp-action="Index"><partial name="_DashboardIcon" model='@("calendar")' /><span>Programación de citas</span></a>
     <a class="dash-nav-link" asp-controller="InformesEducativos" asp-action="Index"><partial name="_DashboardIcon" model='@("results")' /><span>Informes educativos</span></a>
     <a class="dash-nav-link" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Privacidad y mis derechos</span></a>

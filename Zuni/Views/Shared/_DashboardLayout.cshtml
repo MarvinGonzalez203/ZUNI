@@ -51,7 +51,7 @@
     <div class="dashboard-workspace">
         <header class="dashboard-topbar">
             <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="Abrir menú"><partial name="_DashboardIcon" model='@("menu")' /></button><span>Mi espacio <span class="dash-slash">/</span> <strong>@ViewData["Title"]</strong></span></div>
-            <div class="dash-top-account">@await Component.InvokeAsync("AvisoCitas")<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />Sesión activa</span><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></div>
+            <div class="dash-top-account">@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoCitas")<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />Sesión activa</span><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></div>
         </header>
         <main id="dashboard-main" class="dashboard-main" tabindex="-1">
             @if (TempData["Success"] is string mensaje)

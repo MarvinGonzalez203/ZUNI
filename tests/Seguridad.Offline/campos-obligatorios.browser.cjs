@@ -172,6 +172,14 @@ function check(value, text) { assert.ok(value, text); checks++; }
         check(await page.locator('.footer-grid section').count()===4,'pie con cuatro columnas');await page.locator('.zuni-footer').screenshot({path:path.join(fixtures,'home-footer.png')});
         await load('programar-cita');check(!await page.locator('#HoraFin').evaluate(i=>i.required),'fin aproximado opcional al programar');check(await page.locator('#PerfilEstudianteId option').count()>1,'estudiantes vinculados seleccionables');
         await load('notificaciones');check(await page.locator('body').innerText().then(t=>t.includes('reprogramada por Director')),'notificación incluye emisor del cambio');
+        for(const name of ['calendario-director','calendario-estudiante','catalogo-carreras','resumen-prueba']) {
+            await load(name);await page.addStyleTag({path:path.join(root,'css/agenda-citas.css')});await page.addStyleTag({path:path.join(root,'css/modales.css')});
+            const mark=fs.readFileSync(path.join(root,'images/zuni-logo-transparent.png')).toString('base64');await page.locator('img[src*="zuni-logo-transparent"]').evaluateAll((imgs,b)=>imgs.forEach(i=>i.src='data:image/png;base64,'+b),mark);
+            if(name.startsWith('calendario')) {check(await page.locator('.agenda-day').count()>=28,'mes completo '+name);check(await page.locator('button').filter({hasText:'Solicitar cita'}).count()===0,'consulta sin reserva no autorizada '+name);}
+            if(name==='catalogo-carreras')check(await page.locator('#Archivo').getAttribute('accept')==='.txt,.csv','catálogo admite listado TXT/CSV');
+            if(name==='resumen-prueba'){check(await page.locator('meter').count()===5,'resumen de cinco temas exploratorios');await page.emulateMedia({media:'print'});check(await page.locator('[data-contenido-privado]').evaluate(e=>getComputedStyle(e).display)==='none','resumen individual oculto al imprimir');await page.emulateMedia({media:'screen'});}
+            await page.screenshot({path:path.join(fixtures,name+'.png'),fullPage:true});await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde móvil '+name);await page.setViewportSize({width:1280,height:900});
+        }
         check(errors.length === 0, 'sin errores JavaScript: ' + errors.join(', '));
         console.log(`OK: ${checks} comprobaciones de formularios en navegador.`);
     } finally { await browser.close(); }

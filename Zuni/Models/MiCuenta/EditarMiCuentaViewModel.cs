@@ -4,6 +4,7 @@ namespace Zuni.Models.MiCuenta;
 
 public sealed class EditarMiCuentaViewModel
 {
+    [BindNever] public IReadOnlyList<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Carreras { get; set; } = [];
     [Required(ErrorMessage = "Ingresa tu nombre completo.")]
     [StringLength(100, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 100 caracteres.")]
     public string NombreCompleto { get; set; } = string.Empty;

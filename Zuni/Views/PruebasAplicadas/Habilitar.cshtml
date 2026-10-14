@@ -1,0 +1,8 @@
+@model Zuni.Models.Pruebas.HabilitarPruebasViewModel
+@{ViewData["Title"]="Indicar prueba e inducción";}
+<header class="dash-profile-heading"><div><h1>Indicar prueba e inducción</h1><p>Selecciona un estudiante vinculado que ya asistió a una cita registrada. Explica el propósito exploratorio y cómo usar la escala antes de habilitarla.</p></div></header>
+<form method="post" class="dash-card"><div asp-validation-summary="All" class="text-danger"></div><label for="PerfilEstudianteId" class="form-label">Estudiante vinculado</label><select id="PerfilEstudianteId" name="PerfilEstudianteId" asp-items="Model.Estudiantes" class="form-select mb-3" required><option value="">Seleccionar...</option></select>
+<label for="PruebaId" class="form-label">Prueba activa revisada</label><select id="PruebaId" name="PruebaId" class="form-select mb-3" required><option value="">Seleccionar...</option>@foreach(var p in Model.Pruebas){<option value="@p.Id">@p.Nombre · @p.Preguntas.Count preguntas</option>}</select>
+<p>1 = totalmente en desacuerdo / nada identificado. 10 = totalmente de acuerdo / totalmente identificado. Los valores intermedios expresan grados de identificación.</p>
+<label class="d-block mb-3"><input type="checkbox" name="InduccionRealizada" value="true" required/> Expliqué al estudiante las instrucciones, la participación voluntaria y que no existen respuestas correctas ni incorrectas.</label><button class="dash-button">Habilitar después de la inducción</button></form>
+@if(Model.Pruebas.Count==0){<section class="dash-card mt-3">El Director debe revisar y activar los instrumentos antes de indicarlos.</section>}

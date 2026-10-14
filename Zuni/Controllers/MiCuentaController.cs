@@ -145,6 +145,7 @@ public sealed class MiCuentaController(
         {
             NombreCompleto = usuario.FullName,
             PuedeEditarEstudiante = permitido,
+            Carreras = permitido ? await Zuni.Services.CatalogoCarreras.Opciones(db, usuario.PerfilEstudiante?.Carrera, ct) : [],
             Estudiante = permitido ? usuario.PerfilEstudiante is { } perfil ? Datos(perfil) : new() : null,
             SolicitarCarne = permitido && string.IsNullOrWhiteSpace(usuario.PerfilEstudiante?.Carne),
             Revision = revisionProtector.Protect(RevisionActual(usuario, roles))
@@ -169,6 +170,7 @@ public sealed class MiCuentaController(
             return Forbid();
 
         model.PuedeEditarEstudiante = roles.Contains("Estudiante");
+        model.Carreras = model.PuedeEditarEstudiante ? await Zuni.Services.CatalogoCarreras.Opciones(db, usuario.PerfilEstudiante?.Carrera, ct) : [];
         model.SolicitarCarne = model.PuedeEditarEstudiante && string.IsNullOrWhiteSpace(usuario.PerfilEstudiante?.Carne);
         string? carneNuevo = null;
         if (model.SolicitarCarne)
@@ -201,6 +203,8 @@ public sealed class MiCuentaController(
                 ModelState.AddModelError("Estudiante.Telefono", "No puedes dejar vacío tu teléfono.");
             if (string.IsNullOrWhiteSpace(model.Estudiante.Carrera))
                 ModelState.AddModelError("Estudiante.Carrera", "No puedes dejar vacía tu carrera.");
+            else if(model.Estudiante.Carrera != usuario.PerfilEstudiante?.Carrera && !await db.CarrerasInstitucionales.AnyAsync(c => c.Activa && c.Nombre == model.Estudiante.Carrera, ct))
+                ModelState.AddModelError("Estudiante.Carrera", "Selecciona una carrera disponible del catálogo institucional.");
         }
         var nombre = model.NombreCompleto?.Trim() ?? string.Empty;
         if (nombre.Length < 2)

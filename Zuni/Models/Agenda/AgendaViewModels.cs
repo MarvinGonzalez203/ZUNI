@@ -22,6 +22,7 @@ public sealed class ReservaCitaInput
 
 public sealed class CambiarCitaInput
 {
+    public Guid Revision { get; set; }
     public string? EnlaceReunion { get; set; }
     public bool AccesoRestringidoRevisado { get; set; }
     public Guid CitaId { get; set; }
@@ -35,6 +36,8 @@ public sealed record DisponibilidadResumen(Guid Id, DayOfWeek DiaSemana, TimeOnl
 public sealed record HorarioDisponible(DateTime InicioUtc, DateTime FinUtc, ModalidadDisponibilidad Modalidad);
 public sealed class CitaResumen
 {
+    public Guid Revision { get; init; }
+    public string? ProgramadorRol { get; init; }
     public bool EsImprevista { get; init; }
     public bool FinAproximado { get; init; }
     public bool EnlacePreparado { get; init; }
@@ -86,7 +89,7 @@ public sealed record IntervaloAgenda(Guid Id, TimeOnly Inicio, TimeOnly Fin, int
 public sealed class DiaAgendaViewModel
 {
     public bool Consultable { get; init; }
-    public IReadOnlyList<CitaResumen> Citas { get; init; } = [];
+    public IReadOnlyList<CitaCalendarioResumen> Citas { get; set; } = [];
     public DateOnly Fecha { get; init; }
     public bool Editable { get; init; }
     public bool Bloqueado { get; init; }
@@ -97,8 +100,25 @@ public sealed class DiaAgendaViewModel
     public IReadOnlyList<IntervaloAgenda> Intervalos { get; init; } = [];
     public IReadOnlyList<FranjaAgenda> Franjas { get; init; } = [];
 }
+// El calendario no admite motivo de cancelación, enlace de reunión o contenido clínico.
+public sealed class CitaCalendarioResumen
+{
+    public Guid Id { get; init; }
+    public string Nombre { get; init; } = "";
+    public DateTime InicioUtc { get; init; }
+    public DateTime FinUtc { get; init; }
+    public EstadoCita Estado { get; init; }
+    public ModalidadCita Modalidad { get; init; }
+    public bool EsImprevista { get; init; }
+    public bool FinAproximado { get; init; }
+    public bool TieneRegistroAtencion { get; init; }
+}
 public sealed class CalendarioAgendaViewModel
 {
+    public bool Director { get; set; }
+    public bool Historico { get; set; }
+    public bool PuedeReservar { get; set; }
+    public string? PsicologoId { get; set; }
     public IReadOnlyList<EstudianteProgramable> EstudiantesProgramables { get; init; } = [];
     public DateTime AhoraUtc { get; init; }
     public DateOnly Mes { get; init; }
@@ -106,6 +126,7 @@ public sealed class CalendarioAgendaViewModel
     public bool Editor { get; init; }
     public IReadOnlyList<DiaAgendaViewModel> Dias { get; init; } = [];
 }
+public sealed record CalendarioDirectorViewModel(CalendarioAgendaViewModel Calendario, IReadOnlyList<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Psicologos);
 public sealed class HistorialCitasViewModel
 {
     public string Busqueda { get; init; } = string.Empty;

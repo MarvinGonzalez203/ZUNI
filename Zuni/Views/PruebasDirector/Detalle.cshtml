@@ -2,6 +2,7 @@
 @{ ViewData["Title"] = Model.Prueba.Nombre; var p = Model.Prueba; }
 <header class="dash-welcome"><div><a asp-action="Index">← Catálogo</a><h1>@p.Nombre</h1><p>@(p.Activa ? "Activa" : "Inactiva") · @p.Idioma · @Model.Asignaciones asignaciones</p></div></header>
 <partial name="_Mensaje" />
+@if(p.Subtitulo is not null){<p class="small">@p.Subtitulo</p>}
 <section class="dash-card p-4 mb-3">
     <h2>Propósito</h2><p class="text-break" style="white-space:pre-wrap">@p.Descripcion</p>
     <h2>Instrucciones</h2><p class="text-break" style="white-space:pre-wrap">@p.Instrucciones</p>

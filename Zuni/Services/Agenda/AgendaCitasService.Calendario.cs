@@ -19,7 +19,7 @@ public sealed partial class AgendaCitasService
     {
         var ahora = Ahora;
         var hoy = AgendaReglas.Hoy(ahora);
-        var mes = AgendaReglas.MesPermitido(fecha, ahora, editor);
+        var mes = AgendaReglas.MesPermitido(fecha, ahora, true);
         var siguiente = mes.AddMonths(1);
         var configuraciones = await db.ConfiguracionesAgendaDia.AsNoTracking()
             .Where(d => d.PsicologoUsuarioId == id && d.Fecha >= mes && d.Fecha < siguiente).ToListAsync(ct);
@@ -29,6 +29,10 @@ public sealed partial class AgendaCitasService
         var inicio = AgendaReglas.Utc(mes, TimeOnly.MinValue);
         var fin = AgendaReglas.Utc(siguiente, TimeOnly.MinValue);
         var citasConsulta = editor && id is not null ? await ResumenPsicologo(id).Where(c => c.InicioUtc >= inicio && c.InicioUtc < fin).OrderBy(c => c.InicioUtc).ToListAsync(ct) : [];
+        if (!editor && perfilId is not null)
+            citasConsulta = await (from c in db.Citas.AsNoTracking() join u in db.Users on c.PsicologoUsuarioId equals u.Id
+                where c.PerfilEstudianteId == perfilId && c.FechaHoraInicioUtc >= inicio && c.FechaHoraInicioUtc < fin
+                orderby c.FechaHoraInicioUtc select new CitaResumen { Id=c.Id, Nombre=u.FullName, InicioUtc=c.FechaHoraInicioUtc, FinUtc=c.FechaHoraFinUtc, Estado=c.Estado, Modalidad=c.Modalidad, FinAproximado=c.FinAproximado }).ToListAsync(ct);
         // Solo horas y pertenencia propia: nunca proyectar la identidad de otra persona al calendario.
         var ocupadas = await db.Citas.AsNoTracking().Where(c => EstadosActivos.Contains(c.Estado) &&
             (c.PsicologoUsuarioId == id || c.PerfilEstudianteId == perfilId) && c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio)
@@ -58,8 +62,10 @@ public sealed partial class AgendaCitasService
             dias.Add(new DiaAgendaViewModel
             {
                 Fecha = dia, Editable = dia >= hoy && dia <= hoy.AddMonths(12),
-                Consultable = editor || (dia >= hoy && dia <= hoy.AddMonths(12)),
-                Citas = citasConsulta.Where(c => c.InicioUtc >= desde && c.InicioUtc < hasta).ToArray(),
+                Consultable = dia <= hoy.AddMonths(12),
+                Citas = citasConsulta.Where(c => c.InicioUtc >= desde && c.InicioUtc < hasta).Select(c=>new CitaCalendarioResumen {
+                    Id=c.Id,Nombre=c.Nombre,InicioUtc=c.InicioUtc,FinUtc=c.FinUtc,Estado=c.Estado,Modalidad=c.Modalidad,
+                    EsImprevista=c.EsImprevista,FinAproximado=c.FinAproximado,TieneRegistroAtencion=c.TieneRegistroAtencion }).ToArray(),
                 Bloqueado = config?.Bloqueado == true, UsaBaseSemanal = baseSemanal,
                 TieneCitasActivas = citasDia.Any(c => c.Profesional),
                 CitaPropiaActiva = citasDia.Any(c => c.Propia),
@@ -72,7 +78,7 @@ public sealed partial class AgendaCitasService
                         AgendaReglas.Cruza(AgendaReglas.Utc(dia, d.HoraInicio), AgendaReglas.Utc(dia, d.HoraFin), c.Inicio, c.Fin)))).ToArray()
             });
         }
-        return new CalendarioAgendaViewModel { Mes = mes, Hoy = hoy, Editor = editor, Dias = dias, AhoraUtc = ahora,
+        return new CalendarioAgendaViewModel { Mes = mes, Hoy = hoy, Editor = editor, Historico=true, Dias = dias, AhoraUtc = ahora,
             EstudiantesProgramables = editor && id is not null ? await SeleccionProgramables((id,"Psicologo"),ct) : [] };
     }
 

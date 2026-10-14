@@ -135,7 +135,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         join p in db.PerfilesEstudiante.AsNoTracking() on c.PerfilEstudianteId equals p.Id
         join u in db.Users.AsNoTracking() on p.UsuarioId equals u.Id
         where c.PsicologoUsuarioId == id
-        select new CitaResumen { Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
+        select new CitaResumen { Id = c.Id, Revision=c.Revision, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc, ProgramadorRol=c.ProgramadorRol,
             EsImprevista = c.EsImprevista, FinAproximado = c.FinAproximado,
             EnlacePreparado = c.EnlaceReunion != null,
             FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
@@ -150,6 +150,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         var dia = fecha ?? AgendaReglas.Hoy(ahora);
         var psicologo = await Asignado(perfil.Id, ct);
         var calendario = await LeerCalendario(psicologo, fecha, false, perfil.Id, ct);
+        calendario.PuedeReservar = psicologo is not null && perfil.EstaCompleto && edadVerificada;
         var horarios = calendario.Dias.Where(d => d.Fecha == dia && !d.Bloqueado)
             .SelectMany(d => d.Franjas).Where(f => !f.Ocupada)
             .Select(f => new HorarioDisponible(f.InicioUtc, f.FinUtc, f.Modalidad)).ToArray();
@@ -220,11 +221,14 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
             throw new AgendaOperacionException("Utiliza Registrar atención para cerrar esta cita.");
         var cita = await db.Citas.SingleOrDefaultAsync(c => c.Id == input.CitaId && c.PsicologoUsuarioId == id, ct)
             ?? throw new AgendaAccesoException();
+        if ((cita.ProgramadorRol == "Director" && input.Revision == Guid.Empty) ||
+            (input.Revision != Guid.Empty && input.Revision != cita.Revision))
+            throw new AgendaOperacionException("La propuesta cambió. Recarga la agenda y revisa su fecha actual antes de responder.");
         if (input.Estado is EstadoCita.Confirmada or EstadoCita.Rechazada)
         {
             if (await Asignado(cita.PerfilEstudianteId, ct) != id ||
                 !await db.PerfilesEstudiante.AnyAsync(p => p.Id == cita.PerfilEstudianteId && p.Activo &&
-                    p.Usuario.IsActive && !p.Usuario.DebeCambiarContrasena, ct))
+                    p.Usuario.IsActive && (input.Estado == EstadoCita.Rechazada || !p.Usuario.DebeCambiarContrasena), ct))
                 throw new AgendaAccesoException();
             var usuario = await db.PerfilesEstudiante.Where(p => p.Id == cita.PerfilEstudianteId).Select(p => p.UsuarioId).SingleAsync(ct);
             var roles = await (from ur in db.UserRoles join r in db.Roles on ur.RoleId equals r.Id
@@ -236,6 +240,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
             await FijarEnlace(cita, input.EnlaceReunion, input.AccesoRestringidoRevisado, ct);
         if(input.Estado==EstadoCita.Confirmada)await ValidarConfirmacionProgramada(cita,ct);
         AplicarCambio(cita, input.Estado, input.MotivoCancelacion);
+        await NotificarRespuestaDirector(cita, ct);
     }, ct);
 
     public Task CancelarEstudiante(ClaimsPrincipal sesion, Guid citaId, string? motivoCancelacion, CancellationToken ct) => Escribir(async () =>
@@ -250,16 +255,16 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
     private void AplicarCambio(Cita cita, EstadoCita estado, string? motivo)
     {
         AgendaReglas.ValidarCambio(cita, estado, Ahora);
-        if (estado == EstadoCita.Cancelada)
+        if (estado == EstadoCita.Cancelada || (estado == EstadoCita.Rechazada && cita.ProgramadorRol == "Director"))
         {
             if (string.IsNullOrWhiteSpace(motivo))
-                throw new AgendaOperacionException("Debes indicar un motivo de cancelación.");
+                throw new AgendaOperacionException(estado == EstadoCita.Cancelada ? "Debes indicar un motivo de cancelación." : "Indica un motivo administrativo para rechazar la propuesta, sin datos clínicos.");
             if (motivo.Length > 300)
                 throw new AgendaOperacionException("El motivo de cancelación no puede superar los 300 caracteres.");
         }
         cita.Estado = estado;
         cita.Revision = Guid.NewGuid();
-        cita.MotivoCancelacion = estado == EstadoCita.Cancelada ? motivo?.Trim() : null;
+        cita.MotivoCancelacion = estado is EstadoCita.Cancelada or EstadoCita.Rechazada ? motivo?.Trim() : null;
     }
 
     public async Task<HistorialCitasViewModel> Historial(ClaimsPrincipal sesion, string? busqueda, EstadoCita? estado, int pagina, CancellationToken ct)

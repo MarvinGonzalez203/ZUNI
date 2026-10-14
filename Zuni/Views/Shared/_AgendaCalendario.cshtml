@@ -3,27 +3,27 @@
 @using Zuni.Services.Agenda
 @{
     var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-GT");
-    var minimo = Model.Editor ? DateOnly.MinValue : new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1);
+    var minimo = Model.Historico ? DateOnly.MinValue : new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1);
     var maximo = new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1).AddMonths(12);
     var offset = ((int)Model.Mes.DayOfWeek + 6) % 7;
 }
-<section class="dash-card agenda-card agenda-mensual" aria-label="Calendario mensual">
+<section id="calendario-citas" class="dash-card agenda-card agenda-mensual" aria-label="Calendario mensual">
     <nav class="agenda-month" aria-label="Mes del calendario">
-        @if (Model.Mes > minimo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(-1).ToString("yyyy-MM-dd")">← Anterior</a> }
+        @if (Model.Mes > minimo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(-1).ToString("yyyy-MM-dd")&amp;psicologoId=@Model.PsicologoId">← Anterior</a> }
         else { <span></span> }
         <h2>@Model.Mes.ToString("MMMM yyyy", cultura)</h2>
-        @if (Model.Mes < maximo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(1).ToString("yyyy-MM-dd")">Siguiente →</a> }
+        @if (Model.Mes < maximo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(1).ToString("yyyy-MM-dd")&amp;psicologoId=@Model.PsicologoId">Siguiente →</a> }
         else { <span></span> }
     </nav>
     <p class="agenda-legend"><span class="is-free">Disponible</span><span class="is-busy">Ocupado</span><span>Sin horarios</span></p>
-    <p class="agenda-hint">@(Model.Editor ? "Selecciona un día para consultar o configurar sus horarios." : "Selecciona un día para consultar las franjas de tu psicólogo asignado.") Hora de Guatemala (UTC−6).</p>
+    <p class="agenda-hint">@(Model.Editor ? "Selecciona un día para consultar o configurar sus horarios." : Model.Director ? "Selecciona un día para consultar la disponibilidad del profesional y proponer una cita." : "Selecciona un día para consultar tus citas y las franjas de tu psicólogo asignado.") Hora de Guatemala (UTC−6).</p>
     <div class="agenda-grid">
         @foreach (var nombre in new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" }) { <span class="agenda-weekday">@nombre</span> }
         @for (var i = 0; i < offset; i++) { <span aria-hidden="true"></span> }
         @foreach (var dia in Model.Dias)
         {
             var estado = dia.Estado == "Disponible" ? "is-free" : dia.Estado == "Ocupado" ? "is-busy" : "";
-            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @dia.Estado"><strong>@dia.Fecha.Day</strong><span>@dia.Estado</span>@if (Model.Editor && dia.Citas.Count > 0) { <small>@dia.Citas.Count cita(s)</small> }</button>
+            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @dia.Estado"><strong>@dia.Fecha.Day</strong><span>@dia.Estado</span>@if (dia.Citas.Count > 0) { <small>@dia.Citas.Count cita(s)</small> }</button>
         }
     </div>
 </section>
@@ -36,6 +36,17 @@
             <div class="modal-body">
                 <p class="agenda-hint">Hora de Guatemala (UTC−6)</p><h3 class="h5">Horarios de este día</h3>
                 @if (dia.Bloqueado) { <p class="agenda-notice">Día bloqueado. La configuración se conserva y no admite solicitudes.</p> }
+                @if (!Model.Editor) {
+                    <h3 class="h5">@(Model.Director ? "Programaciones de este día" : "Mis citas de este día")</h3>
+                    @if (dia.Citas.Count == 0) { <p>No hay citas registradas para esta fecha.</p> }
+                    @foreach (var c in dia.Citas) {
+                        <article class="agenda-slot"><strong>@c.Nombre</strong><p>@AgendaReglas.Local(c.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(c.FinUtc).ToString("HH:mm") · @c.Modalidad · @c.Estado</p>
+                        @if(Model.Director && AgendaReglas.Activa(c.Estado) && c.InicioUtc > Model.AhoraUtc && !c.EsImprevista) { <a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@c.Id">Reprogramar cita</a> }
+                        </article>
+                    }
+                    @if(Model.Director && dia.Editable && !dia.Bloqueado) { <a class="dash-button mb-3" asp-controller="CitasProgramadas" asp-action="Editar" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" asp-route-psicologoId="@Model.PsicologoId">Proponer cita a un estudiante vinculado</a> }
+                    @if(!Model.Director && !Model.PuedeReservar) { <p class="agenda-hint">Puedes consultar tus citas. Para reservar, completa el perfil, la verificación de edad y la asignación de psicólogo.</p> }
+                }
                 @if (Model.Editor) {
                     <h3 class="h5">Citas y actividades de este día</h3>
                     @if (dia.Citas.Count == 0) { <p>No hay citas registradas para esta fecha.</p> }
@@ -101,7 +112,7 @@
                             else
                             {
                                 <p>Disponible</p>
-                                @if (!dia.CitaPropiaActiva)
+                                @if (!dia.CitaPropiaActiva && Model.PuedeReservar && !Model.Director)
                                 {
                                     <form asp-controller="Estudiante" asp-action="ReservarCita" method="post" class="agenda-form">
                                         @if (h.Variable)

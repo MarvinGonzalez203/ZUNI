@@ -36,7 +36,7 @@ internal static class PruebasChecks
         Guid id;
         await using (var db = Nuevo())
         {
-            var p = await db.PruebasDirector.SingleAsync(); id = p.Id;
+            var p = await db.PruebasDirector.SingleAsync(x=>x.Nombre=="Instrumento de prueba"); id = p.Id;
             Check(!p.Activa, "Borrador inactivo");
         }
         async Task<Prueba> Leer()
@@ -79,7 +79,7 @@ internal static class PruebasChecks
         var bad = Campos(nombre: "Inválida").Select(x => x.Item1 == "Preguntas[0].Dimension" ? (x.Item1, "Ajena") : x).ToArray();
         var invalida = await HostPrueba.Post(director, "/PruebasDirector/Crear", "/PruebasDirector/Guardar", bad);
         Check(invalida.StatusCode == HttpStatusCode.OK && (await HostPrueba.Texto(invalida)).Contains("Cada pregunta debe pertenecer"), "Dimensión ajena rechazada con editor");
-        await using (var db = Nuevo()) Check(await db.PruebasDirector.CountAsync() == 1, "Inválida no guardada");
+        await using (var db = Nuevo()) Check(await db.PruebasDirector.CountAsync(x=>x.Nivel==null) == 1, "Inválida no guardada");
         var sinOpciones = Campos(nombre: "Sin opciones").Where(x => !x.Item1.Contains("Opciones")).ToArray();
         var opcionesInvalidas = await HostPrueba.Post(director, "/PruebasDirector/Crear", "/PruebasDirector/Guardar", sinOpciones);
         Check(opcionesInvalidas.StatusCode == HttpStatusCode.OK && (await HostPrueba.Texto(opcionesInvalidas)).Contains("al menos dos opciones"), "Opciones obligatorias por pregunta");

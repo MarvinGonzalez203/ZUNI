@@ -8,6 +8,7 @@ public static class PruebasConfiguration
 {
     public static void ConfigurarPruebas(this ModelBuilder builder)
     {
+        PruebasExploratorias.Configurar(builder);
         builder.Entity<Prueba>(e =>
         {
             e.ToTable("PruebasDirector");
@@ -31,16 +32,25 @@ public static class PruebasConfiguration
         });
         builder.Entity<OpcionPrueba>(e =>
         {
+            e.HasAlternateKey(x=>new{x.PreguntaPruebaId,x.Id});
             e.ToTable("OpcionesPrueba");
             e.HasIndex(x => new { x.PreguntaPruebaId, x.Orden }).IsUnique();
         });
         builder.Entity<AsignacionPrueba>(e =>
         {
+            e.Property(x=>x.Revision).IsConcurrencyToken();
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x=>x.PsicologoInductorId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Zuni.Models.Agenda.Cita>().WithMany().HasForeignKey(x=>x.CitaInduccionId).OnDelete(DeleteBehavior.Restrict);
             e.ToTable("AsignacionesPrueba");
             e.HasIndex(x => new { x.PruebaId, x.PerfilEstudianteId }).IsUnique();
             e.HasOne<Prueba>().WithMany().HasForeignKey(x => x.PruebaId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<PerfilEstudiante>().WithMany().HasForeignKey(x => x.PerfilEstudianteId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.DirectorUsuarioId).OnDelete(DeleteBehavior.Restrict);
+        });
+        builder.Entity<RespuestaPrueba>(e=>{
+            e.ToTable("RespuestasPruebas");e.HasKey(x=>new{x.AsignacionPruebaId,x.PreguntaPruebaId});
+            e.HasOne<AsignacionPrueba>().WithMany().HasForeignKey(x=>x.AsignacionPruebaId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<OpcionPrueba>().WithMany().HasForeignKey(x=>new{x.PreguntaPruebaId,x.OpcionPruebaId}).HasPrincipalKey(x=>new{x.PreguntaPruebaId,x.Id}).OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

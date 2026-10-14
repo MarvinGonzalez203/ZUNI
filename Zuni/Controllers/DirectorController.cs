@@ -23,6 +23,13 @@ public sealed class DirectorController(ApplicationDbContext db) : Controller
         return View();
     }
 
+    [HttpGet, Zuni.Services.Agenda.AgendaExceptionFilter]
+    public async Task<IActionResult> Calendario([FromServices] Zuni.Services.Agenda.AgendaCitasService agenda, string? psicologoId, DateOnly? fecha, CancellationToken ct)
+    {
+        await PrepararDashboardAsync();
+        return View(await agenda.CalendarioDirector(User, psicologoId, fecha, ct));
+    }
+
     [HttpGet]
     public async Task<IActionResult> AvanceEvaluaciones()
     {

@@ -7,6 +7,8 @@
     <a class="dash-nav-link @(accion == "Index" && !enBigFive ? "is-active" : "")" asp-controller="Estudiante" asp-action="Index" aria-current="@(accion == "Index" && !enBigFive ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
     <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
     <span class="dash-nav-label dash-nav-label-spaced">SERVICIOS</span>
+    <a class="dash-nav-link" asp-controller="Estudiante" asp-action="Citas" asp-fragment="calendario-citas"><partial name="_DashboardIcon" model='@("calendar")' /><span>Calendario de citas</span></a>
+    <a class="dash-nav-link" asp-controller="PruebasAplicadas" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Pruebas indicadas</span></a>
     <a class="dash-nav-link" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Privacidad y mis derechos</span></a>
     <a class="dash-nav-link" asp-controller="InformesEducativos" asp-action="Index"><partial name="_DashboardIcon" model='@("results")' /><span>Informes educativos</span></a>
     <a class="dash-nav-link" asp-controller="MayoriaEdad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Mayoría de edad</span></a>

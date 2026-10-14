@@ -4,6 +4,8 @@ namespace Zuni.Models.Pruebas;
 
 public sealed class Prueba
 {
+    [MaxLength(200)] public string? Subtitulo { get; set; }
+    public int? Nivel { get; set; }
     public Guid Id { get; set; } = Guid.NewGuid();
     [MaxLength(150)] public string Nombre { get; set; } = "";
     [MaxLength(2000)] public string Descripcion { get; set; } = "";
@@ -45,9 +47,21 @@ public sealed class OpcionPrueba
 
 public sealed class AsignacionPrueba
 {
+    public string? PsicologoInductorId { get; set; }
+    public Guid? CitaInduccionId { get; set; }
+    public DateTime? InduccionUtc { get; set; }
+    public DateTime? FinalizadaUtc { get; set; }
+    public DateTime? RetiradaUtc { get; set; }
+    public Guid Revision { get; set; } = Guid.NewGuid();
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid PruebaId { get; set; }
     public Guid PerfilEstudianteId { get; set; }
     public string DirectorUsuarioId { get; set; } = "";
     public DateTime AsignadaUtc { get; set; } = DateTime.UtcNow;
+}
+public sealed class RespuestaPrueba
+{
+    public Guid AsignacionPruebaId { get; set; }
+    public Guid PreguntaPruebaId { get; set; }
+    public Guid OpcionPruebaId { get; set; }
 }

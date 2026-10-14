@@ -50,6 +50,8 @@
             {
                 <form asp-action="GestionarCita" method="post" class="agenda-actions">
                     <input type="hidden" name="CitaId" value="@cita.Id" />
+                    <input type="hidden" name="Revision" value="@cita.Revision" />
+                    @if(cita.ProgramadorRol == "Director") { <span class="dash-badge">Propuesta del Director</span><label for="rechazo-@cita.Id">Motivo si no puedes atender (sin información clínica)</label><input id="rechazo-@cita.Id" name="MotivoCancelacion" maxlength="300" class="form-control" placeholder="Ej.: conflicto de horario" /> }
                     @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime && cita.Modalidad == ModalidadCita.Presencial) { <button type="submit" name="Estado" value="Confirmada" class="dash-button">Aceptar</button> }
                     <button type="submit" name="Estado" value="Rechazada" class="btn btn-outline-secondary">Rechazar</button>
                 </form>

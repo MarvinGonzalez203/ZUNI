@@ -7,6 +7,7 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<CarreraInstitucional> CarrerasInstitucionales => Set<CarreraInstitucional>();
         public DbSet<Zuni.Models.Agenda.EnlaceReunionUsado> EnlacesReunionUsados => Set<Zuni.Models.Agenda.EnlaceReunionUsado>();
         public DbSet<Zuni.Models.Privacidad.PoliticaPrivacidad> PoliticasPrivacidad => Set<Zuni.Models.Privacidad.PoliticaPrivacidad>();
         public DbSet<Zuni.Models.Privacidad.AceptacionPrivacidad> AceptacionesPrivacidad => Set<Zuni.Models.Privacidad.AceptacionPrivacidad>();
@@ -48,6 +49,7 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.ConfigurarCarreras();
             builder.ConfigurarPrivacidadInformes();
             builder.Entity<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad>(e =>
             {

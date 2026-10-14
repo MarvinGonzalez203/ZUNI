@@ -22,7 +22,7 @@ public sealed class PruebasDirectorController(ApplicationDbContext db) : Control
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index() => View(await db.PruebasDirector.AsNoTracking()
+    public async Task<IActionResult> Index() => View(await db.PruebasDirector.AsNoTracking().Include(p=>p.Preguntas)
         .OrderByDescending(x => x.CreadaUtc).ToListAsync());
 
     [HttpGet]
@@ -157,7 +157,7 @@ public sealed class PruebasDirectorController(ApplicationDbContext db) : Control
             TempData["PruebasMensaje"] = "No se pudo registrar la asignación; recarga y verifica si la prueba o el estudiante cambiaron.";
             return RedirectToAction(nameof(Asignar), new { id = p.Id });
         }
-        TempData["PruebasMensaje"] = "Asignación registrada. La aplicación y las respuestas del instrumento se integrarán en el módulo del estudiante.";
+        TempData["PruebasMensaje"] = "Asignación registrada, pendiente de que el psicólogo indique la prueba y registre la inducción después de la primera cita.";
         return RedirectToAction(nameof(Asignar), new { id = p.Id });
 
         IQueryable<Zuni.Models.PerfilEstudiante> EstudiantesElegibles() => Elegibles(model.Id);

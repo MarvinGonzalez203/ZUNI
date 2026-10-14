@@ -15,7 +15,7 @@ public sealed class ProgramarCitaInput
     [EnumDataType(typeof(ModalidadCita))] public ModalidadCita Modalidad { get; set; }
     [BindNever] public IReadOnlyList<EstudianteProgramable> Estudiantes { get; set; } = [];
 }
-public sealed record EstudianteProgramable(Guid Id,string Nombre,string Psicologo);
+public sealed record EstudianteProgramable(Guid Id,string Nombre,string Psicologo,bool EdadVerificada=false);
 public sealed record CitaProgramadaResumen(Guid Id,Guid Revision,string Estudiante,string Psicologo,DateTime InicioUtc,DateTime FinUtc,EstadoCita Estado,bool PuedeReprogramar);
 public sealed record ProgramacionListado(IReadOnlyList<CitaProgramadaResumen> Citas);
 public sealed class NotificacionCita
@@ -27,4 +27,4 @@ public sealed class NotificacionCita
     public DateTime FechaUtc { get; set; }
     public bool Leida { get; set; }
 }
-public sealed record NotificacionResumen(Guid Id,string Texto,DateTime FechaUtc,bool Leida,Guid CitaId);
+public sealed record NotificacionResumen(Guid Id,string Texto,DateTime FechaUtc,bool Leida,Guid CitaId,DateTime InicioUtc);
