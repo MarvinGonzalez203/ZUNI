@@ -126,6 +126,11 @@ internal static class HostPrueba
     {
         var html = await cliente.GetStringAsync(pagina);
         var datos = campos.ToDictionary(c => c.Clave, c => c.Valor);
+        if (accion == "/Cuenta/Registro")
+        {
+            var policy = Regex.Match(html, "name=\"PoliticaPrivacidadId\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
+            datos.TryAdd("PoliticaPrivacidadId", policy); datos.TryAdd("AceptaPrivacidad", "true");
+        }
         datos["__RequestVerificationToken"] = Token(html);
         return await cliente.PostAsync(accion, new FormUrlEncodedContent(datos));
     }

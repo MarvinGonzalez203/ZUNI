@@ -23,6 +23,8 @@ public sealed class LoginViewModel
 
 public sealed class RegisterViewModel
 {
+    [Required] public Guid? PoliticaPrivacidadId { get; set; }
+    public bool AceptaPrivacidad { get; set; }
     [Required(ErrorMessage = "Ingresa tu nombre.")]
     [StringLength(100, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 100 caracteres.")]
     [Display(Name = "Nombre completo")]

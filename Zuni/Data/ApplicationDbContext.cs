@@ -7,6 +7,12 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<Zuni.Models.Privacidad.PoliticaPrivacidad> PoliticasPrivacidad => Set<Zuni.Models.Privacidad.PoliticaPrivacidad>();
+        public DbSet<Zuni.Models.Privacidad.AceptacionPrivacidad> AceptacionesPrivacidad => Set<Zuni.Models.Privacidad.AceptacionPrivacidad>();
+        public DbSet<Zuni.Models.Privacidad.SolicitudDerechoDatos> SolicitudesDerechosDatos => Set<Zuni.Models.Privacidad.SolicitudDerechoDatos>();
+        public DbSet<Zuni.Models.Informes.InformeEducativo> InformesEducativos => Set<Zuni.Models.Informes.InformeEducativo>();
+        public DbSet<Zuni.Models.Informes.VersionInformeEducativo> VersionesInformesEducativos => Set<Zuni.Models.Informes.VersionInformeEducativo>();
+        public DbSet<Zuni.Models.Informes.AutorizacionInforme> AutorizacionesInformes => Set<Zuni.Models.Informes.AutorizacionInforme>();
         public DbSet<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad> VerificacionesMayoriaEdad => Set<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad>();
         public DbSet<Zuni.Models.Institucion.ConfiguracionInstitucion> ConfiguracionInstitucion => Set<Zuni.Models.Institucion.ConfiguracionInstitucion>();
         public DbSet<Zuni.Models.Pruebas.Prueba> PruebasDirector => Set<Zuni.Models.Pruebas.Prueba>();
@@ -40,6 +46,7 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.ConfigurarPrivacidadInformes();
             builder.Entity<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad>(e =>
             {
                 e.ToTable("VerificacionesMayoriaEdad", t =>

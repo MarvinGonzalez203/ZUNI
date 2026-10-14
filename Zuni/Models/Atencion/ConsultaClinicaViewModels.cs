@@ -9,6 +9,7 @@ public sealed class EstudianteAsignadoViewModel
 }
 public sealed class ExpedienteConsultaViewModel
 {
+    public Guid SolicitudId { get; set; }
     public string Nombre { get; init; } = string.Empty;
     public string Carne { get; init; } = string.Empty;
     public string? Carrera { get; init; }

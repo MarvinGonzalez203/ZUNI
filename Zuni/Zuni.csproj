@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.2.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.31" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.31">
       <PrivateAssets>all</PrivateAssets>
@@ -15,5 +16,7 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
   </ItemGroup>
+  <ItemGroup><EmbeddedResource Include="Resources/Fonts/*.ttf" /></ItemGroup>
+  <ItemGroup><None Update="Resources/Fonts/bitstream-vera-license.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
 
 </Project>

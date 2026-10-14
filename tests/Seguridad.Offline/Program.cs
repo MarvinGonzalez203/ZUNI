@@ -235,6 +235,13 @@ await using (var db = Nuevo())
 }
 
 // ================================================================== HTTP
+await using (var db = Nuevo())
+{
+    var p = new Zuni.Models.Privacidad.PoliticaPrivacidad { Version = 1, Institucion = "Institución de prueba", Responsable = "Responsable ficticio", Contacto = "datos@offline.test", Finalidades = "Pruebas de atención", DatosYAccesos = "Solo personal autorizado", Conservacion = "Conservación de prueba", ProcedimientoDerechos = "Solicitudes institucionales", PublicadaPorId = "admin", FechaPublicacionUtc = reloj.Ahora.UtcDateTime };
+    db.PoliticasPrivacidad.Add(p);
+    foreach (var id in await db.Users.Select(u => u.Id).ToListAsync()) db.AceptacionesPrivacidad.Add(new() { PoliticaId = p.Id, UsuarioId = id, FechaUtc = reloj.Ahora.UtcDateTime });
+    await db.SaveChangesAsync();
+}
 await using var app = await HostPrueba.Crear(opciones, reloj, hasher, loginPorMinuto: 1000);
 
 // --- Cabeceras de seguridad
@@ -544,6 +551,7 @@ await PruebasChecks.Run(app, opciones, clave, perfil, perfil2);
 await InstitucionChecks.Run(app, opciones, clave);
 await CamposObligatoriosChecks.Run(app, opciones, clave, perfil2);
 await MayoriaEdadChecks.Run(app, opciones, clave, reloj);
+await PrivacidadInformesChecks.Run(app, opciones, clave, reloj, perfil2);
 
 using (var c = HostPrueba.Cliente(app))
 {

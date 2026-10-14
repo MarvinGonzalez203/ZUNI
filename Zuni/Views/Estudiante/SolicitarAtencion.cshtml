@@ -19,7 +19,7 @@
     <div class="form-check mb-3"><input asp-for="EsMayorEdad" required class="form-check-input" /><label zuni-required="true" asp-for="EsMayorEdad" class="form-check-label"></label><span asp-validation-for="EsMayorEdad" class="text-danger d-block"></span></div>
     <div class="row g-3 mb-3">
         <div class="col-md-4"><label asp-for="Edad" class="form-label">Edad al verificar (años)</label><input asp-for="Edad" class="form-control" type="number" readonly /><span asp-validation-for="Edad" class="text-danger"></span></div>
-        <div class="col-md-4"><label asp-for="Sexo" class="form-label"></label><select asp-for="Sexo" class="form-select" required><option value="">Selecciona una opción</option><option>Mujer</option><option>Hombre</option><option>Otro</option><option>Prefiero no responder</option></select><span asp-validation-for="Sexo" class="text-danger"></span></div>
+        <div class="col-md-4"><label asp-for="Sexo" class="form-label"></label><select asp-for="Sexo" class="form-select" required><option value="">Selecciona una opción</option><option>Mujer</option><option>Hombre</option><option>No binario</option><option>Otros</option><option>Prefiero no responder</option></select><span asp-validation-for="Sexo" class="text-danger"></span></div>
         <div class="col-md-4"><label asp-for="IdiomaPreferido" class="form-label"></label><input asp-for="IdiomaPreferido" class="form-control" maxlength="80" required /><span asp-validation-for="IdiomaPreferido" class="text-danger"></span></div>
     </div>
     <div class="mb-3"><label asp-for="Direccion" class="form-label"></label><input asp-for="Direccion" class="form-control" maxlength="300" required /><span asp-validation-for="Direccion" class="text-danger"></span></div>

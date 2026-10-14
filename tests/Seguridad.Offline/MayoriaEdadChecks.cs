@@ -80,7 +80,11 @@ internal static class MayoriaEdadChecks
             Check(v.Estado == EstadoMayoriaEdad.Verificada && v.EdadVerificada == 18 && v.ResponsableUsuarioId == "admin" && v.FechaRevisionUtc.HasValue && v.DocumentoRevisado == DocumentoEdad.Dpi, "constancia con edad, documento, responsable y fecha");
             Check(await db.AuditoriaUsuarios.AnyAsync(a => a.UsuarioAfectadoId == "edad" && a.Accion == "MAYORIA_EDAD_VERIFICADA" && a.DatosNuevos == null), "auditoría sin fecha de nacimiento ni contenido del documento");
         }
-        Check((await student.GetAsync("/Estudiante/SolicitarAtencion")).StatusCode == HttpStatusCode.OK, "verificación habilita solicitud");
+        var necesitaPrivacidad = await student.GetAsync("/Estudiante/SolicitarAtencion");
+        Check(necesitaPrivacidad.StatusCode == HttpStatusCode.Redirect && necesitaPrivacidad.Headers.Location!.OriginalString.Contains("Privacidad"), "verificación documental no sustituye aceptación de privacidad");
+        await using (var db = new OfflineDb(options))
+        { var policy = await Zuni.Services.Privacidad.PrivacidadService.VigenteAsync(db, default); await HostPrueba.Post(student, "/Privacidad", "/Privacidad/Aceptar", ("politicaId", policy!.Id.ToString()), ("confirmada", "true")); }
+        Check((await student.GetAsync("/Estudiante/SolicitarAtencion")).StatusCode == HttpStatusCode.OK, "verificación y privacidad habilitan solicitud");
         await using (var db = new OfflineDb(options)) { var p = await db.PerfilesEstudiante.SingleAsync(p => p.Id == perfil.Id); p.Telefono = null; await db.SaveChangesAsync(); }
         var sinTelefono = await student.GetAsync("/Estudiante/SolicitarAtencion");
         Check(sinTelefono.StatusCode == HttpStatusCode.Redirect && sinTelefono.Headers.Location!.OriginalString.Contains("MiCuenta"), "solicitud exige teléfono personal válido");

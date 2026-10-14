@@ -5,7 +5,7 @@ public static class CarneHelper
     public const string PatronParte1 = "^[0-9]{4}$";
     public const string PatronParte2 = "^[0-9]{2}$";
     public const string PatronParte3 = "^[0-9]{2,6}$";
-    public const string MensajeFormato = "El carné debe usar el formato 0000-00-00 hasta 0000-00-000000.";
+    public const string MensajeFormato = "El carné tiene 4 dígitos, 2 dígitos y un último bloque de 2 a 6 dígitos (2, 3, 4, 5 o 6). Ejemplos: 1590-18-25 y 7490-26-125678.";
 
     public static bool TryConstruir(string? parte1, string? parte2, string? parte3, out string carne)
     {

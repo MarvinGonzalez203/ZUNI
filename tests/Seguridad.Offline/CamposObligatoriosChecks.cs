@@ -50,6 +50,8 @@ internal static class CamposObligatoriosChecks
             db.Users.Add(user);
             db.UserRoles.Add(new IdentityUserRole<string> { UserId = user.Id, RoleId = "Estudiante" });
             var p = new PerfilEstudiante { UsuarioId = user.Id, Carne = "20990199", Telefono = "12345678" }; db.PerfilesEstudiante.Add(p);
+            var politica = await Zuni.Services.Privacidad.PrivacidadService.VigenteAsync(db, default);
+            db.AceptacionesPrivacidad.Add(new() { PoliticaId = politica!.Id, UsuarioId = user.Id, FechaUtc = DateTime.UtcNow });
             db.VerificacionesMayoriaEdad.Add(new Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad { PerfilEstudianteId = p.Id, EdadDeclarada = 21, Estado = Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada, EdadVerificada = 21, DocumentoRevisado = Zuni.Models.MayoriaEdad.DocumentoEdad.Dpi, ResponsableUsuarioId = p.UsuarioId, FechaDeclaracionUtc = DateTime.UtcNow, FechaRevisionUtc = DateTime.UtcNow });
             await db.SaveChangesAsync();
         }

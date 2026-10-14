@@ -165,6 +165,7 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
             // Si no se puede auditar, no devolver el contenido.
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "No fue posible completar la consulta. Intenta nuevamente.");
         }
+        datos.Modelo.SolicitudId = solicitudId;
         return View(datos.Modelo);
     }
 

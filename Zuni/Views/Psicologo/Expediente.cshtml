@@ -3,6 +3,7 @@
 @{ ViewData["Title"] = "Expediente inicial"; Layout = "_DashboardLayout"; }
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">CONTENIDO CONFIDENCIAL · SOLO LECTURA</span><h1>Expediente inicial</h1><p>Esta consulta queda registrada. No compartas el contenido fuera de la atención autorizada.</p></div></header>
 <section class="dash-card">
+    <a class="dash-button mb-3" asp-controller="InformesEducativos" asp-action="Crear" asp-route-solicitudId="@Model.SolicitudId">Crear informe educativo</a>
     <h2 class="h4">Datos básicos</h2>
     <dl class="row">
         <dt class="col-sm-4">Nombre</dt><dd class="col-sm-8">@Model.Nombre</dd>
@@ -10,7 +11,7 @@
         <dt class="col-sm-4">Carrera</dt><dd class="col-sm-8">@Model.Carrera</dd>
         <dt class="col-sm-4">Fecha de solicitud (UTC)</dt><dd class="col-sm-8">@Model.FechaSolicitudUtc.ToString("dd/MM/yyyy HH:mm")</dd>
         <dt class="col-sm-4">Edad / mayoría de edad</dt><dd class="col-sm-8">@Model.Edad años · @(Model.EsMayorEdad ? "Confirmada" : "No confirmada")</dd>
-        <dt class="col-sm-4">Sexo</dt><dd class="col-sm-8">@(Model.Sexo ?? "No indicado")</dd>
+        <dt class="col-sm-4">Género</dt><dd class="col-sm-8">@(Model.Sexo ?? "No indicado")</dd>
         <dt class="col-sm-4">Dirección</dt><dd class="col-sm-8 text-break">@Model.Direccion</dd>
         <dt class="col-sm-4">Idioma preferido</dt><dd class="col-sm-8">@Model.IdiomaPreferido</dd>
         <dt class="col-sm-4">Tipo de ingreso</dt><dd class="col-sm-8">@(Model.TipoIngreso == TipoIngresoAtencion.Referencia ? "Referencia" : "Iniciativa propia")</dd>

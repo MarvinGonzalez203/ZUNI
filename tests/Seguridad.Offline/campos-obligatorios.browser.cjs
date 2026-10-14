@@ -95,6 +95,23 @@ function check(value, text) { assert.ok(value, text); checks++; }
         await page.selectOption('#Aprobada', 'false');
         await required('FechaNacimiento', false);
         await page.screenshot({ path: path.join(fixtures, 'revision-edad.png'), fullPage: true });
+        await load('solicitud', ['solicitar-atencion.js']);
+        for (const genero of ['Mujer', 'Hombre', 'No binario', 'Otros']) {
+            await page.selectOption('#Sexo', genero);
+            check(await page.locator('#Sexo').inputValue() === genero, 'opción de género ' + genero);
+        }
+        await load('registro');
+        for (const bloque of ['25', '125', '1225', '12225', '125678']) {
+            await page.locator('#CarneParte3').fill(bloque);
+            check(await page.locator('#CarneParte3').evaluate(input => input.checkValidity() && input.value.length >= 2 && input.value.length <= 6), 'rango continuo del carné ' + bloque.length);
+        }
+        await load('informe');
+        check(await page.getByRole('link', { name: 'Descargar PDF' }).count() === 1, 'PDF de versión emitida visible para el destinatario');
+        check(await page.locator('body').innerText().then(text => !text.includes('MOTIVO-CLINICO-PRIVADO')), 'vista del Director sin notas privadas');
+        await page.screenshot({ path: path.join(fixtures, 'informe-vista-director.png'), fullPage: true });
+        await load('privacidad');
+        check(await page.getByRole('heading', { name: 'Mis solicitudes', exact: true }).count() === 1, 'centro de derechos disponible');
+        await page.screenshot({ path: path.join(fixtures, 'privacidad-vista-estudiante.png'), fullPage: true });
         check(errors.length === 0, 'sin errores JavaScript: ' + errors.join(', '));
         console.log(`OK: ${checks} comprobaciones de formularios en navegador.`);
     } finally { await browser.close(); }

@@ -2,7 +2,8 @@
 @{ ViewData["Title"] = "Solicitar una cuenta"; Layout = "_AuthLayout"; ViewData["Institucion"] = Model; }
 <h1>Solicitar una cuenta</h1>
 <p class="fw-semibold">@Model.Nombre</p>
-<p>Esta institución utiliza cuentas creadas por el Administrador. Contacta al responsable institucional para solicitar tu acceso.</p>
+@if (ViewData["PrivacidadPendiente"] is true) { <p>La institución debe publicar su política de privacidad antes de habilitar el registro. Contacta al responsable institucional.</p> }
+else { <p>Esta institución utiliza cuentas creadas por el Administrador. Contacta al responsable institucional para solicitar tu acceso.</p> }
 @if (!string.IsNullOrWhiteSpace(Model.CorreoSoporte))
 {
     <p>Contacto institucional: <a href="mailto:@Model.CorreoSoporte">@Model.CorreoSoporte</a></p>

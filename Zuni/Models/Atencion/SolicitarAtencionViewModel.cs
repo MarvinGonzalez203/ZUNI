@@ -6,7 +6,7 @@ public sealed class SolicitarAtencionViewModel : IValidatableObject
     [Range(18, 120, ErrorMessage = "Este flujo admite edades entre 18 y 120 años.")]
     public int Edad { get; set; }
     [Required(ErrorMessage = "Selecciona tu género."), StringLength(50), Display(Name = "Género")]
-    [AllowedValues("Mujer", "Hombre", "Otro", "Prefiero no responder", ErrorMessage = "Selecciona una opción de género válida.")]
+    [AllowedValues("Mujer", "Hombre", "No binario", "Otros", "Otro", "Prefiero no responder", ErrorMessage = "Selecciona una opción de género válida.")]
     public string? Sexo { get; set; }
     [Required, StringLength(300), Display(Name = "Dirección")] public string Direccion { get; set; } = string.Empty;
     [Required, StringLength(80), Display(Name = "Idioma preferido")] public string IdiomaPreferido { get; set; } = string.Empty;

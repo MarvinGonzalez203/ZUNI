@@ -279,7 +279,9 @@ public sealed class CuentaController(
         var configuracion = await ConfiguracionInstitucionService.ObtenerAsync(db);
         if (configuracion.PoliticaCorreo == PoliticaCorreoInstitucion.SoloAltasAdministradas)
             return View("RegistroNoDisponible", configuracion);
-        return View(new RegisterViewModel());
+        var privacidad = await Zuni.Services.Privacidad.PrivacidadService.VigenteAsync(db, CancellationToken.None);
+        if (privacidad is null) { ViewData["PrivacidadPendiente"] = true; return View("RegistroNoDisponible", configuracion); }
+        return View(new RegisterViewModel { PoliticaPrivacidadId = privacidad.Id });
     }
 
     [HttpPost("Registro")]
@@ -301,6 +303,9 @@ public sealed class CuentaController(
         }
         var errorCorreo = PoliticaCorreoReglas.ValidarCorreo(configuracion, email, registroPublico: true);
         if (errorCorreo is not null) ModelState.AddModelError(nameof(model.Email), errorCorreo);
+        var privacidad = await Zuni.Services.Privacidad.PrivacidadService.VigenteAsync(db, CancellationToken.None);
+        if (privacidad is null) { Response.StatusCode = StatusCodes.Status403Forbidden; ViewData["PrivacidadPendiente"] = true; return View("RegistroNoDisponible", configuracion); }
+        if (!model.AceptaPrivacidad || model.PoliticaPrivacidadId != privacidad.Id) ModelState.AddModelError("", "Lee y acepta la política de privacidad vigente antes de crear tu cuenta.");
 
         if (!CarneHelper.TryConstruir(
             model.CarneParte1,
@@ -401,6 +406,8 @@ public sealed class CuentaController(
             await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
         // Volver a comprobar dentro de la transacción si la política cambió mientras se completaba el formulario.
+        var privacidadActual = await Zuni.Services.Privacidad.PrivacidadService.VigenteAsync(db, CancellationToken.None);
+        if (privacidadActual?.Id != model.PoliticaPrivacidadId) { ModelState.AddModelError("", "La política de privacidad cambió. Revisa la versión vigente y acepta antes de continuar."); return View(model); }
         var politicaActual = await ConfiguracionInstitucionService.ObtenerAsync(db);
         var errorActual = PoliticaCorreoReglas.ValidarCorreo(politicaActual, email, registroPublico: true);
         if (errorActual is not null)
@@ -410,6 +417,8 @@ public sealed class CuentaController(
         }
 
         db.Users.Add(user);
+        db.AceptacionesPrivacidad.Add(new() { UsuarioId = user.Id, PoliticaId = privacidadActual!.Id, FechaUtc = DateTime.UtcNow });
+        Zuni.Services.Privacidad.PrivacidadService.Auditar(db, user.Id, user.Id, "PRIVACIDAD_ACEPTADA_REGISTRO", TimeProvider.System, privacidadActual.Id);
 
         db.UserRoles.Add(
             new IdentityUserRole<string>

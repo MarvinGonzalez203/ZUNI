@@ -1,0 +1,7 @@
+@{
+    Layout = "_DashboardLayout";
+    var rol = new[] { "Psicologo", "Director", "Estudiante" }.FirstOrDefault(User.IsInRole) ?? "Estudiante";
+    ViewData["DashboardRole"] = rol;
+    ViewData["DashboardController"] = rol;
+    ViewData["DashboardNavigation"] = $"~/Views/{rol}/_Navegacion.cshtml";
+}

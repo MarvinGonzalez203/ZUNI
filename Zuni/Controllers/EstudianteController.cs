@@ -49,6 +49,7 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
             .Select(s => new EstadoSolicitudViewModel { Estado = s.Estado, FechaSolicitudUtc = s.FechaSolicitudUtc })
             .SingleOrDefaultAsync(ct);
         if (activa is not null) return View("EstadoSolicitud", activa);
+        if (!await Zuni.Services.Privacidad.PrivacidadService.AceptadaAsync(db, perfil.UsuarioId, ct)) return RedirectToAction("Index", "Privacidad");
         return View(new SolicitarAtencionViewModel { Edad = constanciaEdad.EdadVerificada!.Value });
     }
 
@@ -69,6 +70,7 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
             model.Edad = constanciaEdad.EdadVerificada!.Value;
             ModelState.Remove(nameof(model.Edad));
             if (await TieneSolicitudActivaAsync(perfilId, ct)) return SolicitudExistente();
+            if (!await Zuni.Services.Privacidad.PrivacidadService.AceptadaAsync(db, perfil.UsuarioId, ct)) return RedirectToAction("Index", "Privacidad");
             if (!ModelState.IsValid)
             {
                 // El formulario siempre tiene tres posiciones, nunca se renderiza una lista arbitraria del cliente.
