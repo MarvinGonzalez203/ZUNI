@@ -84,7 +84,7 @@ Bloquear, quitar configuración o quitar un intervalo comprueba las citas activa
 
 ## Duración variable
 
-DuracionMinutos = 0 significa **reservar el intervalo completo**, desde su inicio exacto hasta su fin. No se crean bloques arbitrarios ni se permite reservar desde un punto intermedio. Si ese inicio ya pasó, no se ofrece como franja futura.
+DuracionMinutos = 0 significa **sin duración fija**: el intervalo solo define el rango reservable. Cada cita elige su inicio (cada 15 minutos desde el inicio del intervalo) y su duración (15 a 120 minutos, múltiplos de 15); su fin es inicio + duración y el resto del intervalo sigue reservable. (Actualizado en `fix/registro-atencion-por-cita`; antes la cita ocupaba el intervalo completo y su fin era el fin del intervalo. Ver docs/registro-atencion-por-cita.md.)
 
 ## Estudiante y privacidad
 

@@ -188,9 +188,12 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         if (await db.Citas.AnyAsync(c => c.PerfilEstudianteId == perfil.Id && EstadosActivos.Contains(c.Estado) &&
             c.FechaHoraInicioUtc >= inicioDia && c.FechaHoraInicioUtc < finDia, ct))
             throw new AgendaOperacionException("Ya tienes una cita activa para esta fecha.");
-        var horario = disponibles.FirstOrDefault(d => AgendaReglas.Encaja(d, inicio) && AgendaReglas.Permite(d.Modalidad, input.Modalidad))
-            ?? throw new AgendaOperacionException("El horario o la modalidad ya no están disponibles.");
-        var fin = horario.DuracionMinutos == 0 ? AgendaReglas.Utc(dia, horario.HoraFin) : inicio.AddMinutes(horario.DuracionMinutos);
+        var horario = disponibles.FirstOrDefault(d => AgendaReglas.Encaja(d, inicio, input.DuracionMinutos) && AgendaReglas.Permite(d.Modalidad, input.Modalidad))
+            ?? throw new AgendaOperacionException(disponibles.Any(d => d.DuracionMinutos == 0) && input.DuracionMinutos is null
+                ? "Selecciona la duración de la cita."
+                : "El horario, la duración o la modalidad ya no están disponibles.");
+        // El fin pertenece a ESTA cita (inicio + duración); nunca al fin de la disponibilidad.
+        var fin = AgendaReglas.FinCita(horario, inicio, input.DuracionMinutos);
         if (await db.Citas.AnyAsync(c => EstadosActivos.Contains(c.Estado) &&
             (c.PsicologoUsuarioId == psicologo || c.PerfilEstudianteId == perfil.Id) &&
             c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio, ct))

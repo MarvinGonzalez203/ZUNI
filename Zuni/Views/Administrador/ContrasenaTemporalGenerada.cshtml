@@ -24,6 +24,6 @@
             <p class="small">La cuenta sigue <strong>inactiva</strong>: el usuario no podrá iniciar sesión hasta que la actives.</p>
         }
         <p class="small">Al iniciar sesión, el usuario deberá cambiarla por una contraseña personal.</p>
-        <a asp-controller="Administrador" asp-action="Index" class="dash-button px-4">Volver a usuarios</a>
+        <a asp-controller="Administrador" asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="dash-button px-4">Volver al usuario</a>
     </div>
 </section>

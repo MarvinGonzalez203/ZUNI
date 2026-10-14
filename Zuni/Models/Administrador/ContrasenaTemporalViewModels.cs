@@ -24,6 +24,7 @@ public sealed class ContrasenaTemporalViewModel
 // Solo vive durante la respuesta inmediata del POST. Nunca se persiste.
 public sealed class ContrasenaTemporalGeneradaViewModel
 {
+    public string UsuarioId { get; init; } = string.Empty;
     public string NombreUsuario { get; init; } = string.Empty;
     public string? Email { get; init; }
     public bool Activo { get; init; }

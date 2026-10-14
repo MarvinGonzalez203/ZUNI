@@ -247,6 +247,7 @@ checks += await CalendarioChecks.Run(db, service, estudiante, segundo, psicologo
 checks += await CancelacionChecks.Run(db, service, estudiante, segundo, otroPsicologo, psicologo, reloj, ct);
 checks += await HttpSmoke.Run(db, reloj);
 checks += await AtencionChecks.Run(db, service, estudiante, segundo, otroPsicologo, psicologo, reloj, ct);
+checks += await AtencionPorCitaChecks.Run(db, service, reloj, ct);
 Console.WriteLine($"OK: {checks} comprobaciones Agenda offline. PostgreSQL no fue abierto ni modificado. Concurrencia real PostgreSQL pendiente de validación en entorno de pruebas.");
 
 sealed class Reloj : TimeProvider

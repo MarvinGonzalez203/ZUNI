@@ -1,0 +1,85 @@
+@model Zuni.Models.Administrador.UsuariosPorRolViewModel
+@using Zuni.Helpers
+@{
+    ViewData["Title"] = "Usuarios · " + Model.Titulo;
+}
+
+<section class="dash-admin-panel" aria-labelledby="usuarios-rol-title">
+    <div class="dash-card">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <div>
+                <p class="small fw-semibold mb-2">Panel Administrador · Usuarios por rol</p>
+                <h1 id="usuarios-rol-title" class="display-6 fw-bold mb-2">@Model.Titulo</h1>
+                <p class="mb-0">@(Model.Rol is null ? "Cuentas que no tienen ningún rol asignado." : "Solo se muestran cuentas con este rol.")</p>
+            </div>
+            <span class="rounded-pill px-3 py-2 small fw-semibold" style="background: rgba(206,162,253,.25);">Resultados: @Model.Total</span>
+        </div>
+
+        <form asp-action="@Model.Accion" method="get" class="row g-3 align-items-end mb-4">
+            <div class="col-12 col-lg-6"><label for="buscar" class="form-label">@(Model.EsEstudiantes ? "Nombre, correo o carné" : "Nombre o correo")</label><input id="buscar" name="buscar" value="@Model.Buscar" maxlength="200" class="form-control" type="search" /></div>
+            <div class="col-6 col-lg-3"><label for="estado" class="form-label">Estado</label><select id="estado" name="estado" class="form-select">
+                <option value="">Todos</option>
+                <option value="Activos" selected="@(Model.Estado == "Activos")">Activos</option>
+                <option value="Inactivos" selected="@(Model.Estado == "Inactivos")">Inactivos</option>
+                <option value="Pendientes" selected="@(Model.Estado == "Pendientes")">Pendientes de activación</option>
+            </select></div>
+            <div class="col-6 col-lg-3 d-flex flex-wrap gap-2"><button class="dash-button" type="submit">Filtrar</button><a asp-action="@Model.Accion" class="btn btn-outline-dark">Limpiar</a></div>
+        </form>
+
+        @foreach (var tipo in new[] { "Info", "Error" })
+        {
+            if (TempData[tipo] is string mensaje)
+            {
+                <div class="alert @(tipo == "Error" ? "alert-danger" : "alert-light") border" role="status">@mensaje</div>
+            }
+        }
+
+        @if (Model.Usuarios.Count == 0)
+        {
+            <div class="rounded-3 border p-4">No hay usuarios que coincidan con los filtros seleccionados.</div>
+        }
+        else
+        {
+            <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="Listado de @Model.Titulo">
+                <table class="table align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: #111111;">
+                    <caption class="visually-hidden">@Model.Titulo de ZUNI. Usa Gestionar para ver las acciones disponibles.</caption>
+                    <thead style="background: rgba(206,162,253,.18);">
+                        <tr>
+                            <th scope="col" class="p-3">Nombre</th>
+                            @if (Model.EsEstudiantes) { <th scope="col" class="p-3">Carné</th> }
+                            <th scope="col" class="p-3">Correo</th>
+                            @if (Model.EsEstudiantes) { <th scope="col" class="p-3">Carrera</th> }
+                            @if (Model.EsPsicologos) { <th scope="col" class="p-3">Asignaciones vigentes</th> }
+                            <th scope="col" class="p-3">Estado</th>
+                            <th scope="col" class="p-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var usuario in Model.Usuarios)
+                        {
+                            <tr data-usuario="@usuario.Id">
+                                <th scope="row" class="p-3 fw-semibold text-break">@usuario.FullName</th>
+                                @if (Model.EsEstudiantes) { <td class="p-3 text-nowrap">@(CarneHelper.Formatear(usuario.Carne) ?? "—")</td> }
+                                <td class="p-3 text-break">@(usuario.Email ?? "Sin correo")</td>
+                                @if (Model.EsEstudiantes) { <td class="p-3 text-break">@(usuario.Carrera ?? "—")</td> }
+                                @if (Model.EsPsicologos) { <td class="p-3" data-asignaciones="@usuario.AsignacionesVigentes">@usuario.AsignacionesVigentes</td> }
+                                <td class="p-3">
+                                    <span class="badge rounded-pill border text-dark"
+                                          style="background: @(usuario.IsActive ? "rgba(206,162,253,.25)" : "rgba(237,232,208,.65)");">
+                                        @(usuario.IsActive ? "Activo" : usuario.PendienteActivacion ? "Pendiente de activación" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td class="p-3"><a asp-action="Gestionar" asp-route-id="@usuario.Id" class="btn btn-sm btn-outline-dark" aria-label="Gestionar a @usuario.FullName">Gestionar</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <nav class="d-flex gap-3 mt-3" aria-label="Paginación">
+                @if (Model.Pagina > 1) { <a asp-action="@Model.Accion" asp-route-buscar="@Model.Buscar" asp-route-estado="@Model.Estado" asp-route-pagina="@(Model.Pagina - 1)">Anterior</a> }
+                <span>Página @Model.Pagina de @Model.Paginas</span>
+                @if (Model.Pagina < Model.Paginas) { <a asp-action="@Model.Accion" asp-route-buscar="@Model.Buscar" asp-route-estado="@Model.Estado" asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a> }
+            </nav>
+        }
+    </div>
+</section>

@@ -37,15 +37,64 @@ public static class AgendaReglas
         return valor;
     }
 
-    public static bool Encaja(DisponibilidadPsicologo d, DateTime inicioUtc)
+    // Intervalos "Sin duración establecida" (DuracionMinutos = 0): la disponibilidad solo define el
+    // rango reservable. Cada cita elige su inicio (cada 15 minutos desde el inicio del rango) y su
+    // propia duración; su fin es inicio + duración, nunca el fin del rango.
+    public const int PasoVariableMinutos = 15;
+    public static readonly IReadOnlyList<int> DuracionesVariables = [15, 30, 45, 60, 75, 90, 105, 120];
+
+    public static bool Encaja(DisponibilidadPsicologo d, DateTime inicioUtc) => Encaja(d, inicioUtc, null);
+
+    public static bool Encaja(DisponibilidadPsicologo d, DateTime inicioUtc, int? duracionSolicitada)
     {
         var local = Local(inicioUtc);
         var hora = TimeOnly.FromDateTime(local);
+        if (!d.Activo || d.DiaSemana != local.DayOfWeek || hora < d.HoraInicio) return false;
         var minutos = (hora - d.HoraInicio).TotalMinutes;
-        return d.Activo && d.DiaSemana == local.DayOfWeek && hora >= d.HoraInicio &&
-            (d.DuracionMinutos == 0 ? hora == d.HoraInicio :
-            minutos % d.DuracionMinutos == 0 &&
-            minutos + d.DuracionMinutos <= (d.HoraFin - d.HoraInicio).TotalMinutes);
+        var rango = (d.HoraFin - d.HoraInicio).TotalMinutes;
+        return d.DuracionMinutos == 0
+            ? duracionSolicitada is { } duracion && DuracionesVariables.Contains(duracion) &&
+              minutos % PasoVariableMinutos == 0 && minutos + duracion <= rango
+            : minutos % d.DuracionMinutos == 0 && minutos + d.DuracionMinutos <= rango;
+    }
+
+    // Fin de la cita = inicio + duración de ESA cita. En intervalos fijos la duración es la del horario;
+    // en intervalos sin duración establecida es la elegida al reservar.
+    public static DateTime FinCita(DisponibilidadPsicologo d, DateTime inicioUtc, int? duracionSolicitada) =>
+        inicioUtc.AddMinutes(d.DuracionMinutos == 0
+            ? duracionSolicitada ?? throw new AgendaOperacionException("Selecciona la duración de la cita.")
+            : d.DuracionMinutos);
+
+    // Tramos de un intervalo sin duración establecida: huecos libres reservables y tramos ocupados.
+    // Un hueco libre empieza en el primer inicio válido (múltiplo de 15 minutos desde el inicio del
+    // rango, posterior a "ahora") y solo se ofrece si cabe al menos la duración mínima.
+    public static IReadOnlyList<(DateTime Inicio, DateTime Fin, bool Ocupada)> TramosVariables(
+        DisponibilidadPsicologo d, DateOnly fecha, IEnumerable<(DateTime Inicio, DateTime Fin)> ocupadas, DateTime ahoraUtc)
+    {
+        var rangoInicio = Utc(fecha, d.HoraInicio);
+        var rangoFin = Utc(fecha, d.HoraFin);
+        var tramos = new List<(DateTime Inicio, DateTime Fin, bool Ocupada)>();
+        var cursor = rangoInicio;
+        void Libre(DateTime desde, DateTime hasta)
+        {
+            var minutos = Math.Max(0, (desde - rangoInicio).TotalMinutes);
+            var primero = rangoInicio.AddMinutes(Math.Ceiling(minutos / PasoVariableMinutos) * PasoVariableMinutos);
+            while (primero <= ahoraUtc) primero = primero.AddMinutes(PasoVariableMinutos);
+            if (primero.AddMinutes(DuracionesVariables[0]) <= hasta) tramos.Add((primero, hasta, false));
+        }
+        foreach (var (inicio, fin) in ocupadas.Where(o => o.Inicio < rangoFin && o.Fin > rangoInicio).OrderBy(o => o.Inicio))
+        {
+            var desde = inicio < rangoInicio ? rangoInicio : inicio;
+            var hasta = fin > rangoFin ? rangoFin : fin;
+            if (desde > cursor) Libre(cursor, desde);
+            if (hasta > cursor)
+            {
+                if (hasta > ahoraUtc) tramos.Add((desde < cursor ? cursor : desde, hasta, true));
+                cursor = hasta;
+            }
+        }
+        if (cursor < rangoFin) Libre(cursor, rangoFin);
+        return tramos;
     }
 
     public static void ValidarCambio(Cita cita, EstadoCita nuevo, DateTime ahoraUtc)

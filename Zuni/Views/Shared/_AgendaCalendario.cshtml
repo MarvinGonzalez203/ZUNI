@@ -42,7 +42,7 @@
                     @foreach (var h in dia.Intervalos)
                     {
                         <div class="agenda-slot">
-                            <p><strong>@h.Inicio.ToString("HH:mm")–@h.Fin.ToString("HH:mm")</strong> · @h.Modalidad · @(h.DuracionMinutos == 0 ? "Sin duración establecida (intervalo completo)" : $"{h.DuracionMinutos} minutos")</p>
+                            <p><strong>@h.Inicio.ToString("HH:mm")–@h.Fin.ToString("HH:mm")</strong> · @h.Modalidad · @(h.DuracionMinutos == 0 ? "Sin duración establecida (cada cita elige su duración)" : $"{h.DuracionMinutos} minutos")</p>
                             <p>@(h.TieneCitasActivas ? "Con citas activas" : dia.Bloqueado ? "Bloqueado" : "Configurado")</p>
                             <form asp-controller="Psicologo" asp-action="CambiarDia" method="post">
                                 <input type="hidden" name="fecha" value="@dia.Fecha.ToString("yyyy-MM-dd")" /><input type="hidden" name="operacion" value="quitar" /><input type="hidden" name="horarioId" value="@h.Id" />
@@ -88,7 +88,27 @@
                                 @if (!dia.CitaPropiaActiva)
                                 {
                                     <form asp-controller="Estudiante" asp-action="ReservarCita" method="post" class="agenda-form">
-                                        <input type="hidden" name="Inicio" value="@h.InicioUtc.ToString("O")" />
+                                        @if (h.Variable)
+                                        {
+                                            // Sin duración establecida: la cita ocupa solo [inicio, inicio + duración].
+                                            var maximo = (int)(h.FinUtc - h.InicioUtc).TotalMinutes;
+                                            <label for="@(campo)-inicio">Hora de inicio<select id="@(campo)-inicio" name="Inicio" required>
+                                                @for (var inicioOpcion = h.InicioUtc; inicioOpcion.AddMinutes(AgendaReglas.DuracionesVariables[0]) <= h.FinUtc; inicioOpcion = inicioOpcion.AddMinutes(AgendaReglas.PasoVariableMinutos))
+                                                {
+                                                    <option value="@inicioOpcion.ToString("O")">@AgendaReglas.Local(inicioOpcion).ToString("HH:mm")</option>
+                                                }
+                                            </select></label>
+                                            <label for="@(campo)-duracion">Duración<select id="@(campo)-duracion" name="DuracionMinutos" required>
+                                                @foreach (var minutosOpcion in AgendaReglas.DuracionesVariables.Where(m => m <= maximo))
+                                                {
+                                                    <option value="@minutosOpcion">@minutosOpcion minutos</option>
+                                                }
+                                            </select></label>
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="Inicio" value="@h.InicioUtc.ToString("O")" />
+                                        }
                                         <label for="@campo">Modalidad<select id="@campo" name="Modalidad" required>
                                             @if (h.Modalidad is ModalidadDisponibilidad.Presencial or ModalidadDisponibilidad.Ambas) { <option value="Presencial">Presencial</option> }
                                             @if (h.Modalidad is ModalidadDisponibilidad.Virtual or ModalidadDisponibilidad.Ambas) { <option value="Virtual">Virtual</option> }
@@ -96,7 +116,7 @@
                                     </form>
                                 }
                             }
-                            @if (h.Variable) { <p class="agenda-hint">Sin duración establecida: se reserva todo el intervalo para evitar cruces.</p> }
+                            @if (h.Variable && !h.Ocupada) { <p class="agenda-hint">Horario sin duración fija: elige la hora de inicio y la duración de tu cita. Debe terminar antes de las @AgendaReglas.Local(h.FinUtc).ToString("HH:mm").</p> }
                         </div>
                     }
                 }

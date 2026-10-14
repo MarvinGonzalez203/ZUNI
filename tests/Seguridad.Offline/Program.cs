@@ -337,8 +337,14 @@ using (var c = HostPrueba.Cliente(app))
         "Pendiente + contraseña correcta: aviso de activación pendiente");
     Check((await c.GetAsync("/MiCuenta")).StatusCode == HttpStatusCode.Redirect, "Pendiente no puede entrar");
 
-    var listado = await HostPrueba.Texto(await admin.GetAsync("/Administrador?estado=Pendientes"));
-    Check(listado.Contains("Estudiante Nuevo") && listado.Contains("Pendiente de activación"), "Administrador distingue pendientes de activación");
+    var listado = await HostPrueba.Texto(await admin.GetAsync("/Administrador/Estudiantes?estado=Pendientes"));
+    Check(listado.Contains(">Estudiante Nuevo<") && listado.Contains("Pendiente de activación") && !listado.Contains(">Persona est2<"),
+        "Vista Estudiantes filtra pendientes de activación");
+    var fichaPendiente = await HostPrueba.Texto(await admin.GetAsync($"/Administrador/Gestionar/{nuevoId}"));
+    Check(fichaPendiente.Contains("Pendiente de activación") && fichaPendiente.Contains("Activar registro"), "Gestionar identifica la cuenta pendiente");
+    var tableroPendientes = await HostPrueba.Texto(await admin.GetAsync("/Administrador"));
+    Check(tableroPendientes.Contains("Pendientes de activación") && tableroPendientes.Contains("/Administrador/Estudiantes?estado=Pendientes"),
+        "Tablero resume pendientes de activación");
     var confirmar = await HostPrueba.Texto(await admin.GetAsync($"/Administrador/ConfirmarEstado?id={nuevoId}&activar=true"));
     Check(confirmar.Contains("Activar registro"), "Confirmación muestra Activar registro");
     var activar = await HostPrueba.Post(admin, "/Administrador", "/Administrador/Reactivar", ("UsuarioId", nuevoId));
@@ -457,6 +463,64 @@ var cambioPermitido = await HostPrueba.Post(admin, "/Administrador", "/Administr
 await using (var db = Nuevo())
     Check(cambioPermitido.StatusCode == HttpStatusCode.Redirect && await db.UserRoles.AnyAsync(r => r.UserId == "psi1" && r.RoleId == "Catedratico"),
         "Psicólogo sin asignaciones vigentes sí puede cambiar de rol");
+
+Check(cambioPermitido.Headers.Location!.OriginalString.Contains("/Administrador/Gestionar/psi1"), "Tras cambiar el rol vuelve a la ficha del usuario");
+
+// --- Panel del Administrador reorganizado: tablero sin tabla general y vistas por rol
+bool Fila(string html, string nombre) => html.Contains(">" + nombre + "<");
+async Task<string> Vista(string ruta) => await HostPrueba.Texto(await admin.GetAsync(ruta));
+var tablero = await Vista("/Administrador");
+Check(!tablero.Contains("<table") && !Fila(tablero, "Persona est2") && !tablero.Contains("est2@miumg.edu.gt") && !Fila(tablero, "Persona psi2"),
+    "El tablero no mezcla usuarios en una tabla");
+foreach (var accionRol in new[] { "Administradores", "Directores", "Psicologos", "Catedraticos", "Estudiantes" })
+    Check(tablero.Contains("href=\"/Administrador/" + accionRol + "\""), "Tablero y menú enlazan a " + accionRol);
+Check(System.Text.RegularExpressions.Regex.Matches(tablero, "Ver usuarios").Count >= 5, "Cada tarjeta de rol tiene Ver usuarios");
+Check(tablero.Contains("Solicitudes pendientes"), "Tablero resume solicitudes pendientes");
+
+var vistaAdministradores = await Vista("/Administrador/Administradores");
+Check(Fila(vistaAdministradores, "Persona admin") && Fila(vistaAdministradores, "Persona admin-inactivo") &&
+      !Fila(vistaAdministradores, "Persona psi2") && !Fila(vistaAdministradores, "Persona est2"), "Administradores: solo rol Administrador");
+var vistaDirectores = await Vista("/Administrador/Directores");
+Check(Fila(vistaDirectores, "Persona psi-director") && !Fila(vistaDirectores, "Persona psi2") && !Fila(vistaDirectores, "Persona admin"),
+    "Directores: solo rol Director");
+var vistaPsicologos = await Vista("/Administrador/Psicologos");
+Check(Fila(vistaPsicologos, "Persona psi2") && Fila(vistaPsicologos, "Persona psi3") && Fila(vistaPsicologos, "Persona psi-director") &&
+      !Fila(vistaPsicologos, "Persona psi1") && !Fila(vistaPsicologos, "Persona est2") && !Fila(vistaPsicologos, "Persona admin"),
+    "Psicólogos: solo rol Psicologo (psi1 ya es Catedrático)");
+var asignacionesPsi3 = System.Text.RegularExpressions.Regex.Match(vistaPsicologos, "data-usuario=\"psi3\"[\\s\\S]*?data-asignaciones=\"(\\d+)\"").Groups[1].Value;
+Check(asignacionesPsi3 == "1", "Psicólogos: asignaciones vigentes por psicólogo");
+Check(!vistaPsicologos.Contains("MOTIVO-CLINICO-PRIVADO") && !vistaPsicologos.Contains("CONTACTO-PRIVADO"), "Psicólogos: sin información clínica");
+var vistaCatedraticos = await Vista("/Administrador/Catedraticos");
+Check(Fila(vistaCatedraticos, "Persona psi1") && Fila(vistaCatedraticos, "Persona desactivado") && !Fila(vistaCatedraticos, "Persona psi2"),
+    "Catedráticos: solo rol Catedratico");
+Check(!Fila(await Vista("/Administrador/Catedraticos?estado=Activos"), "Persona desactivado"), "Filtro de estado por rol");
+var vistaEstudiantes = await Vista("/Administrador/Estudiantes");
+Check(Fila(vistaEstudiantes, "Persona est") && Fila(vistaEstudiantes, "Persona est2") && Fila(vistaEstudiantes, "Estudiante Nuevo") &&
+      !Fila(vistaEstudiantes, "Persona psi2") && !Fila(vistaEstudiantes, "Persona admin"), "Estudiantes: solo rol Estudiante");
+Check(vistaEstudiantes.Contains("2020-01-001") && vistaEstudiantes.Contains("Ingeniería"), "Estudiantes: carné y carrera");
+Check(!vistaEstudiantes.Contains("MOTIVO-CLINICO-PRIVADO") && !vistaEstudiantes.Contains("CONTACTO-PRIVADO") && !vistaEstudiantes.Contains("DIRECCION-PRIVADA"),
+    "Estudiantes: sin información clínica");
+Check(Fila(await Vista("/Administrador/Estudiantes?buscar=2020-01-002"), "Persona est2") &&
+      !Fila(await Vista("/Administrador/Estudiantes?buscar=2020-01-002"), "Persona est"), "Estudiantes: búsqueda por carné");
+Check((await admin.GetAsync("/Administrador/Estudiantes?estado=Otro")).StatusCode == HttpStatusCode.BadRequest, "Filtro inválido rechazado");
+Check(!vistaPsicologos.Contains("Cambiar rol") && vistaPsicologos.Contains("Gestionar"), "Tabla por rol solo muestra Gestionar");
+
+var fichaPsi3 = await Vista("/Administrador/Gestionar/psi3");
+Check(fichaPsi3.Contains("id=\"asignaciones-vigentes\">1<") && fichaPsi3.Contains("/Administrador/CambiarRol/psi3") &&
+      fichaPsi3.Contains("/Administrador/ConfirmarEstado?id=psi3") && fichaPsi3.Contains("/Administrador/ContrasenaTemporal/psi3") &&
+      fichaPsi3.Contains("/Administrador/Historial/psi3"), "Gestionar reúne datos, rol, estado y todas las acciones");
+Check((await admin.GetAsync("/Administrador/Gestionar/no-existe")).StatusCode == HttpStatusCode.NotFound, "Gestionar usuario inexistente: 404");
+var fichaPropia = await Vista("/Administrador/Gestionar/admin");
+Check(!fichaPropia.Contains("/Administrador/ContrasenaTemporal/admin") && !fichaPropia.Contains(">Desactivar<"), "Ficha propia sin acciones peligrosas");
+using (var noAdmin = HostPrueba.Cliente(app))
+{
+    await HostPrueba.Login(noAdmin, "est2@miumg.edu.gt", clave);
+    foreach (var ruta in new[] { "/Administrador", "/Administrador/Psicologos", "/Administrador/Estudiantes", "/Administrador/Gestionar/psi3", "/Administrador/SinRol" })
+    {
+        var r = await noAdmin.GetAsync(ruta);
+        Check(r.StatusCode == HttpStatusCode.Redirect && r.Headers.Location!.OriginalString.Contains("AccesoDenegado"), "Solo Administrador accede a " + ruta);
+    }
+}
 
 // --- Después de cerrar, el estudiante puede iniciar una nueva solicitud
 using (var estudiante = HostPrueba.Cliente(app))

@@ -31,20 +31,17 @@ public sealed class AdministradorController : Controller
         _reloj = reloj;
     }
 
+    // ============================================================
+    // TABLERO: solo resúmenes por rol (sin tabla general de usuarios)
+    // ============================================================
+
     [HttpGet]
-    public async Task<IActionResult> Index(
-        CancellationToken cancellationToken, string? buscar = null, string? rol = null, string? estado = null)
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         if (!await EsAdministradorActivoAsync(User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken))
             return Forbid();
-        buscar = buscar?.Trim();
-        rol = string.IsNullOrWhiteSpace(rol) ? null : rol;
-        estado = string.IsNullOrWhiteSpace(estado) ? null : estado;
-        if (buscar?.Length > 200 || (rol is not null && !CambiarRolViewModel.RolesPermitidos.Contains(rol)) ||
-            (estado is not null && estado is not ("Activos" or "Inactivos" or "Pendientes")))
-            return BadRequest("Filtros inválidos.");
 
-        // Resumen global de cuentas: no depende de los filtros ni consulta tablas clínicas.
+        // Conteos agregados: no consulta tablas clínicas (solo el estado de las solicitudes).
         var resumen = await _db.Users.AsNoTracking().GroupBy(u => 1)
             .Select(g => new { Total = g.Count(), Activos = g.Count(u => u.IsActive) })
             .SingleOrDefaultAsync(cancellationToken);
@@ -53,28 +50,84 @@ public sealed class AdministradorController : Controller
             group ur by r.Name into g
             select new { Rol = g.Key!, Total = g.Select(ur => ur.UserId).Distinct().Count() })
             .ToDictionaryAsync(x => x.Rol, x => x.Total, cancellationToken);
-        var consulta = _db.Users.AsNoTracking();
+
+        return View(new PanelAdministradorViewModel
+        {
+            Total = resumen?.Total ?? 0,
+            Activos = resumen?.Activos ?? 0,
+            UsuariosPorRol = porRol,
+            PendientesActivacion = await FiltrarEstado(_db.Users.AsNoTracking(), "Pendientes").CountAsync(cancellationToken),
+            SinRol = await _db.Users.AsNoTracking().CountAsync(u => !_db.UserRoles.Any(ur => ur.UserId == u.Id), cancellationToken),
+            SolicitudesPendientes = await _db.SolicitudesAtencion.AsNoTracking()
+                .CountAsync(s => s.Estado == Zuni.Models.Atencion.EstadoSolicitudAtencion.Pendiente, cancellationToken)
+        });
+    }
+
+    // ============================================================
+    // USUARIOS POR ROL
+    // ============================================================
+
+    public const int UsuariosPorPagina = 25;
+
+    [HttpGet]
+    public Task<IActionResult> Administradores(string? buscar, string? estado, int pagina = 1, CancellationToken cancellationToken = default) =>
+        ListarPorRolAsync("Administrador", nameof(Administradores), "Administradores", buscar, estado, pagina, cancellationToken);
+
+    [HttpGet]
+    public Task<IActionResult> Directores(string? buscar, string? estado, int pagina = 1, CancellationToken cancellationToken = default) =>
+        ListarPorRolAsync("Director", nameof(Directores), "Directores", buscar, estado, pagina, cancellationToken);
+
+    [HttpGet]
+    public Task<IActionResult> Psicologos(string? buscar, string? estado, int pagina = 1, CancellationToken cancellationToken = default) =>
+        ListarPorRolAsync("Psicologo", nameof(Psicologos), "Psicólogos", buscar, estado, pagina, cancellationToken);
+
+    [HttpGet]
+    public Task<IActionResult> Catedraticos(string? buscar, string? estado, int pagina = 1, CancellationToken cancellationToken = default) =>
+        ListarPorRolAsync("Catedratico", nameof(Catedraticos), "Catedráticos", buscar, estado, pagina, cancellationToken);
+
+    [HttpGet]
+    public Task<IActionResult> Estudiantes(string? buscar, string? estado, int pagina = 1, CancellationToken cancellationToken = default) =>
+        ListarPorRolAsync("Estudiante", nameof(Estudiantes), "Estudiantes", buscar, estado, pagina, cancellationToken);
+
+    // Cuentas sin ningún rol (datos antiguos o inconsistentes): siguen siendo administrables.
+    [HttpGet]
+    public Task<IActionResult> SinRol(string? buscar, string? estado, int pagina = 1, CancellationToken cancellationToken = default) =>
+        ListarPorRolAsync(null, nameof(SinRol), "Usuarios sin rol", buscar, estado, pagina, cancellationToken);
+
+    private async Task<IActionResult> ListarPorRolAsync(string? rol, string accion, string titulo,
+        string? buscar, string? estado, int pagina, CancellationToken cancellationToken)
+    {
+        if (!await EsAdministradorActivoAsync(User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken))
+            return Forbid();
+        buscar = buscar?.Trim();
+        estado = string.IsNullOrWhiteSpace(estado) ? null : estado;
+        if (buscar?.Length > 200 || (estado is not null && estado is not ("Activos" or "Inactivos" or "Pendientes")))
+            return BadRequest("Filtros inválidos.");
+
+        var esEstudiante = rol == "Estudiante";
+        var consulta = rol is null
+            ? _db.Users.AsNoTracking().Where(u => !_db.UserRoles.Any(ur => ur.UserId == u.Id))
+            : _db.Users.AsNoTracking().Where(u => _db.UserRoles.Any(ur => ur.UserId == u.Id &&
+                _db.Roles.Any(r => r.Id == ur.RoleId && r.Name == rol)));
         if (!string.IsNullOrWhiteSpace(buscar))
         {
             // Contains trata el texto como literal, no como patrón LIKE proporcionado por el cliente.
             var texto = buscar.ToLowerInvariant();
+            var carne = buscar.Replace("-", string.Empty);
             consulta = consulta.Where(u => u.FullName.ToLower().Contains(texto) ||
-                (u.Email != null && u.Email.ToLower().Contains(texto)));
+                (u.Email != null && u.Email.ToLower().Contains(texto)) ||
+                (esEstudiante && _db.PerfilesEstudiante.Any(p => p.UsuarioId == u.Id && p.Carne.Contains(carne))));
         }
-        if (rol is not null)
-            consulta = consulta.Where(u => _db.UserRoles.Any(ur => ur.UserId == u.Id &&
-                _db.Roles.Any(r => r.Id == ur.RoleId && r.Name == rol)));
-        if (estado is "Activos" or "Inactivos") consulta = consulta.Where(u => u.IsActive == (estado == "Activos"));
-        // Pendiente de activación = inactiva y su último evento de estado es el autorregistro.
-        if (estado == "Pendientes")
-            consulta = consulta.Where(u => !u.IsActive && _db.AuditoriaUsuarios
-                .Where(a => a.UsuarioAfectadoId == u.Id && (a.Accion == AccionesAuditoria.RegistroPendienteActivacion ||
-                    a.Accion == AccionesAuditoria.UsuarioDesactivado || a.Accion == AccionesAuditoria.UsuarioReactivado))
-                .OrderByDescending(a => a.FechaUtc).Select(a => a.Accion).FirstOrDefault() == AccionesAuditoria.RegistroPendienteActivacion);
+        consulta = FiltrarEstado(consulta, estado);
 
+        var total = await consulta.CountAsync(cancellationToken);
+        var paginas = Math.Max(1, (total + UsuariosPorPagina - 1) / UsuariosPorPagina);
+        pagina = Math.Clamp(pagina, 1, paginas);
         var usuarios = await consulta
             .OrderBy(usuario => usuario.FullName)
             .ThenBy(usuario => usuario.Id)
+            .Skip((pagina - 1) * UsuariosPorPagina)
+            .Take(UsuariosPorPagina)
             .Select(usuario => new UsuarioAdminViewModel
             {
                 Id = usuario.Id,
@@ -85,22 +138,88 @@ public sealed class AdministradorController : Controller
                     .Where(a => a.UsuarioAfectadoId == usuario.Id && (a.Accion == AccionesAuditoria.RegistroPendienteActivacion ||
                         a.Accion == AccionesAuditoria.UsuarioDesactivado || a.Accion == AccionesAuditoria.UsuarioReactivado))
                     .OrderByDescending(a => a.FechaUtc).Select(a => a.Accion).FirstOrDefault() == AccionesAuditoria.RegistroPendienteActivacion,
-
-                Rol = (
-                    from asignacion in _db.UserRoles.AsNoTracking()
-                    join rol in _db.Roles.AsNoTracking()
-                        on asignacion.RoleId equals rol.Id
-                    where asignacion.UserId == usuario.Id
-                    orderby rol.Name, rol.Id
-                    select rol.Name
-                ).FirstOrDefault() ?? "Sin rol"
+                Rol = rol ?? "Sin rol",
+                // Solo datos administrativos del perfil; nunca información clínica.
+                Carne = _db.PerfilesEstudiante.Where(p => p.UsuarioId == usuario.Id).Select(p => p.Carne).FirstOrDefault(),
+                Carrera = _db.PerfilesEstudiante.Where(p => p.UsuarioId == usuario.Id).Select(p => p.Carrera).FirstOrDefault(),
+                AsignacionesVigentes = _db.AsignacionesEstudiantePsicologo
+                    .Count(a => a.PsicologoUsuarioId == usuario.Id && a.FechaFinalizacionUtc == null)
             })
             .ToListAsync(cancellationToken);
 
-        return View(new PanelAdministradorViewModel
+        return View("Usuarios", new UsuariosPorRolViewModel
         {
-            Buscar = buscar, Rol = rol, Estado = estado, Total = resumen?.Total ?? 0,
-            Activos = resumen?.Activos ?? 0, UsuariosPorRol = porRol, Usuarios = usuarios
+            Rol = rol,
+            Accion = accion,
+            Titulo = titulo,
+            Buscar = buscar,
+            Estado = estado,
+            Pagina = pagina,
+            Paginas = paginas,
+            Total = total,
+            Usuarios = usuarios
+        });
+    }
+
+    // Pendiente de activación = inactiva y su último evento de estado es el autorregistro
+    // (sin columna nueva; ver EstadoCuenta).
+    private IQueryable<ApplicationUser> FiltrarEstado(IQueryable<ApplicationUser> consulta, string? estado) => estado switch
+    {
+        "Activos" => consulta.Where(u => u.IsActive),
+        "Inactivos" => consulta.Where(u => !u.IsActive),
+        "Pendientes" => consulta.Where(u => !u.IsActive && _db.AuditoriaUsuarios
+            .Where(a => a.UsuarioAfectadoId == u.Id && (a.Accion == AccionesAuditoria.RegistroPendienteActivacion ||
+                a.Accion == AccionesAuditoria.UsuarioDesactivado || a.Accion == AccionesAuditoria.UsuarioReactivado))
+            .OrderByDescending(a => a.FechaUtc).Select(a => a.Accion).FirstOrDefault() == AccionesAuditoria.RegistroPendienteActivacion),
+        _ => consulta
+    };
+
+    // ============================================================
+    // GESTIONAR: ficha del usuario con todas las acciones existentes
+    // ============================================================
+
+    [HttpGet]
+    public async Task<IActionResult> Gestionar(string id, CancellationToken cancellationToken)
+    {
+        var administradorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!await EsAdministradorActivoAsync(administradorId, cancellationToken))
+            return Forbid();
+
+        var usuario = await _db.Users.AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new { u.Id, u.FullName, u.Email, u.IsActive, u.CreatedAtUtc, u.DebeCambiarContrasena, u.LockoutEnd })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (usuario is null)
+            return NotFound();
+
+        var roles = await (from ur in _db.UserRoles.AsNoTracking()
+                           join r in _db.Roles.AsNoTracking() on ur.RoleId equals r.Id
+                           where ur.UserId == usuario.Id && r.Name != null
+                           orderby r.Name
+                           select r.Name!).ToListAsync(cancellationToken);
+        var perfil = await _db.PerfilesEstudiante.AsNoTracking()
+            .Where(p => p.UsuarioId == usuario.Id)
+            .Select(p => new { p.Carne, p.Carrera })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        return View(new GestionarUsuarioViewModel
+        {
+            Id = usuario.Id,
+            FullName = usuario.FullName,
+            Email = usuario.Email,
+            IsActive = usuario.IsActive,
+            PendienteActivacion = await EstadoCuenta.EsRegistroPendienteAsync(_db, usuario.Id, cancellationToken),
+            CreatedAtUtc = usuario.CreatedAtUtc,
+            DebeCambiarContrasena = usuario.DebeCambiarContrasena,
+            BloqueadoTemporalmente = usuario.LockoutEnd is { } fin && fin > _reloj.GetUtcNow(),
+            Roles = roles,
+            Carne = perfil?.Carne,
+            Carrera = perfil?.Carrera,
+            AsignacionesVigentes = roles.Contains("Psicologo")
+                ? await _db.AsignacionesEstudiantePsicologo.AsNoTracking()
+                    .CountAsync(a => a.PsicologoUsuarioId == usuario.Id && a.FechaFinalizacionUtc == null, cancellationToken)
+                : 0,
+            EsUnoMismo = usuario.Id == administradorId
         });
     }
 
@@ -133,7 +252,7 @@ public sealed class AdministradorController : Controller
             TempData["Error"] =
                 "Solo puedes cambiar el rol de un usuario activo.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
         }
 
         using var store =
@@ -289,7 +408,7 @@ public sealed class AdministradorController : Controller
                 TempData["Info"] =
                     "El usuario ya tiene ese rol. No se realizó ningún cambio.";
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
             }
 
             var rolesAsignados =
@@ -398,7 +517,7 @@ public sealed class AdministradorController : Controller
                 "El rol del usuario fue actualizado correctamente.";
 
             return RedirectToAction(
-                nameof(Index));
+                nameof(Gestionar), new { id = usuario.Id });
         }
         catch (Exception ex)
             when (ex is DbUpdateException
@@ -415,7 +534,7 @@ public sealed class AdministradorController : Controller
                 "No se guardaron cambios; vuelve a intentarlo.";
 
             return RedirectToAction(
-                nameof(Index));
+                nameof(Gestionar), new { id = model.UsuarioId });
         }
     }
 
@@ -435,13 +554,13 @@ public sealed class AdministradorController : Controller
         if (usuario.IsActive == activar)
         {
             TempData["Info"] = "El usuario ya tiene el estado solicitado. No se realizó ningún cambio.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
         }
 
         if (!activar && usuario.Id == administradorId)
         {
             TempData["Error"] = "No puedes desactivarte a ti mismo.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
         }
 
         return View(new CambiarEstadoUsuarioViewModel
@@ -494,7 +613,7 @@ public sealed class AdministradorController : Controller
             if (usuario.IsActive == activar)
             {
                 TempData["Info"] = "El usuario ya tiene el estado solicitado. No se realizó ningún cambio.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
             }
 
             if (!activar)
@@ -540,14 +659,14 @@ public sealed class AdministradorController : Controller
                 : model.PendienteActivacion
                     ? "El registro fue activado. El estudiante ya puede iniciar sesión."
                     : "El usuario fue reactivado correctamente.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
         }
         catch (Exception ex) when (ex is DbUpdateException or NpgsqlException or InvalidOperationException)
         {
             await transaction.RollbackAsync(CancellationToken.None);
             _db.ChangeTracker.Clear();
             TempData["Error"] = "No se pudo cambiar el estado. No se guardaron cambios; vuelve a intentarlo.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Gestionar), new { id = model.UsuarioId });
         }
         // DisposeAsync revierte también las salidas sin Commit y excepciones no capturadas.
     }
@@ -690,7 +809,7 @@ public sealed class AdministradorController : Controller
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             TempData["Success"] = "El usuario fue creado correctamente.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException
                { SqlState: PostgresErrorCodes.UniqueViolation })
@@ -733,7 +852,7 @@ public sealed class AdministradorController : Controller
         if (usuario.Id == administradorId)
         {
             TempData["Error"] = "Para cambiar tu propia contraseña usa Mi cuenta.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
         }
         return View(new ContrasenaTemporalViewModel
         {
@@ -818,6 +937,7 @@ public sealed class AdministradorController : Controller
             ModelState.Clear();
             return View("ContrasenaTemporalGenerada", new ContrasenaTemporalGeneradaViewModel
             {
+                UsuarioId = usuario.Id,
                 NombreUsuario = usuario.FullName,
                 Email = usuario.Email,
                 Activo = usuario.IsActive,
@@ -829,7 +949,7 @@ public sealed class AdministradorController : Controller
             await transaction.RollbackAsync(CancellationToken.None);
             _db.ChangeTracker.Clear();
             TempData["Error"] = "No se pudo asignar la contraseña temporal. No se guardaron cambios; vuelve a intentarlo.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Gestionar), new { id = model.UsuarioId });
         }
     }
 
