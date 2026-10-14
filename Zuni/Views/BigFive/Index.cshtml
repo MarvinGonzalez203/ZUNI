@@ -38,6 +38,10 @@
         }
     </section>
 }
+else if (!Model.MayoriaEdadVerificada)
+{
+    <section class="dash-card"><h2>Verificación de mayoría de edad pendiente</h2><p>La institución debe revisar tu documento antes de participar. Big Five continúa siendo opcional.</p><a class="dash-button" asp-controller="MayoriaEdad" asp-action="Index">Consultar mi verificación</a></section>
+}
 else if (!Model.TieneSolicitudActiva)
 {
     <section class="dash-card"><h2>Primero, tu solicitud de atención</h2><p>Para participar necesitas una solicitud activa. No necesitas tener psicólogo asignado. Completar Big Five nunca es requisito para recibir atención.</p><a class="dash-button" asp-controller="Estudiante" asp-action="SolicitarAtencion">Solicitar atención</a></section>

@@ -1,0 +1,40 @@
+@model Zuni.Models.MayoriaEdad.RevisarEdadViewModel
+@{ ViewData["Title"] = "Revisar documento"; }
+<header class="dash-profile-heading"><div><h1>Revisar documento</h1><p>@Model.Estudiante · @Model.Correo · Carné @Zuni.Helpers.CarneHelper.Formatear(Model.Carne)</p></div></header>
+<section class="dash-card p-4">
+    <p>Edad declarada: @Model.Constancia?.EdadDeclarada años al presentar la declaración. Estado: @Model.Constancia?.Estado.</p>
+    @if (Model.Constancia?.FechaRevisionUtc is { } fecha) { <p>Última revisión: @Zuni.Services.Agenda.AgendaReglas.Local(fecha).ToString("dd/MM/yyyy HH:mm") (Guatemala). Responsable registrado en la constancia y auditoría.</p> }
+    <p>Revisa el documento con el estudiante antes de aprobar. Registrar un dato o seleccionar un tipo de documento no verifica automáticamente su identidad.</p>
+    <p class="small">No escribas el CUI ni adjuntes fotografías. La fecha se utiliza para calcular la edad y no se conserva; se registra el resultado, tipo de documento, fecha y responsable de la revisión.</p>
+    <form asp-action="Revisar" method="post" id="revisar-edad-form">
+        <input asp-for="PerfilEstudianteId" type="hidden" /><input asp-for="Revision" type="hidden" />
+        <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+        <label asp-for="Aprobada" class="form-label"></label>
+        <select asp-for="Aprobada" class="form-select mb-3" required><option value="">Selecciona un resultado</option><option value="true">Verificada: comprobé que tiene 18 años o más</option><option value="false">No verificada: no pude acreditar mayoría de edad</option></select>
+        <fieldset id="documento-edad">
+            <legend class="h5">Datos de la revisión para aprobar</legend>
+            <label asp-for="Documento" zuni-required="@(Model.Aprobada == true)" data-required-conditional class="form-label"></label>
+            <select asp-for="Documento" class="form-select mb-3"><option value="">Selecciona el documento revisado</option><option value="0">DPI</option><option value="1">Pasaporte</option><option value="2">Documento de identidad extranjero</option></select>
+            <label asp-for="FechaNacimiento" zuni-required="@(Model.Aprobada == true)" data-required-conditional class="form-label"></label>
+            <input asp-for="FechaNacimiento" type="date" class="form-control mb-3" />
+            <div class="form-check mb-3"><input asp-for="DocumentoComprobado" class="form-check-input" /><label asp-for="DocumentoComprobado" zuni-required="@(Model.Aprobada == true)" data-required-conditional class="form-check-label"></label></div>
+        </fieldset>
+        <button class="dash-button" type="submit">Guardar revisión</button>
+        <a asp-action="Revisiones" class="ms-3">Volver a declaraciones</a>
+    </form>
+</section>
+@section Scripts {
+    <script>
+        (() => {
+            const resultado = document.getElementById('Aprobada');
+            const campos = document.getElementById('documento-edad');
+            const actualizar = () => {
+                const aprobada = resultado.value === 'true';
+                campos.hidden = !aprobada;
+                campos.querySelectorAll('input:not([type="hidden"]), select').forEach(control => { control.required = aprobada; control.disabled = !aprobada; });
+            };
+            resultado.addEventListener('change', actualizar);
+            actualizar();
+        })();
+    </script>
+}

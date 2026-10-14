@@ -39,12 +39,12 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label asp-for="Estudiante!.Telefono" class="form-label">Teléfono personal</label>
-                    <input asp-for="Estudiante!.Telefono" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="tel" />
+                    <input asp-for="Estudiante!.Telefono" required class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="tel" />
                     <span asp-validation-for="Estudiante!.Telefono" class="text-danger small"></span>
                 </div>
                 <div class="col-md-6">
                     <label asp-for="Estudiante!.Carrera" class="form-label">Carrera</label>
-                    <input asp-for="Estudiante!.Carrera" class="form-control" maxlength="150" />
+                    <input asp-for="Estudiante!.Carrera" required class="form-control" maxlength="150" />
                     <span asp-validation-for="Estudiante!.Carrera" class="text-danger small"></span>
                 </div>
                 <div class="col-md-6">
@@ -59,17 +59,17 @@
                 </div>
                 <div class="col-12">
                     <label asp-for="Estudiante!.NombreContactoEmergencia" class="form-label">Nombre del contacto de emergencia</label>
-                    <input asp-for="Estudiante!.NombreContactoEmergencia" class="form-control" maxlength="150" />
+                    <input asp-for="Estudiante!.NombreContactoEmergencia" required class="form-control" maxlength="150" />
                     <span asp-validation-for="Estudiante!.NombreContactoEmergencia" class="text-danger small"></span>
                 </div>
                 <div class="col-md-6">
                     <label asp-for="Estudiante!.TelefonoContactoEmergencia" class="form-label">Teléfono de emergencia</label>
-                    <input asp-for="Estudiante!.TelefonoContactoEmergencia" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" />
+                    <input asp-for="Estudiante!.TelefonoContactoEmergencia" required class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" />
                     <span asp-validation-for="Estudiante!.TelefonoContactoEmergencia" class="text-danger small"></span>
                 </div>
                 <div class="col-md-6">
                     <label asp-for="Estudiante!.RelacionContactoEmergencia" class="form-label">Relación del contacto</label>
-                    <input asp-for="Estudiante!.RelacionContactoEmergencia" class="form-control" maxlength="60" />
+                    <input asp-for="Estudiante!.RelacionContactoEmergencia" required class="form-control" maxlength="60" />
                     <span asp-validation-for="Estudiante!.RelacionContactoEmergencia" class="text-danger small"></span>
                 </div>
             </div>

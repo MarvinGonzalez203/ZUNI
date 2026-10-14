@@ -67,7 +67,7 @@ function check(value, text) { assert.ok(value, text); checks++; }
         await required('Contactos_0__Nombre', false);
         await page.locator('#Contactos_1__Nombre').fill('');
         await required('Contactos_1__Telefono', false);
-        check(await page.locator('#Sexo').getAttribute('aria-required') === 'false', 'sexo opcional');
+        check(await page.locator('#Sexo').getAttribute('aria-required') === 'true', 'género obligatorio');
 
         await load('atencion', ['atencion-cita.js']);
         await page.selectOption('#Asistio', 'true');
@@ -87,6 +87,14 @@ function check(value, text) { assert.ok(value, text); checks++; }
         await page.waitForFunction(() => document.querySelectorAll('#preguntas label .required-marker:not([hidden])').length === 8);
         check(await page.locator('#preguntas input[aria-required="true"]').count() === 7, 'opción agregada marcada y accesible');
         await page.screenshot({ path: path.join(fixtures, 'editor-obligatorios.png'), fullPage: true });
+        await load('revisar-edad');
+        await page.selectOption('#Aprobada', 'true');
+        await required('Documento', true);
+        await required('FechaNacimiento', true);
+        await required('DocumentoComprobado', true);
+        await page.selectOption('#Aprobada', 'false');
+        await required('FechaNacimiento', false);
+        await page.screenshot({ path: path.join(fixtures, 'revision-edad.png'), fullPage: true });
         check(errors.length === 0, 'sin errores JavaScript: ' + errors.join(', '));
         console.log(`OK: ${checks} comprobaciones de formularios en navegador.`);
     } finally { await browser.close(); }

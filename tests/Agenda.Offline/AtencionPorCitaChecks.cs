@@ -38,6 +38,7 @@ internal static class AtencionPorCitaChecks
             var perfil = new PerfilEstudiante { UsuarioId = id, Carne = "0000000" + carne++, Carrera = "Offline", Telefono = "12345678" };
             var solicitud = new SolicitudAtencion { PerfilEstudianteId = perfil.Id, FechaSolicitudUtc = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc) };
             db.PerfilesEstudiante.Add(perfil);
+            db.VerificacionesMayoriaEdad.Add(new Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad { PerfilEstudianteId = perfil.Id, EdadDeclarada = 21, Estado = Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada, EdadVerificada = 21, DocumentoRevisado = Zuni.Models.MayoriaEdad.DocumentoEdad.Dpi, ResponsableUsuarioId = perfil.UsuarioId, FechaDeclaracionUtc = DateTime.UtcNow, FechaRevisionUtc = DateTime.UtcNow });
             db.SolicitudesAtencion.Add(solicitud);
             db.ConsentimientosAtencion.Add(new ConsentimientoAtencion { SolicitudAtencionId = solicitud.Id, Aceptado = true, VersionConsentimiento = "offline" });
             db.AsignacionesEstudiantePsicologo.Add(new AsignacionEstudiantePsicologo { PerfilEstudianteId = perfil.Id, PsicologoUsuarioId = "psi-dia" });

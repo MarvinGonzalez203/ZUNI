@@ -49,14 +49,15 @@ internal static class CamposObligatoriosChecks
             user.PasswordHash = new PasswordHasher<ApplicationUser>().HashPassword(user, clave);
             db.Users.Add(user);
             db.UserRoles.Add(new IdentityUserRole<string> { UserId = user.Id, RoleId = "Estudiante" });
-            db.PerfilesEstudiante.Add(new PerfilEstudiante { UsuarioId = user.Id, Carne = "20990199", Telefono = "12345678" });
+            var p = new PerfilEstudiante { UsuarioId = user.Id, Carne = "20990199", Telefono = "12345678" }; db.PerfilesEstudiante.Add(p);
+            db.VerificacionesMayoriaEdad.Add(new Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad { PerfilEstudianteId = p.Id, EdadDeclarada = 21, Estado = Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada, EdadVerificada = 21, DocumentoRevisado = Zuni.Models.MayoriaEdad.DocumentoEdad.Dpi, ResponsableUsuarioId = p.UsuarioId, FechaDeclaracionUtc = DateTime.UtcNow, FechaRevisionUtc = DateTime.UtcNow });
             await db.SaveChangesAsync();
         }
         using var estudiante = HostPrueba.Cliente(app);
         await HostPrueba.Login(estudiante, "campos@miumg.edu.gt", clave);
         var solicitud = await Read(estudiante, "/Estudiante/SolicitarAtencion", "solicitud");
-        Check(Marca(solicitud, "Edad") && Marca(solicitud, "AceptaConsentimiento") && Marca(solicitud, "EsMayorEdad"), "edad y confirmaciones obligatorias");
-        Check(!Marca(solicitud, "Sexo") && !Marca(solicitud, "NombreReferente") && !Marca(solicitud, "Contactos_0__Nombre"), "inicio sin referencia y contactos vacíos no se marcan individualmente");
+        Check(!Marca(solicitud, "Edad") && Marca(solicitud, "AceptaConsentimiento") && Marca(solicitud, "EsMayorEdad"), "edad documentada de solo lectura y confirmaciones obligatorias");
+        Check(Marca(solicitud, "Sexo") && !Marca(solicitud, "NombreReferente") && !Marca(solicitud, "Contactos_0__Nombre"), "género requerido; sin referencia y contactos vacíos no se marcan individualmente");
         var invalid = await HostPrueba.Post(estudiante, "/Estudiante/SolicitarAtencion", "/Estudiante/SolicitarAtencion",
             ("Edad", "21"), ("EsMayorEdad", "true"), ("AceptaConsentimiento", "true"), ("Direccion", "Zona 1"),
             ("IdiomaPreferido", "Español"), ("MotivoConsulta", "Consulta"), ("TipoIngreso", "1"),

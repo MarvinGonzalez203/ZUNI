@@ -81,6 +81,7 @@ var perfil = new PerfilEstudiante { UsuarioId = "est", Carne = "0000000001", Car
 var otro = new PerfilEstudiante { UsuarioId = "otro-est", Carne = "0000000002", Carrera = "Offline", Telefono = "12345678" };
 var sin = new PerfilEstudiante { UsuarioId = "sin-asignar", Carne = "0000000003", Carrera = "Offline", Telefono = "12345678" };
 db.PerfilesEstudiante.AddRange(perfil, otro, sin);
+foreach (var perfilVerificado in new[] { perfil, otro, sin }) { db.VerificacionesMayoriaEdad.Add(new Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad { PerfilEstudianteId = perfilVerificado.Id, EdadDeclarada = 21, Estado = Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada, EdadVerificada = 21, DocumentoRevisado = Zuni.Models.MayoriaEdad.DocumentoEdad.Dpi, ResponsableUsuarioId = perfilVerificado.UsuarioId, FechaDeclaracionUtc = DateTime.UtcNow, FechaRevisionUtc = DateTime.UtcNow }); }
 foreach (var estudiantePerfil in new[] { perfil, otro })
 {
     var solicitudAtencion = new SolicitudAtencion { PerfilEstudianteId = estudiantePerfil.Id, FechaSolicitudUtc = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc) };
@@ -99,6 +100,11 @@ ReservaCitaInput Reserva(DateTime? hora = null, ModalidadCita modalidad = Modali
 await service.AgregarDisponibilidad(psicologo, Horario(), ct);
 await service.AgregarDisponibilidad(otroPsicologo, Horario(), ct);
 var horarioId = (await service.LeerAgenda(psicologo, dia, ct)).Disponibilidades.Single().Id;
+var constanciaEdad = await db.VerificacionesMayoriaEdad.SingleAsync(v => v.PerfilEstudianteId == perfil.Id);
+db.VerificacionesMayoriaEdad.Remove(constanciaEdad); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
+Check(!(await service.LeerCitas(estudiante, dia, 1, ct)).PuedeReservar, "Sin verificación de edad no ofrece reservas");
+await RechazaAsync<AgendaOperacionException>(() => service.Reservar(estudiante, Reserva(), ct), "Sin verificación de edad no reserva mediante petición directa");
+db.VerificacionesMayoriaEdad.Add(constanciaEdad); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
 await RechazaAsync<AgendaOperacionException>(() => service.AgregarDisponibilidad(psicologo, Horario(), ct), "Rechaza disponibilidad superpuesta");
 await RechazaAsync<AgendaAccesoException>(() => service.CambiarDisponibilidad(otroPsicologo, horarioId, false, ct), "No cambia agenda ajena");
 var libre = await service.LeerCitas(estudiante, dia, 1, ct);
@@ -182,6 +188,12 @@ foreach (var c in realizadas)
 db.ChangeTracker.Clear();
 Check(await db.Citas.CountAsync(x => x.Estado == EstadoCita.Confirmada) == 2, "Aceptar solicitudes propias");
 reloj.Ahora = new DateTimeOffset(inicio.AddMinutes(151));
+constanciaEdad = await db.VerificacionesMayoriaEdad.SingleAsync(v => v.PerfilEstudianteId == perfil.Id);
+db.VerificacionesMayoriaEdad.Remove(constanciaEdad); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
+var citaSinEdad = realizadas.Single(c => c.PerfilEstudianteId == perfil.Id);
+await RechazaAsync<AgendaOperacionException>(() => service.RegistrarAtencion(Sesion(citaSinEdad.PsicologoUsuarioId, "Psicologo"), new() { CitaId = citaSinEdad.Id,
+    Asistio = true, ResultadoProfesionalPrivado = "Privado", ResultadoBreveEstudiante = "Breve", ResenaRecomendacionesEstudiante = "Recomendaciones" }, ct), "Sin verificación documental no registra asistencia");
+db.VerificacionesMayoriaEdad.Add(constanciaEdad); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
 foreach (var c in realizadas)
     await service.RegistrarAtencion(Sesion(c.PsicologoUsuarioId, "Psicologo"), new() { CitaId = c.Id,
         Asistio = c.PsicologoUsuarioId == "psi", ResultadoProfesionalPrivado = "Nota privada de prueba",

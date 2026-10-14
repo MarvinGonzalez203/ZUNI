@@ -47,6 +47,8 @@ public sealed partial class AgendaCitasService
     {
         var cita = await CitaClinica(sesion, input.CitaId, ct);
         var solicitud = await SolicitudClinica(sesion, cita, ct);
+        if (input.Asistio == true && !await Zuni.Services.MayoriaEdad.MayoriaEdadService.VerificadaAsync(db, cita.PerfilEstudianteId, ct))
+            throw new AgendaOperacionException("La institución debe verificar la mayoría de edad del estudiante antes de registrar una atención con asistencia.");
         if (await db.RegistrosAtencionCita.AnyAsync(r => r.CitaId == cita.Id, ct))
             throw new AgendaOperacionException("Esta atención ya fue cerrada. Consulta su detalle de solo lectura.");
         var errores = new List<ValidationResult>();

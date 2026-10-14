@@ -27,6 +27,7 @@ public sealed class BigFiveService(ApplicationDbContext db, IAutorizacionClinica
 
     private IQueryable<SolicitudAtencion> Activas(Guid perfil) => db.SolicitudesAtencion.AsNoTracking()
         .Where(s => s.PerfilEstudianteId == perfil &&
+            db.VerificacionesMayoriaEdad.Any(v => v.PerfilEstudianteId == perfil && v.Estado == Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada) &&
             (s.Estado == EstadoSolicitudAtencion.Pendiente || s.Estado == EstadoSolicitudAtencion.Asignada) &&
             db.ConsentimientosAtencion.Any(c => c.SolicitudAtencionId == s.Id && c.Aceptado) &&
             db.ExpedientesIniciales.Any(e => e.SolicitudAtencionId == s.Id && e.EsMayorEdad && e.Edad >= 18));
@@ -46,6 +47,7 @@ public sealed class BigFiveService(ApplicationDbContext db, IAutorizacionClinica
                 PuedeResponder = p.SolicitudAtencionId == activa && p.FechaFinalizacionUtc == null && p.FechaRetiroConsentimientoUtc == null
             }).SingleOrDefaultAsync(ct) ?? new EstadoBigFiveViewModel();
         estado.TieneSolicitudActiva = activa != null;
+        estado.MayoriaEdadVerificada = await Zuni.Services.MayoriaEdad.MayoriaEdadService.VerificadaAsync(db, perfil, ct);
         return estado;
     }
 

@@ -52,6 +52,7 @@ public sealed class AgendaPsicologoViewModel
 }
 public sealed class CitasEstudianteViewModel
 {
+    public bool MayoriaEdadVerificada { get; init; }
     public CalendarioAgendaViewModel Calendario { get; init; } = new();
     public DateOnly Fecha { get; init; }
     public bool PuedeReservar { get; init; }

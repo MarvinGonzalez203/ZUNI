@@ -1,0 +1,7 @@
+@{
+    Layout = "_DashboardLayout";
+    var admin = User.IsInRole("Administrador");
+    ViewData["DashboardRole"] = admin ? "Administrador" : "Estudiante";
+    ViewData["DashboardController"] = admin ? "Administrador" : "Estudiante";
+    ViewData["DashboardNavigation"] = admin ? "~/Views/Administrador/_Navegacion.cshtml" : "~/Views/Estudiante/_Navegacion.cshtml";
+}

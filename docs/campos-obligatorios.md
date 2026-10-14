@@ -6,7 +6,8 @@ Los formularios muestran un asterisco rojo junto al dato obligatorio y la leyend
 
 - Institución: los dominios son obligatorios al restringir el registro a dominios autorizados.
 - Alta administrativa: el carné es obligatorio para Estudiante.
-- Solicitud de atención: las confirmaciones de consentimiento y mayoría de edad son obligatorias. El ingreso por referencia exige quién refiere y el motivo. Se requiere al menos un contacto; cualquier contacto iniciado exige nombre, relación y teléfono.
+- Registro y Mi cuenta: el teléfono personal es obligatorio. Al editar los datos de un estudiante, también se requieren carrera, nombre, relación y teléfono del contacto de emergencia.
+- Solicitud de atención: género, dirección, idioma, motivo de consulta y las confirmaciones de consentimiento y mayoría de edad son obligatorios. La edad se toma de la constancia de verificación y es de solo lectura. El género incluye «Prefiero no responder». El ingreso por referencia exige quién refiere y el motivo. Se requiere al menos un contacto; cualquier contacto iniciado exige nombre, relación y teléfono.
 - Atención: al seleccionar asistencia, los resultados privados y compartidos son obligatorios. Si se recomienda otra cita, también sus indicaciones. Una observación por inasistencia continúa siendo opcional.
 - Pruebas del Director: los campos de dimensiones, preguntas y opciones recién agregadas también tienen indicadores.
 - Big Five: el consentimiento y la confirmación de finalización se marcan; guardar un avance permite respuestas incompletas.

@@ -144,6 +144,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
     {
         var perfil = await Estudiante(sesion, ct);
         var ahora = Ahora;
+        var edadVerificada = await Zuni.Services.MayoriaEdad.MayoriaEdadService.VerificadaAsync(db, perfil.Id, ct);
         var dia = fecha ?? AgendaReglas.Hoy(ahora);
         var psicologo = await Asignado(perfil.Id, ct);
         var calendario = await LeerCalendario(psicologo, fecha, false, perfil.Id, ct);
@@ -160,7 +161,8 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         pagina = Math.Clamp(pagina, 1, paginas);
         return new CitasEstudianteViewModel
         {
-            Fecha = calendario.Mes, Calendario = calendario, PuedeReservar = psicologo is not null && perfil.EstaCompleto,
+            Fecha = calendario.Mes, Calendario = calendario, PuedeReservar = psicologo is not null && perfil.EstaCompleto && edadVerificada,
+            MayoriaEdadVerificada = edadVerificada,
             Psicologo = psicologo is null ? null : await db.Users.Where(u => u.Id == psicologo).Select(u => u.FullName).SingleAsync(ct),
             Horarios = horarios, Pagina = pagina, Paginas = paginas,
             Citas = await propias.OrderBy(c => !EstadosActivos.Contains(c.Estado)).ThenByDescending(c => c.InicioUtc)
@@ -171,6 +173,8 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
     public Task Reservar(ClaimsPrincipal sesion, ReservaCitaInput input, CancellationToken ct) => Escribir(async () =>
     {
         var perfil = await Estudiante(sesion, ct);
+        if (!await Zuni.Services.MayoriaEdad.MayoriaEdadService.VerificadaAsync(db, perfil.Id, ct))
+            throw new AgendaOperacionException("La institución debe verificar tu mayoría de edad antes de reservar. Ve a Mayoría de edad.");
         if (!perfil.EstaCompleto) throw new AgendaOperacionException("Completa tus datos en Mi cuenta antes de reservar.");
         var psicologo = await Asignado(perfil.Id, ct)
             ?? throw new AgendaOperacionException("Necesitas una asignación vigente a un psicólogo disponible para reservar.");

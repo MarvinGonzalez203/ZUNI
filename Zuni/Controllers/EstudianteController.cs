@@ -39,14 +39,17 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
     public async Task<IActionResult> SolicitarAtencion(CancellationToken ct)
     {
         var perfil = await PerfilSolicitanteAsync(ct);
-        if (perfil is null) return PerfilRequerido();
+        if (perfil is null || !System.Text.RegularExpressions.Regex.IsMatch(perfil.Telefono ?? "", "^[0-9]{8}$")) return PerfilRequerido();
+        var constanciaEdad = await db.VerificacionesMayoriaEdad.AsNoTracking().SingleOrDefaultAsync(v => v.PerfilEstudianteId == perfil.Id && v.Estado == Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada, ct);
+        if (constanciaEdad is null)
+            return RedirectToAction("Index", "MayoriaEdad");
         var activa = await db.SolicitudesAtencion.AsNoTracking()
             .Where(s => s.PerfilEstudianteId == perfil.Id &&
                 (s.Estado == EstadoSolicitudAtencion.Pendiente || s.Estado == EstadoSolicitudAtencion.Asignada))
             .Select(s => new EstadoSolicitudViewModel { Estado = s.Estado, FechaSolicitudUtc = s.FechaSolicitudUtc })
             .SingleOrDefaultAsync(ct);
         if (activa is not null) return View("EstadoSolicitud", activa);
-        return View(new SolicitarAtencionViewModel());
+        return View(new SolicitarAtencionViewModel { Edad = constanciaEdad.EdadVerificada!.Value });
     }
 
     [HttpPost("SolicitarAtencion")]
@@ -57,8 +60,14 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
         await using (var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct))
         {
             var perfil = await PerfilSolicitanteAsync(ct);
-            if (perfil is null) return PerfilRequerido();
+            if (perfil is null || !System.Text.RegularExpressions.Regex.IsMatch(perfil.Telefono ?? "", "^[0-9]{8}$")) return PerfilRequerido();
             perfilId = perfil.Id;
+            var constanciaEdad = await db.VerificacionesMayoriaEdad.AsNoTracking().SingleOrDefaultAsync(v => v.PerfilEstudianteId == perfilId && v.Estado == Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada, ct);
+            if (constanciaEdad is null)
+                return RedirectToAction("Index", "MayoriaEdad");
+            // Edad documentada al verificar, nunca una edad arbitraria enviada por el cliente.
+            model.Edad = constanciaEdad.EdadVerificada!.Value;
+            ModelState.Remove(nameof(model.Edad));
             if (await TieneSolicitudActivaAsync(perfilId, ct)) return SolicitudExistente();
             if (!ModelState.IsValid)
             {

@@ -6,7 +6,11 @@
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">TU ACOMPAÑAMIENTO</span><h1>Mis citas</h1><p>Solicita una cita con tu psicólogo asignado. Completar Big Five es opcional.</p></div></header>
 <section class="dash-card agenda-card" aria-labelledby="disponibles-title">
     <h2 id="disponibles-title">Horarios disponibles</h2>
-    @if (!Model.PuedeReservar)
+    @if (!Model.MayoriaEdadVerificada)
+    {
+        <div class="agenda-empty"><h3>Verifica tu mayoría de edad</h3><p>La institución debe revisar tu documento antes de que puedas reservar nuevas citas.</p><a asp-controller="MayoriaEdad" asp-action="Index">Consultar mi verificación</a></div>
+    }
+    else if (!Model.PuedeReservar)
     {
         <div class="agenda-empty"><h3>Aún no puedes reservar</h3><p>Necesitas tu perfil completo y una asignación vigente a un psicólogo disponible.</p><a asp-action="EstadoSolicitud">Consultar mi solicitud</a> · <a href="/MiCuenta">Revisar mi cuenta</a></div>
     }

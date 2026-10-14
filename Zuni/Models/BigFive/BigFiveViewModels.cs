@@ -22,6 +22,7 @@ public sealed class FinalizarBigFiveInput
 }
 public sealed class EstadoBigFiveViewModel
 {
+    public bool MayoriaEdadVerificada { get; set; }
     public Guid? Id { get; set; }
     public bool TieneSolicitudActiva { get; set; }
     public bool PuedeResponder { get; set; }

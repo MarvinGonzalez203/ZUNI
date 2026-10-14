@@ -65,6 +65,7 @@ async Task<Guid> Perfil(string usuarioId, string carne)
     await using var db = Nuevo();
     var p = new PerfilEstudiante { UsuarioId = usuarioId, Carne = carne, Carrera = "Ingeniería", Telefono = "12345678" };
     db.PerfilesEstudiante.Add(p);
+    db.VerificacionesMayoriaEdad.Add(new Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad { PerfilEstudianteId = p.Id, EdadDeclarada = 21, Estado = Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada, EdadVerificada = 21, DocumentoRevisado = Zuni.Models.MayoriaEdad.DocumentoEdad.Dpi, ResponsableUsuarioId = p.UsuarioId, FechaDeclaracionUtc = DateTime.UtcNow, FechaRevisionUtc = DateTime.UtcNow });
     await db.SaveChangesAsync();
     return p.Id;
 }
@@ -529,7 +530,7 @@ using (var estudiante = HostPrueba.Cliente(app))
     var formulario = await HostPrueba.Texto(await estudiante.GetAsync("/Estudiante/SolicitarAtencion"));
     Check(formulario.Contains("MotivoConsulta"), "Con la solicitud cerrada vuelve a mostrarse el formulario");
     var nueva = await HostPrueba.Post(estudiante, "/Estudiante/SolicitarAtencion", "/Estudiante/SolicitarAtencion",
-        ("EsMayorEdad", "true"), ("Edad", "21"), ("Direccion", "Zona 1"), ("IdiomaPreferido", "Español"), ("MotivoConsulta", "Nueva consulta"),
+        ("EsMayorEdad", "true"), ("Edad", "21"), ("Direccion", "Zona 1"), ("IdiomaPreferido", "Español"), ("MotivoConsulta", "Nueva consulta"), ("Sexo", "Prefiero no responder"),
         ("TipoIngreso", "IniciativaPropia"), ("AceptaConsentimiento", "true"),
         ("Contactos[0].Nombre", "Contacto"), ("Contactos[0].Relacion", "Padre"), ("Contactos[0].Telefono", "12341234"));
     Check(nueva.StatusCode == HttpStatusCode.Redirect, "Nueva solicitud enviada");
@@ -542,6 +543,7 @@ using (var estudiante = HostPrueba.Cliente(app))
 await PruebasChecks.Run(app, opciones, clave, perfil, perfil2);
 await InstitucionChecks.Run(app, opciones, clave);
 await CamposObligatoriosChecks.Run(app, opciones, clave, perfil2);
+await MayoriaEdadChecks.Run(app, opciones, clave, reloj);
 
 using (var c = HostPrueba.Cliente(app))
 {

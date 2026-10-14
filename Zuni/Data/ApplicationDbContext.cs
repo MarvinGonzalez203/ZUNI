@@ -7,6 +7,7 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad> VerificacionesMayoriaEdad => Set<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad>();
         public DbSet<Zuni.Models.Institucion.ConfiguracionInstitucion> ConfiguracionInstitucion => Set<Zuni.Models.Institucion.ConfiguracionInstitucion>();
         public DbSet<Zuni.Models.Pruebas.Prueba> PruebasDirector => Set<Zuni.Models.Pruebas.Prueba>();
         public DbSet<Zuni.Models.Pruebas.AsignacionPrueba> AsignacionesPrueba => Set<Zuni.Models.Pruebas.AsignacionPrueba>();
@@ -39,6 +40,19 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad>(e =>
+            {
+                e.ToTable("VerificacionesMayoriaEdad", t =>
+                {
+                    t.HasCheckConstraint("CK_VerificacionEdad_Estado", "\"Estado\" IN (0, 1, 2)");
+                    t.HasCheckConstraint("CK_VerificacionEdad_Declarada", "\"EdadDeclarada\" BETWEEN 18 AND 120");
+                    t.HasCheckConstraint("CK_VerificacionEdad_Constancia", "(\"Estado\" = 1 AND \"EdadVerificada\" BETWEEN 18 AND 120 AND \"EdadVerificada\" IS NOT NULL AND \"ResponsableUsuarioId\" IS NOT NULL AND \"FechaRevisionUtc\" IS NOT NULL AND \"DocumentoRevisado\" IN (0, 1, 2) AND \"DocumentoRevisado\" IS NOT NULL) OR (\"Estado\" <> 1 AND \"EdadVerificada\" IS NULL)");
+                });
+                e.HasKey(v => v.PerfilEstudianteId);
+                e.HasOne<PerfilEstudiante>().WithOne().HasForeignKey<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad>(v => v.PerfilEstudianteId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne<ApplicationUser>().WithMany().HasForeignKey(v => v.ResponsableUsuarioId).OnDelete(DeleteBehavior.Restrict);
+                e.Property(v => v.Revision).IsConcurrencyToken();
+            });
             builder.Entity<Zuni.Models.Institucion.ConfiguracionInstitucion>(e =>
             {
                 e.ToTable("ConfiguracionInstitucion", t =>

@@ -846,6 +846,50 @@ namespace Zuni.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad", b =>
+                {
+                    b.Property<Guid>("PerfilEstudianteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("DocumentoRevisado")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EdadDeclarada")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("EdadVerificada")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("FechaDeclaracionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaRevisionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ResponsableUsuarioId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("PerfilEstudianteId");
+
+                    b.HasIndex("ResponsableUsuarioId");
+
+                    b.ToTable("VerificacionesMayoriaEdad", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_VerificacionEdad_Constancia", "(\"Estado\" = 1 AND \"EdadVerificada\" BETWEEN 18 AND 120 AND \"EdadVerificada\" IS NOT NULL AND \"ResponsableUsuarioId\" IS NOT NULL AND \"FechaRevisionUtc\" IS NOT NULL AND \"DocumentoRevisado\" IN (0, 1, 2) AND \"DocumentoRevisado\" IS NOT NULL) OR (\"Estado\" <> 1 AND \"EdadVerificada\" IS NULL)");
+
+                            t.HasCheckConstraint("CK_VerificacionEdad_Declarada", "\"EdadDeclarada\" BETWEEN 18 AND 120");
+
+                            t.HasCheckConstraint("CK_VerificacionEdad_Estado", "\"Estado\" IN (0, 1, 2)");
+                        });
+                });
+
             modelBuilder.Entity("Zuni.Models.PasswordResetToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1300,6 +1344,20 @@ namespace Zuni.Migrations
                         .HasForeignKey("ParticipacionBigFiveId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad", b =>
+                {
+                    b.HasOne("Zuni.Models.PerfilEstudiante", null)
+                        .WithOne()
+                        .HasForeignKey("Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad", "PerfilEstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ResponsableUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Zuni.Models.PasswordResetToken", b =>

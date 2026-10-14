@@ -86,6 +86,7 @@ foreach (var role in new[] { "Administrador", "Director", "Catedratico" })
 var perfil = new PerfilEstudiante { Id = Guid.NewGuid(), UsuarioId = "est", Carne = "0000000001" };
 var otroPerfil = new PerfilEstudiante { Id = Guid.NewGuid(), UsuarioId = "otro-est", Carne = "0000000002" };
 db.PerfilesEstudiante.AddRange(perfil, otroPerfil);
+foreach (var perfilVerificado in new[] { perfil, otroPerfil }) { db.VerificacionesMayoriaEdad.Add(new Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad { PerfilEstudianteId = perfilVerificado.Id, EdadDeclarada = 21, Estado = Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada, EdadVerificada = 21, DocumentoRevisado = Zuni.Models.MayoriaEdad.DocumentoEdad.Dpi, ResponsableUsuarioId = perfilVerificado.UsuarioId, FechaDeclaracionUtc = DateTime.UtcNow, FechaRevisionUtc = DateTime.UtcNow }); }
 var solicitud = new SolicitudAtencion { PerfilEstudianteId = perfil.Id };
 db.SolicitudesAtencion.Add(solicitud);
 db.ConsentimientosAtencion.Add(new ConsentimientoAtencion { SolicitudAtencionId = solicitud.Id, Aceptado = true, VersionConsentimiento = "ZUNI-CONSENT-1" });
@@ -99,6 +100,11 @@ var estudiante = Sesion("est", "Estudiante");
 var psicologo = Sesion("psi", "Psicologo");
 var ct = CancellationToken.None;
 Check((await service.Estado(estudiante, ct)).TieneSolicitudActiva, "Solicitud activa");
+var constanciaEdad = await db.VerificacionesMayoriaEdad.SingleAsync(v => v.PerfilEstudianteId == perfil.Id);
+db.VerificacionesMayoriaEdad.Remove(constanciaEdad); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
+Check(!(await service.Estado(estudiante, ct)).TieneSolicitudActiva, "Sin verificación documental no habilita Big Five");
+await RechazaAsync<BigFiveOperacionException>(() => service.Aceptar(estudiante, new() { Acepto = true, MayorDeEdad = true }, ct), "Declaración de adulto no sustituye verificación documental");
+db.VerificacionesMayoriaEdad.Add(constanciaEdad); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
 db.UserRoles.Add(new IdentityUserRole<string> { UserId = "est", RoleId = "Administrador" }); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
 await RechazaAsync<BigFiveAccesoException>(() => service.Estado(estudiante, ct), "Rol institucional real impide acceso propio aunque la claim sea antigua");
 db.UserRoles.Remove(await db.UserRoles.SingleAsync(r => r.UserId == "est" && r.RoleId == "Administrador")); await db.SaveChangesAsync(); db.ChangeTracker.Clear();

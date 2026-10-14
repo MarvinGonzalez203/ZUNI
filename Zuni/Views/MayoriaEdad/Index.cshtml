@@ -1,0 +1,27 @@
+@model Zuni.Models.MayoriaEdad.DeclararEdadViewModel
+@using Zuni.Models.MayoriaEdad
+@{ ViewData["Title"] = "Mayoría de edad"; }
+<header class="dash-profile-heading"><div><h1>Mayoría de edad</h1><p>El servicio de atención está disponible para personas de 18 años o más.</p></div></header>
+@foreach (var tipo in new[] { "Success", "Error" }) { if (TempData[tipo] is string mensaje) { <p class="dash-notice" role="status">@mensaje</p> } }
+<section class="dash-card p-4">
+    <h2 class="h4">Estado de tu verificación</h2>
+    <p><strong>@(Model.Constancia?.Estado switch { EstadoMayoriaEdad.Verificada => "Verificada", EstadoMayoriaEdad.Rechazada => "No verificada; requiere nueva revisión", EstadoMayoriaEdad.Pendiente => "Declarada, pendiente de verificación", _ => "Sin declaración" })</strong></p>
+    @if (Model.Constancia?.Estado == EstadoMayoriaEdad.Verificada)
+    {
+        <p>La institución revisó tu documento. Puedes continuar con la solicitud de atención.</p>
+        <a class="dash-button" asp-controller="Estudiante" asp-action="SolicitarAtencion">Solicitar atención</a>
+    }
+    else
+    {
+        <p>Declara tu fecha de nacimiento y coordina con el Administrador la revisión del documento. La declaración por sí sola no acredita tu edad.</p>
+        <p class="small">Se conservarán tu edad al declarar y la constancia de revisión. No guardamos esta fecha de nacimiento, fotografías ni el número del documento en este formulario.</p>
+        <form asp-action="Index" method="post">
+            <input asp-for="Revision" type="hidden" />
+            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+            <label asp-for="FechaNacimiento" class="form-label"></label>
+            <input asp-for="FechaNacimiento" type="date" class="form-control mb-3" required />
+            <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+            <button class="dash-button" type="submit">Enviar declaración para revisión</button>
+        </form>
+    }
+</section>

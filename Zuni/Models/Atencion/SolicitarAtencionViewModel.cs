@@ -5,7 +5,9 @@ public sealed class SolicitarAtencionViewModel : IValidatableObject
     [Display(Name = "Confirmo que soy mayor de edad")] public bool EsMayorEdad { get; set; }
     [Range(18, 120, ErrorMessage = "Este flujo admite edades entre 18 y 120 años.")]
     public int Edad { get; set; }
-    [StringLength(50)] public string? Sexo { get; set; }
+    [Required(ErrorMessage = "Selecciona tu género."), StringLength(50), Display(Name = "Género")]
+    [AllowedValues("Mujer", "Hombre", "Otro", "Prefiero no responder", ErrorMessage = "Selecciona una opción de género válida.")]
+    public string? Sexo { get; set; }
     [Required, StringLength(300), Display(Name = "Dirección")] public string Direccion { get; set; } = string.Empty;
     [Required, StringLength(80), Display(Name = "Idioma preferido")] public string IdiomaPreferido { get; set; } = string.Empty;
     [Required, StringLength(2000), Display(Name = "Motivo de consulta")] public string MotivoConsulta { get; set; } = string.Empty;
