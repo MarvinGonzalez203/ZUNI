@@ -72,6 +72,8 @@ namespace Zuni.Data
                 e.Property(x => x.Id).ValueGeneratedNever();
                 e.Property(x => x.Nombre).HasMaxLength(150).IsRequired();
                 e.Property(x => x.CorreoSoporte).HasMaxLength(254);
+                e.Property(x => x.Lema).HasMaxLength(80).IsRequired();
+                e.Property(x => x.ColorPrincipal).HasMaxLength(7).IsRequired();
                 e.Property(x => x.DominiosAutorizados).HasMaxLength(2000).IsRequired();
                 e.Property(x => x.Revision).IsConcurrencyToken();
             });

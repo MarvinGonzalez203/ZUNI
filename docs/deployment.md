@@ -81,6 +81,7 @@ dotnet Zuni.dll --crear-primer-admin=true --correo <correo-valido> --nombre "<No
 - Ejecutarlo de forma interactiva (no como servicio) para que la contraseña no quede en registros.
 - No hay credenciales en código ni en variables de entorno.
 - Después, el Administrador crea el resto de cuentas desde el panel.
+- Para instalaciones independientes en Debian, usar también [el procedimiento por institución](instalaciones-debian.md), los archivos de `deploy/debian` y un `Zuni__InstallationId` propio. El identificador separa cookies y propósitos de Data Protection; conservar claves y base propias por instalación.
 - El primer Administrador puede usar cualquier correo válido para configurar una institución diferente.
   Después debe abrir **Configuración de la institución** y elegir la política de registro y correo.
   La configuración inicial conserva `miumg.edu.gt` para los registros y altas ordinarias.

@@ -1,0 +1,16 @@
+[Unit]
+Description=Respaldo PostgreSQL ZUNI %i
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=zuni-%i
+Group=zuni-%i
+EnvironmentFile=/etc/zuni/%i-backup.env
+ExecStart=/bin/bash /usr/local/libexec/zuni/backup.sh %i /var/backups/zuni/%i
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/backups/zuni/%i

@@ -1028,6 +1028,11 @@ namespace Zuni.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ColorPrincipal")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
                     b.Property<string>("CorreoSoporte")
                         .HasMaxLength(254)
                         .HasColumnType("character varying(254)");
@@ -1036,6 +1041,14 @@ namespace Zuni.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Lema")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<byte[]>("LogotipoPng")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("Nombre")
                         .IsRequired()

@@ -9,7 +9,7 @@
     {
         if (TempData[tipo] is string mensaje) { <p class="alert @(tipo == "Error" ? "alert-danger" : "alert-success")" role="status">@mensaje</p> }
     }
-    <form asp-action="Index" method="post" style="max-width: 760px">
+    <form asp-action="Index" method="post" enctype="multipart/form-data" style="max-width: 760px">
         <input asp-for="Revision" type="hidden" />
         <div asp-validation-summary="All" class="text-danger" role="alert"></div>
         <div class="mb-3">
@@ -23,6 +23,16 @@
             <small>Se muestra como contacto institucional. Guardarlo no activa el envío de correos.</small>
             <span asp-validation-for="CorreoSoporte" class="text-danger"></span>
         </div>
+        <fieldset class="border rounded p-3 mb-3"><legend class="h5">Identidad visual</legend>
+            <label asp-for="Lema" class="form-label"></label><input asp-for="Lema" class="form-control mb-3" maxlength="80" />
+            <label asp-for="ColorPrincipal" class="form-label"></label><input asp-for="ColorPrincipal" type="color" class="form-control form-control-color mb-3" />
+            <p>El mismo color se utiliza en los botones de todos los perfiles. El texto se ajusta para mantener contraste.</p>
+            <label asp-for="Logotipo" class="form-label"></label><input asp-for="Logotipo" type="file" accept="image/png" class="form-control mb-2" />
+            <small>PNG de hasta 128 KB y 1024 × 1024 píxeles. Si no cargas otro archivo, se conserva el actual.</small>
+            @if (Model.TieneLogotipo) { <img src="@Url.Action("Logotipo")" alt="Logotipo institucional actual" width="80" /> }
+            <label class="d-block mt-2"><input asp-for="QuitarLogotipo" /> Quitar el logotipo institucional y volver al de ZUNI</label>
+            <span asp-validation-for="Logotipo" class="text-danger"></span>
+        </fieldset>
         <div class="mb-3">
             <label asp-for="PoliticaCorreo" zuni-required="true" class="form-label"></label>
             <select asp-for="PoliticaCorreo" class="form-select">

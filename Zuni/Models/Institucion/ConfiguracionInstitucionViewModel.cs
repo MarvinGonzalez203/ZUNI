@@ -14,6 +14,14 @@ public sealed class ConfiguracionInstitucionViewModel : IValidatableObject
     [StringLength(2000), Display(Name = "Dominios autorizados")]
     public string? DominiosAutorizados { get; set; }
     public Guid Revision { get; set; }
+    [Required, StringLength(80), Display(Name = "Lema institucional")]
+    public string Lema { get; set; } = "Tu espacio educativo";
+    [Required, RegularExpression("^#[a-fA-F0-9]{6}$"), Display(Name = "Color de los botones")]
+    public string ColorPrincipal { get; set; } = "#cea2fd";
+    [Display(Name = "Logotipo PNG (opcional)")]
+    public IFormFile? Logotipo { get; set; }
+    public bool QuitarLogotipo { get; set; }
+    [Microsoft.AspNetCore.Mvc.ModelBinding.BindNever] public bool TieneLogotipo { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

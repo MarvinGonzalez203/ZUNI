@@ -43,13 +43,16 @@ carpetaClaves = string.IsNullOrWhiteSpace(carpetaClaves)
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(carpetaClaves))
-    .SetApplicationName("Zuni");
+    .SetApplicationName(Zuni.Seguridad.AislamientoInstalacion.Nombre(builder.Configuration));
 
 // Cookie de sesión: 30 min de inactividad (sliding) + máximo absoluto de 8 h,
 // HttpOnly, SameSite=Lax, Secure fuera de Development y revalidación de SecurityStamp.
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options => SesionZuni.Configurar(options, builder.Environment.IsDevelopment()));
+    .AddCookie(options => {
+        SesionZuni.Configurar(options, builder.Environment.IsDevelopment());
+        options.Cookie.Name = Zuni.Seguridad.AislamientoInstalacion.Cookie(builder.Configuration);
+    });
 
 builder.Services.AddAntiforgery(options =>
 {

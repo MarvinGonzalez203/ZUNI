@@ -1,0 +1,11 @@
+[Unit]
+Description=Respaldo diario ZUNI %i
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+RandomizedDelaySec=15m
+Persistent=true
+Unit=zuni-backup@%i.service
+
+[Install]
+WantedBy=timers.target

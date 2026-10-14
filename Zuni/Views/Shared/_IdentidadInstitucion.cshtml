@@ -1,0 +1,15 @@
+@model Zuni.Models.Institucion.ConfiguracionInstitucion
+@using Zuni.Services.Institucion
+<style>
+    :root { --institucion-color: @IdentidadInstitucion.Color(Model.ColorPrincipal); --institucion-texto: @IdentidadInstitucion.Texto(Model.ColorPrincipal); }
+    .dashboard-app { --dash-violet: var(--institucion-color); }
+    .dashboard-app .dash-button, .dashboard-app .btn-primary, .dashboard-app .btn-zuni, .btn-zuni {
+        background: var(--institucion-color); color: var(--institucion-texto); border-color: var(--institucion-color);
+    }
+    .dashboard-app .btn-primary, .dashboard-app .btn-outline-primary { border-radius: 9px; }
+    .dashboard-app .btn-outline-primary { color: #43275a; border-color: var(--institucion-color); background: transparent; }
+    .dashboard-app .dash-button:hover, .dashboard-app .dash-button:focus-visible,
+    .dashboard-app .btn-primary:hover, .dashboard-app .btn-primary:focus-visible, .dashboard-app .btn-primary:active,
+    .dashboard-app .btn-outline-primary:hover, .dashboard-app .btn-outline-primary:focus-visible, .dashboard-app .btn-outline-primary:active,
+    .dashboard-app .btn-zuni:hover, .btn-zuni:hover { background: var(--institucion-color); color: var(--institucion-texto); border-color: var(--institucion-color); filter: brightness(.97); }
+</style>

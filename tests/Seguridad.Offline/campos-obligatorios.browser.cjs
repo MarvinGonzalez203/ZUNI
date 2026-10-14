@@ -121,6 +121,15 @@ function check(value, text) { assert.ok(value, text); checks++; }
         check(await page.locator('a[href*="/Reuniones/Entrar"]').count() === 1, 'entrada mediante verificación de ZUNI');
         check(await page.locator('body').innerText().then(text => !text.includes('meet.google.com/')), 'acceso sin publicar URL de la reunión');
         await page.screenshot({ path: path.join(fixtures, 'reunion-acceso.png'), fullPage: true });
+        await load('director-color');
+        const directorButton = page.locator('.btn-primary').first();
+        const directorColor = await directorButton.evaluate(button => getComputedStyle(button).backgroundColor);
+        check(directorColor === 'rgb(206, 162, 253)', 'Director usa el violeta del Psicólogo');
+        await directorButton.hover();
+        check(await directorButton.evaluate(button => getComputedStyle(button).backgroundColor) === directorColor, 'hover conserva el violeta');
+        await page.screenshot({ path: path.join(fixtures, 'director-color.png'), fullPage: true });
+        await load('psicologo-color');
+        check(await page.locator('.dash-button').first().evaluate(button => getComputedStyle(button).backgroundColor) === directorColor, 'Psicólogo usa el mismo color que Director');
         check(errors.length === 0, 'sin errores JavaScript: ' + errors.join(', '));
         console.log(`OK: ${checks} comprobaciones de formularios en navegador.`);
     } finally { await browser.close(); }

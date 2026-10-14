@@ -1,6 +1,6 @@
-# Configuración institucional — Primera entrega
+# Configuración institucional
 
-Implementada en `feature/director-V2` el 13 de octubre de 2026.
+Implementada en `feature/director-V2` y ampliada con identidad visual el 14 de octubre de 2026.
 
 ## Cómo utilizarla
 
@@ -43,10 +43,16 @@ En esta entrega se creó un respaldo de `localhost/ZuniDb` y se aplicó allí la
 
 ## Alcance y límites
 
-Esta entrega implementa la política institucional de correo, nombre y contacto. El logotipo propio, la personalización del formato de carné, la retirada de Catedrático, las marcas de obligatoriedad, la verificación documental de edad, el informe educativo PDF, las videollamadas y las suscripciones siguen pendientes. El carné y el teléfono mantienen sus validaciones actuales; el cambio de correo por sí solo no hace compatible cualquier formato de identificación escolar.
+La configuración incluye política de correo, nombre, contacto e identidad visual. El carné mantiene cuatro dígitos en el primer bloque, dos en el segundo y entre dos y seis en el último; no acepta automáticamente cualquier identificador escolar. La retirada de Catedrático, obligatoriedad, revisión de mayoría de edad, privacidad, informes y citas virtuales se documentan en sus entregas correspondientes. Un sistema de cobro de suscripciones no forma parte de esta configuración.
 
 ## Verificación
 
 Las comprobaciones de `tests/Seguridad.Offline/InstitucionChecks.cs` utilizan SQLite en memoria y un host HTTP efímero. Cubren formularios reales, los tres modos, dominio exacto, normalización, entradas inválidas, permisos, antiforgery, auditoría, revisión obsoleta, registro pendiente, bloqueo de formularios antiguos y conservación del acceso de cuentas existentes.
 
 La transacción de configuración y la creación de cuentas se ejecutan con aislamiento SERIALIZABLE. Las pruebas en SQLite no equivalen a una prueba de concurrencia de PostgreSQL; los conflictos de versión o serialización se manejan sin presentar los cambios como guardados.
+
+## Identidad visual y botones
+
+En **Administración → Configuración de la institución**, además del nombre y la política de correo, puedes configurar lema, color de botones y un logotipo PNG de hasta 128 KB y 1024 × 1024 píxeles. El color predeterminado es `#cea2fd`, común a Director y Psicólogo. El texto cambia entre negro y blanco según contraste. El nombre y lema se muestran escapados; el color solo acepta seis dígitos hexadecimales.
+
+El logotipo es opcional y se conserva si no subes otro. Para retirarlo, marca la opción correspondiente. No se aceptan SVG, archivos renombrados, PNG truncados o con estructura/CRC inválidos. El PNG se guarda en la base de esta instalación y se sirve como imagen, sin rutas aportadas por el usuario. Sus cambios se auditan mediante huella, sin copiar los bytes al historial.
