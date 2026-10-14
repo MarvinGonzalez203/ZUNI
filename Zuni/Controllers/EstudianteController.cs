@@ -35,6 +35,19 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
     }
 
 
+    [HttpGet("EstadoSolicitud")]
+    public async Task<IActionResult> EstadoSolicitud(CancellationToken ct)
+    {
+        var perfil=await Zuni.Services.MayoriaEdad.MayoriaEdadService.PropioAsync(db,User,ct);
+        if(perfil is null)return Forbid();
+        var solicitud=await db.SolicitudesAtencion.AsNoTracking().Where(s=>s.PerfilEstudianteId==perfil.Id)
+            .OrderByDescending(s=>s.FechaSolicitudUtc).ThenByDescending(s=>s.Id)
+            .Select(s=>new EstadoSolicitudViewModel{Estado=s.Estado,FechaSolicitudUtc=s.FechaSolicitudUtc}).FirstOrDefaultAsync(ct);
+        var psy=await (from a in db.AsignacionesEstudiantePsicologo.AsNoTracking() join u in db.Users on a.PsicologoUsuarioId equals u.Id
+            where a.PerfilEstudianteId==perfil.Id&&a.FechaFinalizacionUtc==null select u.FullName).SingleOrDefaultAsync(ct);
+        return View("MiSolicitud",new MiSolicitudConsulta(solicitud,psy,perfil.EstaCompleto,await Zuni.Services.MayoriaEdad.MayoriaEdadService.VerificadaAsync(db,perfil.Id,ct)));
+    }
+
     [HttpGet("SolicitarAtencion")]
     public async Task<IActionResult> SolicitarAtencion(CancellationToken ct)
     {

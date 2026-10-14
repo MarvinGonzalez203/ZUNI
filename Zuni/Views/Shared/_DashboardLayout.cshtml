@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/campos-obligatorios.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/modales.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/agenda-contexto.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
     <partial name="_IdentidadInstitucion" model="identidadInstitucion" />
 </head>
@@ -64,6 +65,7 @@
     </div>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/campos-obligatorios.js" asp-append-version="true"></script>
+    <script src="~/js/agenda-contexto.js" asp-append-version="true"></script>
     <script>
         window.addEventListener('resize', () => {
             if (window.innerWidth >= 992) {

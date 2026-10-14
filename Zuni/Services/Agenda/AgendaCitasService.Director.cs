@@ -24,7 +24,7 @@ public sealed partial class AgendaCitasService
         var hasta = AgendaReglas.Utc(calendario.Mes.AddMonths(1), TimeOnly.MinValue);
         var citas = await (from c in db.Citas.AsNoTracking() join p in db.PerfilesEstudiante on c.PerfilEstudianteId equals p.Id
             where c.PsicologoUsuarioId == psicologoId && c.FechaHoraInicioUtc >= desde && c.FechaHoraInicioUtc < hasta
-            select new CitaCalendarioResumen { Id=c.Id, Nombre=p.Usuario.FullName, InicioUtc=c.FechaHoraInicioUtc, FinUtc=c.FechaHoraFinUtc,
+            select new CitaCalendarioResumen { Id=c.Id, Revision=c.Revision,ProgramadorRol=c.ProgramadorRol,Nombre=p.Usuario.FullName, InicioUtc=c.FechaHoraInicioUtc, FinUtc=c.FechaHoraFinUtc,
                 Modalidad=c.Modalidad, Estado=c.Estado, EsImprevista=c.EsImprevista }).ToListAsync(ct);
         foreach(var d in calendario.Dias) d.Citas = citas.Where(c => AgendaReglas.Hoy(c.InicioUtc) == d.Fecha).OrderBy(c => c.InicioUtc).ToList();
         foreach(var p in profesionales) p.Selected = p.Value == psicologoId;
@@ -37,8 +37,8 @@ public sealed partial class AgendaCitasService
         var nombre = await db.Users.Where(u => u.Id == c.PsicologoUsuarioId).Select(u => u.FullName).SingleAsync(ct);
         var texto = $"El psicólogo {nombre} {(c.Estado == EstadoCita.Confirmada ? "aceptó" : "rechazó")} la cita propuesta para {AgendaReglas.Local(c.FechaHoraInicioUtc):dd/MM/yyyy HH:mm} (Guatemala).";
         if(c.Estado == EstadoCita.Rechazada) texto += " Motivo administrativo: " + c.MotivoCancelacion;
-        db.NotificacionesCita.Add(new(){UsuarioId=c.ProgramadorUsuarioId, CitaId=c.Id, Texto=texto, FechaUtc=Ahora});
+        db.NotificacionesCita.Add(new(){UsuarioId=c.ProgramadorUsuarioId, CitaId=c.Id, Texto=texto, FechaUtc=Ahora,AutorUsuarioId=c.PsicologoUsuarioId,AutorRol="Psicologo",Tipo="Respuesta"});
         var estudiante = await db.PerfilesEstudiante.Where(p => p.Id == c.PerfilEstudianteId).Select(p => p.UsuarioId).SingleAsync(ct);
-        db.NotificacionesCita.Add(new(){UsuarioId=estudiante, CitaId=c.Id, Texto=texto, FechaUtc=Ahora});
+        db.NotificacionesCita.Add(new(){UsuarioId=estudiante, CitaId=c.Id, Texto=texto, FechaUtc=Ahora,AutorUsuarioId=c.PsicologoUsuarioId,AutorRol="Psicologo",Tipo="Respuesta"});
     }
 }

@@ -3,11 +3,12 @@
 <header class="dash-profile-heading"><div><h1>Mis notificaciones</h1><p>Programaciones, cambios de horario y respuestas dirigidos a tu cuenta.</p></div></header>
 @if(Model.Count==0){<section class="dash-card">Todavía no tienes notificaciones de citas.</section>}
 @foreach(var n in Model){
-    <article class="dash-card mb-3"><span class="dash-badge">@(n.Leida?"Leída":"Nueva")</span><p class="mt-3">@n.Texto</p><small>@Zuni.Services.Agenda.AgendaReglas.Local(n.FechaUtc).ToString("dd/MM/yyyy HH:mm") (Guatemala)</small>
-    <div class="mt-3">
-        @if(User.IsInRole("Estudiante")){<a asp-controller="Estudiante" asp-action="Citas" asp-route-fecha="@Zuni.Services.Agenda.AgendaReglas.Hoy(n.InicioUtc).ToString("yyyy-MM-dd")" class="dash-button">Consultar mis citas</a>}
-        else if(User.IsInRole("Psicologo")){<a asp-controller="Psicologo" asp-action="Agenda" asp-route-fecha="@Zuni.Services.Agenda.AgendaReglas.Hoy(n.InicioUtc).ToString("yyyy-MM-dd")" class="dash-button">Consultar / responder en mi agenda</a>}
-        else if(User.IsInRole("Director")){<a asp-controller="Director" asp-action="Calendario" asp-route-fecha="@Zuni.Services.Agenda.AgendaReglas.Hoy(n.InicioUtc).ToString("yyyy-MM-dd")" class="dash-button">Consultar calendario</a>}
-        @if(!n.Leida){<form asp-action="Leida" method="post" class="d-inline"><input type="hidden" name="id" value="@n.Id"/><button class="btn btn-outline-secondary">Marcar como leída</button></form>}
-    </div></article>
-}
+<article class="dash-card mb-3"><span class="dash-badge">@(n.Leida?"Leída":"Nueva")</span><h2 class="h4 mt-3">@n.Tipo de cita</h2>
+<dl class="notification-data"><div><dt>Estudiante</dt><dd>@n.Estudiante</dd></div><div><dt>Carné</dt><dd>@Zuni.Helpers.CarneHelper.Formatear(n.Carne)</dd></div><div><dt>@(n.AutorOriginal?"Creada por":"Programación actual creada por")</dt><dd>@(n.Autor??"No registrado") · @(n.AutorRol??"Profesional")</dd></div><div><dt>Psicólogo responsable</dt><dd>@n.Psicologo</dd></div><div><dt>Fecha actual de la cita</dt><dd>@Zuni.Services.Agenda.AgendaReglas.Local(n.InicioUtc).ToString("dd/MM/yyyy HH:mm") · Guatemala</dd></div><div><dt>Modalidad</dt><dd>@n.Modalidad</dd></div><div><dt>Estado actual</dt><dd>@(n.EstadoActual==Zuni.Models.Agenda.EstadoCita.Solicitada?"Pendiente de revisar":n.EstadoActual.ToString())</dd></div><div><dt>Aviso recibido</dt><dd>@Zuni.Services.Agenda.AgendaReglas.Local(n.FechaUtc).ToString("dd/MM/yyyy HH:mm") · Guatemala</dd></div></dl>
+<details><summary>Ver mensaje original del aviso</summary><p class="notification-original">@n.Texto</p></details>
+<div class="notification-actions">
+@if(User.IsInRole("Estudiante")){<a asp-controller="Estudiante" asp-action="Citas" asp-route-fecha="@Zuni.Services.Agenda.AgendaReglas.Hoy(n.InicioUtc).ToString("yyyy-MM-dd")" class="dash-button">Consultar mis citas</a>}
+else if(User.IsInRole("Psicologo")){<a asp-controller="Psicologo" asp-action="Agenda" asp-route-citaId="@n.CitaId" class="dash-button">Consultar propuesta en su día</a>}
+else if(User.IsInRole("Director")){<a asp-controller="CitasProgramadas" asp-action="Index" asp-route-citaId="@n.CitaId" class="dash-button">Consultar cita en el calendario</a>}
+@if(!n.Leida){<form asp-action="Leida" method="post"><input type="hidden" name="id" value="@n.Id"/><button class="btn btn-outline-secondary">Marcar como leída</button></form>}
+</div></article>}

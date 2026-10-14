@@ -113,11 +113,13 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
     {
         var id = await Psicologo(sesion, ct);
         var calendario = await LeerCalendario(id, fecha, true, null, ct);
+        var almuerzo=await Almuerzo(id,ct);
         var inicio = AgendaReglas.Utc(calendario.Mes, TimeOnly.MinValue);
         var fin = AgendaReglas.Utc(calendario.Mes.AddMonths(1), TimeOnly.MinValue);
         return new AgendaPsicologoViewModel
         {
             Fecha = calendario.Mes, Calendario = calendario,
+            Almuerzo = new AlmuerzoInput{Habilitado=almuerzo?.Habilitado??false,Inicio=almuerzo?.Inicio??new TimeOnly(13,0),Fin=almuerzo?.Fin??new TimeOnly(14,0),Revision=almuerzo?.Revision??Guid.Empty},
             Disponibilidades = await db.DisponibilidadesPsicologo.AsNoTracking()
                 .Where(d => d.PsicologoUsuarioId == id && d.ConfiguracionAgendaDiaId == null)
                 .OrderBy(d => d.DiaSemana).ThenBy(d => d.HoraInicio)
@@ -202,6 +204,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
                 : "El horario, la duración o la modalidad ya no están disponibles.");
         // El fin pertenece a ESTA cita (inicio + duración); nunca al fin de la disponibilidad.
         var fin = AgendaReglas.FinCita(horario, inicio, input.DuracionMinutos);
+        await ValidarAlmuerzo(psicologo,inicio,fin,ct);
         if (await db.Citas.AnyAsync(c => EstadosActivos.Contains(c.Estado) &&
             (c.PsicologoUsuarioId == psicologo || c.PerfilEstudianteId == perfil.Id) &&
             c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio, ct))
@@ -239,6 +242,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         if (input.Estado == EstadoCita.Confirmada && cita.Modalidad == ModalidadCita.Virtual)
             await FijarEnlace(cita, input.EnlaceReunion, input.AccesoRestringidoRevisado, ct);
         if(input.Estado==EstadoCita.Confirmada)await ValidarConfirmacionProgramada(cita,ct);
+        if(input.Estado==EstadoCita.Confirmada)await ValidarAlmuerzo(id,cita.FechaHoraInicioUtc,cita.FechaHoraFinUtc,ct);
         AplicarCambio(cita, input.Estado, input.MotivoCancelacion);
         await NotificarRespuestaDirector(cita, ct);
     }, ct);

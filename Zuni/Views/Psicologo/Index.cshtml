@@ -20,12 +20,12 @@
         <strong class="fs-2">@Model.EstudiantesAsignados</strong>
         <p>@(Model.EstudiantesAsignados == 1 ? "Estudiante asignado actualmente" : "Estudiantes asignados actualmente")</p><span class="dash-text-link">Ver estudiantes</span>
     </a>
-    <div class="dash-card dash-summary"><h2>Solicitudes asignadas</h2><strong class="fs-2">@Model.SolicitudesAsignadas</strong><p>De estudiantes con asignación vigente a tu cuenta.</p></div>
-    <div class="dash-card dash-summary"><h2>Expedientes disponibles</h2><strong class="fs-2">@Model.ExpedientesDisponibles</strong><p>Con consentimiento aceptado y asignación vigente. Consulta desde Estudiantes.</p></div>
+    <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes"><h2>Solicitudes asignadas</h2><strong class="fs-2">@Model.SolicitudesAsignadas</strong><p>De estudiantes con asignación vigente a tu cuenta.</p><span class="dash-text-link">Ver quién realizó la solicitud</span></a>
+    <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes" asp-route-expedientes="true"><h2>Expedientes disponibles</h2><strong class="fs-2">@Model.ExpedientesDisponibles</strong><p>Con consentimiento aceptado y asignación vigente.</p><span class="dash-text-link">Consultar expedientes</span></a>
 </section>
 <div class="dash-section-heading"><h2>Herramientas de atención</h2></div>
 <section class="dash-summary-grid" aria-label="Módulos de atención">
-    @foreach (var item in new[] { ("Agenda", "Agenda", "calendar", "Agenda disponible próximamente."), ("Resultados", "Resultados", "results", "Sin instrumentos configurados."), ("Estudiantes", "Atención", "clipboard", "Accede al expediente desde tus estudiantes asignados."), ("Historial", "Historial", "book", "El registro de sesiones aún no está disponible.") })
+    @foreach (var item in new[] { ("Agenda", "Agenda", "calendar", "Disponibilidad, almuerzo y citas pendientes de revisar."), ("Resultados", "Resultados", "results", "Consulta las pruebas indicadas y sus resúmenes."), ("Solicitudes", "Atención", "clipboard", "Solicitudes y expedientes de tus estudiantes vinculados."), ("Historial", "Historial", "book", "Consulta las citas pasadas y sus registros de atención.") })
     {
         <a class="dash-card dash-summary dash-card-link" asp-action="@item.Item1">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item3" /></span><h2>@item.Item2</h2></div>

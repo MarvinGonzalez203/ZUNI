@@ -16,7 +16,7 @@ public sealed class ReunionesController(AgendaCitasService agenda) : Controller
         if (!ModelState.IsValid) { input.Estudiante = actual.Estudiante; input.InicioUtc = actual.InicioUtc; input.Estado = actual.Estado; return View(input); }
         await agenda.GuardarReunion(User, input, ct);
         TempData["Success"] = input.ConfirmarCita ? "Cita virtual confirmada con enlace individual." : "Enlace de reunión actualizado.";
-        return RedirectToAction("Agenda", "Psicologo");
+        return RedirectToAction("Agenda", "Psicologo",new{citaId=input.CitaId});
     }
     [HttpGet]
     public async Task<IActionResult> Detalle(Guid citaId, CancellationToken ct) => View(await agenda.ConsultarReunion(User, citaId, ct));

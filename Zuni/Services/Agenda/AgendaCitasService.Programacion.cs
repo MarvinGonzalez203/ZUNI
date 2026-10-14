@@ -46,6 +46,7 @@ public sealed partial class AgendaCitasService
     }
     private async Task ValidarFranjaProgramada(Guid perfil,string psy,DateTime inicio,DateTime fin,Guid? except,CancellationToken ct)
     {
+        await ValidarAlmuerzo(psy,inicio,fin,ct);
         var fecha=AgendaReglas.FechaPermitida(AgendaReglas.Hoy(inicio),Ahora);
         var desde=AgendaReglas.Utc(fecha,TimeOnly.MinValue);var hasta=AgendaReglas.Utc(fecha.AddDays(1),TimeOnly.MinValue);
         if(inicio<=Ahora||fin<=inicio||AgendaReglas.Hoy(fin)!=fecha||TimeOnly.FromDateTime(AgendaReglas.Local(inicio))<new TimeOnly(8,0)||TimeOnly.FromDateTime(AgendaReglas.Local(fin))>new TimeOnly(18,0))throw new AgendaOperacionException("Usa una franja futura entre las 08:00 y 18:00 del mismo día.");
@@ -56,9 +57,10 @@ public sealed partial class AgendaCitasService
     {
         var user=await db.PerfilesEstudiante.Where(p=>p.Id==c.PerfilEstudianteId).Select(p=>p.UsuarioId).SingleAsync(ct);
         var nombre=await db.Users.Where(u=>u.Id==actor.Id).Select(u=>u.FullName).SingleAsync(ct);
-        var texto=$"Cita {(cambio?"reprogramada":"programada")} por {actor.Rol}: {nombre}. Fecha: {AgendaReglas.Local(c.FechaHoraInicioUtc):dd/MM/yyyy HH:mm} (Guatemala), {c.Modalidad}. Estado: {c.Estado}. Consulta la fecha actual en Citas.";
-        db.NotificacionesCita.Add(new(){UsuarioId=user,CitaId=c.Id,Texto=texto,FechaUtc=Ahora});
-        if(actor.Rol=="Director")db.NotificacionesCita.Add(new(){UsuarioId=c.PsicologoUsuarioId,CitaId=c.Id,Texto=texto,FechaUtc=Ahora});
+        var estudiante=await db.PerfilesEstudiante.Where(p=>p.Id==c.PerfilEstudianteId).Select(p=>p.Usuario.FullName).SingleAsync(ct);
+        var texto=$"Cita {(cambio?"reprogramada":"programada")} por {actor.Rol}: {nombre}.\nEstudiante: {estudiante}.\nFecha: {AgendaReglas.Local(c.FechaHoraInicioUtc):dd/MM/yyyy HH:mm} (Guatemala).\nModalidad: {c.Modalidad}.\nEstado: {c.Estado}.";
+        db.NotificacionesCita.Add(new(){UsuarioId=user,CitaId=c.Id,Texto=texto,FechaUtc=Ahora,AutorUsuarioId=actor.Id,AutorRol=actor.Rol,Tipo=cambio?"Reprogramación":"Programación"});
+        if(actor.Rol=="Director")db.NotificacionesCita.Add(new(){UsuarioId=c.PsicologoUsuarioId,CitaId=c.Id,Texto=texto,FechaUtc=Ahora,AutorUsuarioId=actor.Id,AutorRol=actor.Rol,Tipo=cambio?"Reprogramación":"Programación"});
         PrivacidadService.Auditar(db,user,actor.Id,cambio?"CITA_REPROGRAMADA":"CITA_PROGRAMADA_PROFESIONAL",reloj,c.Id);
     }
     private async Task<EstadoCita> EstadoProgramacion((string Id,string Rol) actor,Guid perfil,ModalidadCita modalidad,CancellationToken ct)
@@ -91,7 +93,15 @@ public sealed partial class AgendaCitasService
         },ct);return resultado;
     }
     public async Task<IReadOnlyList<NotificacionResumen>> Notificaciones(ClaimsPrincipal actor,CancellationToken ct)
-    {var id=await PrivacidadService.UsuarioAsync(db,actor,ct);return await (from n in db.NotificacionesCita.AsNoTracking() join c in db.Citas.AsNoTracking() on n.CitaId equals c.Id where n.UsuarioId==id orderby n.FechaUtc descending select new NotificacionResumen(n.Id,n.Texto,n.FechaUtc,n.Leida,n.CitaId,c.FechaHoraInicioUtc)).Take(100).ToListAsync(ct);}
+    {
+        var id=await PrivacidadService.UsuarioAsync(db,actor,ct);
+        return await (from n in db.NotificacionesCita.AsNoTracking() join c in db.Citas.AsNoTracking() on n.CitaId equals c.Id
+            join p in db.PerfilesEstudiante on c.PerfilEstudianteId equals p.Id join psy in db.Users on c.PsicologoUsuarioId equals psy.Id
+            where n.UsuarioId==id orderby n.FechaUtc descending
+            select new NotificacionResumen(n.Id,n.Texto,n.FechaUtc,n.Leida,n.CitaId,c.FechaHoraInicioUtc){Estudiante=p.Usuario.FullName,Carne=p.Carne,Psicologo=psy.FullName,PsicologoId=psy.Id,
+                Autor=db.Users.Where(u=>u.Id==(n.AutorUsuarioId??c.ProgramadorUsuarioId)).Select(u=>u.FullName).FirstOrDefault(),AutorRol=n.AutorRol??c.ProgramadorRol,
+                AutorOriginal=n.AutorUsuarioId!=null,Tipo=n.Tipo??"Aviso",EstadoActual=c.Estado,Modalidad=c.Modalidad}).Take(100).ToListAsync(ct);
+    }
     public async Task LeerNotificacion(ClaimsPrincipal actor,Guid id,CancellationToken ct)
     {var user=await PrivacidadService.UsuarioAsync(db,actor,ct);var n=await db.NotificacionesCita.SingleOrDefaultAsync(n=>n.Id==id&&n.UsuarioId==user,ct)??throw new AgendaAccesoException();n.Leida=true;await db.SaveChangesAsync(ct);}
 }

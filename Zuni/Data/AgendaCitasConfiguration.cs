@@ -8,7 +8,12 @@ public static class AgendaCitasConfiguration
 {
     public static void ConfigurarAgendaCitas(this ModelBuilder builder)
     {
-        builder.Entity<NotificacionCita>(e => { e.ToTable("NotificacionesCita"); e.HasKey(x=>x.Id); e.Property(x=>x.Texto).HasMaxLength(600); e.HasIndex(x=>new{x.UsuarioId,x.Leida,x.FechaUtc}); e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x=>x.UsuarioId).OnDelete(DeleteBehavior.Restrict); e.HasOne<Cita>().WithMany().HasForeignKey(x=>x.CitaId).OnDelete(DeleteBehavior.Restrict); });
+        builder.Entity<ConfiguracionAlmuerzo>(e=>{
+            e.ToTable("ConfiguracionesAlmuerzo",t=>t.HasCheckConstraint("CK_Almuerzo_Horas","\"Inicio\" >= TIME '08:00' AND \"Fin\" <= TIME '18:00' AND \"Fin\" > \"Inicio\""));
+            e.HasKey(x=>x.PsicologoUsuarioId);e.Property(x=>x.Revision).IsConcurrencyToken();
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x=>x.PsicologoUsuarioId).OnDelete(DeleteBehavior.Restrict);
+        });
+        builder.Entity<NotificacionCita>(e => { e.ToTable("NotificacionesCita"); e.HasKey(x=>x.Id); e.Property(x=>x.Texto).HasMaxLength(600); e.Property(x=>x.AutorRol).HasMaxLength(20);e.Property(x=>x.Tipo).HasMaxLength(30);e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x=>x.AutorUsuarioId).OnDelete(DeleteBehavior.Restrict);e.HasIndex(x=>new{x.UsuarioId,x.Leida,x.FechaUtc}); e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x=>x.UsuarioId).OnDelete(DeleteBehavior.Restrict); e.HasOne<Cita>().WithMany().HasForeignKey(x=>x.CitaId).OnDelete(DeleteBehavior.Restrict); });
         builder.Entity<EnlaceReunionUsado>(e => {
             e.ToTable("EnlacesReunionUsados"); e.HasKey(x => x.Huella); e.Property(x => x.Huella).HasMaxLength(64);
             e.HasOne<Cita>().WithMany().HasForeignKey(x => x.CitaId).OnDelete(DeleteBehavior.Restrict);

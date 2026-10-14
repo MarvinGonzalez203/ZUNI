@@ -276,6 +276,32 @@ namespace Zuni.Migrations
                     b.ToTable("ConfiguracionesAgendaDia", (string)null);
                 });
 
+            modelBuilder.Entity("Zuni.Models.Agenda.ConfiguracionAlmuerzo", b =>
+                {
+                    b.Property<string>("PsicologoUsuarioId")
+                        .HasColumnType("text");
+
+                    b.Property<TimeOnly>("Fin")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<bool>("Habilitado")
+                        .HasColumnType("boolean");
+
+                    b.Property<TimeOnly>("Inicio")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("PsicologoUsuarioId");
+
+                    b.ToTable("ConfiguracionesAlmuerzo", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Almuerzo_Horas", "\"Inicio\" >= TIME '08:00' AND \"Fin\" <= TIME '18:00' AND \"Fin\" > \"Inicio\"");
+                        });
+                });
+
             modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -350,6 +376,13 @@ namespace Zuni.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AutorRol")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("AutorUsuarioId")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CitaId")
                         .HasColumnType("uuid");
 
@@ -364,11 +397,17 @@ namespace Zuni.Migrations
                         .HasMaxLength(600)
                         .HasColumnType("character varying(600)");
 
+                    b.Property<string>("Tipo")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<string>("UsuarioId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AutorUsuarioId");
 
                     b.HasIndex("CitaId");
 
@@ -11183,6 +11222,15 @@ namespace Zuni.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Zuni.Models.Agenda.ConfiguracionAlmuerzo", b =>
+                {
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Zuni.Models.Agenda.DisponibilidadPsicologo", b =>
                 {
                     b.HasOne("Zuni.Models.Agenda.ConfiguracionAgendaDia", null)
@@ -11208,6 +11256,11 @@ namespace Zuni.Migrations
 
             modelBuilder.Entity("Zuni.Models.Agenda.NotificacionCita", b =>
                 {
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AutorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Zuni.Models.Agenda.Cita", null)
                         .WithMany()
                         .HasForeignKey("CitaId")

@@ -1,16 +1,29 @@
 @{
-    var accion = ViewContext.RouteData.Values["action"]?.ToString();
+    var c=ViewContext.RouteData.Values["controller"]?.ToString();var a=ViewContext.RouteData.Values["action"]?.ToString();
+    bool Es(string controller,params string[] actions)=>c==controller&&(actions.Length==0||actions.Contains(a));
+    bool expedientes=string.Equals(Context.Request.Query["expedientes"],"true",StringComparison.OrdinalIgnoreCase);
+    var agenda=Es("CitasProgramadas")||Es("Psicologo","Agenda")||Es("Reuniones")||Es("Atenciones","Imprevista");
+    var atencion=Es("Psicologo","Estudiantes","Solicitudes","Expediente","Atencion","Historial","VerAtencion","RegistrarAtencion","Resultados")||Es("PruebasAplicadas")||Es("InformesEducativos")||Es("Atenciones","Reporte");
+    string Act(bool selected)=>selected?"is-active":"";string? Actual(bool selected)=>selected?"page":null;
 }
 <nav class="dash-nav" aria-label="Navegación del psicólogo">
     <span class="dash-nav-label">MI ESPACIO</span>
-    <a class="dash-nav-link" asp-controller="PruebasAplicadas" asp-action="Resultados"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Pruebas e inducción</span></a>
-    <a class="dash-nav-link" asp-controller="CitasProgramadas" asp-action="Index"><partial name="_DashboardIcon" model='@("calendar")' /><span>Programación de citas</span></a>
-    <a class="dash-nav-link" asp-controller="InformesEducativos" asp-action="Index"><partial name="_DashboardIcon" model='@("results")' /><span>Informes educativos</span></a>
-    <a class="dash-nav-link" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Privacidad y mis derechos</span></a>
-    @foreach (var item in new[] { ("Index", "Tablero", "grid"), ("Agenda", "Agenda", "calendar"), ("Estudiantes", "Estudiantes", "user"), ("Resultados", "Resultados", "results"), ("Atencion", "Atención", "clipboard"), ("Historial", "Historial", "book") })
-    {
-        <a class="dash-nav-link @(accion == item.Item1 ? "is-active" : "")" asp-controller="Psicologo" asp-action="@item.Item1" aria-current="@(accion == item.Item1 ? "page" : null)"><partial name="_DashboardIcon" model="item.Item3" /><span>@item.Item2</span></a>
-    }
+    <a class="dash-nav-link @Act(Es("Psicologo","Index"))" asp-controller="Psicologo" asp-action="Index" aria-current="@Actual(Es("Psicologo","Index"))"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
+    <details class="dash-nav-group" open="@agenda"><summary><partial name="_DashboardIcon" model='@("calendar")' /><span>Agenda y citas</span></summary><div class="dash-nav-children">
+        <a class="dash-nav-link @Act(Es("Psicologo","Agenda")||Es("Reuniones"))" asp-controller="Psicologo" asp-action="Agenda"><span>Calendario y disponibilidad</span></a>
+        <a class="dash-nav-link @Act(Es("CitasProgramadas","Index","Editar","Guardar"))" asp-controller="CitasProgramadas" asp-action="Index"><span>Programar o reprogramar</span></a>
+        <a class="dash-nav-link @Act(Es("CitasProgramadas","Notificaciones","Leida"))" asp-controller="CitasProgramadas" asp-action="Notificaciones"><span>Notificaciones</span></a>
+        <a class="dash-nav-link @Act(Es("Atenciones","Imprevista"))" asp-controller="Atenciones" asp-action="Imprevista"><span>Atención imprevista</span></a>
+    </div></details>
+    <details class="dash-nav-group" open="@atencion"><summary><partial name="_DashboardIcon" model='@("clipboard")' /><span>Atención</span></summary><div class="dash-nav-children">
+        <a class="dash-nav-link @Act(Es("Psicologo","Estudiantes"))" asp-controller="Psicologo" asp-action="Estudiantes"><span>Estudiantes vinculados</span></a>
+        <a class="dash-nav-link @Act(Es("Psicologo","Atencion")||(Es("Psicologo","Solicitudes")&&!expedientes))" asp-controller="Psicologo" asp-action="Solicitudes"><span>Solicitudes asignadas</span></a>
+        <a class="dash-nav-link @Act(Es("Psicologo","Expediente")||(Es("Psicologo","Solicitudes")&&expedientes))" asp-controller="Psicologo" asp-action="Solicitudes" asp-route-expedientes="true"><span>Expedientes disponibles</span></a>
+        <a class="dash-nav-link @Act(Es("PruebasAplicadas")||Es("Psicologo","Resultados"))" asp-controller="PruebasAplicadas" asp-action="Resultados"><span>Pruebas e inducción</span></a>
+        <a class="dash-nav-link @Act(Es("InformesEducativos"))" asp-controller="InformesEducativos" asp-action="Index"><span>Informes educativos</span></a>
+        <a class="dash-nav-link @Act(Es("Psicologo","Historial","VerAtencion","RegistrarAtencion")||Es("Atenciones","Reporte"))" asp-controller="Psicologo" asp-action="Historial"><span>Historial y registros</span></a>
+    </div></details>
+    <a class="dash-nav-link @Act(Es("Privacidad"))" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Privacidad y mis derechos</span></a>
     <span class="dash-nav-label dash-nav-label-spaced">CUENTA</span>
-    <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
+    <a class="dash-nav-link @Act(Es("MiCuenta"))" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
 </nav>

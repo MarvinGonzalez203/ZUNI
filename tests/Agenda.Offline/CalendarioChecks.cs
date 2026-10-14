@@ -105,7 +105,7 @@ internal static class CalendarioChecks
         await service.Reservar(estudiante, ReservaVariable(8, 0, 120), ct);
         cita = await Cita(variable);
         Check((cita.FechaHoraFinUtc - cita.FechaHoraInicioUtc).TotalMinutes == 120, "Variable: el fin es inicio + duración elegida");
-        Check((await Dia(variable, true)).Estado == "Ocupado", "Todas las franjas ocupadas");
+        Check((await Dia(variable, true)).Estado == "Pendiente de revisar" && (await Dia(variable,true)).Franjas.All(f=>f.Ocupada), "Solicitud pendiente ocupa todas las franjas y requiere revisión");
         await service.GestionarCita(otroPsicologo, new() { CitaId = cita.Id, Estado = EstadoCita.Confirmada }, ct);
         Check(!(await service.Historial(otroPsicologo, null, null, 1, ct)).Citas.Any(c => c.Id == cita.Id), "Confirmada fuera del historial");
         await Rechaza(() => service.CambiarDia(otroPsicologo, variable, "bloquear", null, ct), "Confirmada protege horario");

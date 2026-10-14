@@ -28,6 +28,9 @@ public sealed partial class AgendaCitasService
             (d.ConfiguracionAgendaDiaId == null || ids.Contains(d.ConfiguracionAgendaDiaId.Value))).ToListAsync(ct);
         var inicio = AgendaReglas.Utc(mes, TimeOnly.MinValue);
         var fin = AgendaReglas.Utc(siguiente, TimeOnly.MinValue);
+        var almuerzo=await Almuerzo(id,ct);
+        var pendientes=await db.Citas.AsNoTracking().Where(c=>c.Estado==EstadoCita.Solicitada&&c.FechaHoraInicioUtc>=inicio&&c.FechaHoraInicioUtc<fin&&
+            ((editor||perfilId==null)?c.PsicologoUsuarioId==id:c.PerfilEstudianteId==perfilId)).Select(c=>c.FechaHoraInicioUtc).ToListAsync(ct);
         var citasConsulta = editor && id is not null ? await ResumenPsicologo(id).Where(c => c.InicioUtc >= inicio && c.InicioUtc < fin).OrderBy(c => c.InicioUtc).ToListAsync(ct) : [];
         if (!editor && perfilId is not null)
             citasConsulta = await (from c in db.Citas.AsNoTracking() join u in db.Users on c.PsicologoUsuarioId equals u.Id
@@ -52,10 +55,10 @@ public sealed partial class AgendaCitasService
             var franjas = config?.Bloqueado == true ? [] : rangos.SelectMany(d => d.DuracionMinutos == 0
                     // Sin duración establecida: huecos libres y tramos ocupados reales; cada cita ocupa
                     // solo su propio horario y el resto del rango sigue reservable.
-                    ? AgendaReglas.TramosVariables(d, dia, citasDia.Select(c => (c.Inicio, c.Fin)), ahora)
+                    ? AgendaReglas.TramosVariables(d, dia, citasDia.Select(c => (c.Inicio, c.Fin)).Concat(almuerzo?.Habilitado==true?new[]{(AgendaReglas.Utc(dia,almuerzo.Inicio),AgendaReglas.Utc(dia,almuerzo.Fin))}:[]), ahora)
                         .Select(t => new FranjaAgenda(t.Inicio, t.Fin, d.Modalidad, t.Ocupada, true))
                     : AgendaReglas.Franjas(d, dia)
-                        .Where(f => f.Inicio > ahora)
+                        .Where(f => f.Inicio > ahora && !CruzaAlmuerzo(almuerzo,f.Inicio,f.Fin))
                         .Select(f => new FranjaAgenda(f.Inicio, f.Fin, d.Modalidad,
                             citasDia.Any(c => AgendaReglas.Cruza(f.Inicio, f.Fin, c.Inicio, c.Fin)), false)))
                 .OrderBy(f => f.InicioUtc).ToArray();
@@ -64,12 +67,13 @@ public sealed partial class AgendaCitasService
                 Fecha = dia, Editable = dia >= hoy && dia <= hoy.AddMonths(12),
                 Consultable = dia <= hoy.AddMonths(12),
                 Citas = citasConsulta.Where(c => c.InicioUtc >= desde && c.InicioUtc < hasta).Select(c=>new CitaCalendarioResumen {
-                    Id=c.Id,Nombre=c.Nombre,InicioUtc=c.InicioUtc,FinUtc=c.FinUtc,Estado=c.Estado,Modalidad=c.Modalidad,
+                    Id=c.Id,Revision=c.Revision,ProgramadorRol=c.ProgramadorRol,Nombre=c.Nombre,InicioUtc=c.InicioUtc,FinUtc=c.FinUtc,Estado=c.Estado,Modalidad=c.Modalidad,
                     EsImprevista=c.EsImprevista,FinAproximado=c.FinAproximado,TieneRegistroAtencion=c.TieneRegistroAtencion }).ToArray(),
                 Bloqueado = config?.Bloqueado == true, UsaBaseSemanal = baseSemanal,
                 TieneCitasActivas = citasDia.Any(c => c.Profesional),
                 CitaPropiaActiva = citasDia.Any(c => c.Propia),
-                Estado = dia < hoy ? "Pasado" : dia > hoy.AddMonths(12) ? "Fuera de plazo" :
+                PendientesPorRevisar=pendientes.Count(p=>p>=desde&&p<hasta),
+                Estado = pendientes.Any(p=>p>=desde&&p<hasta)?"Pendiente de revisar":dia < hoy ? "Pasado" : dia > hoy.AddMonths(12) ? "Fuera de plazo" :
                     config?.Bloqueado == true ? "Ocupado" : franjas.Any(f => !f.Ocupada) ? "Disponible" :
                     rangos.Length > 0 ? "Ocupado" : "Sin horarios",
                 Franjas = franjas,
@@ -78,7 +82,7 @@ public sealed partial class AgendaCitasService
                         AgendaReglas.Cruza(AgendaReglas.Utc(dia, d.HoraInicio), AgendaReglas.Utc(dia, d.HoraFin), c.Inicio, c.Fin)))).ToArray()
             });
         }
-        return new CalendarioAgendaViewModel { Mes = mes, Hoy = hoy, Editor = editor, Historico=true, Dias = dias, AhoraUtc = ahora,
+        return new CalendarioAgendaViewModel { Mes = mes, Hoy = hoy, Editor = editor, Historico=true, Dias = dias, AhoraUtc = ahora,Almuerzo=almuerzo?.Habilitado==true?new AlmuerzoResumen(almuerzo.Inicio,almuerzo.Fin):null,
             EstudiantesProgramables = editor && id is not null ? await SeleccionProgramables((id,"Psicologo"),ct) : [] };
     }
 

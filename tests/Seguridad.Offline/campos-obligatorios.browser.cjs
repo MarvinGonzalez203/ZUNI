@@ -23,7 +23,7 @@ function check(value, text) { assert.ok(value, text); checks++; }
             const bootstrap = fs.readFileSync(path.join(root, 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'), 'utf8');
             html = html.replace('<head>', '<head><script>' + bootstrap.replace(/<\/script/gi, '<\\/script') + '</script>');
             await page.setContent(html);
-            for (const css of ['lib/bootstrap/dist/css/bootstrap.min.css', 'css/dashboard.css', 'css/campos-obligatorios.css'])
+            for (const css of ['lib/bootstrap/dist/css/bootstrap.min.css', 'css/dashboard.css', 'css/campos-obligatorios.css', 'css/agenda-contexto.css'])
                 await page.addStyleTag({ path: path.join(root, css) });
             for (const script of scripts) await page.addScriptTag({ path: path.join(root, 'js', script) });
             await page.addScriptTag({ path: path.join(root, 'js/campos-obligatorios.js') });
@@ -171,7 +171,7 @@ function check(value, text) { assert.ok(value, text); checks++; }
         await page.waitForFunction(()=>document.querySelector('.zuni-footer img').naturalWidth>0);
         check(await page.locator('.footer-grid section').count()===4,'pie con cuatro columnas');await page.locator('.zuni-footer').screenshot({path:path.join(fixtures,'home-footer.png')});
         await load('programar-cita');check(!await page.locator('#HoraFin').evaluate(i=>i.required),'fin aproximado opcional al programar');check(await page.locator('#PerfilEstudianteId option').count()>1,'estudiantes vinculados seleccionables');
-        await load('notificaciones');check(await page.locator('body').innerText().then(t=>t.includes('reprogramada por Director')),'notificación incluye emisor del cambio');
+        await load('notificaciones');check(await page.locator('body').innerText().then(t=>t.includes('Director')&&t.includes('Fecha actual de la cita')),'notificación separa emisor y fecha actual');
         for(const name of ['calendario-director','calendario-estudiante','catalogo-carreras','resumen-prueba']) {
             await load(name);await page.addStyleTag({path:path.join(root,'css/agenda-citas.css')});await page.addStyleTag({path:path.join(root,'css/modales.css')});
             const mark=fs.readFileSync(path.join(root,'images/zuni-logo-transparent.png')).toString('base64');await page.locator('img[src*="zuni-logo-transparent"]').evaluateAll((imgs,b)=>imgs.forEach(i=>i.src='data:image/png;base64,'+b),mark);
@@ -179,6 +179,26 @@ function check(value, text) { assert.ok(value, text); checks++; }
             if(name==='catalogo-carreras')check(await page.locator('#Archivo').getAttribute('accept')==='.txt,.csv','catálogo admite listado TXT/CSV');
             if(name==='resumen-prueba'){check(await page.locator('meter').count()===5,'resumen de cinco temas exploratorios');await page.emulateMedia({media:'print'});check(await page.locator('[data-contenido-privado]').evaluate(e=>getComputedStyle(e).display)==='none','resumen individual oculto al imprimir');await page.emulateMedia({media:'screen'});}
             await page.screenshot({path:path.join(fixtures,name+'.png'),fullPage:true});await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde móvil '+name);await page.setViewportSize({width:1280,height:900});
+        }
+        await load('notificacion-revision');
+        const revisionLogo=fs.readFileSync(path.join(root,'images/zuni-logo-transparent.png')).toString('base64');await page.locator('img[src*="zuni-logo-transparent"]').evaluateAll((imgs,b)=>imgs.forEach(i=>i.src='data:image/png;base64,'+b),revisionLogo);
+        check(await page.locator('.notification-data dt').count()>=8,'datos de la notificación separados por tema');
+        check(await page.locator('.notification-data').innerText().then(t=>t.includes('Estudiante ficticio almuerzo')),'notificación identifica al alumno');
+        check(await page.locator('.notification-actions').evaluate(e=>parseFloat(getComputedStyle(e).gap)>=16),'separación de botones de notificación');
+        check(await page.locator('.notification-actions a').getAttribute('href').then(h=>h.includes('citaId=')),'enlace dirige a una cita concreta');
+        await page.screenshot({path:path.join(fixtures,'notificacion-revision.png'),fullPage:true});
+        await load('agenda-revision',['agenda-contexto.js','agenda-dia.js']);await page.addStyleTag({path:path.join(root,'css/agenda-citas.css')});await page.addStyleTag({path:path.join(root,'css/modales.css')});
+        await page.locator('img[src*="zuni-logo-transparent"]').evaluateAll((imgs,b)=>imgs.forEach(i=>i.src='data:image/png;base64,'+b),revisionLogo);
+        await page.locator('.agenda-selected-appointment').waitFor({state:'visible'});
+        check(await page.locator('.agenda-modal.show').count()===1,'aviso abre automáticamente la ventana del día');
+        check(await page.locator('.agenda-modal.show .agenda-selected-appointment').count()===1,'cita solicitada resaltada dentro de su día');
+        check(await page.locator('.agenda-day.is-pending').count()>0,'estado amarillo pendiente de revisar');
+        check(await page.locator('.agenda-modal.show').innerText().then(t=>t.includes('Aceptar cita')&&t.includes('No puedo atender')),'propuesta se responde en la ventana');
+        check(await page.locator('.dash-nav a.is-active').count()===1,'solo una pestaña activa del psicólogo');
+        check(await page.locator('.dash-nav-group[open]').count()>=1,'grupo del contexto expandido');
+        await page.screenshot({path:path.join(fixtures,'agenda-revision.png'),fullPage:false});
+        for(const name of ['solicitud-estudiante','solicitudes-psicologo','expedientes-psicologo']){
+            await load(name,['agenda-contexto.js']);check(await page.locator('.dash-nav a.is-active').count()===1,'submenú único '+name);await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde móvil '+name);await page.setViewportSize({width:1280,height:900});
         }
         check(errors.length === 0, 'sin errores JavaScript: ' + errors.join(', '));
         console.log(`OK: ${checks} comprobaciones de formularios en navegador.`);

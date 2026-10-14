@@ -6,8 +6,9 @@
     var minimo = Model.Historico ? DateOnly.MinValue : new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1);
     var maximo = new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1).AddMonths(12);
     var offset = ((int)Model.Mes.DayOfWeek + 6) % 7;
+    var seleccionado=Model.CitaSeleccionada is {}id?Model.Dias.FirstOrDefault(d=>d.Citas.Any(c=>c.Id==id)):null;
 }
-<section id="calendario-citas" class="dash-card agenda-card agenda-mensual" aria-label="Calendario mensual">
+<section id="calendario-citas" class="dash-card agenda-card agenda-mensual" aria-label="Calendario mensual" data-cita-seleccionada="@Model.CitaSeleccionada" data-modal-inicial="@(seleccionado is null?null:"dia-"+seleccionado.Fecha.ToString("yyyy-MM-dd"))">
     <nav class="agenda-month" aria-label="Mes del calendario">
         @if (Model.Mes > minimo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(-1).ToString("yyyy-MM-dd")&amp;psicologoId=@Model.PsicologoId">← Anterior</a> }
         else { <span></span> }
@@ -15,14 +16,17 @@
         @if (Model.Mes < maximo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(1).ToString("yyyy-MM-dd")&amp;psicologoId=@Model.PsicologoId">Siguiente →</a> }
         else { <span></span> }
     </nav>
-    <p class="agenda-legend"><span class="is-free">Disponible</span><span class="is-busy">Ocupado</span><span>Sin horarios</span></p>
+    @if(Model.Director && Model.Profesionales.Count>1){<form method="get" class="agenda-professional-select"><label for="profesional-calendario">Profesional</label><select id="profesional-calendario" name="psicologoId" asp-items="Model.Profesionales" class="form-select" data-calendario-profesional></select><input type="hidden" name="fecha" value="@Model.Mes.ToString("yyyy-MM-dd")"/><noscript><button class="dash-button">Cambiar profesional</button></noscript></form>}
+    else if(Model.Director && Model.Profesionales.Count==1){<p class="agenda-hint">Psicólogo: <strong>@Model.Profesionales[0].Text</strong></p>}
+    <p class="agenda-legend"><span class="is-free">Disponible</span><span class="is-busy">Ocupado</span><span class="is-pending">Pendiente de revisar</span><span>Sin horarios</span></p>
+    @if(Model.Almuerzo is {}almuerzo){<p class="agenda-hint">Almuerzo: @almuerzo.Inicio.ToString("HH:mm")–@almuerzo.Fin.ToString("HH:mm"). No se pueden asignar citas en ese intervalo.</p>}
     <p class="agenda-hint">@(Model.Editor ? "Selecciona un día para consultar o configurar sus horarios." : Model.Director ? "Selecciona un día para consultar la disponibilidad del profesional y proponer una cita." : "Selecciona un día para consultar tus citas y las franjas de tu psicólogo asignado.") Hora de Guatemala (UTC−6).</p>
     <div class="agenda-grid">
         @foreach (var nombre in new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" }) { <span class="agenda-weekday">@nombre</span> }
         @for (var i = 0; i < offset; i++) { <span aria-hidden="true"></span> }
         @foreach (var dia in Model.Dias)
         {
-            var estado = dia.Estado == "Disponible" ? "is-free" : dia.Estado == "Ocupado" ? "is-busy" : "";
+            var estado = dia.Estado == "Disponible" ? "is-free" : dia.Estado == "Ocupado" ? "is-busy" : dia.Estado == "Pendiente de revisar" ? "is-pending" : "";
             <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @dia.Estado"><strong>@dia.Fecha.Day</strong><span>@dia.Estado</span>@if (dia.Citas.Count > 0) { <small>@dia.Citas.Count cita(s)</small> }</button>
         }
     </div>
@@ -36,11 +40,13 @@
             <div class="modal-body">
                 <p class="agenda-hint">Hora de Guatemala (UTC−6)</p><h3 class="h5">Horarios de este día</h3>
                 @if (dia.Bloqueado) { <p class="agenda-notice">Día bloqueado. La configuración se conserva y no admite solicitudes.</p> }
+                @if(dia.PendientesPorRevisar>0){<p class="agenda-pending-review">@dia.PendientesPorRevisar cita(s) pendiente(s) de revisar para esta fecha.</p>}
+                @if(Model.Almuerzo is {}a){<p class="agenda-hint">Almuerzo bloqueado: @a.Inicio.ToString("HH:mm")–@a.Fin.ToString("HH:mm").</p>}
                 @if (!Model.Editor) {
                     <h3 class="h5">@(Model.Director ? "Programaciones de este día" : "Mis citas de este día")</h3>
                     @if (dia.Citas.Count == 0) { <p>No hay citas registradas para esta fecha.</p> }
                     @foreach (var c in dia.Citas) {
-                        <article class="agenda-slot"><strong>@c.Nombre</strong><p>@AgendaReglas.Local(c.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(c.FinUtc).ToString("HH:mm") · @c.Modalidad · @c.Estado</p>
+                        <article class="agenda-slot" id="cita-agenda-@c.Id"><strong>@c.Nombre</strong><p>@AgendaReglas.Local(c.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(c.FinUtc).ToString("HH:mm") · @c.Modalidad · @c.Estado</p>
                         @if(Model.Director && AgendaReglas.Activa(c.Estado) && c.InicioUtc > Model.AhoraUtc && !c.EsImprevista) { <a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@c.Id">Reprogramar cita</a> }
                         </article>
                     }
@@ -51,7 +57,8 @@
                     <h3 class="h5">Citas y actividades de este día</h3>
                     @if (dia.Citas.Count == 0) { <p>No hay citas registradas para esta fecha.</p> }
                     @foreach (var cita in dia.Citas) {
-                        <article class="agenda-slot"><strong>@cita.Nombre</strong><p>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(cita.FinUtc).ToString("HH:mm") · @cita.Estado @(cita.EsImprevista ? "· Atención imprevista" : "") @(cita.FinAproximado ? "· Fin aproximado" : "")</p>
+                        <article class="agenda-slot" id="cita-agenda-@cita.Id"><strong>@cita.Nombre</strong><p>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(cita.FinUtc).ToString("HH:mm") · @cita.Estado @(cita.EsImprevista ? "· Atención imprevista" : "") @(cita.FinAproximado ? "· Fin aproximado" : "")</p>
+                        <partial name="_ResponderCitaPendiente" model="cita" />
                         @if (cita.TieneRegistroAtencion && cita.Estado == EstadoCita.Completada) { <a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@cita.Id" class="dash-button">Ver reporte compartido y reimprimir</a> }
                         else if (cita.TieneRegistroAtencion) { <a asp-controller="Psicologo" asp-action="VerAtencion" asp-route-citaId="@cita.Id">Consultar registro</a> }
                         else if (cita.FinUtc <= Model.AhoraUtc && cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada) { <a asp-controller="Psicologo" asp-action="RegistrarAtencion" asp-route-citaId="@cita.Id" class="dash-button">Completar registro de atención</a> }

@@ -1,21 +1,25 @@
 @{
-    var accion = ViewContext.RouteData.Values["action"]?.ToString();
-    var enBigFive = ViewContext.RouteData.Values["controller"]?.ToString() == "BigFive";
+    var c=ViewContext.RouteData.Values["controller"]?.ToString();var a=ViewContext.RouteData.Values["action"]?.ToString();
+    bool Es(string controller,params string[] actions)=>c==controller&&(actions.Length==0||actions.Contains(a));
+    string Act(bool selected)=>selected?"is-active":"";
+    var atencion=Es("Estudiante","Citas","SolicitarAtencion","EstadoSolicitud","Resultados")||Es("Atenciones")||Es("InformesEducativos");
+    var pruebas=Es("PruebasAplicadas")||Es("BigFive")||Es("Estudiante","Evaluaciones");
 }
 <nav class="dash-nav" aria-label="Navegación del estudiante">
     <span class="dash-nav-label">MI ESPACIO</span>
-    <a class="dash-nav-link @(accion == "Index" && !enBigFive ? "is-active" : "")" asp-controller="Estudiante" asp-action="Index" aria-current="@(accion == "Index" && !enBigFive ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
-    <a class="dash-nav-link" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
-    <span class="dash-nav-label dash-nav-label-spaced">SERVICIOS</span>
-    <a class="dash-nav-link" asp-controller="Estudiante" asp-action="Citas" asp-fragment="calendario-citas"><partial name="_DashboardIcon" model='@("calendar")' /><span>Calendario de citas</span></a>
-    <a class="dash-nav-link" asp-controller="PruebasAplicadas" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Pruebas indicadas</span></a>
-    <a class="dash-nav-link" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Privacidad y mis derechos</span></a>
-    <a class="dash-nav-link" asp-controller="InformesEducativos" asp-action="Index"><partial name="_DashboardIcon" model='@("results")' /><span>Informes educativos</span></a>
-    <a class="dash-nav-link" asp-controller="MayoriaEdad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Mayoría de edad</span></a>
-    <a class="dash-nav-link @(accion == "SolicitarAtencion" ? "is-active" : "")" asp-controller="Estudiante" asp-action="SolicitarAtencion" aria-current="@(accion == "SolicitarAtencion" ? "page" : null)"><partial name="_DashboardIcon" model='@("shield")' /><span>@await Component.InvokeAsync("EtiquetaSolicitud")</span></a>
-    @foreach (var item in new[] { ("clipboard", "Evaluaciones"), ("results", "Resultados"), ("calendar", "Citas") })
-    {
-        var activo = accion == item.Item2 || (enBigFive && item.Item2 == "Evaluaciones");
-        <a class="dash-nav-link @(activo ? "is-active" : "")" asp-controller="Estudiante" asp-action="@item.Item2" aria-current="@(activo ? "page" : null)"><partial name="_DashboardIcon" model="item.Item1" /><span>@item.Item2<small>@(item.Item2 == "Evaluaciones" ? "Big Five · opcional" : item.Item2 == "Citas" ? "Reserva y seguimiento" : "Atenciones y reportes compartidos")</small></span></a>
-    }
+    <a class="dash-nav-link @Act(Es("Estudiante","Index"))" asp-controller="Estudiante" asp-action="Index"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
+    <a class="dash-nav-link @Act(Es("MiCuenta"))" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
+    <a class="dash-nav-link @Act(Es("MayoriaEdad"))" asp-controller="MayoriaEdad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Mayoría de edad</span></a>
+    <details class="dash-nav-group" open="@atencion"><summary><partial name="_DashboardIcon" model='@("calendar")' /><span>Atención y citas</span></summary><div class="dash-nav-children">
+        <a class="dash-nav-link @Act(Es("Estudiante","SolicitarAtencion","EstadoSolicitud"))" asp-controller="Estudiante" asp-action="EstadoSolicitud"><span>Mi solicitud de atención</span></a>
+        <a class="dash-nav-link @Act(Es("Estudiante","Citas"))" asp-controller="Estudiante" asp-action="Citas"><span>Calendario y mis citas</span></a>
+        <a class="dash-nav-link @Act(Es("Estudiante","Resultados")||Es("Atenciones"))" asp-controller="Estudiante" asp-action="Resultados"><span>Resultados compartidos</span></a>
+        <a class="dash-nav-link @Act(Es("InformesEducativos"))" asp-controller="InformesEducativos" asp-action="Index"><span>Informes educativos</span></a>
+    </div></details>
+    <details class="dash-nav-group" open="@pruebas"><summary><partial name="_DashboardIcon" model='@("clipboard")' /><span>Pruebas</span></summary><div class="dash-nav-children">
+        <a class="dash-nav-link @Act(Es("PruebasAplicadas"))" asp-controller="PruebasAplicadas" asp-action="Index"><span>Pruebas indicadas</span></a>
+        <a class="dash-nav-link @Act(Es("BigFive")||Es("Estudiante","Evaluaciones"))" asp-controller="Estudiante" asp-action="Evaluaciones"><span>Big Five · opcional</span></a>
+    </div></details>
+    <a class="dash-nav-link @Act(Es("CitasProgramadas","Notificaciones","Leida"))" asp-controller="CitasProgramadas" asp-action="Notificaciones"><partial name="_DashboardIcon" model='@("calendar")' /><span>Notificaciones</span></a>
+    <a class="dash-nav-link @Act(Es("Privacidad"))" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Privacidad y mis derechos</span></a>
 </nav>

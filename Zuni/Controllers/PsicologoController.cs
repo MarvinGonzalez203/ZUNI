@@ -38,10 +38,12 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
 
     [HttpGet]
     [AgendaExceptionFilter]
-    public async Task<IActionResult> Agenda([FromServices] AgendaCitasService agenda, DateOnly? fecha, CancellationToken ct)
+    public async Task<IActionResult> Agenda([FromServices] AgendaCitasService agenda, DateOnly? fecha, Guid? citaId, CancellationToken ct)
     {
         if (!ModelState.IsValid) throw new AgendaOperacionException("Fecha no válida.");
-        return View(await agenda.LeerAgenda(User, fecha, ct));
+        if(citaId is {}id)fecha=(await agenda.UbicarCita(User,id,ct)).Fecha;
+        var model=await agenda.LeerAgenda(User,fecha,ct);model.Calendario.CitaSeleccionada=citaId;
+        return View(model);
     }
 
     [HttpPost]
@@ -90,12 +92,22 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
     [HttpPost]
     [ValidateAntiForgeryToken]
     [AgendaExceptionFilter]
+    public async Task<IActionResult> GuardarAlmuerzo([FromServices] AgendaCitasService agenda,AlmuerzoInput input,CancellationToken ct)
+    {
+        if(!ModelState.IsValid)throw new AgendaOperacionException("Revisa el horario de almuerzo.");
+        await agenda.GuardarAlmuerzo(User,input,ct);TempData["Success"]="Horario de almuerzo actualizado. Las nuevas citas no pueden cruzar ese intervalo.";
+        return RedirectToAction(nameof(Agenda));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [AgendaExceptionFilter]
     public async Task<IActionResult> GestionarCita([FromServices] AgendaCitasService agenda, CambiarCitaInput input, CancellationToken ct)
     {
         if (!ModelState.IsValid) throw new AgendaOperacionException("Revisa el estado y el motivo administrativo.");
         await agenda.GestionarCita(User, input, ct);
         TempData["Success"] = "Estado de cita actualizado.";
-        return RedirectToAction(nameof(Agenda));
+        return RedirectToAction(nameof(Agenda),new{fecha=(await agenda.UbicarCita(User,input.CitaId,ct)).Fecha.ToString("yyyy-MM-dd"),citaId=input.CitaId});
     }
 
 
@@ -118,6 +130,20 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
                     .OrderByDescending(s => s.FechaSolicitudUtc).ThenBy(s => s.Id).Select(s => (Guid?)s.Id).FirstOrDefault()
             }).ToListAsync(ct);
         return View(estudiantes);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Solicitudes(bool expedientes=false,CancellationToken ct=default)
+    {
+        var psy=await autorizacion.ObtenerPsicologoAutorizadoAsync(User,ct);if(psy is null)return Forbid();
+        var query=from s in db.SolicitudesAtencion.AsNoTracking() join p in db.PerfilesEstudiante on s.PerfilEstudianteId equals p.Id
+            where p.Activo&&p.Usuario.IsActive&&db.AsignacionesEstudiantePsicologo.Any(a=>a.PerfilEstudianteId==p.Id&&a.PsicologoUsuarioId==psy&&a.FechaFinalizacionUtc==null)
+            && (expedientes?(db.ExpedientesIniciales.Any(e=>e.SolicitudAtencionId==s.Id)&&db.ConsentimientosAtencion.Any(c=>c.SolicitudAtencionId==s.Id&&c.Aceptado)):s.Estado==EstadoSolicitudAtencion.Asignada)
+            orderby s.FechaSolicitudUtc descending
+            select new SolicitudPsicologoResumen(s.Id,p.Usuario.FullName,p.Carne,s.Estado,s.FechaSolicitudUtc,
+                db.ExpedientesIniciales.Any(e=>e.SolicitudAtencionId==s.Id)&&db.ConsentimientosAtencion.Any(c=>c.SolicitudAtencionId==s.Id&&c.Aceptado));
+        ViewData["SoloExpedientes"]=expedientes;
+        return View(await query.ToListAsync(ct));
     }
 
     [HttpGet("Psicologo/Expediente/{solicitudId:guid}")]
@@ -170,10 +196,10 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
     }
 
     [HttpGet]
-    public IActionResult Resultados() => View();
+    public IActionResult Resultados() => RedirectToAction("Resultados","PruebasAplicadas");
 
     [HttpGet]
-    public IActionResult Atencion() => View();
+    public IActionResult Atencion() => RedirectToAction(nameof(Solicitudes));
 
     [HttpGet]
     [AgendaExceptionFilter]

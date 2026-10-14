@@ -53,6 +53,7 @@ public sealed class CitaResumen
 
 public sealed class AgendaPsicologoViewModel
 {
+    public AlmuerzoInput Almuerzo { get; init; } = new();
     public CalendarioAgendaViewModel Calendario { get; init; } = new();
     public DateOnly Fecha { get; init; }
     public IReadOnlyList<DisponibilidadResumen> Disponibilidades { get; init; } = [];
@@ -88,6 +89,7 @@ public sealed record IntervaloAgenda(Guid Id, TimeOnly Inicio, TimeOnly Fin, int
     ModalidadDisponibilidad Modalidad, bool TieneCitasActivas);
 public sealed class DiaAgendaViewModel
 {
+    public int PendientesPorRevisar { get; init; }
     public bool Consultable { get; init; }
     public IReadOnlyList<CitaCalendarioResumen> Citas { get; set; } = [];
     public DateOnly Fecha { get; init; }
@@ -103,6 +105,8 @@ public sealed class DiaAgendaViewModel
 // El calendario no admite motivo de cancelación, enlace de reunión o contenido clínico.
 public sealed class CitaCalendarioResumen
 {
+    public Guid Revision { get; init; }
+    public string? ProgramadorRol { get; init; }
     public Guid Id { get; init; }
     public string Nombre { get; init; } = "";
     public DateTime InicioUtc { get; init; }
@@ -115,6 +119,9 @@ public sealed class CitaCalendarioResumen
 }
 public sealed class CalendarioAgendaViewModel
 {
+    public Guid? CitaSeleccionada { get; set; }
+    public AlmuerzoResumen? Almuerzo { get; init; }
+    public IReadOnlyList<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Profesionales { get; set; } = [];
     public bool Director { get; set; }
     public bool Historico { get; set; }
     public bool PuedeReservar { get; set; }
@@ -126,6 +133,7 @@ public sealed class CalendarioAgendaViewModel
     public bool Editor { get; init; }
     public IReadOnlyList<DiaAgendaViewModel> Dias { get; init; } = [];
 }
+public sealed record AlmuerzoResumen(TimeOnly Inicio,TimeOnly Fin);
 public sealed record CalendarioDirectorViewModel(CalendarioAgendaViewModel Calendario, IReadOnlyList<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Psicologos);
 public sealed class HistorialCitasViewModel
 {

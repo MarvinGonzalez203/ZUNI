@@ -23,6 +23,9 @@ public sealed record ProgramacionListado(IReadOnlyList<CitaProgramadaResumen> Ci
 }
 public sealed class NotificacionCita
 {
+    public string? AutorUsuarioId { get; set; }
+    public string? AutorRol { get; set; }
+    public string? Tipo { get; set; }
     public Guid Id { get; set; } = Guid.NewGuid();
     public string UsuarioId { get; set; } = "";
     public Guid CitaId { get; set; }
@@ -30,4 +33,16 @@ public sealed class NotificacionCita
     public DateTime FechaUtc { get; set; }
     public bool Leida { get; set; }
 }
-public sealed record NotificacionResumen(Guid Id,string Texto,DateTime FechaUtc,bool Leida,Guid CitaId,DateTime InicioUtc);
+public sealed record NotificacionResumen(Guid Id,string Texto,DateTime FechaUtc,bool Leida,Guid CitaId,DateTime InicioUtc)
+{
+    public string Estudiante { get; init; }="";
+    public string Carne { get; init; }="";
+    public string Psicologo { get; init; }="";
+    public string PsicologoId { get; init; }="";
+    public string? Autor { get; init; }
+    public string? AutorRol { get; init; }
+    public bool AutorOriginal { get; init; }
+    public string Tipo { get; init; }="Aviso";
+    public EstadoCita EstadoActual { get; init; }
+    public ModalidadCita Modalidad { get; init; }
+}

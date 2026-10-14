@@ -7,11 +7,15 @@ namespace Zuni.Controllers;
 public sealed class CitasProgramadasController(AgendaCitasService agenda):Controller
 {
     [Authorize(Roles="Psicologo,Director"),HttpGet]
-    public async Task<IActionResult> Index(DateOnly? fecha,string? psicologoId,CancellationToken ct)
+    public async Task<IActionResult> Index(DateOnly? fecha,string? psicologoId,Guid? citaId,CancellationToken ct)
     {
         if(!ModelState.IsValid)throw new AgendaOperacionException("Revisa la fecha del calendario.");
         var model=await agenda.ListarProgramacion(User,ct);
-        if(User.IsInRole("Director"))model=model with {CalendarioDirector=await agenda.CalendarioDirector(User,psicologoId,fecha,ct)};
+        if(User.IsInRole("Director")){
+            if(citaId is {}id){var sitio=await agenda.UbicarCita(User,id,ct);fecha=sitio.Fecha;psicologoId=sitio.PsicologoId;}
+            var calendario=await agenda.CalendarioDirector(User,psicologoId,fecha,ct);calendario.Calendario.CitaSeleccionada=citaId;
+            model=model with {CalendarioDirector=calendario};
+        }
         return View(model);
     }
     [Authorize(Roles="Psicologo,Director"),HttpGet]public async Task<IActionResult> Editar(Guid? citaId,DateOnly? fecha,string? psicologoId,CancellationToken ct)=>View(await agenda.PrepararProgramacion(User,citaId,fecha,ct,psicologoId));
