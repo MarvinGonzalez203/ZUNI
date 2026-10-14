@@ -8,7 +8,6 @@
         ("Administradores", "Administrador", "Administradores", "shield"),
         ("Directores", "Director", "Directores", "results"),
         ("Psicólogos", "Psicologo", "Psicologos", "spark"),
-        ("Catedráticos", "Catedratico", "Catedraticos", "book"),
         ("Estudiantes", "Estudiante", "Estudiantes", "user")
     };
 }
@@ -54,6 +53,10 @@
         </article>
     }
 </section>
+@if (Model.UsuariosPorRol.GetValueOrDefault("Catedratico") > 0)
+{
+    <section class="dash-card p-4 my-3"><h2 class="h5">Cuentas con rol retirado</h2><p>Hay @Model.UsuariosPorRol.GetValueOrDefault("Catedratico") cuentas que conservan Catedrático como registro histórico. El módulo está cerrado. Revisa cada cuenta antes de cambiar sus permisos; no hay conversión automática.</p><a asp-action="Catedraticos">Revisar cuentas con rol retirado</a></section>
+}
 
 <div class="dash-section-heading">
     <h2>Resumen de cuentas</h2>

@@ -74,7 +74,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
     private static bool Conflicto(Exception ex)
     {
         var pg = ex as PostgresException ?? ex.InnerException as PostgresException;
-        return pg?.SqlState is PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected or PostgresErrorCodes.UniqueViolation;
+        return ex is DbUpdateConcurrencyException || pg?.SqlState is PostgresErrorCodes.SerializationFailure or PostgresErrorCodes.DeadlockDetected or PostgresErrorCodes.UniqueViolation;
     }
 
     public Task AgregarDisponibilidad(ClaimsPrincipal sesion, DisponibilidadInput input, CancellationToken ct) => Escribir(async () =>
@@ -136,6 +136,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         join u in db.Users.AsNoTracking() on p.UsuarioId equals u.Id
         where c.PsicologoUsuarioId == id
         select new CitaResumen { Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
+            EnlacePreparado = c.EnlaceReunion != null,
             FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
             MotivoCancelacion = c.Estado == EstadoCita.Cancelada ? c.MotivoCancelacion : null,
             TieneRegistroAtencion = db.RegistrosAtencionCita.Any(r => r.CitaId == c.Id) };
@@ -155,6 +156,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
                       join u in db.Users.AsNoTracking() on c.PsicologoUsuarioId equals u.Id
                       where c.PerfilEstudianteId == perfil.Id
                       select new CitaResumen { Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
+                          EnlacePreparado = c.EnlaceReunion != null,
                           FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
                           MotivoCancelacion = c.Estado == EstadoCita.Cancelada ? c.MotivoCancelacion : null };
         var paginas = Math.Max(1, (await propias.CountAsync(ct) + TamanoPagina - 1) / TamanoPagina);
@@ -229,6 +231,8 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
             if (!roles.Contains("ESTUDIANTE") || roles.Any(r => r is "ADMINISTRADOR" or "DIRECTOR" or "CATEDRATICO"))
                 throw new AgendaAccesoException();
         }
+        if (input.Estado == EstadoCita.Confirmada && cita.Modalidad == ModalidadCita.Virtual)
+            await FijarEnlace(cita, input.EnlaceReunion, input.AccesoRestringidoRevisado, ct);
         AplicarCambio(cita, input.Estado, input.MotivoCancelacion);
     }, ct);
 
@@ -252,6 +256,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
                 throw new AgendaOperacionException("El motivo de cancelación no puede superar los 300 caracteres.");
         }
         cita.Estado = estado;
+        cita.Revision = Guid.NewGuid();
         cita.MotivoCancelacion = estado == EstadoCita.Cancelada ? motivo?.Trim() : null;
     }
 

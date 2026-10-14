@@ -12,7 +12,6 @@ namespace Zuni.Data
                 "Administrador",
                 "Director",
                 "Psicologo",
-                "Catedratico",
                 "Estudiante"
             };
 

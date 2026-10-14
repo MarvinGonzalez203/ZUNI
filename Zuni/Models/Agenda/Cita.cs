@@ -12,4 +12,14 @@ public sealed class Cita
     public EstadoCita Estado { get; set; } = EstadoCita.Reservada;
     public DateTime FechaCreacionUtc { get; set; } = DateTime.UtcNow;
     public string? MotivoCancelacion { get; set; }
+    public string? EnlaceReunion { get; set; }
+    public DateTime? FechaEnlaceUtc { get; set; }
+    public Guid Revision { get; set; } = Guid.NewGuid();
+}
+
+public sealed class EnlaceReunionUsado
+{
+    public string Huella { get; set; } = "";
+    public Guid CitaId { get; set; }
+    public DateTime FechaUtc { get; set; }
 }

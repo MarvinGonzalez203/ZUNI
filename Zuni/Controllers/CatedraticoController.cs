@@ -1,43 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Zuni.Models.Catedratico;
 
 namespace Zuni.Controllers;
 
 [Authorize(Roles = "Catedratico")]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class CatedraticoController : Controller
 {
-    public IActionResult Index()
-    {
-        var model = new DashboardViewModel
-        {
-            NombreCatedratico = User.Identity?.Name ?? "Catedrático"
-        };
-
-        return View(model);
-    }
-
-    public IActionResult MisCursos()
-    {
-        return View();
-    }
-
-    public IActionResult Estudiantes()
-    {
-        return View();
-    }
-
-    public IActionResult AvanceEvaluaciones()
-    {
-        return View();
-    }
-
-    public IActionResult ResultadosGenerales()
-    {
-        return View();
-    }
-    public IActionResult Referencias()
-    {
-        return View();
-    }
+    private IActionResult Retirado() { Response.StatusCode = StatusCodes.Status410Gone; return View("~/Views/Cuenta/RolRetirado.cshtml"); }
+    public IActionResult Index() => Retirado();
+    public IActionResult MisCursos() => Retirado();
+    public IActionResult Estudiantes() => Retirado();
+    public IActionResult AvanceEvaluaciones() => Retirado();
+    public IActionResult ResultadosGenerales() => Retirado();
+    public IActionResult Referencias() => Retirado();
 }

@@ -99,7 +99,7 @@ internal static class HttpSmoke
         var agendaHtml = await agenda.Content.ReadAsStringAsync();
         Check(agenda.StatusCode == HttpStatusCode.OK && agendaHtml.Contains("agenda-citas.css"), "Agenda y sección Styles anidada renderizan");
         Check(agendaHtml.Contains("/Psicologo/AgregarDisponibilidad") && agendaHtml.Contains("/Psicologo/GestionarCita"), "Rutas POST psicólogo renderizadas");
-        Check(agendaHtml.Contains("/Psicologo/AgregarHorarioDia") && agendaHtml.Contains("/Psicologo/CambiarDia") && agendaHtml.Contains("value=\"Confirmada\""), "Rutas diarias y aceptación conectadas");
+        Check(agendaHtml.Contains("/Psicologo/AgregarHorarioDia") && agendaHtml.Contains("/Psicologo/CambiarDia") && agendaHtml.Contains("/Reuniones/Preparar"), "Rutas diarias y preparación de cita virtual conectadas");
         var agendaIds = Regex.Matches(agendaHtml, "\\bid=\"([^\"]+)\"").Select(m => m.Groups[1].Value).ToArray();
         Check(agendaIds.Distinct().Count() == agendaIds.Length, "IDs HTML únicos en modales del psicólogo");
         var history = await client.GetAsync("/Psicologo/Historial");

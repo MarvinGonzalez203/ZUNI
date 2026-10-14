@@ -184,7 +184,8 @@ Check((await db.Citas.AsNoTracking().SingleAsync(x => x.Id == pendiente.Id)).Est
 await service.Reservar(estudiante, Reserva(inicio.AddMinutes(50)), ct); db.ChangeTracker.Clear();
 var realizadas = await db.Citas.AsNoTracking().Where(x => x.Estado == EstadoCita.Solicitada).ToListAsync();
 foreach (var c in realizadas)
-    await service.GestionarCita(Sesion(c.PsicologoUsuarioId, "Psicologo"), new() { CitaId = c.Id, Estado = EstadoCita.Confirmada }, ct);
+    await service.GestionarCita(Sesion(c.PsicologoUsuarioId, "Psicologo"), new() { CitaId = c.Id, Estado = EstadoCita.Confirmada,
+        EnlaceReunion = "https://meet.google.com/" + string.Concat(c.Id.ToString("N").Take(10).Select(x => (char)('a' + Convert.ToInt32(x.ToString(), 16)))).Insert(3, "-").Insert(8, "-"), AccesoRestringidoRevisado = true }, ct);
 db.ChangeTracker.Clear();
 Check(await db.Citas.CountAsync(x => x.Estado == EstadoCita.Confirmada) == 2, "Aceptar solicitudes propias");
 reloj.Ahora = new DateTimeOffset(inicio.AddMinutes(151));

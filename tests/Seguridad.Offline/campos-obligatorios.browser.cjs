@@ -112,6 +112,15 @@ function check(value, text) { assert.ok(value, text); checks++; }
         await load('privacidad');
         check(await page.getByRole('heading', { name: 'Mis solicitudes', exact: true }).count() === 1, 'centro de derechos disponible');
         await page.screenshot({ path: path.join(fixtures, 'privacidad-vista-estudiante.png'), fullPage: true });
+        await load('reunion-preparar');
+        await required('Enlace', true);
+        await required('AccesoRestringidoRevisado', true);
+        check(await page.locator('input[name="Revision"]').count() === 1, 'edición protegida frente a cambios simultáneos');
+        await page.screenshot({ path: path.join(fixtures, 'reunion-preparar.png'), fullPage: true });
+        await load('reunion-acceso');
+        check(await page.locator('a[href*="/Reuniones/Entrar"]').count() === 1, 'entrada mediante verificación de ZUNI');
+        check(await page.locator('body').innerText().then(text => !text.includes('meet.google.com/')), 'acceso sin publicar URL de la reunión');
+        await page.screenshot({ path: path.join(fixtures, 'reunion-acceso.png'), fullPage: true });
         check(errors.length === 0, 'sin errores JavaScript: ' + errors.join(', '));
         console.log(`OK: ${checks} comprobaciones de formularios en navegador.`);
     } finally { await browser.close(); }

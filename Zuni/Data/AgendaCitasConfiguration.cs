@@ -8,6 +8,10 @@ public static class AgendaCitasConfiguration
 {
     public static void ConfigurarAgendaCitas(this ModelBuilder builder)
     {
+        builder.Entity<EnlaceReunionUsado>(e => {
+            e.ToTable("EnlacesReunionUsados"); e.HasKey(x => x.Huella); e.Property(x => x.Huella).HasMaxLength(64);
+            e.HasOne<Cita>().WithMany().HasForeignKey(x => x.CitaId).OnDelete(DeleteBehavior.Restrict);
+        });
         builder.Entity<ConfiguracionAgendaDia>(e =>
         {
             e.ToTable("ConfiguracionesAgendaDia");
@@ -41,6 +45,8 @@ public static class AgendaCitasConfiguration
             });
             e.HasKey(x => x.Id);
             e.Property(x => x.MotivoCancelacion).HasMaxLength(300);
+            e.Property(x => x.EnlaceReunion).HasMaxLength(120); e.Property(x => x.Revision).IsConcurrencyToken();
+            e.HasIndex(x => x.EnlaceReunion).IsUnique();
             e.Property(x => x.FechaHoraInicioUtc).HasColumnType("timestamp with time zone");
             e.Property(x => x.FechaHoraFinUtc).HasColumnType("timestamp with time zone");
             e.Property(x => x.FechaCreacionUtc).HasColumnType("timestamp with time zone");

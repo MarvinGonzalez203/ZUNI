@@ -807,10 +807,18 @@ public sealed class CuentaController(
             : RedirectByRole(User.IsInRole);
     }
 
+    [Authorize, HttpGet("RolRetirado")]
+    public IActionResult RolRetirado()
+    {
+        if (!User.IsInRole("Catedratico")) return RedirectToAuthenticatedHome();
+        Response.StatusCode = StatusCodes.Status410Gone; return View();
+    }
+
     private IActionResult RedirectByRole(Func<string, bool> tieneRol)
     {
+        if (tieneRol("Catedratico") && !tieneRol("Administrador") && !tieneRol("Director")) return RedirectToAction("RolRetirado", "Cuenta");
         // El orden es intencional para usuarios con múltiples roles.
-        foreach (var rol in new[] { "Administrador", "Director", "Psicologo", "Catedratico", "Estudiante" })
+        foreach (var rol in new[] { "Administrador", "Director", "Psicologo", "Estudiante" })
         {
             if (tieneRol(rol))
             {
@@ -819,7 +827,6 @@ public sealed class CuentaController(
                     "Administrador" => "Administrador",
                     "Director" => "Director",
                     "Psicologo" => "Psicologo",
-                    "Catedratico" => "Catedratico",
                     "Estudiante" => "Estudiante",
                     _ => "Home"
                 };

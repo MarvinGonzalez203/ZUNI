@@ -467,9 +467,9 @@ Check(cambioRol.StatusCode == HttpStatusCode.OK && (await HostPrueba.Texto(cambi
 await using (var db = Nuevo())
     Check(await db.UserRoles.AnyAsync(r => r.UserId == "psi3" && r.RoleId == "Psicologo") && !await db.UserRoles.AnyAsync(r => r.UserId == "psi3" && r.RoleId == "Catedratico"),
         "El rol no cambió");
-var cambioPermitido = await HostPrueba.Post(admin, "/Administrador", "/Administrador/CambiarRol", ("UsuarioId", "psi1"), ("NuevoRol", "Catedratico"));
+var cambioPermitido = await HostPrueba.Post(admin, "/Administrador", "/Administrador/CambiarRol", ("UsuarioId", "psi1"), ("NuevoRol", "Director"));
 await using (var db = Nuevo())
-    Check(cambioPermitido.StatusCode == HttpStatusCode.Redirect && await db.UserRoles.AnyAsync(r => r.UserId == "psi1" && r.RoleId == "Catedratico"),
+    Check(cambioPermitido.StatusCode == HttpStatusCode.Redirect && await db.UserRoles.AnyAsync(r => r.UserId == "psi1" && r.RoleId == "Director"),
         "Psicólogo sin asignaciones vigentes sí puede cambiar de rol");
 
 Check(cambioPermitido.Headers.Location!.OriginalString.Contains("/Administrador/Gestionar/psi1"), "Tras cambiar el rol vuelve a la ficha del usuario");
@@ -482,7 +482,7 @@ Check(!tablero.Contains("<table") && !Fila(tablero, "Persona est2") && !tablero.
     "El tablero no mezcla usuarios en una tabla");
 foreach (var accionRol in new[] { "Administradores", "Directores", "Psicologos", "Catedraticos", "Estudiantes" })
     Check(tablero.Contains("href=\"/Administrador/" + accionRol + "\""), "Tablero y menú enlazan a " + accionRol);
-Check(System.Text.RegularExpressions.Regex.Matches(tablero, "Ver usuarios").Count >= 5, "Cada tarjeta de rol tiene Ver usuarios");
+Check(System.Text.RegularExpressions.Regex.Matches(tablero, "Ver usuarios").Count >= 4, "Cada rol operativo tiene Ver usuarios; los retirados se revisan aparte");
 Check(tablero.Contains("Solicitudes pendientes"), "Tablero resume solicitudes pendientes");
 
 var vistaAdministradores = await Vista("/Administrador/Administradores");
@@ -494,12 +494,12 @@ Check(Fila(vistaDirectores, "Persona psi-director") && !Fila(vistaDirectores, "P
 var vistaPsicologos = await Vista("/Administrador/Psicologos");
 Check(Fila(vistaPsicologos, "Persona psi2") && Fila(vistaPsicologos, "Persona psi3") && Fila(vistaPsicologos, "Persona psi-director") &&
       !Fila(vistaPsicologos, "Persona psi1") && !Fila(vistaPsicologos, "Persona est2") && !Fila(vistaPsicologos, "Persona admin"),
-    "Psicólogos: solo rol Psicologo (psi1 ya es Catedrático)");
+    "Psicólogos: solo rol Psicologo (psi1 ya es Director)");
 var asignacionesPsi3 = System.Text.RegularExpressions.Regex.Match(vistaPsicologos, "data-usuario=\"psi3\"[\\s\\S]*?data-asignaciones=\"(\\d+)\"").Groups[1].Value;
 Check(asignacionesPsi3 == "1", "Psicólogos: asignaciones vigentes por psicólogo");
 Check(!vistaPsicologos.Contains("MOTIVO-CLINICO-PRIVADO") && !vistaPsicologos.Contains("CONTACTO-PRIVADO"), "Psicólogos: sin información clínica");
 var vistaCatedraticos = await Vista("/Administrador/Catedraticos");
-Check(Fila(vistaCatedraticos, "Persona psi1") && Fila(vistaCatedraticos, "Persona desactivado") && !Fila(vistaCatedraticos, "Persona psi2"),
+Check(!Fila(vistaCatedraticos, "Persona psi1") && Fila(vistaCatedraticos, "Persona desactivado") && !Fila(vistaCatedraticos, "Persona psi2"),
     "Catedráticos: solo rol Catedratico");
 Check(!Fila(await Vista("/Administrador/Catedraticos?estado=Activos"), "Persona desactivado"), "Filtro de estado por rol");
 var vistaEstudiantes = await Vista("/Administrador/Estudiantes");
@@ -552,6 +552,7 @@ await InstitucionChecks.Run(app, opciones, clave);
 await CamposObligatoriosChecks.Run(app, opciones, clave, perfil2);
 await MayoriaEdadChecks.Run(app, opciones, clave, reloj);
 await PrivacidadInformesChecks.Run(app, opciones, clave, reloj, perfil2);
+await ReunionesRetiroChecks.Run(app, opciones, clave, reloj, perfil2);
 
 using (var c = HostPrueba.Cliente(app))
 {

@@ -35,6 +35,10 @@
             {
                 <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelar-cita-@cita.Id">Cancelar cita</button>
             }
+            @if (cita.Modalidad == ModalidadCita.Virtual && (cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada) && cita.FinUtc > Reloj.GetUtcNow().UtcDateTime)
+            {
+                <a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@cita.Id">@(cita.EnlacePreparado ? "Consultar acceso virtual" : "Enlace virtual pendiente")</a>
+            }
             @if (cita.Estado == EstadoCita.Cancelada)
             {
                 <p class="small text-muted text-break mb-0">Motivo de cancelación: @(string.IsNullOrWhiteSpace(cita.MotivoCancelacion) ? "Motivo no registrado" : cita.MotivoCancelacion)</p>

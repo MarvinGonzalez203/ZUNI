@@ -48,12 +48,16 @@
             {
                 <form asp-action="GestionarCita" method="post" class="agenda-actions">
                     <input type="hidden" name="CitaId" value="@cita.Id" />
-                    @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime) { <button type="submit" name="Estado" value="Confirmada" class="dash-button">Aceptar</button> }
+                    @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime && cita.Modalidad == ModalidadCita.Presencial) { <button type="submit" name="Estado" value="Confirmada" class="dash-button">Aceptar</button> }
                     <button type="submit" name="Estado" value="Rechazada" class="btn btn-outline-secondary">Rechazar</button>
                 </form>
             }
             @if (AgendaReglas.Activa(cita.Estado))
             {
+                @if (cita.Modalidad == ModalidadCita.Virtual && cita.FinUtc > Reloj.GetUtcNow().UtcDateTime) {
+                    <a asp-controller="Reuniones" asp-action="Preparar" asp-route-citaId="@cita.Id">@(cita.Estado == EstadoCita.Solicitada ? "Preparar y confirmar cita virtual" : "Actualizar enlace virtual")</a>
+                    <a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@cita.Id">Consultar acceso virtual</a>
+                }
                 @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime)
                 {
                     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelar-cita-@cita.Id">Cancelar cita</button>

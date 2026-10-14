@@ -22,6 +22,8 @@ public sealed class ReservaCitaInput
 
 public sealed class CambiarCitaInput
 {
+    public string? EnlaceReunion { get; set; }
+    public bool AccesoRestringidoRevisado { get; set; }
     public Guid CitaId { get; set; }
     [EnumDataType(typeof(EstadoCita))] public EstadoCita Estado { get; set; }
     // Validación condicional en el servicio: solo la transición a Cancelada exige motivo.
@@ -33,6 +35,7 @@ public sealed record DisponibilidadResumen(Guid Id, DayOfWeek DiaSemana, TimeOnl
 public sealed record HorarioDisponible(DateTime InicioUtc, DateTime FinUtc, ModalidadDisponibilidad Modalidad);
 public sealed class CitaResumen
 {
+    public bool EnlacePreparado { get; init; }
     public Guid Id { get; init; }
     public string Nombre { get; init; } = string.Empty;
     public DateTime InicioUtc { get; init; }

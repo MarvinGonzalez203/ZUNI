@@ -303,7 +303,7 @@ public sealed class MiCuentaController(
     {
         ViewData["DashboardName"] = usuario.FullName;
         ViewData["DashboardRole"] = string.Join(", ", roles);
-        var elegido = new[] { "Administrador", "Director", "Psicologo", "Catedratico", "Estudiante" }
+        var elegido = new[] { "Administrador", "Director", "Psicologo", "Estudiante" }
             .FirstOrDefault(roles.Contains);
         var existe = actions.ActionDescriptors.Items.Any(a =>
             a.RouteValues.TryGetValue("controller", out var controller) && controller == elegido &&

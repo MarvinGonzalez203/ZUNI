@@ -60,6 +60,7 @@ public sealed partial class AgendaCitasService
         // Solo estas propiedades se actualizan; no se enlaza la entidad desde el cliente.
         var tracked = await db.Citas.SingleAsync(c => c.Id == cita.Id, ct);
         tracked.Estado = estado;
+        tracked.Revision = Guid.NewGuid();
         db.RegistrosAtencionCita.Add(new RegistroAtencionCita
         {
             CitaId = cita.Id, SolicitudAtencionId = solicitud, Asistio = asistio,

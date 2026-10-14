@@ -163,10 +163,17 @@ namespace Zuni.Migrations
                     b.Property<Guid>("DisponibilidadPsicologoId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("EnlaceReunion")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
                     b.Property<int>("Estado")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaEnlaceUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("FechaHoraFinUtc")
@@ -189,9 +196,16 @@ namespace Zuni.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DisponibilidadPsicologoId");
+
+                    b.HasIndex("EnlaceReunion")
+                        .IsUnique();
 
                     b.HasIndex("PerfilEstudianteId", "FechaHoraInicioUtc")
                         .IsUnique()
@@ -289,6 +303,25 @@ namespace Zuni.Migrations
 
                             t.HasCheckConstraint("CK_Disponibilidad_Modalidad", "\"Modalidad\" IN (0, 1, 2)");
                         });
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.EnlaceReunionUsado", b =>
+                {
+                    b.Property<string>("Huella")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("CitaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Huella");
+
+                    b.HasIndex("CitaId");
+
+                    b.ToTable("EnlacesReunionUsados", (string)null);
                 });
 
             modelBuilder.Entity("Zuni.Models.Agenda.RegistroAtencionCita", b =>
@@ -1543,6 +1576,15 @@ namespace Zuni.Migrations
                     b.HasOne("Zuni.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("PsicologoUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.EnlaceReunionUsado", b =>
+                {
+                    b.HasOne("Zuni.Models.Agenda.Cita", null)
+                        .WithMany()
+                        .HasForeignKey("CitaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

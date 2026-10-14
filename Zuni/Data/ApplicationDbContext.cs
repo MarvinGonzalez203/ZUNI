@@ -7,6 +7,7 @@ namespace Zuni.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<Zuni.Models.Agenda.EnlaceReunionUsado> EnlacesReunionUsados => Set<Zuni.Models.Agenda.EnlaceReunionUsado>();
         public DbSet<Zuni.Models.Privacidad.PoliticaPrivacidad> PoliticasPrivacidad => Set<Zuni.Models.Privacidad.PoliticaPrivacidad>();
         public DbSet<Zuni.Models.Privacidad.AceptacionPrivacidad> AceptacionesPrivacidad => Set<Zuni.Models.Privacidad.AceptacionPrivacidad>();
         public DbSet<Zuni.Models.Privacidad.SolicitudDerechoDatos> SolicitudesDerechosDatos => Set<Zuni.Models.Privacidad.SolicitudDerechoDatos>();

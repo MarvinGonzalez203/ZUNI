@@ -5,6 +5,7 @@
 }
 
 <section class="dash-admin-panel" aria-labelledby="usuarios-rol-title">
+    @if (Model.Rol == "Catedratico") { <p class="dash-notice">Catedrático fue retirado del alcance actual. Las cuentas y su historial se conservan; asigna un rol operativo solo después de una revisión y autorización institucional.</p> }
     <div class="dash-card">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
             <div>

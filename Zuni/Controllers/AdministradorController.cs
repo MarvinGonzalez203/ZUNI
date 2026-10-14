@@ -84,7 +84,7 @@ public sealed class AdministradorController : Controller
 
     [HttpGet]
     public Task<IActionResult> Catedraticos(string? buscar, string? estado, int pagina = 1, CancellationToken cancellationToken = default) =>
-        ListarPorRolAsync("Catedratico", nameof(Catedraticos), "Catedráticos", buscar, estado, pagina, cancellationToken);
+        ListarPorRolAsync("Catedratico", nameof(Catedraticos), "Cuentas con rol retirado", buscar, estado, pagina, cancellationToken);
 
     [HttpGet]
     public Task<IActionResult> Estudiantes(string? buscar, string? estado, int pagina = 1, CancellationToken cancellationToken = default) =>

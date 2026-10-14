@@ -6,7 +6,7 @@ namespace Zuni.Models.Administrador;
 public sealed class CambiarRolViewModel
 {
     public static IReadOnlyList<string> RolesPermitidos { get; } =
-        Array.AsReadOnly(new[] { "Administrador", "Director", "Psicologo", "Catedratico", "Estudiante" });
+        Array.AsReadOnly(new[] { "Administrador", "Director", "Psicologo", "Estudiante" });
 
     [Required]
     public string UsuarioId { get; set; } = string.Empty;
