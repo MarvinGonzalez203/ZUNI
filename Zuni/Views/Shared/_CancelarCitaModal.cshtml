@@ -15,7 +15,7 @@
                     <p id="@clave-ayuda">Indica brevemente por qué deseas cancelar esta cita.</p>
                     <input type="hidden" name="CitaId" value="@Model.Id" />
                     @if (!estudiante) { <input type="hidden" name="Estado" value="Cancelada" /> }
-                    <label for="@clave-motivo" class="form-label">Motivo de cancelación</label>
+                    <label zuni-required="true" for="@clave-motivo" class="form-label">Motivo de cancelación</label>
                     <textarea id="@clave-motivo" name="MotivoCancelacion" class="form-control" rows="4" maxlength="300" required aria-describedby="@clave-ayuda @clave-limite"></textarea>
                     <small id="@clave-limite" class="text-muted">Máximo 300 caracteres. Evita incluir información clínica innecesaria.</small>
                 </div>

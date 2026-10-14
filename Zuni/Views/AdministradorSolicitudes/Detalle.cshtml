@@ -60,7 +60,7 @@
             {
                 <form asp-action="Asignar" asp-route-id="@s.SolicitudId" method="post" class="mb-4">
                     <input type="hidden" name="SolicitudId" value="@s.SolicitudId" />
-                    <label for="asignar-psicologo" class="form-label">Psicólogo</label>
+                    <label zuni-required="true" for="asignar-psicologo" class="form-label">Psicólogo</label>
                     <select id="asignar-psicologo" name="PsicologoUsuarioId" class="form-select mb-3" required>
                         <option value="">Selecciona un psicólogo</option>
                         @foreach (var p in Model.Elegibles)
@@ -86,7 +86,7 @@
             {
                 <form asp-action="Reasignar" asp-route-id="@s.SolicitudId" method="post" class="mb-4">
                     <input type="hidden" name="SolicitudId" value="@s.SolicitudId" />
-                    <label for="reasignar-psicologo" class="form-label">Nuevo psicólogo</label>
+                    <label zuni-required="true" for="reasignar-psicologo" class="form-label">Nuevo psicólogo</label>
                     <select id="reasignar-psicologo" name="PsicologoUsuarioId" class="form-select mb-3" required>
                         <option value="">Selecciona un psicólogo</option>
                         @foreach (var p in opcionesNuevas)
@@ -120,7 +120,7 @@
                 <textarea id="cerrar-motivo" name="Motivo" class="form-control mb-3" rows="2" maxlength="500"></textarea>
                 <div class="form-check mb-3">
                     <input id="cerrar-confirmar" name="Confirmar" type="checkbox" value="true" class="form-check-input" required />
-                    <label for="cerrar-confirmar" class="form-check-label">Confirmo que deseo cerrar esta solicitud.</label>
+                    <label zuni-required="true" for="cerrar-confirmar" class="form-check-label">Confirmo que deseo cerrar esta solicitud.</label>
                 </div>
                 <button type="submit" class="btn btn-outline-danger" disabled="@bloqueadaPorCitas">Cerrar solicitud</button>
             </form>

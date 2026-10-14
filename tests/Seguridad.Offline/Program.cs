@@ -541,6 +541,7 @@ using (var estudiante = HostPrueba.Cliente(app))
 // --- Máximo absoluto de sesión (se ejecuta al final porque adelanta el reloj)
 await PruebasChecks.Run(app, opciones, clave, perfil, perfil2);
 await InstitucionChecks.Run(app, opciones, clave);
+await CamposObligatoriosChecks.Run(app, opciones, clave, perfil2);
 
 using (var c = HostPrueba.Cliente(app))
 {

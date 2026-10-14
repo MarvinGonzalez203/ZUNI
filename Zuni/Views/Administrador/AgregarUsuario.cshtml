@@ -32,7 +32,7 @@
                 <span asp-validation-for="Rol" class="text-danger small"></span>
             </div>
             <fieldset id="carne-estudiante" class="mb-3">
-                <legend class="fs-6">Carné institucional (solo Estudiante)</legend>
+                <legend class="fs-6" zuni-required="@(Model.Rol == "Estudiante")" data-required-conditional>Carné institucional (solo Estudiante)</legend>
                 <div class="d-flex align-items-center gap-2">
                     <input asp-for="CarneParte1" class="form-control" aria-label="Primer bloque del carné" placeholder="0000" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" />
                     <span aria-hidden="true">−</span>

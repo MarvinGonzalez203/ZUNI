@@ -17,19 +17,19 @@
             <span asp-validation-for="Asistio" class="text-danger"></span>
         </div>
         <div class="mb-4" data-con-asistencia>
-            <label asp-for="ResultadoProfesionalPrivado" class="form-label">Resultado profesional privado</label>
+            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResultadoProfesionalPrivado" class="form-label">Resultado profesional privado</label>
             <p id="privacidad-ayuda" class="small">Esta información es privada y solo puede ser consultada por el profesional autorizado.</p>
             <textarea asp-for="ResultadoProfesionalPrivado" class="form-control" rows="6" maxlength="4000" aria-describedby="privacidad-ayuda"></textarea>
             <span asp-validation-for="ResultadoProfesionalPrivado" class="text-danger"></span>
         </div>
         <div class="mb-4">
-            <label asp-for="ResenaRecomendacionesEstudiante" class="form-label">Reseña y recomendaciones para el estudiante</label>
+            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResenaRecomendacionesEstudiante" class="form-label">Reseña y recomendaciones para el estudiante</label>
             <p class="small">Visible para el estudiante cuando asistió. En caso de inasistencia puedes dejar una observación opcional.</p>
             <textarea asp-for="ResenaRecomendacionesEstudiante" class="form-control" rows="4" maxlength="2000"></textarea>
             <span asp-validation-for="ResenaRecomendacionesEstudiante" class="text-danger"></span>
         </div>
         <div class="mb-4" data-con-asistencia>
-            <label asp-for="ResultadoBreveEstudiante" class="form-label">Resultado breve para compartir con el estudiante</label>
+            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResultadoBreveEstudiante" class="form-label">Resultado breve para compartir con el estudiante</label>
             <textarea asp-for="ResultadoBreveEstudiante" class="form-control" rows="3" maxlength="2000"></textarea>
             <span asp-validation-for="ResultadoBreveEstudiante" class="text-danger"></span>
         </div>
@@ -37,7 +37,7 @@
             <input asp-for="RecomiendaOtraCita" class="form-check-input" /><label asp-for="RecomiendaOtraCita" class="form-check-label">Recomiendo otra cita</label>
         </div>
         <div class="mb-4" id="proxima-cita">
-            <label asp-for="IndicacionesProximaCita" class="form-label">Indicaciones para la próxima cita</label>
+            <label zuni-required="@(Model.Asistio == true && Model.RecomiendaOtraCita)" data-required-conditional asp-for="IndicacionesProximaCita" class="form-label">Indicaciones para la próxima cita</label>
             <textarea asp-for="IndicacionesProximaCita" class="form-control" rows="3" maxlength="2000"></textarea>
             <span asp-validation-for="IndicacionesProximaCita" class="text-danger"></span>
             <p class="small">Esta recomendación no reserva una nueva cita. El estudiante decidirá solicitarla desde su agenda.</p>

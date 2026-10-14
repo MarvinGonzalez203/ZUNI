@@ -13,11 +13,11 @@
     <p>Los horarios se repiten cada semana, en hora de Guatemala (UTC−6). Las excepciones del calendario afectan solo la fecha seleccionada.</p>
     <details><summary>Agregar horario semanal</summary>
         <form asp-action="AgregarDisponibilidad" method="post" class="row g-3 mt-1">
-            <div class="col-md-4"><label for="dia" class="form-label">Día</label><select name="DiaSemana" id="dia" class="form-select">@for (var i = 1; i <= 7; i++) { <option value="@(i % 7)">@dias[i % 7]</option> }</select></div>
-            <div class="col-md-4"><label for="inicio" class="form-label">Desde</label><input name="HoraInicio" id="inicio" type="time" class="form-control" min="08:00" max="18:00" step="300" required /></div>
-            <div class="col-md-4"><label for="fin" class="form-label">Hasta</label><input name="HoraFin" id="fin" type="time" class="form-control" min="08:00" max="18:00" step="300" required /></div>
-            <div class="col-md-6"><label for="duracion" class="form-label">Duración por cita (minutos)</label><input name="DuracionMinutos" id="duracion" type="number" class="form-control" min="15" max="120" step="5" value="50" required /></div>
-            <div class="col-md-6"><label for="modalidad" class="form-label">Modalidad</label><select name="Modalidad" id="modalidad" class="form-select"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Ambas">Ambas</option></select></div>
+            <div class="col-md-4"><label zuni-required="true" for="dia" class="form-label">Día</label><select name="DiaSemana" id="dia" class="form-select">@for (var i = 1; i <= 7; i++) { <option value="@(i % 7)">@dias[i % 7]</option> }</select></div>
+            <div class="col-md-4"><label zuni-required="true" for="inicio" class="form-label">Desde</label><input name="HoraInicio" id="inicio" type="time" class="form-control" min="08:00" max="18:00" step="300" required /></div>
+            <div class="col-md-4"><label zuni-required="true" for="fin" class="form-label">Hasta</label><input name="HoraFin" id="fin" type="time" class="form-control" min="08:00" max="18:00" step="300" required /></div>
+            <div class="col-md-6"><label zuni-required="true" for="duracion" class="form-label">Duración por cita (minutos)</label><input name="DuracionMinutos" id="duracion" type="number" class="form-control" min="15" max="120" step="5" value="50" required /></div>
+            <div class="col-md-6"><label zuni-required="true" for="modalidad" class="form-label">Modalidad</label><select name="Modalidad" id="modalidad" class="form-select"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Ambas">Ambas</option></select></div>
             <div><button type="submit" class="dash-button">Guardar horario</button></div>
         </form>
     </details>

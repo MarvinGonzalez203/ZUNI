@@ -24,7 +24,7 @@
             <span asp-validation-for="CorreoSoporte" class="text-danger"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="PoliticaCorreo" class="form-label"></label>
+            <label asp-for="PoliticaCorreo" zuni-required="true" class="form-label"></label>
             <select asp-for="PoliticaCorreo" class="form-select">
                 <option value="0">Registro con dominios autorizados</option>
                 <option value="1">Registro con cualquier correo válido</option>
@@ -33,8 +33,8 @@
             <span asp-validation-for="PoliticaCorreo" class="text-danger"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="DominiosAutorizados" class="form-label"></label>
-            <textarea asp-for="DominiosAutorizados" class="form-control" rows="4" maxlength="2000" aria-describedby="dominios-help"></textarea>
+            <label asp-for="DominiosAutorizados" zuni-required="@(Model.PoliticaCorreo == Zuni.Models.Institucion.PoliticaCorreoInstitucion.DominiosAutorizados)" data-required-conditional class="form-label"></label>
+            <textarea asp-for="DominiosAutorizados" required="@(Model.PoliticaCorreo == Zuni.Models.Institucion.PoliticaCorreoInstitucion.DominiosAutorizados)" class="form-control" rows="4" maxlength="2000" aria-describedby="dominios-help"></textarea>
             <small id="dominios-help">Un dominio por línea, sin @@. Ejemplo: colegio.edu.gt. Solo se restringe el correo en el primer modo. No se admiten subdominios automáticamente.</small>
             <span asp-validation-for="DominiosAutorizados" class="text-danger"></span>
         </div>
@@ -43,3 +43,14 @@
         <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-secondary">Volver al tablero</a>
     </form>
 </section>
+@section Scripts {
+    <script>
+        (() => {
+            const politica = document.getElementById('PoliticaCorreo');
+            const dominios = document.getElementById('DominiosAutorizados');
+            const actualizar = () => dominios.required = politica.value === '0';
+            politica.addEventListener('change', actualizar);
+            actualizar();
+        })();
+    </script>
+}

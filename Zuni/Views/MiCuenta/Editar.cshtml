@@ -24,9 +24,9 @@
                 <fieldset class="mb-3">
                     <legend class="h6">Carné institucional · Configuración inicial</legend>
                     <div class="row g-2">
-                        <div class="col-4"><label asp-for="CarneParte1" class="form-label">Primer bloque</label><input asp-for="CarneParte1" class="form-control" inputmode="numeric" minlength="4" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required /></div>
-                        <div class="col-3"><label asp-for="CarneParte2" class="form-label">Segundo bloque</label><input asp-for="CarneParte2" class="form-control" inputmode="numeric" minlength="2" maxlength="2" pattern="[0-9]{2}" placeholder="00" required /></div>
-                        <div class="col-5"><label asp-for="CarneParte3" class="form-label">Tercer bloque</label><input asp-for="CarneParte3" class="form-control" inputmode="numeric" minlength="2" maxlength="6" pattern="[0-9]{2,6}" placeholder="00 a 000000" required /></div>
+                        <div class="col-4"><label zuni-required="true" asp-for="CarneParte1" class="form-label">Primer bloque</label><input asp-for="CarneParte1" class="form-control" inputmode="numeric" minlength="4" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required /></div>
+                        <div class="col-3"><label zuni-required="true" asp-for="CarneParte2" class="form-label">Segundo bloque</label><input asp-for="CarneParte2" class="form-control" inputmode="numeric" minlength="2" maxlength="2" pattern="[0-9]{2}" placeholder="00" required /></div>
+                        <div class="col-5"><label zuni-required="true" asp-for="CarneParte3" class="form-label">Tercer bloque</label><input asp-for="CarneParte3" class="form-control" inputmode="numeric" minlength="2" maxlength="6" pattern="[0-9]{2,6}" placeholder="00 a 000000" required /></div>
                     </div>
                     <span asp-validation-for="CarneParte1" class="text-danger small"></span>
                     <p class="small text-secondary mt-2">@Zuni.Helpers.CarneHelper.MensajeFormato Una vez registrado no podrás cambiarlo aquí.</p>
