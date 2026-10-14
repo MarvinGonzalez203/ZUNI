@@ -52,6 +52,11 @@ internal static class AgendaMejorasChecks
         Check(typeof(ReporteCompartido).GetProperties().All(p=>p.Name!="ResultadoProfesionalPrivado"),"DTO imprimible no admite notas privadas");
         var preview=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");
         if(!string.IsNullOrEmpty(preview)) { await File.WriteAllTextAsync(Path.Combine(preview,"agenda-mejoras.html"),agenda); await File.WriteAllTextAsync(Path.Combine(preview,"reporte-compartido.html"),html); await File.WriteAllBytesAsync(Path.Combine(preview,"reporte-compartido.pdf"),bytes); await File.WriteAllTextAsync(Path.Combine(preview,"guia-publica.html"),await anon.GetStringAsync("/Home/Guia?tema=cita")); }
+        if(!string.IsNullOrEmpty(preview)) {
+            string Largo(string fin)=>string.Concat(Enumerable.Repeat("Acuerdo de seguimiento educativo para revisar en la siguiente atención. ",28))[..1900]+fin;
+            var largo=new ReporteCompartido(Guid.NewGuid(),"ESTUDIANTE FICTICIO DE PRUEBA CON NOMBRE EXTENSO PARA REVISIÓN DE FORMATO","749026125678","PROFESIONAL FICTICIO CON NOMBRE EXTENSO",reloj.Ahora.UtcDateTime.AddDays(-1),reloj.Ahora.UtcDateTime.AddDays(-1).AddMinutes(50),true,Largo("FINRESULTADO"),Largo("FINRECOMENDACIONES"),true,Largo("FINSEGUIMIENTO"));
+            await File.WriteAllBytesAsync(Path.Combine(preview,"reporte-compartido-largo.pdf"),Zuni.Services.Informes.InformePdf.CrearCompartido(largo));
+        }
         Console.WriteLine($"OK: {checks} comprobaciones de guías, imprevistas, agenda histórica y reporte compartido.");
     }
 }

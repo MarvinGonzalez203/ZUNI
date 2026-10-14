@@ -16,6 +16,7 @@ namespace Zuni.Data
         public DbSet<Zuni.Models.Informes.AutorizacionInforme> AutorizacionesInformes => Set<Zuni.Models.Informes.AutorizacionInforme>();
         public DbSet<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad> VerificacionesMayoriaEdad => Set<Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad>();
         public DbSet<Zuni.Models.Institucion.ConfiguracionInstitucion> ConfiguracionInstitucion => Set<Zuni.Models.Institucion.ConfiguracionInstitucion>();
+        public DbSet<Zuni.Models.Agenda.NotificacionCita> NotificacionesCita => Set<Zuni.Models.Agenda.NotificacionCita>();
         public DbSet<Zuni.Models.Pruebas.Prueba> PruebasDirector => Set<Zuni.Models.Pruebas.Prueba>();
         public DbSet<Zuni.Models.Pruebas.AsignacionPrueba> AsignacionesPrueba => Set<Zuni.Models.Pruebas.AsignacionPrueba>();
         public DbSet<Zuni.Models.Agenda.RegistroAtencionCita> RegistrosAtencionCita => Set<Zuni.Models.Agenda.RegistroAtencionCita>();

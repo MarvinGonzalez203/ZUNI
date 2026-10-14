@@ -17,6 +17,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
   </ItemGroup>
   <ItemGroup><EmbeddedResource Include="Resources/Fonts/*.ttf" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="wwwroot/images/zuni-logo-transparent.png" LogicalName="Zuni.Resources.Logo.png" /></ItemGroup>
   <ItemGroup><None Update="Resources/Fonts/bitstream-vera-license.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
 
 </Project>

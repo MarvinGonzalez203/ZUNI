@@ -8,6 +8,7 @@ public static class AgendaCitasConfiguration
 {
     public static void ConfigurarAgendaCitas(this ModelBuilder builder)
     {
+        builder.Entity<NotificacionCita>(e => { e.ToTable("NotificacionesCita"); e.HasKey(x=>x.Id); e.Property(x=>x.Texto).HasMaxLength(600); e.HasIndex(x=>new{x.UsuarioId,x.Leida,x.FechaUtc}); e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x=>x.UsuarioId).OnDelete(DeleteBehavior.Restrict); e.HasOne<Cita>().WithMany().HasForeignKey(x=>x.CitaId).OnDelete(DeleteBehavior.Restrict); });
         builder.Entity<EnlaceReunionUsado>(e => {
             e.ToTable("EnlacesReunionUsados"); e.HasKey(x => x.Huella); e.Property(x => x.Huella).HasMaxLength(64);
             e.HasOne<Cita>().WithMany().HasForeignKey(x => x.CitaId).OnDelete(DeleteBehavior.Restrict);
@@ -42,10 +43,12 @@ public static class AgendaCitasConfiguration
                 t.HasCheckConstraint("CK_Citas_Fechas", "\"FechaHoraFinUtc\" > \"FechaHoraInicioUtc\"");
                 t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3, 4, 5, 6)");
                 t.HasCheckConstraint("CK_Citas_Modalidad", "\"Modalidad\" IN (0, 1)");
-                t.HasCheckConstraint("CK_Citas_Disponibilidad", "\"EsImprevista\" OR \"DisponibilidadPsicologoId\" IS NOT NULL");
+                t.HasCheckConstraint("CK_Citas_Disponibilidad", "\"EsImprevista\" OR \"ProgramadaDirectamente\" OR \"DisponibilidadPsicologoId\" IS NOT NULL");
             });
             e.HasKey(x => x.Id);
             e.Property(x => x.MotivoCancelacion).HasMaxLength(300);
+            e.Property(x=>x.ProgramadorRol).HasMaxLength(20);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x=>x.ProgramadorUsuarioId).OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.EnlaceReunion).HasMaxLength(120); e.Property(x => x.Revision).IsConcurrencyToken();
             e.HasIndex(x => x.EnlaceReunion).IsUnique();
             e.Property(x => x.FechaHoraInicioUtc).HasColumnType("timestamp with time zone");

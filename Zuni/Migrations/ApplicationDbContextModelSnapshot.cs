@@ -198,6 +198,16 @@ namespace Zuni.Migrations
                     b.Property<Guid>("PerfilEstudianteId")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("ProgramadaDirectamente")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ProgramadorRol")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("ProgramadorUsuarioId")
+                        .HasColumnType("text");
+
                     b.Property<string>("PsicologoUsuarioId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -213,6 +223,8 @@ namespace Zuni.Migrations
                     b.HasIndex("EnlaceReunion")
                         .IsUnique();
 
+                    b.HasIndex("ProgramadorUsuarioId");
+
                     b.HasIndex("PerfilEstudianteId", "FechaHoraInicioUtc")
                         .IsUnique()
                         .HasDatabaseName("UX_Citas_Estudiante_InicioReservado")
@@ -227,7 +239,7 @@ namespace Zuni.Migrations
 
                     b.ToTable("Citas", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Citas_Disponibilidad", "\"EsImprevista\" OR \"DisponibilidadPsicologoId\" IS NOT NULL");
+                            t.HasCheckConstraint("CK_Citas_Disponibilidad", "\"EsImprevista\" OR \"ProgramadaDirectamente\" OR \"DisponibilidadPsicologoId\" IS NOT NULL");
 
                             t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3, 4, 5, 6)");
 
@@ -330,6 +342,39 @@ namespace Zuni.Migrations
                     b.HasIndex("CitaId");
 
                     b.ToTable("EnlacesReunionUsados", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.NotificacionCita", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CitaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Leida")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CitaId");
+
+                    b.HasIndex("UsuarioId", "Leida", "FechaUtc");
+
+                    b.ToTable("NotificacionesCita", (string)null);
                 });
 
             modelBuilder.Entity("Zuni.Models.Agenda.RegistroAtencionCita", b =>
@@ -1572,6 +1617,11 @@ namespace Zuni.Migrations
 
                     b.HasOne("Zuni.Models.ApplicationUser", null)
                         .WithMany()
+                        .HasForeignKey("ProgramadorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
                         .HasForeignKey("PsicologoUsuarioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1605,6 +1655,21 @@ namespace Zuni.Migrations
                     b.HasOne("Zuni.Models.Agenda.Cita", null)
                         .WithMany()
                         .HasForeignKey("CitaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Agenda.NotificacionCita", b =>
+                {
+                    b.HasOne("Zuni.Models.Agenda.Cita", null)
+                        .WithMany()
+                        .HasForeignKey("CitaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

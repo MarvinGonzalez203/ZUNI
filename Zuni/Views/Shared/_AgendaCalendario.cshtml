@@ -45,6 +45,7 @@
                         else if (cita.TieneRegistroAtencion) { <a asp-controller="Psicologo" asp-action="VerAtencion" asp-route-citaId="@cita.Id">Consultar registro</a> }
                         else if (cita.FinUtc <= Model.AhoraUtc && cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada) { <a asp-controller="Psicologo" asp-action="RegistrarAtencion" asp-route-citaId="@cita.Id" class="dash-button">Completar registro de atención</a> }
                         </article>
+                        @if(AgendaReglas.Activa(cita.Estado)&&cita.InicioUtc>Model.AhoraUtc&&!cita.EsImprevista){<a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@cita.Id" class="btn btn-outline-primary mb-2">Reprogramar cita</a>}
                     }
                     @if (dia.Fecha <= Model.Hoy) { <a asp-controller="Atenciones" asp-action="Imprevista" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" class="dash-button mb-3">Registrar atención imprevista</a> }
                 }
@@ -73,6 +74,7 @@
                             <label for="@clave-fin">Fin aproximado (opcional)<input id="@clave-fin" type="time" name="HoraFin" min="08:00" max="18:00" step="300" /></label>
                             <label zuni-required="true" for="@clave-duracion">Duración de cada cita<select id="@clave-duracion" name="DuracionMinutos"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="50" selected>50 minutos</option><option value="0">Sin duración establecida</option></select></label>
                             <label zuni-required="true" for="@clave-modalidad">Modalidad<select id="@clave-modalidad" name="Modalidad"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Ambas">Ambas</option></select></label>
+                            <label for="@clave-estudiante">Estudiante (opcional)<select id="@clave-estudiante" name="PerfilEstudianteId"><option value="">Solo disponibilidad, sin asignar cita</option>@foreach(var p in Model.EstudiantesProgramables){<option value="@p.Id">@p.Nombre</option>}</select></label><p class="agenda-hint">Si eliges un estudiante se programa la primera franja y se le notifica. Para asignar cita elige modalidad Presencial o Virtual.</p>
                             <button class="dash-button" type="submit">Guardar horario</button>
                             <p class="agenda-hint" data-fin-estimado>El fin es opcional. Si lo omites se calcula con la duración elegida; sin duración establecida se estima un bloque de 50 minutos. Es planificación, no duración real de la sesión.</p>
                         </form>

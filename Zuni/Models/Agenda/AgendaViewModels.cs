@@ -70,6 +70,7 @@ public sealed class CitasEstudianteViewModel
 
 public sealed class HorarioDiaInput
 {
+    public Guid? PerfilEstudianteId { get; set; }
     [Required] public DateOnly? Fecha { get; set; }
     [Required] public TimeOnly? HoraInicio { get; set; }
     public TimeOnly? HoraFin { get; set; }
@@ -98,6 +99,7 @@ public sealed class DiaAgendaViewModel
 }
 public sealed class CalendarioAgendaViewModel
 {
+    public IReadOnlyList<EstudianteProgramable> EstudiantesProgramables { get; init; } = [];
     public DateTime AhoraUtc { get; init; }
     public DateOnly Mes { get; init; }
     public DateOnly Hoy { get; init; }

@@ -8,6 +8,9 @@ public sealed class Cita
     public Guid? DisponibilidadPsicologoId { get; set; }
     public bool EsImprevista { get; set; }
     public bool FinAproximado { get; set; }
+    public bool ProgramadaDirectamente { get; set; }
+    public string? ProgramadorUsuarioId { get; set; }
+    public string? ProgramadorRol { get; set; }
     public DateTime FechaHoraInicioUtc { get; set; }
     public DateTime FechaHoraFinUtc { get; set; }
     public ModalidadCita Modalidad { get; set; }

@@ -72,7 +72,8 @@ public sealed partial class AgendaCitasService
                         AgendaReglas.Cruza(AgendaReglas.Utc(dia, d.HoraInicio), AgendaReglas.Utc(dia, d.HoraFin), c.Inicio, c.Fin)))).ToArray()
             });
         }
-        return new CalendarioAgendaViewModel { Mes = mes, Hoy = hoy, Editor = editor, Dias = dias, AhoraUtc = ahora };
+        return new CalendarioAgendaViewModel { Mes = mes, Hoy = hoy, Editor = editor, Dias = dias, AhoraUtc = ahora,
+            EstudiantesProgramables = editor && id is not null ? await SeleccionProgramables((id,"Psicologo"),ct) : [] };
     }
 
     // Materialización solo al editar intervalos de una fecha; bloquear/habilitar no duplica la base.
@@ -113,11 +114,22 @@ public sealed partial class AgendaCitasService
         if (actuales.Any(d => d.HoraInicio < fin && inicio < d.HoraFin))
             throw new AgendaOperacionException("El horario se superpone con otra disponibilidad activa.");
         Particularizar(dia, actuales);
-        db.DisponibilidadesPsicologo.Add(new DisponibilidadPsicologo
+        var nuevo = new DisponibilidadPsicologo
         {
             PsicologoUsuarioId = id, ConfiguracionAgendaDiaId = dia.Id, DiaSemana = fecha.DayOfWeek,
             HoraInicio = inicio, HoraFin = fin, DuracionMinutos = input.DuracionMinutos, Modalidad = input.Modalidad
-        });
+        };
+        db.DisponibilidadesPsicologo.Add(nuevo);
+        if(input.PerfilEstudianteId is {}perfil) {
+            var actor=await Programador(sesion,ct);
+            if(input.Modalidad==ModalidadDisponibilidad.Ambas)throw new AgendaOperacionException("Para programar una cita al estudiante elige Presencial o Virtual; Ambas se utiliza para disponibilidad sin cita asignada.");
+            await ProfesionalProgramacion(actor,perfil,ct);
+            var comienza=AgendaReglas.Utc(fecha,inicio);var termina=comienza.AddMinutes(input.DuracionMinutos==0?50:input.DuracionMinutos);
+            if(termina>AgendaReglas.Utc(fecha,fin))throw new AgendaOperacionException("El horario no alcanza para la cita prevista del estudiante.");
+            await ValidarFranjaProgramada(perfil,id,comienza,termina,null,ct);
+            var c=new Cita{PerfilEstudianteId=perfil,PsicologoUsuarioId=id,DisponibilidadPsicologoId=nuevo.Id,FechaHoraInicioUtc=comienza,FechaHoraFinUtc=termina,FinAproximado=true,ProgramadorUsuarioId=actor.Id,ProgramadorRol=actor.Rol,Estado=await EstadoProgramacion(actor,perfil,(ModalidadCita)input.Modalidad,ct),Modalidad=(ModalidadCita)input.Modalidad,FechaCreacionUtc=Ahora};
+            db.Citas.Add(c);await NotificarProgramacion(c,actor,false,ct);
+        }
     }, ct);
 
     public Task CambiarDia(ClaimsPrincipal sesion, DateOnly fecha, string operacion, Guid? horarioId, CancellationToken ct) => Escribir(async () =>

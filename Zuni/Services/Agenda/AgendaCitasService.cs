@@ -234,6 +234,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         }
         if (input.Estado == EstadoCita.Confirmada && cita.Modalidad == ModalidadCita.Virtual)
             await FijarEnlace(cita, input.EnlaceReunion, input.AccesoRestringidoRevisado, ct);
+        if(input.Estado==EstadoCita.Confirmada)await ValidarConfirmacionProgramada(cita,ct);
         AplicarCambio(cita, input.Estado, input.MotivoCancelacion);
     }, ct);
 

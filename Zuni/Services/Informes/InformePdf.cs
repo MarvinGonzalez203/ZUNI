@@ -45,16 +45,34 @@ public static class InformePdf
     public static byte[] CrearCompartido(Zuni.Models.Agenda.ReporteCompartido r)
     {
         var doc = new Document(); doc.Info.Title = "Reporte compartido de atención"; doc.Info.Author = r.Psicologo;
-        var normal = doc.Styles[StyleNames.Normal]!; normal.Font.Name = "ZuniVera"; normal.Font.Size = 10; normal.ParagraphFormat.SpaceAfter = Unit.FromPoint(8);
-        var s = doc.AddSection(); s.PageSetup.PageFormat = PageFormat.Letter; s.PageSetup.TopMargin = Unit.FromCentimeter(2); s.PageSetup.BottomMargin = Unit.FromCentimeter(2); s.PageSetup.LeftMargin = Unit.FromCentimeter(2); s.PageSetup.RightMargin = Unit.FromCentimeter(2);
-        var title = s.AddParagraph("Reporte compartido de atención"); title.Format.Font.Size = 18; title.Format.Font.Bold = true;
-        s.AddParagraph($"Estudiante: {r.Estudiante}\nCarné: {Zuni.Helpers.CarneHelper.Formatear(r.Carne)}\nPsicólogo: {r.Psicologo}");
-        s.AddParagraph($"Atención: {AgendaReglas.Local(r.InicioUtc):dd/MM/yyyy HH:mm} | Fin {(r.FinAproximado ? "aproximado" : "programado")}: {AgendaReglas.Local(r.FinUtc):HH:mm} (Guatemala)");
-        void Campo(string t, string v) { var h = s.AddParagraph(t); h.Format.Font.Bold = true; h.Format.KeepWithNext = true; s.AddParagraph(v); }
-        Campo("Resultado compartido", r.Resultado); Campo("Recomendaciones compartidas", r.Recomendaciones);
-        if (r.OtraCita) Campo("Seguimiento recomendado", r.Indicaciones ?? "");
-        s.AddParagraph("Contiene únicamente información compartida con el estudiante. No incluye notas profesionales privadas ni es un informe educativo autorizado para terceros.");
-        var footer = s.Footers.Primary.AddParagraph("ZUNI | Uso del estudiante y profesional autorizado | Página "); footer.AddPageField();
+        var beige = Color.FromRgb(237,232,208); var violeta = Color.FromRgb(206,162,253); var tinta=Color.FromRgb(17,17,17); var gris=Color.FromRgb(98,93,99);
+        var normal = doc.Styles[StyleNames.Normal]!; normal.Font.Name = "ZuniVera"; normal.Font.Size = 10; normal.Font.Color=tinta; normal.ParagraphFormat.SpaceAfter = Unit.FromPoint(8); normal.ParagraphFormat.LineSpacingRule=LineSpacingRule.Multiple; normal.ParagraphFormat.LineSpacing=1.12;
+        var s = doc.AddSection(); s.PageSetup.PageFormat = PageFormat.Letter; s.PageSetup.TopMargin = Unit.FromCentimeter(1.7); s.PageSetup.BottomMargin = Unit.FromCentimeter(3); s.PageSetup.FooterDistance = Unit.FromCentimeter(1.2); s.PageSetup.LeftMargin = Unit.FromCentimeter(2); s.PageSetup.RightMargin = Unit.FromCentimeter(2);
+        string Logo() { using var stream=typeof(InformePdf).Assembly.GetManifestResourceStream("Zuni.Resources.Logo.png")!; using var bytes=new MemoryStream(); stream.CopyTo(bytes); return "base64:"+Convert.ToBase64String(bytes.ToArray()); }
+        var encabezado=s.AddTable(); encabezado.AddColumn(Unit.FromCentimeter(14.5)); encabezado.AddColumn(Unit.FromCentimeter(3)); encabezado.Shading.Color=beige; encabezado.TopPadding=12; encabezado.BottomPadding=12; encabezado.LeftPadding=12;
+        var er=encabezado.AddRow(); var etiqueta=er.Cells[0].AddParagraph("ZUNI · ACOMPAÑAMIENTO EDUCATIVO"); etiqueta.Format.Font.Size=8; etiqueta.Format.Font.Bold=true;
+        var title=er.Cells[0].AddParagraph("Reporte compartido\nde atención"); title.Format.Font.Size=21; title.Format.Font.Bold=true; title.Format.SpaceAfter=4;
+        var subtitle=er.Cells[0].AddParagraph("Un resumen para recordar tus acuerdos y próximos pasos."); subtitle.Format.Font.Size=9; subtitle.Format.Font.Color=gris;
+        var imagen=er.Cells[1].AddImage(Logo()); imagen.Width=Unit.FromCentimeter(1.9); imagen.LockAspectRatio=true; er.Cells[1].VerticalAlignment=MigraDoc.DocumentObjectModel.Tables.VerticalAlignment.Center;
+        var barra=s.AddParagraph(); barra.Format.Borders.Bottom.Color=violeta; barra.Format.Borders.Bottom.Width=4; barra.Format.SpaceAfter=15;
+        var datos=s.AddTable(); datos.AddColumn(Unit.FromCentimeter(8.75)); datos.AddColumn(Unit.FromCentimeter(8.75)); datos.TopPadding=9; datos.BottomPadding=9; datos.LeftPadding=10; datos.RightPadding=10; datos.Borders.Color=Colors.White; datos.Borders.Width=4; datos.Shading.Color=Color.FromRgb(247,245,233);
+        void Dato(MigraDoc.DocumentObjectModel.Tables.Cell cell,string key,string val) {var k=cell.AddParagraph(key); k.Format.Font.Size=8; k.Format.Font.Color=gris; k.Format.Font.Bold=true; k.Format.SpaceAfter=4; var v=cell.AddParagraph(val); v.Format.Font.Size=10; v.Format.SpaceAfter=0;}
+        var fila=datos.AddRow(); Dato(fila.Cells[0],"ESTUDIANTE",r.Estudiante); Dato(fila.Cells[1],"CARNÉ",Zuni.Helpers.CarneHelper.Formatear(r.Carne)??r.Carne);
+        fila=datos.AddRow(); Dato(fila.Cells[0],"PSICÓLOGO RESPONSABLE",r.Psicologo); Dato(fila.Cells[1],"FECHA Y HORARIO",$"{AgendaReglas.Local(r.InicioUtc):dd/MM/yyyy · HH:mm} — {AgendaReglas.Local(r.FinUtc):HH:mm}\nFin {(r.FinAproximado ? "aproximado" : "programado")} · Guatemala");
+        void Campo(string numero,string t,string texto) {
+            var h=s.AddParagraph(numero+"  "+t); h.Format.Font.Bold=true; h.Format.Font.Size=12; h.Format.SpaceBefore=15; h.Format.SpaceAfter=9; h.Format.KeepWithNext=true; h.Format.Borders.Bottom.Color=violeta; h.Format.Borders.Bottom.Width=1.5; h.Format.Borders.DistanceFromBottom=5;
+            var p=s.AddParagraph(texto); p.Format.LeftIndent=10; p.Format.RightIndent=10; p.Format.SpaceBefore=3; p.Format.SpaceAfter=10; p.Format.Shading.Color=Color.FromRgb(253,252,249);
+        }
+        Campo("01","Resultado compartido",r.Resultado); Campo("02","Recomendaciones y acuerdos",r.Recomendaciones);
+        if(r.OtraCita) Campo("03","Seguimiento recomendado",r.Indicaciones??"");
+        var espacio=s.AddParagraph();espacio.Format.SpaceAfter=8;
+        var aviso=s.AddTable();aviso.AddColumn(Unit.FromCentimeter(17.5));aviso.Shading.Color=beige;aviso.TopPadding=8;aviso.BottomPadding=8;aviso.LeftPadding=10;aviso.RightPadding=10;
+        var ac=aviso.AddRow().Cells[0];var ak=ac.AddParagraph("SOBRE ESTE DOCUMENTO");ak.Format.Font.Size=8;ak.Format.Font.Bold=true;ak.Format.SpaceAfter=4;
+        var av=ac.AddParagraph("Contiene únicamente información compartida con el estudiante. No incluye notas profesionales privadas ni sustituye un informe educativo autorizado para terceros.");av.Format.Font.Size=8;av.Format.Font.Color=gris;av.Format.SpaceAfter=0;
+        var ft=s.Footers.Primary.AddTable(); ft.AddColumn(Unit.FromCentimeter(1.3)); ft.AddColumn(Unit.FromCentimeter(12.5)); ft.AddColumn(Unit.FromCentimeter(3.7)); ft.Borders.Top.Color=violeta; ft.Borders.Top.Width=2; ft.TopPadding=7;
+        var fr=ft.AddRow(); var fl=fr.Cells[0].AddImage(Logo()); fl.Width=Unit.FromCentimeter(.8); fl.LockAspectRatio=true;
+        var fp=fr.Cells[1].AddParagraph("ZUNI · Tu espacio. Tu ritmo.\nUso del estudiante y profesional autorizado"); fp.Format.Font.Size=8; fp.Format.Font.Color=gris;
+        var pg=fr.Cells[2].AddParagraph("Página "); pg.AddPageField(); pg.AddText(" de "); pg.AddNumPagesField(); pg.Format.Font.Size=8; pg.Format.Alignment=ParagraphAlignment.Right;
         var renderer = new PdfDocumentRenderer { Document = doc }; renderer.RenderDocument(); using var output = new MemoryStream(); renderer.PdfDocument.Save(output, false); return output.ToArray();
     }
     private sealed class FuenteInforme : IFontResolver

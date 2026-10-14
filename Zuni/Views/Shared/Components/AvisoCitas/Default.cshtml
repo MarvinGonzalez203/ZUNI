@@ -1,0 +1,2 @@
+@model int
+<a asp-controller="CitasProgramadas" asp-action="Notificaciones" class="dash-text-link dash-notification" aria-label="Mis notificaciones, @Model pendientes"><partial name="_DashboardIcon" model='@("calendar")' /><span class="notification-label">Notificaciones</span>@if(Model>0){<strong>(@Model)</strong>}</a>

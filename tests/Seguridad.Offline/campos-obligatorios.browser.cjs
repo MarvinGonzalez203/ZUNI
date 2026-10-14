@@ -152,12 +152,26 @@ function check(value, text) { assert.ok(value, text); checks++; }
         await load('reporte-compartido');
         check(await page.locator('body').innerText().then(t => !t.includes('SECRETO-NO-IMPRIMIR-110CT') && t.includes('RESULTADO-COMPARTIDO-110CT')), 'vista reimprimible sin notas privadas');
         await load('guia-publica');
-        check(await page.locator('ol li').count() >= 5, 'guía pública explica dónde pulsar y los pasos');
+        check(await page.locator('.guide-card').count() >= 4, 'guía pública explica funciones en tarjetas');
         await load('atencion', ['atencion-cita.js']);
         await page.addStyleTag({ path: path.join(root, 'css/modales.css') });
         await page.emulateMedia({ media: 'print' });
         check(await page.locator('[data-contenido-privado]').evaluate(e => getComputedStyle(e).display) === 'none', 'impresión del navegador oculta campos profesionales privados');
         await page.emulateMedia({ media: 'screen' });
+        for(const tema of ['cita','seguimiento','bienestar','privacidad']) {
+            await load('guia-'+tema);
+            await page.addStyleTag({path:path.join(root,'css/site.css')});await page.addStyleTag({path:path.join(root,'css/guias-publicas.css')});
+            const logo=fs.readFileSync(path.join(root,'images/zuni-logo-transparent.png')).toString('base64');await page.locator('img[src*="zuni-logo-transparent"]').evaluateAll((imgs,b)=>imgs.forEach(i=>i.src='data:image/png;base64,'+b),logo);
+            check(await page.locator('.guide-card svg').count()>=4,'iconos en '+tema);check(await page.locator('.guide-place').count()>=4,'indicaciones de navegación en '+tema);
+            await page.screenshot({path:path.join(fixtures,'guia-'+tema+'.png'),fullPage:true});
+            await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'guía móvil sin desborde '+tema);await page.setViewportSize({width:1280,height:900});
+        }
+        await load('home-footer');await page.addStyleTag({path:path.join(root,'css/site.css')});await page.addStyleTag({path:path.join(root,'css/guias-publicas.css')});
+        const footerLogo=fs.readFileSync(path.join(root,'images/zuni-logo-transparent.png')).toString('base64');await page.locator('img[src*="zuni-logo-transparent"]').evaluateAll((imgs,b)=>imgs.forEach(i=>i.src='data:image/png;base64,'+b),footerLogo);
+        await page.waitForFunction(()=>document.querySelector('.zuni-footer img').naturalWidth>0);
+        check(await page.locator('.footer-grid section').count()===4,'pie con cuatro columnas');await page.locator('.zuni-footer').screenshot({path:path.join(fixtures,'home-footer.png')});
+        await load('programar-cita');check(!await page.locator('#HoraFin').evaluate(i=>i.required),'fin aproximado opcional al programar');check(await page.locator('#PerfilEstudianteId option').count()>1,'estudiantes vinculados seleccionables');
+        await load('notificaciones');check(await page.locator('body').innerText().then(t=>t.includes('reprogramada por Director')),'notificación incluye emisor del cambio');
         check(errors.length === 0, 'sin errores JavaScript: ' + errors.join(', '));
         console.log(`OK: ${checks} comprobaciones de formularios en navegador.`);
     } finally { await browser.close(); }

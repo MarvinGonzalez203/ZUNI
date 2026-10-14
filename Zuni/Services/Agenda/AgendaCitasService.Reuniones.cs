@@ -57,7 +57,7 @@ public sealed partial class AgendaCitasService
         if (c.Estado is not (EstadoCita.Solicitada or EstadoCita.Confirmada or EstadoCita.Reservada) || c.FechaHoraFinUtc <= Ahora)
             throw new AgendaOperacionException("La cita ya no está disponible para preparar su reunión.");
         await FijarEnlace(c, input.Enlace, input.AccesoRestringidoRevisado, ct);
-        if (input.ConfirmarCita) AplicarCambio(c, EstadoCita.Confirmada, null);
+        if (input.ConfirmarCita) { await ValidarConfirmacionProgramada(c,ct); AplicarCambio(c, EstadoCita.Confirmada, null); }
     }, ct);
     private async Task<Cita> ReunionPropia(ClaimsPrincipal actor, Guid id, CancellationToken ct)
     {

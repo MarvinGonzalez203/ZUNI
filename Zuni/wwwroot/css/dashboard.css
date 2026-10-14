@@ -59,6 +59,8 @@ a.dash-nav-link:hover { background: rgba(206,162,253,.14); }
 .dash-top-account { display: flex; align-items: center; gap: 9px; font-size: 12px; }
 .dash-session { display: inline-flex; align-items: center; gap: 7px; padding-right: 21px; margin-right: 12px; border-right: 1px solid var(--dash-line); font-size: 11px; color: var(--dash-muted); }
 .dash-session .dash-icon { width: 16px; color: #87639f; }
+.dash-notification { min-height:36px; }
+@media(max-width:767px) { .notification-label { display:none; } }
 .dash-menu { border: 1px solid var(--dash-line); background: white; border-radius: 8px; padding: 9px; }
 .dashboard-main { max-width: 1550px; margin: auto; padding: 32px clamp(22px,3vw,48px) 20px; }
 .dash-welcome { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,.9); border-radius: 20px; padding: 32px 38px; background: radial-gradient(ellipse at 90% 25%,rgba(206,162,253,.55),transparent 48%),linear-gradient(115deg,#efebd9,#f2ede5 65%,#eae0ee); }
