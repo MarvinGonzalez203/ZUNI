@@ -37,6 +37,7 @@ function check(value, text) { assert.ok(value, text); checks++; }
             await page.addScriptTag({path:path.join(root,'js/idioma.js')});
             for (const script of scripts) await page.addScriptTag({ path: path.join(root, 'js', script) });
             await page.addScriptTag({ path: path.join(root, 'js/campos-obligatorios.js') });
+            await page.addScriptTag({path:path.join(root,'js/panel-desplazamiento.js')});
             await page.addStyleTag({content:'*,*::before,*::after{transition:none!important;animation:none!important}'});
             const imageData={};
             for (const src of await page.locator('img[src^="/images/"]').evaluateAll(imgs=>imgs.map(img=>img.getAttribute('src')))) {
@@ -55,9 +56,9 @@ function check(value, text) { assert.ok(value, text); checks++; }
             checks++;
         }
         await load('institucion');
-        for (const color of ['#111111','#b42332','#216e45','#2458a6','#cea2fd']) {
+        for (const color of ['#111111','#b42332','#F9DB5C','#BBF1F8','#cea2fd']) {
             await page.locator(`[data-color-institucion="${color}"]`).click();
-            check(await page.locator('#ColorPrincipal').inputValue()===color,'color predefinido '+color);
+            check(await page.locator('#ColorPrincipal').inputValue()===color.toLowerCase(),'color predefinido '+color);
             check(await page.locator('#color-preview').evaluate(e=> {
                 const rgb=getComputedStyle(e).backgroundColor.match(/\d+/g).slice(0,3).map(Number).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
                 const l=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
@@ -233,7 +234,7 @@ function check(value, text) { assert.ok(value, text); checks++; }
         await page.locator('[data-test-next]').click();
         check(await page.locator('[data-test-error]').isVisible(),'no avanza con preguntas vacías');
         for(let block=0;block<5;block++) {
-            for(const question of await page.locator('[data-question]:visible').all()) await question.locator('input[value="5"]').check({force:true});
+            for(const question of await page.locator('[data-question]:visible').all()) await question.locator('input[value="5"]').check();
             if(block<4) await page.locator('[data-test-next]').click();
         }
         check(await page.locator('[data-test-progress]').evaluate(e=>e.value)===100,'barra completa al responder las quince');
@@ -352,6 +353,7 @@ function check(value, text) { assert.ok(value, text); checks++; }
         check(touch.url().endsWith('/Administrador/Directores'),'clic en tarjeta navega');
         await touch.goto('http://zuni.test/Administrador');
         check(await touch.locator('#dashboard-sidebar').evaluate(e=>getComputedStyle(e).scrollbarWidth==='none'&&e.scrollHeight>e.clientHeight),'barra oculta conserva contenido desplazable');
+        await touch.locator('.dash-nav a[href="/Administrador/Catedraticos"]').evaluate(e=>e.closest('details').open=true);
         await touch.locator('#dashboard-sidebar').evaluate(e=>e.scrollTop=140);
         // Dejar visible el enlace antes de medir: Playwright desplaza automáticamente
         // controles fuera del área visible cuando se hace clic sobre ellos.

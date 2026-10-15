@@ -25,7 +25,7 @@
 .dash-brand-row { display: flex; align-items: center; justify-content: space-between; }
 .dash-brand { display: flex; align-items: center; gap: 8px; font-size: 23px; font-weight: 850; letter-spacing: .07em; text-decoration: none; }
 .dash-brand img { width: 38px; height: 38px; object-fit: contain; }
-.dash-brand span { color: #9162b3; margin-left: -7px; }
+.dash-brand > span { color: #9162b3; margin-left: -7px; }
 .dash-sidebar-caption { color: var(--dash-muted); font-size: 11px; margin: 12px 0 36px 4px; }
 .dash-nav { display: grid; gap: 7px; }
 .dash-nav-label { color: #7b7481; font-size: 10px; letter-spacing: .12em; font-weight: 700; padding: 0 14px 8px; }

@@ -1,7 +1,9 @@
 (() => {
     const root = document.documentElement;
+    const key='zuni-theme:'+(document.currentScript?.dataset.viewScope||'publico');
+    root.dataset.viewScope=document.currentScript?.dataset.viewScope||'publico';
     let theme = 'light';
-    try { theme = localStorage.getItem('zuni-theme') === 'dark' ? 'dark' : 'light'; } catch {}
+    try { theme = localStorage.getItem(key) === 'dark' ? 'dark' : 'light'; } catch {}
     const apply = value => {
         root.dataset.theme = value;
         root.dataset.bsTheme = value;
@@ -18,8 +20,8 @@
         document.querySelectorAll('.zuni-theme-toggle').forEach(button => button.addEventListener('click', () => {
             const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
             apply(next);
-            try { localStorage.setItem('zuni-theme', next); } catch {}
+            try { localStorage.setItem(key, next); } catch {}
         }));
     });
-    window.addEventListener('storage', event => { if (event.key === 'zuni-theme') apply(event.newValue === 'dark' ? 'dark' : 'light'); });
+    window.addEventListener('storage', event => { if (event.key === key) apply(event.newValue === 'dark' ? 'dark' : 'light'); });
 })();

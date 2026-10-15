@@ -13,21 +13,26 @@ function check(value,message){assert.ok(value,message);checks++;}
             if(!route.request().isNavigationRequest())return route.abort();
             const name=new URL(route.request().url()).pathname.slice(1)||'home';
             if(!['home','admin','director','psicologo','estudiante','alta'].includes(name))return route.abort();
-            let html=fs.readFileSync(path.join(fixtures,`idioma-${name}.html`),'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<link\b[^>]*>/gi,'');
+            const original=fs.readFileSync(path.join(fixtures,`idioma-${name}.html`),'utf8');
+            const scope=/data-view-scope="([^"]+)"/.exec(original)?.[1]||'publico';
+            let html=original.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<link\b[^>]*>/gi,'');
             const css=['lib/bootstrap/dist/css/bootstrap.min.css',name==='home'?'css/site.css':'css/dashboard.css','css/idioma.css','css/tema.css'].map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n');
             const js=fs.readFileSync(path.join(root,'js/tema.js'),'utf8');
-            html=html.replace('</head>',`<style>${css}</style><script>${js}</script></head>`);
+            html=html.replace('</head>',`<style>${css}</style><script data-view-scope="${scope}">${js}</script></head>`);
             await route.fulfill({contentType:'text/html',body:html});
         });
         await page.goto('http://zuni.test/home');
         await page.locator('.zuni-theme-toggle').click();
-        check(await page.evaluate(()=>localStorage.getItem('zuni-theme'))==='dark','preferencia persistida');
+        check(await page.evaluate(()=>localStorage.getItem('zuni-theme:'+document.documentElement.dataset.viewScope))==='dark','preferencia persistida');
+        const vistos=new Set([await page.locator('html').getAttribute('data-view-scope')]);
         for(const width of [1280,390,320]){
             await page.setViewportSize({width,height:900});
             let reference;
             for(const role of ['home','admin','director','psicologo','estudiante','alta']){
                 await page.goto(`http://zuni.test/${role}`);
-                check(await page.locator('html').getAttribute('data-theme')==='dark','tema conservado al navegar '+role+' '+width);
+                const scope=await page.locator('html').getAttribute('data-view-scope');
+                check(await page.locator('html').getAttribute('data-theme')===(vistos.has(scope)?'dark':'light'),'tema separado por cuenta y rol '+role+' '+width);
+                if(!vistos.has(scope)){await page.locator('.zuni-theme-toggle').click();vistos.add(scope);}
                 check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde '+role+' '+width);
                 const language=await page.locator('.zuni-language button').boundingBox();
                 const theme=await page.locator('.zuni-theme-toggle').boundingBox();
@@ -40,7 +45,7 @@ function check(value,message){assert.ok(value,message);checks++;}
         await page.locator('.zuni-theme-toggle').click();
         await page.reload();
         check(await page.locator('html').getAttribute('data-theme')==='light','regreso a claro conservado al recargar');
-        await page.evaluate(()=>localStorage.setItem('zuni-theme','invalid'));
+        await page.evaluate(()=>localStorage.setItem('zuni-theme:'+document.documentElement.dataset.viewScope,'invalid'));
         await page.reload();
         check(await page.locator('html').getAttribute('data-theme')==='light','preferencia inválida vuelve al tema claro');
         console.log(`OK: ${checks} comprobaciones de tema persistente y controles fijos.`);

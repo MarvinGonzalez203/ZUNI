@@ -1344,6 +1344,30 @@ namespace Zuni.Migrations
                     b.ToTable("ConfiguracionTarifas");
                 });
 
+            modelBuilder.Entity("Zuni.Models.Institucion.PreferenciaVista", b =>
+                {
+                    b.Property<string>("UsuarioId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("Rol")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UsuarioId", "Rol");
+
+                    b.ToTable("PreferenciasVista");
+                });
+
             modelBuilder.Entity("Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad", b =>
                 {
                     b.Property<Guid>("PerfilEstudianteId")
@@ -11404,6 +11428,15 @@ namespace Zuni.Migrations
                         .WithMany()
                         .HasForeignKey("InformeId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.Institucion.PreferenciaVista", b =>
+                {
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

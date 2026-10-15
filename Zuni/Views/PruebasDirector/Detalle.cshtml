@@ -1,13 +1,13 @@
 @model Zuni.Models.Pruebas.DetallePruebaViewModel
-@{ ViewData["Title"] = Model.Prueba.Nombre; ViewData["TituloEsDato"] = true; var p = Model.Prueba; }
-<header class="dash-welcome"><div><a asp-action="Index">@Idioma.Texto("← Catálogo")</a><h1>@p.Nombre</h1><p>@(p.Activa ? Idioma.Texto("Activa") : Idioma.Texto("Inactiva")) · @p.Idioma · @Model.Asignaciones @Idioma.Texto("asignaciones")</p></div></header>
+@{ ViewData["Title"] = TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Nombre); ViewData["TituloEsDato"] = true; var p = Model.Prueba; }
+<header class="dash-welcome"><div><a asp-action="Index">@Idioma.Texto("← Catálogo")</a><h1>@TextoPrueba.Texto(p.Id,p.Nombre)</h1><p>@(p.Activa ? Idioma.Texto("Activa") : Idioma.Texto("Inactiva")) · @p.Idioma · @Model.Asignaciones @Idioma.Texto("asignaciones")</p></div></header>
 <partial name="_Mensaje" />
 @section Styles { <link rel="stylesheet" href="~/css/cuestionario.css" asp-append-version="true" /> }
-@if(p.Subtitulo is not null){<p class="small">@p.Subtitulo</p>}
+@if(p.Subtitulo is not null){<p class="small">@TextoPrueba.Texto(p.Id,p.Subtitulo)</p>}
 <section class="dash-card p-4 mb-3">
-    <h2>@Idioma.Texto("Propósito")</h2><p class="text-break" style="white-space:pre-wrap">@p.Descripcion</p>
-    <h2>@Idioma.Texto("Instrucciones")</h2><p class="text-break" style="white-space:pre-wrap">@p.Instrucciones</p>
-    <p><strong>@Idioma.Texto("Fuente:")</strong> @p.Fuente</p>
+    <h2>@Idioma.Texto("Propósito")</h2><p class="text-break" style="white-space:pre-wrap">@TextoPrueba.Texto(p.Id,p.Descripcion)</p>
+    <h2>@Idioma.Texto("Instrucciones")</h2><p class="text-break" style="white-space:pre-wrap">@TextoPrueba.Texto(p.Id,p.Instrucciones)</p>
+    <p><strong>@Idioma.Texto("Fuente:")</strong> @TextoPrueba.Texto(p.Id,p.Fuente)</p>
     <p>@Idioma.Texto("La activación habilita asignaciones; la revisión profesional de la pertinencia del instrumento corresponde al equipo responsable.")</p>
     <div class="d-flex gap-2 flex-wrap">
         @if (!p.Activa && Model.Asignaciones == 0) { <a class="btn btn-outline-primary" asp-action="Editar" asp-route-id="@p.Id">@Idioma.Texto("Editar contenido")</a> }
@@ -21,11 +21,11 @@
     @if (p.Preguntas.Count == 0) { <p>@Idioma.Texto("Este borrador todavía no tiene preguntas.")</p> }
     @foreach (var d in p.Dimensiones.OrderBy(x => p.Preguntas.Where(q => q.DimensionId == x.Id).Select(q => q.Orden).DefaultIfEmpty(int.MaxValue).Min()).ThenBy(x => x.Nombre))
     {
-        <h3>@d.Nombre</h3>
+        <h3>@TextoPrueba.Texto(p.Id,d.Nombre)</h3>
         @foreach (var q in p.Preguntas.Where(x => x.DimensionId == d.Id).OrderBy(x => x.Orden))
         {
             var esLikert = q.Opciones.OrderBy(o=>o.Valor).Select(o=>o.Valor).SequenceEqual(Enumerable.Range(1,10));
-            <div class="border rounded p-3 mb-3"><h4 class="h6">@q.Orden. @q.Texto</h4><div class="prueba-preview-scale" aria-label="@Idioma.Texto("Vista previa de opciones")">
+            <div class="border rounded p-3 mb-3"><h4 class="h6">@q.Orden. @TextoPrueba.Texto(p.Id,q.Texto)</h4><div class="prueba-preview-scale" aria-label="@Idioma.Texto("Vista previa de opciones")">
                 @foreach (var o in q.Opciones.OrderBy(x => x.Orden)) { <span class="prueba-preview-cell" title="@o.Texto">@o.Valor@if(!esLikert){<small>@o.Texto</small>}</span> }
             </div>@if(esLikert){<div class="likert-endpoints"><span>@Idioma.Texto("Totalmente en desacuerdo")</span><span>@Idioma.Texto("Totalmente de acuerdo")</span></div>}</div>
         }

@@ -1,7 +1,7 @@
 (() => {
     const sidebar = document.getElementById('dashboard-sidebar');
     if (sidebar) {
-        const key = 'zuni:sidebar:' + (sidebar.dataset.navKey || sidebar.querySelector('nav')?.getAttribute('aria-label') || 'cuenta');
+        const key = 'zuni:sidebar:' + (document.documentElement.dataset.viewScope||'publico') + ':' + (sidebar.dataset.navKey || sidebar.querySelector('nav')?.getAttribute('aria-label') || 'cuenta');
         try {
             const saved = JSON.parse(sessionStorage.getItem(key) || 'null');
             const groups = [...sidebar.querySelectorAll('.dash-nav-group')];

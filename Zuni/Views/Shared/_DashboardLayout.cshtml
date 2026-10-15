@@ -3,6 +3,11 @@
     var esProveedor = User.IsInRole("SuperAdmin");
     var identidadInstitucion = esProveedor ? new Zuni.Models.Institucion.ConfiguracionInstitucion() : await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
     if(esProveedor) identidadInstitucion.ColorPrincipal = (await Zuni.Services.Institucion.TarifasService.Apariencia(DbInstitucion,Context.RequestAborted)).ColorPrincipal;
+    var rolActivo=Zuni.Services.Institucion.PreferenciasVistaService.Rol(User,ViewData["PreferenciaRol"] as string??ViewData["DashboardController"] as string);
+    ViewData["PreferenciaRol"]=rolActivo;
+    if(rolActivo is not null && User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value is string usuarioVista){
+        identidadInstitucion.ColorPrincipal=(await Zuni.Services.Institucion.PreferenciasVistaService.Obtener(DbInstitucion,usuarioVista,rolActivo,identidadInstitucion.ColorPrincipal,Context.RequestAborted)).ColorPrincipal;
+    }
     Layout = null;
     var nombre = ViewData["DashboardName"] as string ?? User.Identity?.Name ?? "Usuario";
     var primero = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Usuario";
@@ -10,7 +15,7 @@
     var rol = ViewData["DashboardRole"] as string ?? string.Empty;
     var inicio = esProveedor ? "SuperAdmin" : ViewData["DashboardController"] as string ?? "Home";
     var panel = esProveedor ? "SuperAdmin" : ViewData["PanelController"] as string ?? new[]{"Administrador","Director","Psicologo","Estudiante"}.FirstOrDefault(User.IsInRole) ?? inicio;
-    var navegacion = esProveedor ? "~/Views/SuperAdmin/_Navegacion.cshtml" : ViewData["DashboardNavigation"] as string;
+    var navegacion = rolActivo is not null ? $"~/Views/{rolActivo}/_Navegacion.cshtml" : ViewData["DashboardNavigation"] as string;
 }
 <!DOCTYPE html>
 <html lang="@Idioma.Codigo">
@@ -32,7 +37,7 @@
     <a href="#dashboard-main" class="dash-skip">@Idioma.Texto("Saltar al contenido")</a>
     <aside class="dashboard-sidebar offcanvas offcanvas-start" tabindex="-1" id="dashboard-sidebar" aria-labelledby="sidebar-title" data-nav-key="@navegacion">
         <div class="dash-brand-row">
-            <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><img src="~/images/zuni-logo-transparent.png" alt="" /> @Idioma.Texto("ZUNI")<span>.</span></a>
+            <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><span class="dash-logo-mark" aria-hidden="true"><i class="dash-logo-glass"></i><i class="dash-logo-glass dash-logo-glass-second"></i><img src="~/images/zuni-logo-transparent.png" alt="" /></span> @Idioma.Texto("ZUNI")<span>.</span></a>
             <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" aria-label="@Idioma.Texto("Cerrar menú")"></button>
         </div>
         <p class="dash-sidebar-caption">@(esProveedor?"ZUNI":identidadInstitucion.Nombre)<br />@(esProveedor?Idioma.Texto("Servicios para instituciones educativas"):identidadInstitucion.Lema)</p>
@@ -43,15 +48,11 @@
         }
         <div class="dash-sidebar-bottom">
             <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>@Idioma.Texto("Tu bienestar también")<br />@Idioma.Texto("forma parte del camino.")</p></div>
-            @if (ViewData["DashboardAccountUnavailable"] is true)
-            {
-                <div class="dash-account"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@Idioma.Roles(rol)</small></div></div>
-            }
-            else
-            {
-                <a class="dash-account" asp-controller="MiCuenta" asp-action="Index" aria-label="@Idioma.Texto("Ver mi cuenta: {0}", corto)"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@Idioma.Roles(rol)</small></div></a>
-            }
-            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-logout" type="submit"><partial name="_DashboardIcon" model='@("logout")' />@Idioma.Texto("Cerrar sesión")</button></form>
+            <div class="dash-bottom-controls">
+            @if(ViewData["DashboardAccountUnavailable"] is not true){<a class="dash-round-control dash-account" asp-controller="MiCuenta" asp-action="Index" title="@Idioma.Texto("Ver mi cuenta: {0}",nombre)" aria-label="@Idioma.Texto("Ver mi cuenta: {0}",nombre)"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span></a>}
+            <a class="dash-round-control" asp-controller="Home" asp-action="Index" title="@Idioma.Texto("Ir al inicio")" aria-label="@Idioma.Texto("Ir al inicio")"><partial name="_DashboardIcon" model='@("home")'/></a>
+            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-round-control dash-logout" type="submit" title="@Idioma.Texto("Cerrar sesión")" aria-label="@Idioma.Texto("Cerrar sesión")"><partial name="_DashboardIcon" model='@("logout")'/></button></form>
+            </div>
         </div>
     </aside>
     <div class="dashboard-workspace">
@@ -72,6 +73,8 @@
     <partial name="_IdiomaScripts" />
     <script src="~/js/modales.js" asp-append-version="true"></script>
     <script src="~/js/campos-obligatorios.js" asp-append-version="true"></script>
+    <button class="dashboard-scroll-cue" type="button" hidden aria-controls="dashboard-main" aria-label="@Idioma.Texto("Ver más contenido")"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 9 7 7 7-7"/></svg></button>
+    <script src="~/js/panel-desplazamiento.js" asp-append-version="true"></script>
     <script src="~/js/agenda-contexto.js" asp-append-version="true"></script>
     <script>
         window.addEventListener('resize', () => {

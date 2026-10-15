@@ -71,7 +71,7 @@
                 const luminance = .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
                 preview.style.background = color.value;
                 preview.style.color = (luminance+.05)/.05 >= 1.05/(luminance+.05) ? '#000000' : '#ffffff';
-                swatches.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colorInstitucion === color.value.toLowerCase())));
+                swatches.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.colorInstitucion.toLowerCase() === color.value.toLowerCase())));
             };
             swatches.forEach(b => b.addEventListener('click', () => {color.value = b.dataset.colorInstitucion; showColor();}));
             color.addEventListener('input', showColor); showColor();

@@ -10,7 +10,7 @@
         <div class="table-responsive"><table class="table"><thead><tr><th>@Idioma.Texto("Nombre")</th><th>@Idioma.Texto("Idioma")</th><th>@Idioma.Texto("Estado")</th><th>@Idioma.Texto("Acciones")</th></tr></thead><tbody>
         @foreach (var p in Model)
         {
-            <tr><td>@p.Nombre @if(p.Subtitulo is not null){<small class="d-block text-muted">@p.Subtitulo</small>} @if(p.Nivel is not null){<span class="dash-badge">@Idioma.Texto("Nivel") @p.Nivel · @p.Preguntas.Count @Idioma.Texto("preguntas")</span>}</td><td>@p.Idioma</td><td>@(p.Activa ? "Activa" : Idioma.Texto("Borrador para revisión"))</td><td><a asp-action="Detalle" asp-route-id="@p.Id">@Idioma.Texto("Ver prueba")</a> · <a asp-action="Asignar" asp-route-id="@p.Id">@Idioma.Texto("Asignaciones")</a></td></tr>
+            <tr><td>@TextoPrueba.Texto(p.Id,p.Nombre) @if(p.Subtitulo is not null){<small class="d-block text-muted">@TextoPrueba.Texto(p.Id,p.Subtitulo)</small>} @if(p.Nivel is not null){<span class="dash-badge">@Idioma.Texto("Nivel") @p.Nivel · @p.Preguntas.Count @Idioma.Texto("preguntas")</span>}</td><td>@p.Idioma</td><td>@(p.Activa ? "Activa" : Idioma.Texto("Borrador para revisión"))</td><td><a asp-action="Detalle" asp-route-id="@p.Id">@Idioma.Texto("Ver prueba")</a> · <a asp-action="Asignar" asp-route-id="@p.Id">@Idioma.Texto("Asignaciones")</a></td></tr>
         }
         </tbody></table></div>
     }

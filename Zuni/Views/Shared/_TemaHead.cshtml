@@ -1,2 +1,7 @@
-<script src="~/js/tema.js" asp-append-version="true"></script>
+@{
+    var idVista=User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var rolTema=Zuni.Services.Institucion.PreferenciasVistaService.Rol(User,ViewData["PreferenciaRol"] as string??ViewData["DashboardController"] as string);
+    var ambitoTema=idVista is null?"publico":idVista+":"+(rolTema??"cuenta");
+}
+<script src="~/js/tema.js" asp-append-version="true" data-view-scope="@ambitoTema"></script>
 <link rel="stylesheet" href="~/css/tema.css" asp-append-version="true" />

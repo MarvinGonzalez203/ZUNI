@@ -26,18 +26,6 @@ public static class TarifasService
         var c=await db.ConfiguracionTarifas.AsNoTracking().SingleOrDefaultAsync(c=>c.Id==1,ct)??new();
         return new(){Revision=c.Revision,ColorPrincipal=c.ColorProveedor};
     }
-    public static async Task GuardarApariencia(ApplicationDbContext db,AparienciaProveedorInput input,string id,TimeProvider reloj,CancellationToken ct)
-    {
-        System.ComponentModel.DataAnnotations.Validator.ValidateObject(input,new(input),true);
-        await using var tx=await db.Database.BeginTransactionAsync(IsolationLevel.Serializable,ct);
-        if(!await EsSuperAdmin(db,id,ct))throw new UnauthorizedAccessException();
-        var c=await db.ConfiguracionTarifas.SingleOrDefaultAsync(c=>c.Id==1,ct);
-        if((c?.Revision??Guid.Empty)!=input.Revision)throw new DbUpdateConcurrencyException();
-        if(c is null){c=new();db.ConfiguracionTarifas.Add(c);}
-        var anterior=c.ColorProveedor;c.ColorProveedor=input.ColorPrincipal.ToLowerInvariant();c.Revision=Guid.NewGuid();
-        db.AuditoriaUsuarios.Add(new(){UsuarioAfectadoId=id,AdministradorId=id,Accion="COLOR_PROVEEDOR_ACTUALIZADO",FechaUtc=reloj.GetUtcNow().UtcDateTime,DatosAnteriores=JsonSerializer.Serialize(new{Color=anterior}),DatosNuevos=JsonSerializer.Serialize(new{Color=c.ColorProveedor})});
-        await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);
-    }
     public static async Task Guardar(ApplicationDbContext db,EditarTarifasInput input,string id,TimeProvider reloj,CancellationToken ct)
     {
         System.ComponentModel.DataAnnotations.Validator.ValidateObject(input,new(input),true);

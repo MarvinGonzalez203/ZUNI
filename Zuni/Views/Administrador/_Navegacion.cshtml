@@ -18,22 +18,23 @@
 <nav class="dash-nav" aria-label="@Idioma.Texto("Navegación del administrador")">
     <span class="dash-nav-label">@Idioma.Texto("PANEL ADMINISTRATIVO")</span>
     <a class="dash-nav-link @Activo(enAdministrador && accion == "Index")" asp-controller="Administrador" asp-action="Index" aria-current="@Actual(enAdministrador && accion == "Index")"><partial name="_DashboardIcon" model='@("grid")' /><span>@Idioma.Texto("Tablero")</span></a>
+    <details class="dash-nav-group" open="@(enAdministrador && accion!="Index")"><summary><partial name="_DashboardIcon" model='@("user")'/><span>@Idioma.Texto("Usuarios")</span></summary><div class="dash-nav-children">
     <a class="dash-nav-link @Activo(enAdministrador && accion == "AgregarUsuario")" asp-controller="Administrador" asp-action="AgregarUsuario" aria-current="@Actual(enAdministrador && accion == "AgregarUsuario")"><partial name="_DashboardIcon" model='@("user")' /><span>@Idioma.Texto("Agregar usuario")</span></a>
-    <span class="dash-nav-label dash-nav-label-spaced">@Idioma.Texto("USUARIOS POR ROL")</span>
     @foreach (var (accionRol, texto, icono) in roles)
     {
         <a class="dash-nav-link @Activo(enAdministrador && accion == accionRol)" asp-controller="Administrador" asp-action="@accionRol" aria-current="@Actual(enAdministrador && accion == accionRol)"><partial name="_DashboardIcon" model="icono" /><span>@Idioma.Texto(texto)</span></a>
     }
-    <span class="dash-nav-label dash-nav-label-spaced">@Idioma.Texto("GESTIÓN")</span>
-    <a class="dash-nav-link @Activo(controlador == "CarrerasAdmin")" asp-controller="CarrerasAdmin" asp-action="Index"><partial name="_DashboardIcon" model='@("book")' /><span>@Idioma.Texto("Catálogo de carreras")</span></a>
     <a class="dash-nav-link @Activo(enAdministrador && accion == "Catedraticos")" aria-current="@Actual(enAdministrador && accion == "Catedraticos")" asp-controller="Administrador" asp-action="Catedraticos"><partial name="_DashboardIcon" model='@("book")' /><span>@Idioma.Texto("Revisar roles retirados")</span></a>
     @if (enAdministrador && accion == "SinRol") { <a class="dash-nav-link is-active" aria-current="page" asp-controller="Administrador" asp-action="SinRol"><partial name="_DashboardIcon" model='@("user")' /><span>@Idioma.Texto("Usuarios sin rol")</span></a> }
+    </div></details>
+    <details class="dash-nav-group" open="@(!enAdministrador && controlador is not ("MiCuenta" or "Preferencias" or "Tarifas" or "Institucion"))"><summary><partial name="_DashboardIcon" model='@("clipboard")'/><span>@Idioma.Texto("Gestión institucional")</span></summary><div class="dash-nav-children">
+    <a class="dash-nav-link @Activo(controlador == "CarrerasAdmin")" asp-controller="CarrerasAdmin" asp-action="Index"><partial name="_DashboardIcon" model='@("book")' /><span>@Idioma.Texto("Catálogo de carreras")</span></a>
     <a class="dash-nav-link @Activo(controlador == "Privacidad" && accion == "Configurar")" asp-controller="Privacidad" asp-action="Configurar"><partial name="_DashboardIcon" model='@("shield")' /><span>@Idioma.Texto("Política de privacidad")</span></a>
     <a class="dash-nav-link @Activo(controlador == "Privacidad" && accion == "Solicitudes")" asp-controller="Privacidad" asp-action="Solicitudes"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Solicitudes sobre datos")</span></a>
     <a class="dash-nav-link @Activo(controlador == "MayoriaEdad")" asp-controller="MayoriaEdad" asp-action="Revisiones"><partial name="_DashboardIcon" model='@("shield")' /><span>@Idioma.Texto("Verificar mayoría de edad")</span></a>
     <a class="dash-nav-link @Activo(enSolicitudes)" asp-controller="AdministradorSolicitudes" asp-action="Index" aria-current="@Actual(enSolicitudes)"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Solicitudes de atención")</span></a>
-    <span class="dash-nav-label dash-nav-label-spaced">@Idioma.Texto("CUENTA")</span>
-    <a class="dash-nav-link @Activo(controlador == "MiCuenta")" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>@Idioma.Texto("Mi cuenta")</span></a>
+    </div></details>
+    <partial name="_CuentaSubmenu" />
     <a class="dash-nav-link @Activo(controlador == "Tarifas")" asp-controller="Tarifas" asp-action="Index" aria-current="@Actual(controlador == "Tarifas")"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Tarifas y periodos")</span></a>
     <a class="dash-nav-link @Activo(controlador == "Institucion")" asp-controller="Institucion" asp-action="Index" aria-current="@Actual(controlador == "Institucion")"><partial name="_DashboardIcon" model='@("settings")' /><span>@Idioma.Texto("Configuración de la institución")</span></a>
 </nav>

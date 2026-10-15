@@ -1,0 +1,10 @@
+@model Zuni.Models.Institucion.ColorPersonalInput
+@{ViewData["Title"]="Colores del panel";}
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Colores del panel")</h1><p>@Idioma.Texto("Elige tus colores de botones y navegación. Esta preferencia se guarda solo para tu cuenta y rol.")</p></div></header>
+<form method="post" class="dash-card" style="max-width:760px" data-proveedor-colores><input asp-for="Revision" type="hidden"/><input asp-for="Rol" type="hidden"/><div asp-validation-summary="All" class="text-danger" role="alert"></div>
+<label asp-for="ColorPrincipal" class="form-label"></label><input asp-for="ColorPrincipal" type="color" class="form-control form-control-color mb-3"/>
+<div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="@Idioma.Texto("Color de botones y navegación")">
+@foreach(var (color,nombreColor) in new[]{("#cea2fd","Violeta ZUNI"),("#111111","Negro"),("#b42332","Rojo"),("#F9DB5C","Amarillo"),("#BBF1F8","Celeste")}){
+<button type="button" data-color-proveedor="@color" aria-pressed="@(Model.ColorPrincipal.Equals(color,StringComparison.OrdinalIgnoreCase)?"true":"false")" style="background:@color;color:@Zuni.Services.Institucion.IdentidadInstitucion.Texto(color);border:1px solid transparent;border-radius:9px;padding:.65rem 1rem;width:136px;min-height:46px">@Idioma.Texto(nombreColor)</button>}
+</div><p>@Idioma.Texto("El color se utiliza en los botones y la pestaña seleccionada, con contraste para el texto y efecto cristal.")</p><button class="dash-button" type="submit">@Idioma.Texto("Guardar colores")</button></form>
+@section Scripts{<script src="~/js/proveedor-colores.js" asp-append-version="true"></script>}

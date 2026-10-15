@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 namespace Zuni.Models.Pruebas;
-public sealed record PruebaAplicacionResumen(Guid Id, string Nombre, string? Subtitulo,int Preguntas,DateTime? InduccionUtc,DateTime? FinalizadaUtc,DateTime? RetiradaUtc);
+public sealed record PruebaAplicacionResumen(Guid Id, string Nombre, string? Subtitulo,int Preguntas,DateTime? InduccionUtc,DateTime? FinalizadaUtc,DateTime? RetiradaUtc){public Guid PruebaId{get;init;}}
 public sealed record HabilitarPruebasViewModel(IReadOnlyList<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Estudiantes,IReadOnlyList<Prueba> Pruebas);
 public sealed class HabilitarPruebaInput
 {

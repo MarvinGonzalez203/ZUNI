@@ -39,6 +39,15 @@ La corrección incorpora la migración aditiva 20261015215836_AddConfiguracionTa
 
 La navegación de SuperAdmin permanece en todas sus vistas, incluidas Mi cuenta, datos, contraseña, privacidad, catálogo y editor de precios. Tarifas y Mi cuenta usan submenús con la V del sistema, con una sola opción activa y persistencia del estado y desplazamiento lateral. Mi espacio es un enlace al tablero del rol en todos los perfiles.
 
-SuperAdmin → Colores del panel permite elegir violeta, negro, rojo, amarillo #F9DB5C, celeste #BBF1F8 o un color personalizado. Se guarda ColorProveedor en la configuración comercial, sin leer ni editar la identidad de una institución. La vista previa conserva contraste y efecto cristal. Guardar apariencia no modifica precios y guardar precios conserva el color. Ambos usan revisión de concurrencia; si otra configuración cambió, se requiere recargar.
+SuperAdmin → Colores del panel permite elegir violeta, negro, rojo, amarillo #F9DB5C, celeste #BBF1F8 o un color personalizado. La preferencia se guarda ahora por cuenta y rol en PreferenciasVista, sin editar la identidad de una institución. ColorProveedor se conserva solamente como valor de compatibilidad. La vista previa conserva contraste y efecto cristal. Guardar apariencia no modifica precios y guardar precios conserva el color. Cada preferencia personal tiene su revisión de concurrencia; cambios simultáneos sobre la misma preferencia requieren recargar.
 
 La migración aditiva 20261015222408_AddColorPanelProveedor agrega únicamente la preferencia de color, con violeta como valor inicial para los registros existentes. Se realiza respaldo previo. La tarjeta de capacidades de SuperAdmin se incorpora a las cinco tarjetas de funciones y se renderiza solamente para el proveedor; los demás perfiles conservan sus cinco tarjetas.
+
+
+## Preferencias personales y navegación común
+
+La ampliación agrega PreferenciasVista con clave UsuarioId/Rol, color validado y revisión de concurrencia. Mi cuenta → Mis colores está disponible para los cinco roles. El servidor deriva el propietario de la sesión; no acepta un UsuarioId enviado en el formulario. La elección personal tiene prioridad sobre el color institucional por defecto. El tema claro/oscuro se guarda en el navegador con una clave por cuenta y rol; el home anónimo tiene otro ámbito. Los eventos de otra cuenta no alteran el tema actual.
+
+Los paneles conservan el menú completo al abrir Mi cuenta. Se agrupan las opciones de administración y Director y se incorpora el submenú común de cuenta, contraseña, colores y privacidad. Estudiante agrupa también su verificación de edad. La cabecera permanece visible al desplazar, con margen para las preguntas y una V interactiva cuando queda contenido inferior. Los tres controles circulares de la barra lateral enlazan a la cuenta, al home público y al cierre de sesión mediante POST con antiforgery. Cerrar sesión vuelve al home en todos los roles.
+
+Las traducciones revisadas se aplican únicamente al catálogo fijo de tres instrumentos de ZUNI (IDs estables), incluidas instrucciones y preguntas. Los instrumentos personalizados, datos de estudiantes, respuestas y anotaciones no se traducen automáticamente. La migración aditiva AddPreferenciasVistaPorCuentaRol se aplica con respaldo previo y no cambia registros de atención.

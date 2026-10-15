@@ -6,25 +6,23 @@
     var c=ViewContext.RouteData.Values["controller"]?.ToString();var a=ViewContext.RouteData.Values["action"]?.ToString();
     bool Es(string controller,params string[] actions)=>c==controller&&(actions.Length==0||actions.Contains(a));
     string Act(bool selected)=>selected?"is-active":"";
-    var atencion=Es("Estudiante","Citas","SolicitarAtencion","EstadoSolicitud","Resultados")||Es("Atenciones")||Es("InformesEducativos")||Es("Reuniones");
-    var pruebas=Es("PruebasAplicadas")||Es("BigFive")||Es("Estudiante","Evaluaciones");
+    var atencion=Es("Estudiante","Citas","SolicitarAtencion","EstadoSolicitud","Resultados")||Es("Atenciones")||Es("InformesEducativos")||Es("Reuniones")||Es("CitasProgramadas","Notificaciones","Leida");
+    var pruebas=Es("PruebasAplicadas")||Es("BigFive")||Es("Estudiante","Evaluaciones")||Es("Demostracion");
 }
 <nav class="dash-nav" aria-label="@Idioma.Texto("Navegación del estudiante")">
     <span class="dash-nav-label">@Idioma.Texto("MI ESPACIO")</span>
     <a class="dash-nav-link @Act(Es("Estudiante","Index"))" asp-controller="Estudiante" asp-action="Index"><partial name="_DashboardIcon" model='@("grid")' /><span>@Idioma.Texto("Tablero")</span></a>
-    <a class="dash-nav-link @Act(Es("MiCuenta"))" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>@Idioma.Texto("Mi cuenta")</span></a>
-    @if(demo) { <a class="dash-nav-link @Act(Es("Demostracion"))" asp-controller="Demostracion" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Demostración · Nivel 1")</span></a> }
-    <a class="dash-nav-link @Act(Es("MayoriaEdad"))" asp-controller="MayoriaEdad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>@Idioma.Texto("Mayoría de edad")</span></a>
     <details class="dash-nav-group" open="@atencion"><summary><partial name="_DashboardIcon" model='@("calendar")' /><span>@Idioma.Texto("Atención y citas")</span></summary><div class="dash-nav-children">
         <a class="dash-nav-link @Act(Es("Estudiante","SolicitarAtencion","EstadoSolicitud"))" asp-controller="Estudiante" asp-action="EstadoSolicitud"><span>@Idioma.Texto("Mi solicitud de atención")</span></a>
         <a class="dash-nav-link @Act(Es("Estudiante","Citas")||Es("Reuniones"))" asp-controller="Estudiante" asp-action="Citas"><span>@Idioma.Texto("Calendario y mis citas")</span></a>
         <a class="dash-nav-link @Act(Es("Estudiante","Resultados")||Es("Atenciones"))" asp-controller="Estudiante" asp-action="Resultados"><span>@Idioma.Texto("Resultados compartidos")</span></a>
         <a class="dash-nav-link @Act(Es("InformesEducativos"))" asp-controller="InformesEducativos" asp-action="Index"><span>@Idioma.Texto("Informes educativos")</span></a>
+        <a class="dash-nav-link @Act(Es("CitasProgramadas","Notificaciones","Leida"))" asp-controller="CitasProgramadas" asp-action="Notificaciones"><partial name="_DashboardIcon" model='@("calendar")' /><span>@Idioma.Texto("Notificaciones")</span></a>
     </div></details>
     <details class="dash-nav-group" open="@pruebas"><summary><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Pruebas")</span></summary><div class="dash-nav-children">
+    @if(demo) { <a class="dash-nav-link @Act(Es("Demostracion"))" asp-controller="Demostracion" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Demostración · Nivel 1")</span></a> }
         <a class="dash-nav-link @Act(Es("PruebasAplicadas"))" asp-controller="PruebasAplicadas" asp-action="Index"><span>@Idioma.Texto("Pruebas indicadas")</span></a>
         <a class="dash-nav-link @Act(Es("BigFive")||Es("Estudiante","Evaluaciones"))" asp-controller="Estudiante" asp-action="Evaluaciones"><span>@Idioma.Texto("Big Five · opcional")</span></a>
     </div></details>
-    <a class="dash-nav-link @Act(Es("CitasProgramadas","Notificaciones","Leida"))" asp-controller="CitasProgramadas" asp-action="Notificaciones"><partial name="_DashboardIcon" model='@("calendar")' /><span>@Idioma.Texto("Notificaciones")</span></a>
-    <a class="dash-nav-link @Act(Es("Privacidad"))" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>@Idioma.Texto("Privacidad y mis derechos")</span></a>
+    <partial name="_CuentaSubmenu" />
 </nav>

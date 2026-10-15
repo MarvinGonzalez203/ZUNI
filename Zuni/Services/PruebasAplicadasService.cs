@@ -52,7 +52,7 @@ public sealed class PruebasAplicadasService(ApplicationDbContext db,IAutorizacio
     {
         var p=await Propio(actor,ct);
         return await (from a in db.AsignacionesPrueba.AsNoTracking() join prueba in db.PruebasDirector on a.PruebaId equals prueba.Id where a.PerfilEstudianteId==p.Id
-            orderby a.AsignadaUtc descending select new PruebaAplicacionResumen(a.Id,prueba.Nombre,prueba.Subtitulo,prueba.Preguntas.Count,a.InduccionUtc,a.FinalizadaUtc,a.RetiradaUtc)).ToListAsync(ct);
+            orderby a.AsignadaUtc descending select new PruebaAplicacionResumen(a.Id,prueba.Nombre,prueba.Subtitulo,prueba.Preguntas.Count,a.InduccionUtc,a.FinalizadaUtc,a.RetiradaUtc){PruebaId=prueba.Id}).ToListAsync(ct);
     }
     public async Task<CuestionarioAplicado> Cuestionario(ClaimsPrincipal actor,Guid id,CancellationToken ct)
     {

@@ -565,6 +565,7 @@ await CoordinacionEducativaChecks.Run(app, opciones, clave,reloj);
 await SuperAdminCatalogoChecks.Run(app, opciones, clave);
 await TarifasAislamientoChecks.Run(app, opciones, clave,reloj);
 await ProveedorNavegacionChecks.Run(app, opciones, clave);
+await ExperienciaPanelChecks.Run(app, opciones, clave);
 
 using (var c = HostPrueba.Cliente(app))
 {

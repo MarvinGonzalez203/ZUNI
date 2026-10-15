@@ -6,10 +6,10 @@ function check(ok,m){assert.ok(ok,m);checks++;}
  const page=await browser.newPage({viewport:{width:1500,height:1000},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  const pages={'/SuperAdmin':'superadmin','/SuperAdmin/Apariencia':'proveedor-apariencia','/MiCuenta':'proveedor-cuenta','/MiCuenta/Editar':'proveedor-datos','/MiCuenta/CambiarContrasena':'proveedor-clave','/Tarifas':'tarifas-superadmin','/Tarifas/Editar':'tarifas-editor','/Administrador/Tarifas':'tarifas'};
  await page.route('**/*',async route=>{const u=new URL(route.request().url());if(u.origin!=='http://zuni.test')return route.abort();if(route.request().isNavigationRequest()){const file=pages[u.pathname];return file?route.fulfill({contentType:'text/html',body:fs.readFileSync(path.join(dir,file+'.html'),'utf8')}):route.abort();}const file=path.resolve(root,u.pathname.slice(1)),type={'.js':'text/javascript','.css':'text/css','.png':'image/png'}[path.extname(file)];return type&&file.startsWith(root+path.sep)&&fs.existsSync(file)?route.fulfill({contentType:type,body:fs.readFileSync(file)}):route.abort();});
- for(const url of ['/MiCuenta','/MiCuenta/Editar','/MiCuenta/CambiarContrasena','/Tarifas','/Tarifas/Editar','/SuperAdmin/Apariencia']){
+ for(const url of ['/MiCuenta','/MiCuenta/Editar','/MiCuenta/CambiarContrasena','/Tarifas','/Tarifas/Editar','/Preferencias/Colores?rol=SuperAdmin']){
   await page.goto('http://zuni.test'+url);
   check(await page.locator('.dash-nav a.is-active').count()===1,'una selección activa '+url);
-  for(const href of ['/MiCuenta/Editar','/MiCuenta/CambiarContrasena','/Tarifas/Editar','/SuperAdmin/Apariencia'])check(await page.locator(`.dash-nav a[href="${href}"]`).count()===1,'acceso persistente '+href+' en '+url);
+  for(const href of ['/MiCuenta/Editar','/MiCuenta/CambiarContrasena','/Tarifas/Editar','/Preferencias/Colores?rol=SuperAdmin'])check(await page.locator(`.dash-nav a[href="${href}"]`).count()===1,'acceso persistente '+href+' en '+url);
   check(await page.locator('.dash-space-link').getAttribute('href')==='/SuperAdmin','Mi espacio enlaza al tablero '+url);
  }
  await page.locator('.dash-space-link').click();check(new URL(page.url()).pathname==='/SuperAdmin','Mi espacio navega realmente');

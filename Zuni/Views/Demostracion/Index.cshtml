@@ -10,7 +10,7 @@
 }
 else
 {
-    <section class="dash-card mb-4"><h2>@Model.Prueba.Nombre</h2><p>@Model.Prueba.Subtitulo</p><p>@Model.Prueba.Instrucciones</p><p>@Idioma.Texto("1: totalmente en desacuerdo / nada identificado. 10: totalmente de acuerdo / totalmente identificado.")</p></section>
+    <section class="dash-card mb-4"><h2>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Nombre)</h2><p>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Subtitulo)</p><p>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Instrucciones)</p><p>@Idioma.Texto("1: totalmente en desacuerdo / nada identificado. 10: totalmente de acuerdo / totalmente identificado.")</p></section>
     <form asp-action="Index" method="post" data-questionnaire><div asp-validation-summary="All" class="text-danger" role="alert"></div>
     @for(var i=0;i<preguntas.Count;i++)
     {

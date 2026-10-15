@@ -23,7 +23,6 @@
         <a class="dash-nav-link @Act(Es("InformesEducativos"))" asp-controller="InformesEducativos" asp-action="Index"><span>@Idioma.Texto("Informes educativos")</span></a>
         <a class="dash-nav-link @Act(Es("Psicologo","Historial","VerAtencion","RegistrarAtencion")||Es("Atenciones","Reporte"))" asp-controller="Psicologo" asp-action="Historial"><span>@Idioma.Texto("Historial y registros")</span></a>
     </div></details>
-    <a class="dash-nav-link @Act(Es("Privacidad"))" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>@Idioma.Texto("Privacidad y mis derechos")</span></a>
     <span class="dash-nav-label dash-nav-label-spaced">@Idioma.Texto("CUENTA")</span>
-    <a class="dash-nav-link @Act(Es("MiCuenta"))" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>@Idioma.Texto("Mi cuenta")</span></a>
+    <partial name="_CuentaSubmenu" />
 </nav>

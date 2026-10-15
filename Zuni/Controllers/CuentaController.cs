@@ -700,8 +700,7 @@ public sealed class CuentaController(
         await HttpContext.SignOutAsync(
             CookieAuthenticationDefaults.AuthenticationScheme);
 
-        return RedirectToAction(
-            nameof(IniciarSesion));
+        return RedirectToAction("Index", "Home");
     }
 
     // ============================================================

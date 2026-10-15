@@ -20,13 +20,13 @@ document.querySelectorAll('form[data-questionnaire]').forEach(form => {
         back.disabled = page === 0; next.hidden = page === pages - 1;
         form.querySelectorAll('[data-test-final]').forEach(el => { el.hidden = page !== pages - 1; });
         error.hidden = true;
-        if (focus) { const first = questions[page*3]; first.setAttribute('tabindex','-1'); first.focus({preventScroll:true}); first.scrollIntoView({block:'start',behavior:'smooth'}); }
+        if (focus) { const first = questions[page*3]; first.setAttribute('tabindex','-1'); first.focus({preventScroll:true}); first.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}); }
     }
     back.addEventListener('click', () => { if(page > 0) { page--; show(true); } });
     next.addEventListener('click', () => {
         if(!readonly) {
             const empty = questions.slice(page*3, page*3+3).find(q => !answered(q));
-            if(empty) { error.hidden = false; empty.querySelector('input').focus(); return; }
+            if(empty) { error.hidden = false; empty.querySelector('input').focus({preventScroll:true});empty.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});return; }
         }
         if(page < pages-1) { page++; show(true); }
     });
