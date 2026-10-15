@@ -53,6 +53,7 @@
                     <input type="hidden" name="CitaId" value="@cita.Id" />
                     <input type="hidden" name="Revision" value="@cita.Revision" />
                     @if(cita.ProgramadorRol == "Director") { <span class="dash-badge">@Idioma.Texto("Propuesta del Director")</span><label for="rechazo-@cita.Id">@Idioma.Texto("Motivo si no puedes atender (sin información clínica)")</label><input id="rechazo-@cita.Id" name="MotivoCancelacion" maxlength="300" class="form-control" placeholder="@Idioma.Texto("Ej.: conflicto de horario")" /> }
+                    @if(cita.Modalidad==ModalidadCita.Presencial){<label for="lugar-lista-@cita.Id">@Idioma.Texto("Dirección o lugar de atención presencial")</label><textarea id="lugar-lista-@cita.Id" name="DireccionAtencion" maxlength="500" class="form-control">@cita.DireccionAtencion</textarea>}
                     @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime && cita.Modalidad == ModalidadCita.Presencial) { <button type="submit" name="Estado" value="Confirmada" class="dash-button">@Idioma.Texto("Aceptar")</button> }
                     <button type="submit" name="Estado" value="Rechazada" class="btn btn-outline-secondary">@Idioma.Texto("Rechazar")</button>
                 </form>
@@ -60,6 +61,7 @@
             @if (AgendaReglas.Activa(cita.Estado))
             {
                 @if(cita.InicioUtc>Reloj.GetUtcNow().UtcDateTime&&!cita.EsImprevista){<a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@cita.Id" class="btn btn-outline-primary">@Idioma.Texto("Reprogramar cita")</a>}
+                @if(cita.Modalidad==ModalidadCita.Presencial && cita.InicioUtc>Reloj.GetUtcNow().UtcDateTime){<a asp-controller="Ubicaciones" asp-action="Editar" asp-route-citaId="@cita.Id">@Idioma.Texto("Definir o actualizar lugar de atención")</a>}
                 @if (cita.Modalidad == ModalidadCita.Virtual && cita.FinUtc > Reloj.GetUtcNow().UtcDateTime) {
                     <a asp-controller="Reuniones" asp-action="Preparar" asp-route-citaId="@cita.Id">@(cita.Estado == EstadoCita.Solicitada ? Idioma.Texto("Preparar y confirmar cita virtual") : Idioma.Texto("Actualizar enlace virtual"))</a>
                     <a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@cita.Id">@Idioma.Texto("Consultar acceso virtual")</a>

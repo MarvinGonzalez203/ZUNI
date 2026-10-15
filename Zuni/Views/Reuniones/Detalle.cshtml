@@ -2,7 +2,8 @@
 @{ ViewData["Title"] = "Acceso a cita virtual"; }
 <header class="dash-profile-heading"><div><h1>@Idioma.Texto("Acceso a cita virtual")</h1><p>@Zuni.Services.Agenda.AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") @Idioma.Texto("a") @Zuni.Services.Agenda.AgendaReglas.Local(Model.FinUtc).ToString("HH:mm") (Guatemala)</p></div></header>
 <section class="dash-card p-4">
-    <p>@Idioma.Texto("Busca un lugar privado y sin ruido. Usa audífonos si es posible, evita interrupciones y no compartas el enlace. El anfitrión controla el ingreso a la reunión.")</p>
+    <partial name="_ConsejosCitaVirtual" />
+    <p>@Idioma.Texto("El anfitrión controla el ingreso a la reunión.")</p>
     @if (Model.PuedeEntrar) { <a class="dash-button" asp-action="Entrar" asp-route-citaId="@Model.CitaId" target="_blank" rel="noopener noreferrer">@Idioma.Texto("Ingresar a la cita virtual")</a> }
     else { <p>@(Model.EnlacePreparado ? Idioma.Texto("El enlace está preparado. El acceso se habilita 15 minutos antes de una cita virtual confirmada y termina al finalizarla. No está disponible para citas canceladas o rechazadas.") : Idioma.Texto("El psicólogo todavía debe preparar el enlace y confirmar la cita virtual."))</p> }
     <div class="mt-3"><a asp-controller='@(User.IsInRole("Psicologo") ? "Psicologo" : "Estudiante")' asp-action='@(User.IsInRole("Psicologo") ? "Agenda" : "Citas")'>@Idioma.Texto("Volver a mis citas")</a></div>

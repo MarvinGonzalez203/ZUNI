@@ -64,7 +64,7 @@ internal static class CancelacionChecks
         Check(!JsonSerializer.Serialize((await service.LeerCitas(estudiante, fecha, 1, ct)).Calendario).Contains("MotivoCancelacion"), "Calendario sin motivo");
 
         var segunda = await Nueva(30);
-        await service.GestionarCita(psicologo, new() { CitaId = segunda.Id, Estado = EstadoCita.Confirmada }, ct);
+        await service.GestionarCita(psicologo, new() { CitaId = segunda.Id, DireccionAtencion = "Consultorio de prueba, edificio A", Estado = EstadoCita.Confirmada }, ct);
         Check((await db.Citas.AsNoTracking().SingleAsync(c => c.Id == segunda.Id)).Estado == EstadoCita.Confirmada, "Confirmar no requiere motivo");
         await service.GestionarCita(psicologo, new() { CitaId = segunda.Id, Estado = EstadoCita.Cancelada, MotivoCancelacion = "  Cambio de disponibilidad.  " }, ct);
         Check((await db.Citas.AsNoTracking().SingleAsync(c => c.Id == segunda.Id)).MotivoCancelacion == "Cambio de disponibilidad.", "Psicólogo guarda Trim");

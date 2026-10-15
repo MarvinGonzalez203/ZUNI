@@ -137,7 +137,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         join p in db.PerfilesEstudiante.AsNoTracking() on c.PerfilEstudianteId equals p.Id
         join u in db.Users.AsNoTracking() on p.UsuarioId equals u.Id
         where c.PsicologoUsuarioId == id
-        select new CitaResumen { Id = c.Id, Revision=c.Revision, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc, ProgramadorRol=c.ProgramadorRol,
+        select new CitaResumen { DireccionAtencion=c.DireccionAtencion, Id = c.Id, Revision=c.Revision, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc, ProgramadorRol=c.ProgramadorRol,
             EsImprevista = c.EsImprevista, FinAproximado = c.FinAproximado,
             EnlacePreparado = c.EnlaceReunion != null,
             FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
@@ -159,7 +159,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         var propias = from c in db.Citas.AsNoTracking()
                       join u in db.Users.AsNoTracking() on c.PsicologoUsuarioId equals u.Id
                       where c.PerfilEstudianteId == perfil.Id
-                      select new CitaResumen { Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
+                      select new CitaResumen { DireccionAtencion=c.DireccionAtencion, Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
                           EnlacePreparado = c.EnlaceReunion != null,
                           FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
                           MotivoCancelacion = c.Estado == EstadoCita.Cancelada ? c.MotivoCancelacion : null };
@@ -241,6 +241,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         }
         if (input.Estado == EstadoCita.Confirmada && cita.Modalidad == ModalidadCita.Virtual)
             await FijarEnlace(cita, input.EnlaceReunion, input.AccesoRestringidoRevisado, ct);
+        if(input.Estado==EstadoCita.Confirmada && cita.Modalidad==ModalidadCita.Presencial){cita.DireccionAtencion=DireccionValida(input.DireccionAtencion??cita.DireccionAtencion);await NotificarLugar(cita,id,ct);}
         if(input.Estado==EstadoCita.Confirmada)await ValidarConfirmacionProgramada(cita,ct);
         if(input.Estado==EstadoCita.Confirmada)await ValidarAlmuerzo(id,cita.FechaHoraInicioUtc,cita.FechaHoraFinUtc,ct);
         AplicarCambio(cita, input.Estado, input.MotivoCancelacion);

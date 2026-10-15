@@ -16,9 +16,9 @@ public static class InformePdf
         doc.Info.Title = Idioma.Texto("Informe de apoyo educativo"); doc.Info.Author = v.Psicologo;
         var normal = doc.Styles[StyleNames.Normal]!;
         normal.Font.Name = "ZuniVera"; normal.Font.Size = 10;
-        normal.ParagraphFormat.SpaceAfter = Unit.FromPoint(8); normal.ParagraphFormat.LineSpacingRule = LineSpacingRule.Multiple; normal.ParagraphFormat.LineSpacing = 1.15;
+        normal.ParagraphFormat.SpaceAfter = Unit.FromPoint(6); normal.ParagraphFormat.LineSpacingRule = LineSpacingRule.Multiple; normal.ParagraphFormat.LineSpacing = 1.15;
         var h = doc.Styles[StyleNames.Heading1]!; h.Font.Name = "ZuniVera"; h.Font.Size = 12; h.Font.Bold = true;
-        h.Font.Color = Color.FromRgb(72, 46, 108); h.ParagraphFormat.SpaceBefore = Unit.FromPoint(14); h.ParagraphFormat.SpaceAfter = Unit.FromPoint(6);
+        h.Font.Color = Color.FromRgb(72, 46, 108); h.ParagraphFormat.SpaceBefore = Unit.FromPoint(10); h.ParagraphFormat.SpaceAfter = Unit.FromPoint(6);
         h.ParagraphFormat.KeepWithNext = true;
         var s = doc.AddSection(); s.PageSetup.PageFormat = PageFormat.Letter;
         s.PageSetup.TopMargin = Unit.FromCentimeter(2.0); s.PageSetup.BottomMargin = Unit.FromCentimeter(2.0);
@@ -32,10 +32,17 @@ public static class InformePdf
         s.AddParagraph(Idioma.Texto("Emisión: {0} (Guatemala)",AgendaReglas.Local(v.FechaEmisionUtc!.Value).ToString("dd/MM/yyyy HH:mm")));
         if (v.SustituyeNumero is { } anterior) s.AddParagraph(Idioma.Texto("Esta versión sustituye a la versión {0}.",anterior));
         s.AddParagraph(Idioma.Texto("Estudiante: {0}\nCarné: {1}\nDestinatario autorizado: {2}\nPsicólogo responsable: {3}",v.Estudiante,v.Carne,v.Destinatario,v.Psicologo));
-        void Apartado(string titulo, string texto) { s.AddParagraph(Idioma.Texto(titulo), StyleNames.Heading1); s.AddParagraph(texto); }
+        void Apartado(string titulo, string texto) { s.AddParagraph(Idioma.Texto(titulo), StyleNames.Heading1); var paragraph=s.AddParagraph(texto); if(titulo.StartsWith("7."))paragraph.Format.KeepTogether=true; }
         Apartado("1. Objetivo y periodo", v.Objetivo + "\n"+Idioma.Texto("Periodo observado: {0} a {1}.",v.PeriodoInicio.ToString("dd/MM/yyyy"),v.PeriodoFin.ToString("dd/MM/yyyy")));
         Apartado("2. Fuentes de información", v.Fuentes);
         Apartado("3. Barreras observadas y desempeño", v.Observaciones);
+        if(v.IncluyeAnalisisRendimiento==true){
+            s.AddParagraph(Idioma.Texto("3.1. Análisis del rendimiento académico"),StyleNames.Heading1);
+            var relato=s.AddParagraph(Idioma.Texto("Lo que refiere el estudiante"));relato.Format.Font.Bold=true;relato.Format.KeepWithNext=true;
+            s.AddParagraph(v.RelatoRendimiento);
+            var valoracion=s.AddParagraph(Idioma.Texto("Valoración contrastada del psicólogo"));valoracion.Format.Font.Bold=true;valoracion.Format.KeepWithNext=true;
+            s.AddParagraph(v.ValoracionRendimiento);
+        }else if(v.IncluyeAnalisisRendimiento==false){Apartado("3.1. Análisis del rendimiento académico",Idioma.Texto("En este informe no se establece una relación con el rendimiento académico."));}
         Apartado("4. Necesidades de apoyo educativo", v.Necesidades);
         Apartado("5. Recomendaciones", v.Recomendaciones);
         Apartado("6. Responsables y seguimiento", v.ResponsablesAcciones + "\n"+Idioma.Texto("Seguimiento propuesto: {0}.",v.FechaSeguimiento.ToString("dd/MM/yyyy")));

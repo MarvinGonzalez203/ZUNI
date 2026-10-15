@@ -1,5 +1,6 @@
 @model Zuni.Models.Informes.EditarInformeInput
 @{ ViewData["Title"] = "Preparar informe educativo"; }
+@section Scripts { <script src="~/js/informe-rendimiento.js" asp-append-version="true"></script> }
 <header class="dash-profile-heading"><div><h1>@Idioma.Texto("Preparar informe educativo")</h1><p>@Idioma.Texto("Redacta recomendaciones útiles para la autoridad educativa, sin copiar las notas clínicas.")</p></div></header>
 <form asp-action="Guardar" method="post" class="dash-card p-4">
     <input asp-for="Id" type="hidden" /><input asp-for="SolicitudAtencionId" type="hidden" /><input asp-for="Revision" type="hidden" />
@@ -9,6 +10,9 @@
     <div class="row"><div class="col-md-6"><label asp-for="PeriodoInicio" class="form-label"></label><input asp-for="PeriodoInicio" type="date" class="form-control mb-3" required /></div><div class="col-md-6"><label asp-for="PeriodoFin" class="form-label"></label><input asp-for="PeriodoFin" type="date" class="form-control mb-3" required /></div></div>
     <label asp-for="Fuentes" class="form-label"></label><textarea asp-for="Fuentes" class="form-control mb-3" rows="3" maxlength="2000" required></textarea>
     <label asp-for="Observaciones" class="form-label"></label><textarea asp-for="Observaciones" class="form-control mb-3" rows="5" maxlength="3000" required></textarea>
+    <section class="border rounded p-3 my-3"><h2 class="h5">@Idioma.Texto("Rendimiento académico y valoración educativa")</h2><p>@Idioma.Texto("Incluye este análisis solo si es pertinente. Distingue el relato del estudiante de lo observado y contrastado por el psicólogo; expresa las limitaciones de la información, sin atribuir causas no verificadas ni revelar detalles íntimos.")</p>
+    <label asp-for="IncluyeAnalisisRendimiento" class="form-label"></label><select asp-for="IncluyeAnalisisRendimiento" class="form-select mb-3"><option value="">@Idioma.Texto("Selecciona...")</option><option value="true">@Idioma.Texto("Sí, corresponde incluir una valoración")</option><option value="false">@Idioma.Texto("No corresponde en este informe")</option></select>
+    <div id="rendimiento-campos"><label asp-for="RelatoRendimiento" class="form-label"></label><textarea asp-for="RelatoRendimiento" rows="3" maxlength="2000" class="form-control mb-3"></textarea><label asp-for="ValoracionRendimiento" class="form-label"></label><textarea asp-for="ValoracionRendimiento" rows="4" maxlength="2000" class="form-control mb-3"></textarea><label><input asp-for="ContrasteRendimientoConfirmado" /> @Idioma.Texto("Contrasté el relato del estudiante con la información disponible y revisé esta valoración educativa")</label></div></section>
     <label asp-for="Necesidades" class="form-label"></label><textarea asp-for="Necesidades" class="form-control mb-3" rows="3" maxlength="2000" required></textarea>
     <label asp-for="Recomendaciones" class="form-label"></label><textarea asp-for="Recomendaciones" class="form-control mb-3" rows="5" maxlength="3000" required></textarea>
     <label asp-for="ResponsablesAcciones" class="form-label"></label><textarea asp-for="ResponsablesAcciones" class="form-control mb-3" rows="3" maxlength="1000" required></textarea>

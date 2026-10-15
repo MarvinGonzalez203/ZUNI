@@ -89,7 +89,7 @@ internal static class CalendarioChecks
         await service.GestionarCita(otroPsicologo, new() { CitaId = cita.Id, Estado = EstadoCita.Rechazada }, ct);
         Check((await Cita(fecha)).Estado == EstadoCita.Rechazada && (await Dia(fecha, true)).Franjas.All(f => !f.Ocupada), "Rechazo libera franja");
         Check((await service.Historial(otroPsicologo, null, EstadoCita.Rechazada, 1, ct)).Citas.Any(c => c.Id == cita.Id), "Rechazada en historial");
-        await Rechaza(() => service.GestionarCita(otroPsicologo, new() { CitaId = cita.Id, Estado = EstadoCita.Confirmada }, ct), "Final no se reactiva");
+        await Rechaza(() => service.GestionarCita(otroPsicologo, new() { CitaId = cita.Id, DireccionAtencion = "Consultorio de prueba, edificio A", Estado = EstadoCita.Confirmada }, ct), "Final no se reactiva");
         await service.CambiarDia(otroPsicologo, fecha, "limpiar", null, ct);
         Check((await Dia(fecha)).Estado == "Sin horarios" && await db.Citas.AnyAsync(c => c.Id == cita.Id), "Limpieza conserva citas históricas");
 
@@ -106,7 +106,7 @@ internal static class CalendarioChecks
         cita = await Cita(variable);
         Check((cita.FechaHoraFinUtc - cita.FechaHoraInicioUtc).TotalMinutes == 120, "Variable: el fin es inicio + duración elegida");
         Check((await Dia(variable, true)).Estado == "Pendiente de revisar" && (await Dia(variable,true)).Franjas.All(f=>f.Ocupada), "Solicitud pendiente ocupa todas las franjas y requiere revisión");
-        await service.GestionarCita(otroPsicologo, new() { CitaId = cita.Id, Estado = EstadoCita.Confirmada }, ct);
+        await service.GestionarCita(otroPsicologo, new() { CitaId = cita.Id, DireccionAtencion = "Consultorio de prueba, edificio A", Estado = EstadoCita.Confirmada }, ct);
         Check(!(await service.Historial(otroPsicologo, null, null, 1, ct)).Citas.Any(c => c.Id == cita.Id), "Confirmada fuera del historial");
         await Rechaza(() => service.CambiarDia(otroPsicologo, variable, "bloquear", null, ct), "Confirmada protege horario");
         await service.CancelarEstudiante(estudiante, cita.Id, "Cambio de horario.", ct);

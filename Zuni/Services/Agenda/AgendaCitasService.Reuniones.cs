@@ -34,8 +34,10 @@ public sealed partial class AgendaCitasService
         var anterior = await db.EnlacesReunionUsados.SingleOrDefaultAsync(e => e.Huella == huella, ct);
         if (anterior is not null && anterior.CitaId != cita.Id) throw new AgendaOperacionException("Ese enlace ya pertenece a otra cita. Crea una reunión individual nueva.");
         if (anterior is null) db.EnlacesReunionUsados.Add(new() { Huella = huella, CitaId = cita.Id, FechaUtc = Ahora });
+        var enlaceNuevo=cita.EnlaceReunion!=normalizado;
         cita.EnlaceReunion = normalizado; cita.FechaEnlaceUtc = Ahora; cita.Revision = Guid.NewGuid();
         var usuario = await db.PerfilesEstudiante.Where(p => p.Id == cita.PerfilEstudianteId).Select(p => p.UsuarioId).SingleAsync(ct);
+        if(enlaceNuevo)db.NotificacionesCita.Add(new(){UsuarioId=usuario,CitaId=cita.Id,AutorUsuarioId=cita.PsicologoUsuarioId,AutorRol="Psicologo",Tipo="Preparación virtual",FechaUtc=Ahora,Texto=$"El psicólogo preparó el acceso individual para tu cita virtual del {AgendaReglas.Local(cita.FechaHoraInicioUtc):dd/MM/yyyy HH:mm} (Guatemala).\nAntes de empezar: busca un lugar privado, a solas y sin ruido; usa audífonos si puedes y no compartas el enlace. Consulta los consejos y el acceso desde tu propia cita en ZUNI."});
         PrivacidadService.Auditar(db, usuario, cita.PsicologoUsuarioId, "CITA_ENLACE_REUNION_GUARDADO", reloj, cita.Id);
     }
     public async Task<GuardarReunionInput> PrepararReunion(ClaimsPrincipal actor, Guid id, CancellationToken ct)

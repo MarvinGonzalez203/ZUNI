@@ -42,7 +42,7 @@ public sealed partial class AgendaCitasService
         var c=await db.Citas.AsNoTracking().SingleOrDefaultAsync(c=>c.Id==id&&(a.Rol=="Director"||c.PsicologoUsuarioId==a.Id),ct)??throw new AgendaAccesoException();
         if(c.EsImprevista||!AgendaReglas.Activa(c.Estado)||c.FechaHoraInicioUtc<=Ahora)throw new AgendaOperacionException("Solo se reprograman citas activas futuras; las atenciones pasadas conservan su historial.");
         await ProfesionalProgramacion(a,c.PerfilEstudianteId,ct);
-        input.CitaId=c.Id;input.Revision=c.Revision;input.PerfilEstudianteId=c.PerfilEstudianteId;input.Fecha=AgendaReglas.Hoy(c.FechaHoraInicioUtc);input.HoraInicio=TimeOnly.FromDateTime(AgendaReglas.Local(c.FechaHoraInicioUtc));input.HoraFin=TimeOnly.FromDateTime(AgendaReglas.Local(c.FechaHoraFinUtc));input.DuracionMinutos=(int)Math.Clamp((c.FechaHoraFinUtc-c.FechaHoraInicioUtc).TotalMinutes,15,120);input.Modalidad=c.Modalidad;return input;
+        input.DireccionAtencion=c.DireccionAtencion;input.CitaId=c.Id;input.Revision=c.Revision;input.PerfilEstudianteId=c.PerfilEstudianteId;input.Fecha=AgendaReglas.Hoy(c.FechaHoraInicioUtc);input.HoraInicio=TimeOnly.FromDateTime(AgendaReglas.Local(c.FechaHoraInicioUtc));input.HoraFin=TimeOnly.FromDateTime(AgendaReglas.Local(c.FechaHoraFinUtc));input.DuracionMinutos=(int)Math.Clamp((c.FechaHoraFinUtc-c.FechaHoraInicioUtc).TotalMinutes,15,120);input.Modalidad=c.Modalidad;return input;
     }
     private async Task ValidarFranjaProgramada(Guid perfil,string psy,DateTime inicio,DateTime fin,Guid? except,CancellationToken ct)
     {
@@ -59,15 +59,16 @@ public sealed partial class AgendaCitasService
         var nombre=await db.Users.Where(u=>u.Id==actor.Id).Select(u=>u.FullName).SingleAsync(ct);
         var estudiante=await db.PerfilesEstudiante.Where(p=>p.Id==c.PerfilEstudianteId).Select(p=>p.Usuario.FullName).SingleAsync(ct);
         var texto=$"Cita {(cambio?"reprogramada":"programada")} por {actor.Rol}: {nombre}.\nEstudiante: {estudiante}.\nFecha: {AgendaReglas.Local(c.FechaHoraInicioUtc):dd/MM/yyyy HH:mm} (Guatemala).\nModalidad: {c.Modalidad}.\nEstado: {c.Estado}.";
+        if(c.Modalidad==ModalidadCita.Virtual)texto+="\nAntes de la cita virtual: procura estar a solas, en un lugar privado y sin ruido. Consulta los consejos y el acceso individual desde tu cita en ZUNI.";
         db.NotificacionesCita.Add(new(){UsuarioId=user,CitaId=c.Id,Texto=texto,FechaUtc=Ahora,AutorUsuarioId=actor.Id,AutorRol=actor.Rol,Tipo=cambio?"Reprogramación":"Programación"});
         if(actor.Rol=="Director")db.NotificacionesCita.Add(new(){UsuarioId=c.PsicologoUsuarioId,CitaId=c.Id,Texto=texto,FechaUtc=Ahora,AutorUsuarioId=actor.Id,AutorRol=actor.Rol,Tipo=cambio?"Reprogramación":"Programación"});
         PrivacidadService.Auditar(db,user,actor.Id,cambio?"CITA_REPROGRAMADA":"CITA_PROGRAMADA_PROFESIONAL",reloj,c.Id);
     }
-    private async Task<EstadoCita> EstadoProgramacion((string Id,string Rol) actor,Guid perfil,ModalidadCita modalidad,CancellationToken ct)
+    private async Task<EstadoCita> EstadoProgramacion((string Id,string Rol) actor,Guid perfil,ModalidadCita modalidad,CancellationToken ct,string? direccion=null)
     {
         // Propuesta administrativa no sustituye la verificación clínica del estudiante.
         var p=await db.PerfilesEstudiante.Include(p=>p.Usuario).SingleAsync(p=>p.Id==perfil,ct);
-        return actor.Rol=="Psicologo"&&modalidad==ModalidadCita.Presencial&&!p.Usuario.DebeCambiarContrasena&&p.EstaCompleto&&await MayoriaEdadService.VerificadaAsync(db,perfil,ct)?EstadoCita.Confirmada:EstadoCita.Solicitada;
+        return actor.Rol=="Psicologo"&&modalidad==ModalidadCita.Presencial&&!string.IsNullOrWhiteSpace(direccion)&&!p.Usuario.DebeCambiarContrasena&&p.EstaCompleto&&await MayoriaEdadService.VerificadaAsync(db,perfil,ct)?EstadoCita.Confirmada:EstadoCita.Solicitada;
     }
     private async Task ValidarConfirmacionProgramada(Cita c,CancellationToken ct)
     {
@@ -88,7 +89,9 @@ public sealed partial class AgendaCitasService
             if(input.CitaId is {}id){c=await db.Citas.SingleOrDefaultAsync(c=>c.Id==id&&(a.Rol=="Director"||c.PsicologoUsuarioId==a.Id),ct)??throw new AgendaAccesoException();if(c.PerfilEstudianteId!=input.PerfilEstudianteId||c.PsicologoUsuarioId!=psy)throw new AgendaAccesoException();if(c.EsImprevista||!AgendaReglas.Activa(c.Estado)||c.FechaHoraInicioUtc<=Ahora||c.Revision!=input.Revision)throw new AgendaOperacionException("La cita cambió o ya no se puede reprogramar. Abre su versión actual.");}
             else{if(input.OperacionId==Guid.Empty||await db.Citas.AnyAsync(c=>c.Id==input.OperacionId,ct))throw new AgendaOperacionException("Esta programación ya se guardó. Consulta tu agenda.");c=new(){Id=input.OperacionId,PerfilEstudianteId=input.PerfilEstudianteId.Value,PsicologoUsuarioId=psy,FechaCreacionUtc=Ahora};db.Citas.Add(c);}
             await ValidarFranjaProgramada(c.PerfilEstudianteId,psy,inicio,fin,input.CitaId,ct);
-            c.FechaHoraInicioUtc=inicio;c.FechaHoraFinUtc=fin;c.FinAproximado=true;c.Modalidad=input.Modalidad;c.ProgramadaDirectamente=true;c.ProgramadorUsuarioId=a.Id;c.ProgramadorRol=a.Rol;c.DisponibilidadPsicologoId=null;c.Estado=await EstadoProgramacion(a,c.PerfilEstudianteId,c.Modalidad,ct);c.Revision=Guid.NewGuid();c.EnlaceReunion=null;c.FechaEnlaceUtc=null;
+            if(a.Rol=="Psicologo"&&input.Modalidad==ModalidadCita.Presencial)c.DireccionAtencion=DireccionValida(input.DireccionAtencion??c.DireccionAtencion);
+            if(input.Modalidad==ModalidadCita.Virtual)c.DireccionAtencion=null;
+            c.FechaHoraInicioUtc=inicio;c.FechaHoraFinUtc=fin;c.FinAproximado=true;c.Modalidad=input.Modalidad;c.ProgramadaDirectamente=true;c.ProgramadorUsuarioId=a.Id;c.ProgramadorRol=a.Rol;c.DisponibilidadPsicologoId=null;c.Estado=await EstadoProgramacion(a,c.PerfilEstudianteId,c.Modalidad,ct,c.DireccionAtencion);c.Revision=Guid.NewGuid();c.EnlaceReunion=null;c.FechaEnlaceUtc=null;
             await NotificarProgramacion(c,a,input.CitaId is not null,ct);resultado=c.Id;
         },ct);return resultado;
     }

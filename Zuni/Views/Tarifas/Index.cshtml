@@ -1,0 +1,10 @@
+@model IReadOnlyList<Zuni.Models.Institucion.TarifaSaas>
+@{ViewData["Title"]="Tarifas y periodos";}
+@section Styles { <link rel="stylesheet" href="~/css/tarifas.css" asp-append-version="true" /> }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("ZUNI PARA TU INSTITUCIÓN")</span><h1>@Idioma.Texto("Tarifas y periodos")</h1><p>@Idioma.Texto("Propuesta orientativa en quetzales por institución. Todos los periodos incluyen las mismas funciones de ZUNI.")</p></div></header>
+<div class="tarifa-grid">
+@foreach(var tarifa in Model){
+    <article class="dash-card tarifa-card"><span class="dash-badge">@tarifa.Meses @Idioma.Texto(tarifa.Meses==1?"mes":"meses")</span><h2>@Idioma.Texto(tarifa.Nombre)</h2><p class="tarifa-price"><span>Q</span> @tarifa.Total.ToString("N2")</p><p>@Idioma.Texto("Total del periodo · GTQ")</p><p>@Idioma.Texto("Equivalente mensual:") <strong>Q @tarifa.MensualEquivalente.ToString("N2")</strong></p>@if(tarifa.Ahorro>0){<p class="tarifa-saving">@Idioma.Texto("Ahorro frente al pago mensual:") <strong>Q @tarifa.Ahorro.ToString("N2")</strong></p>}else{<p>@Idioma.Texto("Periodo inicial para evaluar la herramienta.")</p>}<span class="dash-eyebrow">@Idioma.Texto("PRECIO PROPUESTO")</span></article>
+}
+</div>
+<section class="dash-card mt-4"><h2>@Idioma.Texto("Una herramienta de apoyo educativo")</h2><p>@Idioma.Texto("Incluye gestión de usuarios y roles, agenda de citas, pruebas orientadas por el profesional, reportes compartidos e informes educativos con autorización.")</p><p>@Idioma.Texto("La propuesta contempla licencia y soporte básico. Servidor, dominio, copias de seguridad, impuestos, capacitación y servicios profesionales de psicología se cotizan por separado.")</p><p>@Idioma.Texto("Los periodos de 3, 6 y 12 meses se proponen con pago anticipado del periodo completo.")</p><p>@Idioma.Texto("Los valores son estimaciones para revisión comercial; esta pantalla no genera cargos, facturas ni renovaciones automáticas. La capacidad de cada instalación se acuerda después de evaluar su uso.")</p></section>

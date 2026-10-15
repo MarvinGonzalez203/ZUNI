@@ -4,6 +4,7 @@ namespace Zuni.Models.Agenda;
 
 public sealed class ProgramarCitaInput
 {
+    [StringLength(500), Display(Name="Dirección o lugar de atención presencial")] public string? DireccionAtencion { get; set; }
     public Guid? CitaId { get; set; }
     public Guid Revision { get; set; }
     public Guid OperacionId { get; set; } = Guid.NewGuid();

@@ -160,6 +160,10 @@ namespace Zuni.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("DireccionAtencion")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<Guid?>("DisponibilidadPsicologoId")
                         .HasColumnType("uuid");
 
@@ -1136,6 +1140,9 @@ namespace Zuni.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<bool>("ContrasteRendimientoConfirmado")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Destinatario")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1162,6 +1169,9 @@ namespace Zuni.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<bool?>("IncluyeAnalisisRendimiento")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("InformeId")
                         .HasColumnType("uuid");
@@ -1205,6 +1215,11 @@ namespace Zuni.Migrations
                         .HasMaxLength(3000)
                         .HasColumnType("character varying(3000)");
 
+                    b.Property<string>("RelatoRendimiento")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
                     b.Property<string>("ResponsablesAcciones")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -1216,6 +1231,11 @@ namespace Zuni.Migrations
 
                     b.Property<int?>("SustituyeNumero")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ValoracionRendimiento")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.HasKey("Id");
 

@@ -25,6 +25,7 @@
         <a class="dash-nav-link @Activo(enAdministrador && accion == accionRol)" asp-controller="Administrador" asp-action="@accionRol" aria-current="@Actual(enAdministrador && accion == accionRol)"><partial name="_DashboardIcon" model="icono" /><span>@Idioma.Texto(texto)</span></a>
     }
     <span class="dash-nav-label dash-nav-label-spaced">@Idioma.Texto("GESTIÓN")</span>
+    <a class="dash-nav-link @Activo(controlador == "Tarifas")" asp-controller="Tarifas" asp-action="Index" aria-current="@Actual(controlador == "Tarifas")"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Tarifas y periodos")</span></a>
     <a class="dash-nav-link @Activo(controlador == "CarrerasAdmin")" asp-controller="CarrerasAdmin" asp-action="Index"><partial name="_DashboardIcon" model='@("book")' /><span>@Idioma.Texto("Catálogo de carreras")</span></a>
     <a class="dash-nav-link @Activo(enAdministrador && accion == "Catedraticos")" aria-current="@Actual(enAdministrador && accion == "Catedraticos")" asp-controller="Administrador" asp-action="Catedraticos"><partial name="_DashboardIcon" model='@("book")' /><span>@Idioma.Texto("Revisar roles retirados")</span></a>
     @if (enAdministrador && accion == "SinRol") { <a class="dash-nav-link is-active" aria-current="page" asp-controller="Administrador" asp-action="SinRol"><partial name="_DashboardIcon" model='@("user")' /><span>@Idioma.Texto("Usuarios sin rol")</span></a> }

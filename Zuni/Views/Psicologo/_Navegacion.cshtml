@@ -2,7 +2,7 @@
     var c=ViewContext.RouteData.Values["controller"]?.ToString();var a=ViewContext.RouteData.Values["action"]?.ToString();
     bool Es(string controller,params string[] actions)=>c==controller&&(actions.Length==0||actions.Contains(a));
     bool expedientes=string.Equals(Context.Request.Query["expedientes"],"true",StringComparison.OrdinalIgnoreCase);
-    var agenda=Es("CitasProgramadas")||Es("Psicologo","Agenda")||Es("Reuniones")||Es("Atenciones","Imprevista");
+    var agenda=Es("CitasProgramadas")||Es("Psicologo","Agenda")||(Es("Reuniones")||Es("Ubicaciones"))||Es("Atenciones","Imprevista");
     var atencion=Es("Psicologo","Estudiantes","Solicitudes","Expediente","Atencion","Historial","VerAtencion","RegistrarAtencion","Resultados")||Es("PruebasAplicadas")||Es("InformesEducativos")||Es("Atenciones","Reporte");
     string Act(bool selected)=>selected?"is-active":"";string? Actual(bool selected)=>selected?"page":null;
 }
@@ -10,7 +10,7 @@
     <span class="dash-nav-label">@Idioma.Texto("MI ESPACIO")</span>
     <a class="dash-nav-link @Act(Es("Psicologo","Index"))" asp-controller="Psicologo" asp-action="Index" aria-current="@Actual(Es("Psicologo","Index"))"><partial name="_DashboardIcon" model='@("grid")' /><span>@Idioma.Texto("Tablero")</span></a>
     <details class="dash-nav-group" open="@agenda"><summary><partial name="_DashboardIcon" model='@("calendar")' /><span>@Idioma.Texto("Agenda y citas")</span></summary><div class="dash-nav-children">
-        <a class="dash-nav-link @Act(Es("Psicologo","Agenda")||Es("Reuniones"))" asp-controller="Psicologo" asp-action="Agenda"><span>@Idioma.Texto("Calendario y disponibilidad")</span></a>
+        <a class="dash-nav-link @Act(Es("Psicologo","Agenda")||(Es("Reuniones")||Es("Ubicaciones")))" asp-controller="Psicologo" asp-action="Agenda"><span>@Idioma.Texto("Calendario y disponibilidad")</span></a>
         <a class="dash-nav-link @Act(Es("CitasProgramadas","Index","Editar","Guardar"))" asp-controller="CitasProgramadas" asp-action="Index"><span>@Idioma.Texto("Programar o reprogramar")</span></a>
         <a class="dash-nav-link @Act(Es("CitasProgramadas","Notificaciones","Leida"))" asp-controller="CitasProgramadas" asp-action="Notificaciones"><span>@Idioma.Texto("Notificaciones")</span></a>
         <a class="dash-nav-link @Act(Es("Atenciones","Imprevista"))" asp-controller="Atenciones" asp-action="Imprevista"><span>@Idioma.Texto("Atención imprevista")</span></a>

@@ -35,6 +35,7 @@ public sealed class InformesEducativosController(ApplicationDbContext db, TimePr
             var v = d.Version;
             var input = new EditarInformeInput { Id = v.Id, Revision = v.Revision, Objetivo = v.Objetivo, PeriodoInicio = v.PeriodoInicio, PeriodoFin = v.PeriodoFin,
                 Fuentes = v.Fuentes, Observaciones = v.Observaciones, Necesidades = v.Necesidades, Recomendaciones = v.Recomendaciones,
+                IncluyeAnalisisRendimiento = v.IncluyeAnalisisRendimiento, RelatoRendimiento = v.RelatoRendimiento, ValoracionRendimiento = v.ValoracionRendimiento, ContrasteRendimientoConfirmado = v.ContrasteRendimientoConfirmado,
                 ResponsablesAcciones = v.ResponsablesAcciones, FechaSeguimiento = v.FechaSeguimiento, DestinatarioUsuarioId = v.DestinatarioUsuarioId! };
             await Preparar(input, ct); return View(input);
         } catch (UnauthorizedAccessException) { return Forbid(); }

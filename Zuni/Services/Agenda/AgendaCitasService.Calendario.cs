@@ -35,7 +35,7 @@ public sealed partial class AgendaCitasService
         if (!editor && perfilId is not null)
             citasConsulta = await (from c in db.Citas.AsNoTracking() join u in db.Users on c.PsicologoUsuarioId equals u.Id
                 where c.PerfilEstudianteId == perfilId && c.FechaHoraInicioUtc >= inicio && c.FechaHoraInicioUtc < fin
-                orderby c.FechaHoraInicioUtc select new CitaResumen { Id=c.Id, Nombre=u.FullName, InicioUtc=c.FechaHoraInicioUtc, FinUtc=c.FechaHoraFinUtc, Estado=c.Estado, Modalidad=c.Modalidad, FinAproximado=c.FinAproximado }).ToListAsync(ct);
+                orderby c.FechaHoraInicioUtc select new CitaResumen { DireccionAtencion=c.DireccionAtencion, Id=c.Id, Nombre=u.FullName, InicioUtc=c.FechaHoraInicioUtc, FinUtc=c.FechaHoraFinUtc, Estado=c.Estado, Modalidad=c.Modalidad, FinAproximado=c.FinAproximado }).ToListAsync(ct);
         // Solo horas y pertenencia propia: nunca proyectar la identidad de otra persona al calendario.
         var ocupadas = await db.Citas.AsNoTracking().Where(c => EstadosActivos.Contains(c.Estado) &&
             (c.PsicologoUsuarioId == id || c.PerfilEstudianteId == perfilId) && c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio)
@@ -66,7 +66,7 @@ public sealed partial class AgendaCitasService
             {
                 Fecha = dia, Editable = dia >= hoy && dia <= hoy.AddMonths(12),
                 Consultable = dia <= hoy.AddMonths(12),
-                Citas = citasConsulta.Where(c => c.InicioUtc >= desde && c.InicioUtc < hasta).Select(c=>new CitaCalendarioResumen {
+                Citas = citasConsulta.Where(c => c.InicioUtc >= desde && c.InicioUtc < hasta).Select(c=>new CitaCalendarioResumen { DireccionAtencion=c.DireccionAtencion,
                     Id=c.Id,Revision=c.Revision,ProgramadorRol=c.ProgramadorRol,Nombre=c.Nombre,InicioUtc=c.InicioUtc,FinUtc=c.FinUtc,Estado=c.Estado,Modalidad=c.Modalidad,
                     EsImprevista=c.EsImprevista,FinAproximado=c.FinAproximado,TieneRegistroAtencion=c.TieneRegistroAtencion }).ToArray(),
                 Bloqueado = config?.Bloqueado == true, UsaBaseSemanal = baseSemanal,
@@ -137,7 +137,8 @@ public sealed partial class AgendaCitasService
             var comienza=AgendaReglas.Utc(fecha,inicio);var termina=comienza.AddMinutes(input.DuracionMinutos==0?50:input.DuracionMinutos);
             if(termina>AgendaReglas.Utc(fecha,fin))throw new AgendaOperacionException("El horario no alcanza para la cita prevista del estudiante.");
             await ValidarFranjaProgramada(perfil,id,comienza,termina,null,ct);
-            var c=new Cita{PerfilEstudianteId=perfil,PsicologoUsuarioId=id,DisponibilidadPsicologoId=nuevo.Id,FechaHoraInicioUtc=comienza,FechaHoraFinUtc=termina,FinAproximado=true,ProgramadorUsuarioId=actor.Id,ProgramadorRol=actor.Rol,Estado=await EstadoProgramacion(actor,perfil,(ModalidadCita)input.Modalidad,ct),Modalidad=(ModalidadCita)input.Modalidad,FechaCreacionUtc=Ahora};
+            var lugar=actor.Rol=="Psicologo"&&input.Modalidad==ModalidadDisponibilidad.Presencial&&!string.IsNullOrWhiteSpace(input.DireccionAtencion)?DireccionValida(input.DireccionAtencion):null;
+            var c=new Cita{DireccionAtencion=lugar,PerfilEstudianteId=perfil,PsicologoUsuarioId=id,DisponibilidadPsicologoId=nuevo.Id,FechaHoraInicioUtc=comienza,FechaHoraFinUtc=termina,FinAproximado=true,ProgramadorUsuarioId=actor.Id,ProgramadorRol=actor.Rol,Estado=await EstadoProgramacion(actor,perfil,(ModalidadCita)input.Modalidad,ct,lugar),Modalidad=(ModalidadCita)input.Modalidad,FechaCreacionUtc=Ahora};
             db.Citas.Add(c);await NotificarProgramacion(c,actor,false,ct);
         }
     }, ct);

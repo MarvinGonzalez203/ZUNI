@@ -353,6 +353,9 @@ function check(value, text) { assert.ok(value, text); checks++; }
         await touch.goto('http://zuni.test/Administrador');
         check(await touch.locator('#dashboard-sidebar').evaluate(e=>getComputedStyle(e).scrollbarWidth==='none'&&e.scrollHeight>e.clientHeight),'barra oculta conserva contenido desplazable');
         await touch.locator('#dashboard-sidebar').evaluate(e=>e.scrollTop=140);
+        // Dejar visible el enlace antes de medir: Playwright desplaza automáticamente
+        // controles fuera del área visible cuando se hace clic sobre ellos.
+        await touch.locator('.dash-nav a[href="/Administrador/Catedraticos"]').scrollIntoViewIfNeeded();
         await touch.waitForTimeout(100);
         const scrollBefore=await touch.locator('#dashboard-sidebar').evaluate(e=>e.scrollTop);
         await touch.locator('.dash-nav a[href="/Administrador/Catedraticos"]').click();

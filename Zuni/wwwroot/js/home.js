@@ -1,6 +1,6 @@
 (() => {
     const cue = document.querySelector('.home-scroll-cue');
-    const footer = document.getElementById('zuni-footer');
+    const footer = document.getElementById('zuni-proposito') || document.getElementById('zuni-footer');
     const header = document.querySelector('.home-page > header');
     if (!cue || !footer) return;
     const update = () => {

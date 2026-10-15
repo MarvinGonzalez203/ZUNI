@@ -69,7 +69,7 @@ internal static class AtencionPorCitaChecks
             { Inicio = A(hora, minuto), Modalidad = ModalidadCita.Presencial, DuracionMinutos = duracion }, ct);
             db.ChangeTracker.Clear();
             var cita = await db.Citas.AsNoTracking().SingleAsync(c => c.PerfilEstudianteId == perfiles[estudiante] && c.Estado == EstadoCita.Solicitada, ct);
-            await service.GestionarCita(psicologo, new CambiarCitaInput { CitaId = cita.Id, Estado = EstadoCita.Confirmada }, ct);
+            await service.GestionarCita(psicologo, new CambiarCitaInput { CitaId = cita.Id, DireccionAtencion = "Consultorio de prueba, edificio A", Estado = EstadoCita.Confirmada }, ct);
             db.ChangeTracker.Clear();
             return cita.Id;
         }

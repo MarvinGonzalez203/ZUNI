@@ -14,6 +14,10 @@ public sealed class InformeEducativo
 }
 public sealed class VersionInformeEducativo
 {
+    public bool? IncluyeAnalisisRendimiento { get; set; }
+    [MaxLength(2000)] public string RelatoRendimiento { get; set; } = "";
+    [MaxLength(2000)] public string ValoracionRendimiento { get; set; } = "";
+    public bool ContrasteRendimientoConfirmado { get; set; }
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid InformeId { get; set; }
     public int Numero { get; set; }
@@ -51,6 +55,10 @@ public sealed class AutorizacionInforme
 }
 public sealed class EditarInformeInput
 {
+    [Display(Name = "¿Corresponde analizar el rendimiento académico?")] public bool? IncluyeAnalisisRendimiento { get; set; }
+    [StringLength(2000), Display(Name = "Lo que refiere el estudiante sobre su rendimiento")] public string? RelatoRendimiento { get; set; }
+    [StringLength(2000), Display(Name = "Valoración educativa del psicólogo y contraste de fuentes")] public string? ValoracionRendimiento { get; set; }
+    [Display(Name = "Contrasté el relato del estudiante con la información disponible y revisé esta valoración educativa")] public bool ContrasteRendimientoConfirmado { get; set; }
     public Guid? Id { get; set; }
     public Guid SolicitudAtencionId { get; set; }
     public Guid Revision { get; set; }
@@ -67,4 +75,7 @@ public sealed class EditarInformeInput
     [BindNever] public IReadOnlyList<SelectListItem> Destinatarios { get; set; } = [];
 }
 public sealed record InformeResumen(Guid Id, Guid InformeId, int Numero, string Estudiante, string Objetivo, EstadoInforme Estado);
-public sealed record DetalleInforme(VersionInformeEducativo Version, AutorizacionInforme? Autorizacion, bool EsAutor, bool EsEstudiante);
+public sealed record DetalleInforme(VersionInformeEducativo Version, AutorizacionInforme? Autorizacion, bool EsAutor, bool EsEstudiante)
+{
+    public bool DestinatarioVigente { get; init; }
+}

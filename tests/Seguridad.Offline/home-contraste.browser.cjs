@@ -40,7 +40,7 @@ function check(value,message){assert.ok(value,message);checks++;}
         await page.screenshot({path:path.join(fixtures,'home-compacto-oscuro.png')});
         await page.locator('.home-scroll-cue').click();
         await page.waitForFunction(()=>scrollY>24&&document.querySelector('.home-scroll-cue').hidden);
-        check(await page.locator('#zuni-footer').evaluate(e=>document.activeElement===e),'flecha lleva al pie y mueve el foco');
+        check(await page.locator('#zuni-proposito').evaluate(e=>document.activeElement===e),'flecha lleva a misión y visión y mueve el foco');
         await page.evaluate(()=>scrollTo(0,0));await page.locator('.home-scroll-cue').waitFor({state:'visible'});
         check(true,'indicador reaparece al volver al inicio');
         await page.emulateMedia({reducedMotion:'no-preference'});

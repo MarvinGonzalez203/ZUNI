@@ -37,7 +37,7 @@ internal static class AmpliacionPortalChecks
         var cita=Guid.NewGuid();
         Check((await HostPrueba.Post(director,"/CitasProgramadas/Editar","/CitasProgramadas/Guardar",("OperacionId",cita.ToString()),("PerfilEstudianteId",perfil.ToString()),("Fecha",hoy.AddDays(32).ToString("yyyy-MM-dd")),("HoraInicio","11:00"),("DuracionMinutos","50"),("Modalidad","Presencial"))).StatusCode==HttpStatusCode.Redirect,"propuesta institucional creada");
         Guid version;await using(var db=new OfflineDb(options))version=await db.Citas.Where(c=>c.Id==cita).Select(c=>c.Revision).SingleAsync();
-        Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",Guid.NewGuid().ToString()),("Estado","Confirmada"))).StatusCode==HttpStatusCode.Conflict,"no acepta una propuesta con versión obsoleta");
+        Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",Guid.NewGuid().ToString()),("DireccionAtencion","Consultorio de prueba, edificio A"),("Estado","Confirmada"))).StatusCode==HttpStatusCode.Conflict,"no acepta una propuesta con versión obsoleta");
         Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",version.ToString()),("Estado","Rechazada"))).StatusCode==HttpStatusCode.Conflict,"rechazo institucional exige motivo");
         Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",version.ToString()),("Estado","Rechazada"),("MotivoCancelacion","Conflicto de horario"))).StatusCode==HttpStatusCode.Redirect,"rechazo con motivo guardado");
         Check((await director.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("Conflicto de horario"),"Director recibe respuesta");
@@ -45,7 +45,7 @@ internal static class AmpliacionPortalChecks
         var aceptada=Guid.NewGuid();
         await HostPrueba.Post(director,"/CitasProgramadas/Editar","/CitasProgramadas/Guardar",("OperacionId",aceptada.ToString()),("PerfilEstudianteId",perfil.ToString()),("Fecha",hoy.AddDays(33).ToString("yyyy-MM-dd")),("HoraInicio","11:00"),("DuracionMinutos","50"),("Modalidad","Presencial"));
         await using(var db=new OfflineDb(options))version=await db.Citas.Where(c=>c.Id==aceptada).Select(c=>c.Revision).SingleAsync();
-        Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",aceptada.ToString()),("Revision",version.ToString()),("Estado","Confirmada"))).StatusCode==HttpStatusCode.Redirect,"profesional acepta propuesta institucional");
+        Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",aceptada.ToString()),("Revision",version.ToString()),("DireccionAtencion","Consultorio de prueba, edificio A"),("Estado","Confirmada"))).StatusCode==HttpStatusCode.Redirect,"profesional acepta propuesta institucional");
         Check(WebUtility.HtmlDecode(await director.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("aceptó la cita propuesta"),"Director recibe aceptación");
         Guid prueba;
         await using(var db=new OfflineDb(options)) {

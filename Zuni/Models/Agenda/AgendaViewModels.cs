@@ -22,6 +22,7 @@ public sealed class ReservaCitaInput
 
 public sealed class CambiarCitaInput
 {
+    [StringLength(500), Display(Name = "Dirección o lugar de atención presencial")] public string? DireccionAtencion { get; set; }
     public Guid Revision { get; set; }
     public string? EnlaceReunion { get; set; }
     public bool AccesoRestringidoRevisado { get; set; }
@@ -36,6 +37,7 @@ public sealed record DisponibilidadResumen(Guid Id, DayOfWeek DiaSemana, TimeOnl
 public sealed record HorarioDisponible(DateTime InicioUtc, DateTime FinUtc, ModalidadDisponibilidad Modalidad);
 public sealed class CitaResumen
 {
+    public string? DireccionAtencion { get; init; }
     public Guid Revision { get; init; }
     public string? ProgramadorRol { get; init; }
     public bool EsImprevista { get; init; }
@@ -74,6 +76,7 @@ public sealed class CitasEstudianteViewModel
 
 public sealed class HorarioDiaInput
 {
+    [StringLength(500)] public string? DireccionAtencion { get; set; }
     public Guid? PerfilEstudianteId { get; set; }
     [Required] public DateOnly? Fecha { get; set; }
     [Required] public TimeOnly? HoraInicio { get; set; }
@@ -105,6 +108,7 @@ public sealed class DiaAgendaViewModel
 // El calendario no admite motivo de cancelación, enlace de reunión o contenido clínico.
 public sealed class CitaCalendarioResumen
 {
+    public string? DireccionAtencion { get; init; }
     public Guid Revision { get; init; }
     public string? ProgramadorRol { get; init; }
     public Guid Id { get; init; }

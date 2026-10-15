@@ -60,12 +60,17 @@ public static class InformeEducativoService
             && await db.Users.AnyAsync(u => u.Id == a.EstudianteUsuarioId && u.IsActive, ct);
         if (!autor && !estudiante && !director) throw new UnauthorizedAccessException();
         if (auditar) { PrivacidadService.Auditar(db, a?.EstudianteUsuarioId ?? root.AutorUsuarioId, userId, "INFORME_EDUCATIVO_CONSULTADO", reloj, id); await db.SaveChangesAsync(ct); }
-        return new(v, a, autor, estudiante);
+        return new(v, a, autor, estudiante) { DestinatarioVigente = await DestinatarioValido(db, v.DestinatarioUsuarioId!, ct) };
     }
 
     public static async Task<Guid> GuardarAsync(ApplicationDbContext db, ClaimsPrincipal actor, EditarInformeInput input, bool solicitar, TimeProvider reloj, CancellationToken ct)
     {
         PrivacidadService.Validar(input);
+        if (solicitar && input.IncluyeAnalisisRendimiento is null)
+            throw new DatosOperacionException("Indica si corresponde analizar el rendimiento académico antes de solicitar autorización.");
+        if (solicitar && input.IncluyeAnalisisRendimiento == true &&
+            (string.IsNullOrWhiteSpace(input.RelatoRendimiento) || string.IsNullOrWhiteSpace(input.ValoracionRendimiento) || !input.ContrasteRendimientoConfirmado))
+            throw new DatosOperacionException("Completa el relato del estudiante, tu valoración educativa y la confirmación del contraste de información.");
         if (input.PeriodoFin < input.PeriodoInicio || input.PeriodoFin > MayoriaEdadService.Hoy(reloj) || input.FechaSeguimiento < input.PeriodoFin)
             throw new DatosOperacionException("Revisa las fechas: el periodo observado debe terminar después de su inicio y no puede ser futuro; el seguimiento no puede precederlo.");
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
@@ -91,6 +96,10 @@ public static class InformeEducativoService
         v.Objetivo = input.Objetivo.Trim(); v.PeriodoInicio = input.PeriodoInicio!.Value; v.PeriodoFin = input.PeriodoFin!.Value;
         v.Fuentes = input.Fuentes.Trim(); v.Observaciones = input.Observaciones.Trim(); v.Necesidades = input.Necesidades.Trim();
         v.Recomendaciones = input.Recomendaciones.Trim(); v.ResponsablesAcciones = input.ResponsablesAcciones.Trim(); v.FechaSeguimiento = input.FechaSeguimiento!.Value;
+        v.IncluyeAnalisisRendimiento = input.IncluyeAnalisisRendimiento;
+        v.RelatoRendimiento = input.IncluyeAnalisisRendimiento == true ? (input.RelatoRendimiento ?? "").Trim() : "";
+        v.ValoracionRendimiento = input.IncluyeAnalisisRendimiento == true ? (input.ValoracionRendimiento ?? "").Trim() : "";
+        v.ContrasteRendimientoConfirmado = input.IncluyeAnalisisRendimiento == true && input.ContrasteRendimientoConfirmado;
         v.DestinatarioUsuarioId = input.DestinatarioUsuarioId; v.Estudiante = perfil.Usuario.FullName; v.Carne = CarneHelper.Formatear(perfil.Carne)!;
         v.Psicologo = await db.Users.Where(u => u.Id == psy).Select(u => u.FullName).SingleAsync(ct);
         v.Destinatario = await db.Users.Where(u => u.Id == v.DestinatarioUsuarioId).Select(u => u.FullName).SingleAsync(ct);
@@ -138,6 +147,9 @@ public static class InformeEducativoService
         var root = await Autor(db, actor, v, ct);
         if (v.Revision != revision) throw new DbUpdateConcurrencyException();
         var a = await db.AutorizacionesInformes.SingleOrDefaultAsync(a => a.VersionInformeId == id, ct);
+        if (v.IncluyeAnalisisRendimiento == true &&
+            (!v.ContrasteRendimientoConfirmado || string.IsNullOrWhiteSpace(v.RelatoRendimiento) || string.IsNullOrWhiteSpace(v.ValoracionRendimiento)))
+            throw new DatosOperacionException("Esta versión necesita revisión del análisis de rendimiento. Prepara una nueva versión y solicita nuevamente autorización.");
         if (!confirmada || v.Estado != EstadoInforme.Autorizada || a?.Aceptada != true || a.FechaRevocacionUtc is not null)
             throw new DatosOperacionException("Revisa el contenido y confirma la emisión de una versión autorizada por el estudiante.");
         if (!await DestinatarioValido(db, v.DestinatarioUsuarioId!, ct) || !await db.Users.AnyAsync(u => u.Id == a.EstudianteUsuarioId && u.IsActive, ct))
@@ -158,11 +170,17 @@ public static class InformeEducativoService
         var v = await db.VersionesInformesEducativos.AsNoTracking().SingleOrDefaultAsync(v => v.Id == id, ct) ?? throw new UnauthorizedAccessException();
         var root = await Autor(db, actor, v, ct);
         if (v.Revision != revision) throw new DbUpdateConcurrencyException();
-        if (await db.VersionesInformesEducativos.AnyAsync(x => x.InformeId == root.Id && (x.Estado == EstadoInforme.Borrador || x.Estado == EstadoInforme.PendienteAutorizacion || x.Estado == EstadoInforme.Autorizada), ct))
-            throw new DatosOperacionException("Ya hay una versión en preparación; complétala o registra la decisión antes de crear otra.");
+        var abiertas=await db.VersionesInformesEducativos.Where(x=>x.InformeId==root.Id && (x.Estado==EstadoInforme.Borrador || x.Estado==EstadoInforme.PendienteAutorizacion || x.Estado==EstadoInforme.Autorizada)).ToListAsync(ct);
+        if(abiertas.Count>0){
+            if(abiertas.Count==1 && abiertas[0].Id==v.Id && (v.Estado is EstadoInforme.PendienteAutorizacion or EstadoInforme.Autorizada) && !await DestinatarioValido(db,v.DestinatarioUsuarioId!,ct)){
+                abiertas[0].Estado=EstadoInforme.Sustituida;abiertas[0].Revision=Guid.NewGuid();
+                PrivacidadService.Auditar(db,root.AutorUsuarioId,root.AutorUsuarioId,"INFORME_DESTINATARIO_RETIRADO_VERSION_CERRADA",reloj,v.Id);
+                await db.SaveChangesAsync(ct);
+            }else throw new DatosOperacionException("Ya hay una versión en preparación; complétala o registra la decisión antes de crear otra.");
+        }
         var number = await db.VersionesInformesEducativos.Where(x => x.InformeId == root.Id).MaxAsync(x => x.Numero, ct);
         if (number >= 50) throw new DatosOperacionException("Este informe alcanzó su límite de versiones. Coordina con la institución un nuevo informe.");
-        v.Id = Guid.NewGuid(); v.Numero = number + 1; v.Revision = Guid.NewGuid(); v.Estado = EstadoInforme.Borrador; v.FechaEmisionUtc = null; v.SustituyeNumero = null;
+        v.Id = Guid.NewGuid(); v.Numero = number + 1; v.Revision = Guid.NewGuid(); v.Estado = EstadoInforme.Borrador; v.ContrasteRendimientoConfirmado = false; v.FechaEmisionUtc = null; v.SustituyeNumero = null;
         db.VersionesInformesEducativos.Add(v); PrivacidadService.Auditar(db, root.AutorUsuarioId, root.AutorUsuarioId, "INFORME_NUEVA_VERSION", reloj, v.Id);
         await db.SaveChangesAsync(ct); await tx.CommitAsync(ct); return v.Id;
     }
@@ -170,7 +188,7 @@ public static class InformeEducativoService
     {
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         var d = await DetalleAsync(db, actor, id, reloj, ct, false);
-        if (d.Version.Estado != EstadoInforme.Emitida || d.Autorizacion?.Aceptada != true || d.Autorizacion.FechaRevocacionUtc is not null) throw new UnauthorizedAccessException();
+        if (d.Version.Estado != EstadoInforme.Emitida || d.Autorizacion?.Aceptada != true || d.Autorizacion.FechaRevocacionUtc is not null || !d.DestinatarioVigente) throw new UnauthorizedAccessException();
         PrivacidadService.Auditar(db, d.Autorizacion.EstudianteUsuarioId, await PrivacidadService.UsuarioAsync(db, actor, ct), "INFORME_PDF_DESCARGADO", reloj, id);
         await db.SaveChangesAsync(ct); await tx.CommitAsync(ct); return d.Version;
     }

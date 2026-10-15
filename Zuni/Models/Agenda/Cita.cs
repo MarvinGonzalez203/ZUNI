@@ -18,6 +18,7 @@ public sealed class Cita
     public DateTime FechaCreacionUtc { get; set; } = DateTime.UtcNow;
     public string? MotivoCancelacion { get; set; }
     public string? EnlaceReunion { get; set; }
+    [System.ComponentModel.DataAnnotations.MaxLength(500)] public string? DireccionAtencion { get; set; }
     public DateTime? FechaEnlaceUtc { get; set; }
     public Guid Revision { get; set; } = Guid.NewGuid();
 }
