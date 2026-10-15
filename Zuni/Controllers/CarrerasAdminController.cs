@@ -35,6 +35,23 @@ public sealed class CarrerasAdminController(ApplicationDbContext db):Controller
         catch(Exception ex)when(ex is DbUpdateException or Npgsql.NpgsqlException){TempData["Error"]="El catálogo cambió o no pudo guardarse. Recarga y revisa antes de intentarlo de nuevo.";}
         return RedirectToAction(nameof(Index));
     }
+    [HttpPost,RequestSizeLimit(150000)] public async Task<IActionResult> AgregarArea(AgregarAreaCarrerasInput input,CancellationToken ct) {
+        if(!await MayoriaEdadService.ActorAsync(db,User,"Administrador",ct))return Forbid();
+        if(!ModelState.IsValid||string.IsNullOrWhiteSpace(input.Area)||input.Area.Any(char.IsControl)||string.IsNullOrWhiteSpace(input.Carreras)){
+            TempData["Error"]="Indica un área académica y al menos una carrera, una por línea.";return RedirectToAction(nameof(Index));
+        }
+        try{
+            var area=input.Area.Trim();
+            var nombres=input.Carreras.Replace("\r","").Split('\n').Select(n=>n.Trim().TrimStart('-', '•').Trim()).Where(n=>n.Length>0).ToArray();
+            if(nombres.Length is 0 or >500||nombres.Any(n=>n.Length is <2 or >150||n.Any(char.IsControl)))throw new ArgumentException("Cada carrera requiere un nombre de 2 a 150 caracteres y un área de hasta 100.");
+            await using var tx=await db.Database.BeginTransactionAsync(IsolationLevel.Serializable,ct);
+            var actuales=(await db.CarrerasInstitucionales.Select(c=>c.NombreNormalizado).ToListAsync(ct)).ToHashSet();var nuevos=0;
+            foreach(var nombre in nombres){var key=CatalogoCarreras.Normalizar(nombre);if(!actuales.Add(key))continue;db.CarrerasInstitucionales.Add(new(){Area=area,Nombre=nombre,NombreNormalizado=key});nuevos++;}
+            await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);TempData["Success"]=$"Se agregaron {nuevos} carreras. Las existentes se conservaron.";
+        }catch(ArgumentException ex){TempData["Error"]=ex.Message;}
+        catch(Exception ex)when(ex is DbUpdateException or Npgsql.NpgsqlException){TempData["Error"]="El catálogo cambió o no pudo guardarse. Recarga y revisa antes de intentarlo de nuevo.";}
+        return RedirectToAction(nameof(Index));
+    }
     [HttpPost] public async Task<IActionResult> Estado(Guid id,Guid revision,bool activa,CancellationToken ct) {
         if(!await MayoriaEdadService.ActorAsync(db,User,"Administrador",ct))return Forbid();
         var c=await db.CarrerasInstitucionales.SingleOrDefaultAsync(c=>c.Id==id,ct);if(c is null)return NotFound();

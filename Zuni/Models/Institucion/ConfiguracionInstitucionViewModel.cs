@@ -16,7 +16,7 @@ public sealed class ConfiguracionInstitucionViewModel : IValidatableObject
     public Guid Revision { get; set; }
     [Required, StringLength(80), Display(Name = "Lema institucional")]
     public string Lema { get; set; } = "Tu espacio educativo";
-    [Required, RegularExpression("^#[a-fA-F0-9]{6}$"), Display(Name = "Color de los botones")]
+    [Required, RegularExpression("^#[a-fA-F0-9]{6}$"), Display(Name = "Color de botones y navegación")]
     public string ColorPrincipal { get; set; } = "#cea2fd";
     [Display(Name = "Logotipo PNG (opcional)")]
     public IFormFile? Logotipo { get; set; }

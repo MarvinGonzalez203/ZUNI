@@ -26,14 +26,14 @@
         <fieldset class="border rounded p-3 mb-3"><legend class="h5">@Idioma.Texto("Identidad visual")</legend>
             <label asp-for="Lema" class="form-label"></label><input asp-for="Lema" class="form-control mb-3" maxlength="80" />
             <label asp-for="ColorPrincipal" class="form-label"></label><input asp-for="ColorPrincipal" type="color" class="form-control form-control-color mb-3" />
-            <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="@Idioma.Texto("Colores de los botones")">
-                @foreach (var (color, nombreColor) in new[] { ("#cea2fd", "Violeta ZUNI"), ("#111111", "Negro"), ("#b42332", "Rojo"), ("#216e45", "Verde"), ("#2458a6", "Azul") })
+            <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="@Idioma.Texto("Color de botones y navegación")">
+                @foreach (var (color, nombreColor) in new[] { ("#cea2fd", "Violeta ZUNI"), ("#111111", "Negro"), ("#b42332", "Rojo"), ("#F9DB5C", "Amarillo"), ("#BBF1F8", "Celeste") })
                 {
-                    <button type="button" data-color-institucion="@color" aria-pressed="@(Model.ColorPrincipal.Equals(color, StringComparison.OrdinalIgnoreCase) ? "true" : "false")" style="background:@color;color:@Zuni.Services.Institucion.IdentidadInstitucion.Texto(color);border:1px solid transparent;border-radius:9px;padding:.65rem 1rem">@Idioma.Texto(nombreColor)</button>
+                    <button type="button" data-color-institucion="@color" aria-pressed="@(Model.ColorPrincipal.Equals(color, StringComparison.OrdinalIgnoreCase) ? "true" : "false")" style="background:@color;color:@Zuni.Services.Institucion.IdentidadInstitucion.Texto(color);border:1px solid transparent;border-radius:9px;padding:.65rem 1rem;width:136px;min-height:46px">@Idioma.Texto(nombreColor)</button>
                 }
             </div>
             <span id="color-preview" class="d-inline-block px-3 py-2 rounded mb-2">@Idioma.Texto("Vista previa del texto")</span>
-            <p>@Idioma.Texto("El mismo color se utiliza en los botones de todos los perfiles. El texto se ajusta para mantener contraste.")</p>
+            <p>@Idioma.Texto("El color se aplica a los botones y a las pestañas seleccionadas de todos los perfiles, conservando el efecto cristal y el contraste del texto.")</p>
             <label asp-for="Logotipo" class="form-label"></label><input asp-for="Logotipo" type="file" accept="image/png" class="form-control mb-2" />
             <small>@Idioma.Texto("PNG de hasta 128 KB y 1024 × 1024 píxeles. Si no cargas otro archivo, se conserva el actual.")</small>
             @if (Model.TieneLogotipo) { <img src="@Url.Action("Logotipo")" alt="@Idioma.Texto("Logotipo institucional actual")" width="80" /> }

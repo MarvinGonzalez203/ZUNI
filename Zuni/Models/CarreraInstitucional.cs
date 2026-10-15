@@ -14,3 +14,8 @@ public sealed class ImportarCarrerasInput
     [MaxLength(100000)] public string? Listado { get; set; }
     public Microsoft.AspNetCore.Http.IFormFile? Archivo { get; set; }
 }
+public sealed class AgregarAreaCarrerasInput
+{
+    [Required,MaxLength(100)] public string Area { get; set; }="";
+    [Required,MaxLength(100000)] public string Carreras { get; set; }="";
+}

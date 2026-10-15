@@ -1,6 +1,7 @@
 @{
     Layout="_DashboardLayout";
-    ViewData["DashboardRole"]="Administrador";
-    ViewData["DashboardController"]="Administrador";
-    ViewData["DashboardNavigation"]="~/Views/Administrador/_Navegacion.cshtml";
+    var super=User.IsInRole("SuperAdmin");
+    ViewData["DashboardRole"]=super?"SuperAdmin":"Administrador";
+    ViewData["DashboardController"]=super?"SuperAdmin":"Administrador";
+    ViewData["DashboardNavigation"]=super?"~/Views/SuperAdmin/_Navegacion.cshtml":"~/Views/Administrador/_Navegacion.cshtml";
 }

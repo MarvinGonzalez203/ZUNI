@@ -1,6 +1,7 @@
 using Zuni.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Zuni.Data;
 using Zuni.Models.Administrador;
@@ -25,6 +26,16 @@ public sealed class AdministradorController : Controller
 
     private readonly ApplicationDbContext _db;
     private readonly TimeProvider _reloj;
+
+    public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        // Las cuentas del proveedor no se gestionan desde el panel institucional.
+        var objetivo=context.ActionArguments.Where(a=>a.Key is "id" or "usuarioId").Select(a=>a.Value as string).FirstOrDefault()
+            ?? context.ActionArguments.Values.Select(v=>v?.GetType().GetProperty("UsuarioId")?.GetValue(v) as string).FirstOrDefault(v=>v is not null);
+        if(objetivo is not null&&await _db.UserRoles.AnyAsync(ur=>ur.UserId==objetivo&&_db.Roles.Any(r=>r.Id==ur.RoleId&&r.NormalizedName=="SUPERADMIN")))
+        {context.Result=Forbid();return;}
+        await next();
+    }
 
     public AdministradorController(ApplicationDbContext db, TimeProvider reloj)
     {

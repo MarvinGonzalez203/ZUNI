@@ -3,6 +3,17 @@
 <style>
     :root { --institucion-color: @IdentidadInstitucion.Color(Model.ColorPrincipal); --institucion-texto: @IdentidadInstitucion.Texto(Model.ColorPrincipal); }
     .dashboard-app { --dash-violet: var(--institucion-color); }
+    .dashboard-app .dash-nav-link.is-active {
+        background: color-mix(in srgb, var(--institucion-color) 25%, rgba(255,255,255,.72));
+        color: #211a29; border: 1px solid color-mix(in srgb, var(--institucion-color) 40%, transparent);
+        box-shadow: inset 3px 0 0 var(--institucion-color), inset 0 1px 0 rgba(255,255,255,.55);
+        backdrop-filter: blur(14px);
+    }
+    html[data-theme=dark] .dashboard-app .dash-nav-link.is-active {
+        background: color-mix(in srgb, var(--institucion-color) 23%, rgba(43,37,50,.8));
+        color: #fff; border-color: color-mix(in srgb, var(--institucion-color) 45%, #80768a);
+    }
+    .dashboard-app .dash-nav-children { border-left-color: color-mix(in srgb, var(--institucion-color) 45%, transparent); }
     .dashboard-app .dash-button, .dashboard-app .btn-primary, .dashboard-app .btn-zuni, .btn-zuni {
         background: var(--institucion-color); color: var(--institucion-texto); border-color: var(--institucion-color);
     }

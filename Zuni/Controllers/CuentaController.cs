@@ -818,12 +818,13 @@ public sealed class CuentaController(
     {
         if (tieneRol("Catedratico") && !tieneRol("Administrador") && !tieneRol("Director")) return RedirectToAction("RolRetirado", "Cuenta");
         // El orden es intencional para usuarios con múltiples roles.
-        foreach (var rol in new[] { "Administrador", "Director", "Psicologo", "Estudiante" })
+        foreach (var rol in new[] { "SuperAdmin", "Administrador", "Director", "Psicologo", "Estudiante" })
         {
             if (tieneRol(rol))
             {
                 var controller = rol switch
                 {
+                    "SuperAdmin" => "SuperAdmin",
                     "Administrador" => "Administrador",
                     "Director" => "Director",
                     "Psicologo" => "Psicologo",

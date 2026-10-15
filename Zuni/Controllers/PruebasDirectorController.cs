@@ -117,6 +117,19 @@ public sealed class PruebasDirectorController(ApplicationDbContext db) : Control
         return Aviso(id, activar ? "Prueba activada para asignación." : "Prueba desactivada; no admite nuevas asignaciones.");
     }
 
+    [HttpPost]
+    public async Task<IActionResult> Eliminar(Guid id,Guid revision,bool confirmar)
+    {
+        await using var tx=await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+        var p=await Cargar(id,true);if(p is null)return NotFound();
+        if(!confirmar||p.Nivel is not null||await db.AsignacionesPrueba.AnyAsync(a=>a.PruebaId==id))return Aviso(id,"Solo se eliminan pruebas personalizadas sin asignaciones y con confirmación.");
+        if(p.Revision!=revision)return Aviso(id,"La prueba cambió. Recarga su detalle.");
+        db.PruebasDirector.Remove(p);
+        try{await db.SaveChangesAsync();await tx.CommitAsync();}
+        catch(DbUpdateException){return Aviso(id,"No se eliminó la prueba porque cambió o tiene registros vinculados.");}
+        TempData["PruebasMensaje"]="Prueba eliminada.";return RedirectToAction(nameof(Index));
+    }
+
     [HttpGet]
     public async Task<IActionResult> Asignar(Guid id)
     {

@@ -144,7 +144,7 @@ public sealed class MiCuentaController(
         return View(new EditarMiCuentaViewModel
         {
             NombreCompleto = usuario.FullName,
-            PuedeEditarContacto = roles.Contains("Administrador"), Correo = usuario.Email, Telefono = usuario.PhoneNumber,
+            PuedeEditarContacto = (roles.Contains("Administrador") || roles.Contains("SuperAdmin")), Correo = usuario.Email, Telefono = usuario.PhoneNumber,
             PuedeEditarEstudiante = permitido,
             Carreras = permitido ? await Zuni.Services.CatalogoCarreras.Opciones(db, usuario.PerfilEstudiante?.Carrera, ct) : [],
             Estudiante = permitido ? usuario.PerfilEstudiante is { } perfil ? Datos(perfil) : new() : null,
@@ -171,7 +171,7 @@ public sealed class MiCuentaController(
             return Forbid();
 
         model.PuedeEditarEstudiante = roles.Contains("Estudiante");
-        model.PuedeEditarContacto = roles.Contains("Administrador");
+        model.PuedeEditarContacto = (roles.Contains("Administrador") || roles.Contains("SuperAdmin"));
         if (model.PuedeEditarContacto)
         {
             var correo = model.Correo?.Trim();
@@ -357,7 +357,7 @@ public sealed class MiCuentaController(
     {
         ViewData["DashboardName"] = usuario.FullName;
         ViewData["DashboardRole"] = string.Join(", ", roles);
-        var elegido = new[] { "Administrador", "Director", "Psicologo", "Estudiante" }
+        var elegido = new[] { "SuperAdmin", "Administrador", "Director", "Psicologo", "Estudiante" }
             .FirstOrDefault(roles.Contains);
         var existe = actions.ActionDescriptors.Items.Any(a =>
             a.RouteValues.TryGetValue("controller", out var controller) && controller == elegido &&

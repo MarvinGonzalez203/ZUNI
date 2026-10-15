@@ -36,7 +36,7 @@ El Administrador actual gestiona una institución. Un SuperAdmin del proveedor t
 
 Hoy el proyecto mantiene configuración, cuentas y datos separados por instalación. Eso permite operar instalaciones independientes, pero no incorpora una consola central que coordine sus suscripciones. La separación entre administración global y operación de cada institución coincide con la distinción entre plano de control y plano de datos de una solución SaaS. [Consideraciones de arquitectura para planos de control, Microsoft](https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/control-planes).
 
-La siguiente ampliación debería crear esa consola y definir aislamiento, alta de instituciones, permisos, contratos y facturación. Agregar solamente un nombre de rol a la base institucional no implementa esas funciones. En esta entrega no se crean cuentas SuperAdmin ni una segunda autenticación; las tarjetas son una propuesta de precios, sin simular contratos o cobros.
+La siguiente ampliación debería crear esa consola y definir aislamiento, alta de instituciones, permisos, contratos y facturación. Agregar solamente un nombre de rol a la base institucional no implementa esas funciones. La ampliación del 15/10 incorpora el rol SuperAdmin, un panel del proveedor y una operación manual para preparar su acceso con la autenticación existente. La cuenta solicitada conserva también su rol institucional previo. Esto no equivale todavía a una consola multiinstitución ni simula contratos o cobros. La leyenda de precio propuesto se reserva al SuperAdmin.
 
 ## Migración y verificación
 

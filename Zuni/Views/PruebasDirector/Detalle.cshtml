@@ -2,6 +2,7 @@
 @{ ViewData["Title"] = Model.Prueba.Nombre; ViewData["TituloEsDato"] = true; var p = Model.Prueba; }
 <header class="dash-welcome"><div><a asp-action="Index">@Idioma.Texto("← Catálogo")</a><h1>@p.Nombre</h1><p>@(p.Activa ? Idioma.Texto("Activa") : Idioma.Texto("Inactiva")) · @p.Idioma · @Model.Asignaciones @Idioma.Texto("asignaciones")</p></div></header>
 <partial name="_Mensaje" />
+@section Styles { <link rel="stylesheet" href="~/css/cuestionario.css" asp-append-version="true" /> }
 @if(p.Subtitulo is not null){<p class="small">@p.Subtitulo</p>}
 <section class="dash-card p-4 mb-3">
     <h2>@Idioma.Texto("Propósito")</h2><p class="text-break" style="white-space:pre-wrap">@p.Descripcion</p>
@@ -13,6 +14,7 @@
         <a class="btn btn-outline-primary" asp-action="Asignar" asp-route-id="@p.Id">@Idioma.Texto("Asignaciones")</a>
         <form asp-action="Estado" method="post"><input type="hidden" name="id" value="@p.Id" /><input type="hidden" name="revision" value="@p.Revision" /><input type="hidden" name="activar" value="@((!p.Activa).ToString())" /><button class="btn btn-primary">@(p.Activa ? Idioma.Texto("Desactivar prueba") : Idioma.Texto("Activar prueba"))</button></form>
     </div>
+    @if(Model.Asignaciones==0 && p.Nivel is null){<form asp-action="Eliminar" method="post" class="mt-3"><input type="hidden" name="id" value="@p.Id"/><input type="hidden" name="revision" value="@p.Revision"/><label class="d-block mb-2"><input type="checkbox" name="confirmar" value="true" required/> @Idioma.Texto("Confirmo eliminar esta prueba personalizada sin asignaciones.")</label><button class="btn btn-outline-danger">@Idioma.Texto("Eliminar prueba")</button></form>}
     @if (Model.Asignaciones > 0) { <p class="mt-3">@Idioma.Texto("El contenido se conserva porque ya hay asignaciones. Crea una nueva prueba si necesitas una versión diferente.")</p> }
 </section>
 <section class="dash-card p-4"><h2>@Idioma.Texto("Dimensiones y preguntas")</h2>
@@ -22,9 +24,10 @@
         <h3>@d.Nombre</h3>
         @foreach (var q in p.Preguntas.Where(x => x.DimensionId == d.Id).OrderBy(x => x.Orden))
         {
-            <div class="border rounded p-3 mb-3"><h4 class="h6">@q.Orden. @q.Texto</h4><ol>
-                @foreach (var o in q.Opciones.OrderBy(x => x.Orden)) { <li>@o.Texto <span class="text-muted">@Idioma.Texto("(valor:") @o.Valor)</span></li> }
-            </ol></div>
+            var esLikert = q.Opciones.OrderBy(o=>o.Valor).Select(o=>o.Valor).SequenceEqual(Enumerable.Range(1,10));
+            <div class="border rounded p-3 mb-3"><h4 class="h6">@q.Orden. @q.Texto</h4><div class="prueba-preview-scale" aria-label="@Idioma.Texto("Vista previa de opciones")">
+                @foreach (var o in q.Opciones.OrderBy(x => x.Orden)) { <span class="prueba-preview-cell" title="@o.Texto">@o.Valor@if(!esLikert){<small>@o.Texto</small>}</span> }
+            </div>@if(esLikert){<div class="likert-endpoints"><span>@Idioma.Texto("Totalmente en desacuerdo")</span><span>@Idioma.Texto("Totalmente de acuerdo")</span></div>}</div>
         }
     }
 </section>

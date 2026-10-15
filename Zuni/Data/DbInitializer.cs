@@ -9,6 +9,7 @@ namespace Zuni.Data
         {
             string[] roles =
             {
+                "SuperAdmin",
                 "Administrador",
                 "Director",
                 "Psicologo",

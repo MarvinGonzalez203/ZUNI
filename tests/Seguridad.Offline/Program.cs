@@ -562,6 +562,7 @@ await AlmuerzoRevisionChecks.Run(app, opciones, clave, reloj);
 await AdministradorEdicionChecks.Run(app, opciones, clave);
 await IdiomaChecks.Run(app, opciones, clave);
 await CoordinacionEducativaChecks.Run(app, opciones, clave,reloj);
+await SuperAdminCatalogoChecks.Run(app, opciones, clave);
 
 using (var c = HostPrueba.Cliente(app))
 {

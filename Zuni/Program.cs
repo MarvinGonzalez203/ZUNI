@@ -86,6 +86,11 @@ using (var scope = app.Services.CreateScope())
         .GetRequiredService<ApplicationDbContext>();
 
     await DbInitializer.SeedRolesAsync(dbContext);
+    if (SuperAdministrador.Solicitado(args))
+    {
+        Environment.ExitCode = await SuperAdministrador.EjecutarAsync(scope.ServiceProvider, args, Console.Out);
+        return;
+    }
 
     // Comando manual de un solo uso (ver docs/deployment.md). Solo actúa si no existe ningún
     // Administrador activo y nunca guarda la contraseña generada.

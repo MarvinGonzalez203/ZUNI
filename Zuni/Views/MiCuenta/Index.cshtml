@@ -9,7 +9,7 @@
     <dl class="dash-account-details">
         <div><dt>@Idioma.Texto("Nombre completo")</dt><dd>@Model.NombreCompleto</dd></div>
         <div><dt>@Idioma.Texto("Correo electrónico")</dt><dd>@Mostrar(Model.Email)</dd></div>
-        @if (Model.Roles.Contains("Administrador")) { <div><dt>@Idioma.Texto("Teléfono")</dt><dd>@Mostrar(Model.Telefono)</dd></div> }
+        @if ((Model.Roles.Contains("Administrador") || Model.Roles.Contains("SuperAdmin"))) { <div><dt>@Idioma.Texto("Teléfono")</dt><dd>@Mostrar(Model.Telefono)</dd></div> }
         <div><dt>@Idioma.Texto("Roles actuales · Solo lectura")</dt><dd>@(Model.Roles.Count == 0 ? "Sin rol asignado" : string.Join(", ", Model.Roles.Select(r=>Idioma.Texto(r))))</dd></div>
         <div><dt>@Idioma.Texto("Estado de la cuenta · Solo lectura")</dt><dd>@(Model.Activo ? Idioma.Texto("Activo") : Idioma.Texto("Inactivo"))</dd></div>
     </dl>
