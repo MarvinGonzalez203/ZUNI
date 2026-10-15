@@ -15,7 +15,7 @@
         pages.forEach((p, i) => p.hidden = i !== page);
         previous.disabled = page === 0;
         next.disabled = page === pages.length - 1;
-        document.getElementById('bf-pagina').textContent = `Bloque ${page + 1} de ${pages.length} · 10 afirmaciones`;
+        document.getElementById('bf-pagina').textContent = window.ZuniI18n.t('Bloque {0} de {1} · 10 afirmaciones',page+1,pages.length);
     }
     previous.hidden = next.hidden = false;
     previous.addEventListener('click', () => { page = Math.max(0, page - 1); show(); pages[page].scrollIntoView({ block: 'start', behavior: 'auto' }); });
@@ -24,20 +24,20 @@
         dirty = true;
         const count = selects.filter(s => s.value).length;
         document.getElementById('bf-progress').value = count;
-        document.getElementById('bf-avance').textContent = `${count} de 50 respondidas`;
-        status.textContent = 'Tienes respuestas sin guardar.';
+        document.getElementById('bf-avance').textContent = window.ZuniI18n.t('{0} de 50 respondidas',count);
+        status.textContent = window.ZuniI18n.t('Tienes respuestas sin guardar.');
         if (finalize) finalize.querySelector('button').disabled = true;
     });
     form.addEventListener('submit', e => {
         if (sending) { e.preventDefault(); return; }
         sending = true;
-        status.textContent = 'Guardando…';
+        status.textContent = window.ZuniI18n.t('Guardando…');
     });
     window.addEventListener('beforeunload', e => {
         if (dirty && !sending) { e.preventDefault(); e.returnValue = ''; }
     });
     if (finalize) finalize.addEventListener('submit', e => {
-        if (dirty || sending) { e.preventDefault(); status.textContent = 'Guarda los cambios antes de finalizar.'; return; }
+        if (dirty || sending) { e.preventDefault(); status.textContent = window.ZuniI18n.t('Guarda los cambios antes de finalizar.'); return; }
         sending = true;
         finalize.querySelector('button').disabled = true;
     });

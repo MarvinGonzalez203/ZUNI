@@ -12,6 +12,7 @@
 .agenda-weekday { text-align: center; font-weight: 600; padding: .5rem 0; }
 .agenda-day { min-height: 88px; display: flex; flex-direction: column; gap: .4rem; border: 1px solid #dedce1; border-radius: .65rem; padding: .65rem; background: #f3f5f7; color: #111111; text-align: left; width: 100%; transition: border-color .18s, box-shadow .18s; }
 .agenda-day span { font-size: .78rem; overflow-wrap: anywhere; }
+.agenda-day small { max-width: 100%; overflow-wrap: anywhere; }
 .agenda-day.is-free, .agenda-legend .is-free { background: #e3f4ea; border-color: #a5cab1; }
 .agenda-day.is-busy, .agenda-legend .is-busy, .agenda-slot.is-busy { background: #fce6e6; border-color: #ddb1b1; }
 .agenda-day:not(:disabled):hover { border-color: #9865bd; box-shadow: 0 0 0 2px #cea2fd55; }

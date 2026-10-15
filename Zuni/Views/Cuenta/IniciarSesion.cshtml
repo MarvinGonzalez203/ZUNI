@@ -6,17 +6,17 @@
     ViewData["Institucion"] = institucion;
 }
 
-<a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
-<h1 class="h2 fw-bold mb-2">Bienvenido de nuevo</h1>
+<a asp-controller="Home" asp-action="Index" class="auth-back">@Idioma.Texto("← Volver al inicio")</a>
+<h1 class="h2 fw-bold mb-2">@Idioma.Texto("Bienvenido de nuevo")</h1>
 <p class="fw-semibold">@institucion.Nombre</p>
-<p class="text-secondary mb-4">Ingresa tus datos para continuar en ZUNI.</p>
+<p class="text-secondary mb-4">@Idioma.Texto("Ingresa tus datos para continuar en ZUNI.")</p>
 @if (TempData["Success"] is string mensajeExito)
 {
-    <div class="alert alert-light border" role="status">@mensajeExito</div>
+    <div class="alert alert-light border" role="status">@Idioma.Texto(mensajeExito)</div>
 }
 @if (TempData["Error"] is string mensajeError)
 {
-    <div class="alert alert-danger" role="alert">@mensajeError</div>
+    <div class="alert alert-danger" role="alert">@Idioma.Texto(mensajeError)</div>
 }
 <form method="post" novalidate class="auth-form-fields">
     <input asp-for="ReturnUrl" type="hidden" />
@@ -27,27 +27,27 @@
     </div>
     <div class="mb-2">
         <div class="form-floating password-field">
-            <input asp-for="Password" class="form-control" placeholder="Contraseña" autocomplete="current-password" />
+            <input asp-for="Password" class="form-control" placeholder="@Idioma.Texto("Contraseña")" autocomplete="current-password" />
             <label asp-for="Password"></label>
-            <button type="button" class="password-toggle" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false"><span aria-hidden="true">◉</span></button>
+            <button type="button" class="password-toggle" data-password-toggle aria-label="@Idioma.Texto("Mostrar contraseña")" aria-pressed="false"><span aria-hidden="true">◉</span></button>
         </div>
         <span asp-validation-for="Password" class="text-danger small validation-message"></span>
     </div>
     <div class="auth-options d-flex justify-content-between align-items-center mb-4">
         <div class="form-check"><input asp-for="RememberMe" class="form-check-input" /><label asp-for="RememberMe" class="form-check-label"></label></div>
-        <a asp-action="RecuperarContrasena" class="link-success small fw-semibold">¿Olvidaste tu contraseña?</a>
+        <a asp-action="RecuperarContrasena" class="link-success small fw-semibold">@Idioma.Texto("¿Olvidaste tu contraseña?")</a>
     </div>
-    <button class="btn btn-zuni w-100 btn-lg" type="submit">Iniciar sesión</button>
+    <button class="btn btn-zuni w-100 btn-lg" type="submit">@Idioma.Texto("Iniciar sesión")</button>
 </form>
 @if (institucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas)
 {
-    <p class="text-center text-secondary mt-4 mb-0">¿Aún no tienes cuenta? <a asp-action="Registro" class="link-success fw-semibold">Crear cuenta</a></p>
+    <p class="text-center text-secondary mt-4 mb-0">@Idioma.Texto("¿Aún no tienes cuenta?") <a asp-action="Registro" class="link-success fw-semibold">@Idioma.Texto("Crear cuenta")</a></p>
 }
 else
 {
-    <p class="text-center text-secondary mt-4 mb-0">Solicita tu cuenta al Administrador de la institución.</p>
+    <p class="text-center text-secondary mt-4 mb-0">@Idioma.Texto("Solicita tu cuenta al Administrador de la institución.")</p>
 }
 @if (!string.IsNullOrWhiteSpace(institucion.CorreoSoporte))
 {
-    <p class="text-center mt-3">Contacto institucional: <a href="mailto:@institucion.CorreoSoporte">@institucion.CorreoSoporte</a></p>
+    <p class="text-center mt-3">@Idioma.Texto("Contacto institucional:") <a href="mailto:@institucion.CorreoSoporte">@institucion.CorreoSoporte</a></p>
 }

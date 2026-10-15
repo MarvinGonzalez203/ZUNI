@@ -8,31 +8,31 @@
 }
 @if (TempData["Success"] is string message)
 {
-    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">@message<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">@Idioma.Texto(message)<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@Idioma.Texto("Cerrar")"></button></div>
 }
 
 <section class="landing-hero" aria-labelledby="hero-title">
     <div class="liquid liquid-b" aria-hidden="true"></div>
 
     <div class="hero-content">
-        <div class="hero-kicker"><span></span> BIENESTAR Y ACOMPAÑAMIENTO ESTUDIANTIL</div>
-        <h1 id="hero-title">Bienvenido a <em>ZUNI</em></h1>
+        <div class="hero-kicker"><span></span> @Idioma.Texto("BIENESTAR Y ACOMPAÑAMIENTO ESTUDIANTIL")</div>
+        <h1 id="hero-title">@Idioma.Texto("Bienvenido a") <em>@Idioma.Texto("ZUNI")</em></h1>
         <p class="fw-semibold">@institucion.Nombre</p>
-        <p class="hero-lead">Un espacio de apoyo, conexión y bienestar para tu desarrollo estudiantil.</p>
+        <p class="hero-lead">@Idioma.Texto("Un espacio de apoyo, conexión y bienestar para tu desarrollo estudiantil.")</p>
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <div class="session-pill"><span>✓</span><div><small>Sesión activa</small><strong>Qué gusto verte, @Model.PrimerNombre</strong></div></div>
+            <div class="session-pill"><span>✓</span><div><small>@Idioma.Texto("Sesión activa")</small><strong>@Idioma.Texto("Qué gusto verte,") @Model.PrimerNombre</strong></div></div>
 
             @if (Model.MostrarAvisoCompletarPerfil)
             {
                 <aside class="profile-welcome-card" aria-labelledby="profile-welcome-title">
                     <span class="profile-welcome-icon" aria-hidden="true">✦</span>
                     <div class="profile-welcome-copy">
-                        <strong id="profile-welcome-title">¡Te damos la bienvenida a ZUNI, @Model.PrimerNombre!</strong>
-                        <p>Tu cuenta ya está lista. Completa algunos datos académicos y de contacto para aprovechar todas las funciones de ZUNI.</p>
+                        <strong id="profile-welcome-title">@Idioma.Texto("¡Te damos la bienvenida a ZUNI,") @Model.PrimerNombre!</strong>
+                        <p>@Idioma.Texto("Tu cuenta ya está lista. Completa algunos datos académicos y de contacto para aprovechar todas las funciones de ZUNI.")</p>
                     </div>
                     <a asp-controller="MiCuenta" asp-action="Editar" class="btn btn-zuni">
-                        Completar mis datos <span aria-hidden="true">→</span>
+                        @Idioma.Texto("Completar mis datos") <span aria-hidden="true">→</span>
                     </a>
                 </aside>
             }
@@ -42,13 +42,13 @@
             <div class="hero-cta">
                 @if (institucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas)
                 {
-                    <a asp-controller="Cuenta" asp-action="Registro" class="btn btn-zuni btn-lg">Crear mi cuenta <span>→</span></a>
+                    <a asp-controller="Cuenta" asp-action="Registro" class="btn btn-zuni btn-lg">@Idioma.Texto("Crear mi cuenta") <span>→</span></a>
                 }
-                <a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-crystal btn-lg">Iniciar sesión</a>
+                <a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-crystal btn-lg">@Idioma.Texto("Iniciar sesión")</a>
             </div>
             @if (institucion.PoliticaCorreo == Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas)
             {
-                <p>Solicita tu cuenta al Administrador de la institución.</p>
+                <p>@Idioma.Texto("Solicita tu cuenta al Administrador de la institución.")</p>
             }
         }
     </div>
@@ -59,15 +59,15 @@
     </svg>
     <div class="hero-symbol" aria-hidden="true"><img src="~/images/zuni-logo-transparent.png" alt="" /></div>
 
-    <div class="quick-panel" aria-label="Accesos principales de ZUNI">
-        <div class="quick-intro"><span class="quick-spark">✦</span><div><small>Tu espacio ZUNI</small><strong>¿Qué necesitas hoy?</strong></div></div>
+    <div class="quick-panel" aria-label="@Idioma.Texto("Accesos principales de ZUNI")">
+        <div class="quick-intro"><span class="quick-spark">✦</span><div><small>@Idioma.Texto("Tu espacio ZUNI")</small><strong>@Idioma.Texto("¿Qué necesitas hoy?")</strong></div></div>
         <div class="quick-actions">
-            <a asp-controller="Home" asp-action="Guia" asp-route-tema="cita"><span class="quick-icon">⌁</span><span><strong>Solicitar cita</strong><small>Conoce los pasos</small></span></a>
-            <a asp-controller="Home" asp-action="Guia" asp-route-tema="seguimiento"><span class="quick-icon">↗</span><span><strong>Ver seguimiento</strong><small>Aprende dónde consultar</small></span></a>
-            <a asp-controller="Home" asp-action="Guia" asp-route-tema="bienestar"><span class="quick-icon">◌</span><span><strong>Bienestar</strong><small>Consejos para organizarte</small></span></a>
-            <a asp-controller="Home" asp-action="Guia" asp-route-tema="privacidad"><span class="quick-icon">⬡</span><span><strong>Privacidad</strong><small>Conoce cómo se comparte</small></span></a>
+            <a asp-controller="Home" asp-action="Guia" asp-route-tema="cita"><span class="quick-icon">⌁</span><span><strong>@Idioma.Texto("Solicitar cita")</strong><small>@Idioma.Texto("Conoce los pasos")</small></span></a>
+            <a asp-controller="Home" asp-action="Guia" asp-route-tema="seguimiento"><span class="quick-icon">↗</span><span><strong>@Idioma.Texto("Ver seguimiento")</strong><small>@Idioma.Texto("Aprende dónde consultar")</small></span></a>
+            <a asp-controller="Home" asp-action="Guia" asp-route-tema="bienestar"><span class="quick-icon">◌</span><span><strong>@Idioma.Texto("Bienestar")</strong><small>@Idioma.Texto("Consejos para organizarte")</small></span></a>
+            <a asp-controller="Home" asp-action="Guia" asp-route-tema="privacidad"><span class="quick-icon">⬡</span><span><strong>@Idioma.Texto("Privacidad")</strong><small>@Idioma.Texto("Conoce cómo se comparte")</small></span></a>
         </div>
     </div>
 
-    <div class="hero-foot"><span><i></i> Privado y confidencial</span><span>Diseñado para la comunidad educativa</span><span>Bienestar · Conexión · Confianza</span></div>
+    <div class="hero-foot"><span><i></i> @Idioma.Texto("Privado y confidencial")</span><span>@Idioma.Texto("Diseñado para la comunidad educativa")</span><span>@Idioma.Texto("Bienestar · Conexión · Confianza")</span></div>
 </section>

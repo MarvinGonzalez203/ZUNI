@@ -18,7 +18,7 @@ public sealed class CambioContrasenaObligatorioMiddleware(RequestDelegate next)
             if (pendiente)
             {
                 var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
-                var permitido = action?.ControllerTypeInfo.AsType() == typeof(CuentaController) &&
+                var permitido = action?.ControllerTypeInfo.AsType() == typeof(IdiomaController) || action?.ControllerTypeInfo.AsType() == typeof(CuentaController) &&
                     ((action.ActionName == nameof(CuentaController.CambiarContrasenaObligatoria) &&
                       (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsPost(context.Request.Method))) ||
                      (action.ActionName == nameof(CuentaController.CerrarSesion) && HttpMethods.IsPost(context.Request.Method)));

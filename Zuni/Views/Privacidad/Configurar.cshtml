@@ -1,7 +1,7 @@
 @model Zuni.Models.Privacidad.PublicarPoliticaInput
 @{ ViewData["Title"] = "Publicar política de privacidad"; }
-<header class="dash-profile-heading"><div><h1>Publicar política de privacidad</h1><p>Cada publicación crea una versión nueva; las aceptaciones y textos anteriores se conservan.</p></div></header>
-@foreach (var tipo in new[] { "Success", "Error" }) { if (TempData[tipo] is string m) { <p class="dash-notice" role="status">@m</p> } }
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Publicar política de privacidad")</h1><p>@Idioma.Texto("Cada publicación crea una versión nueva; las aceptaciones y textos anteriores se conservan.")</p></div></header>
+@foreach (var tipo in new[] { "Success", "Error" }) { if (TempData[tipo] is string m) { <p class="dash-notice" role="status">@Idioma.Texto(m)</p> } }
 <form asp-action="Configurar" method="post" class="dash-card p-4">
     <input asp-for="VersionAnteriorId" type="hidden" />
     <div asp-validation-summary="All" class="text-danger" role="alert"></div>
@@ -10,9 +10,9 @@
     <label asp-for="Finalidades" class="form-label"></label><textarea asp-for="Finalidades" class="form-control mb-3" rows="4" maxlength="4000" required></textarea>
     <label asp-for="DatosYAccesos" class="form-label"></label><textarea asp-for="DatosYAccesos" class="form-control mb-3" rows="4" maxlength="4000" required></textarea>
     <label asp-for="Conservacion" class="form-label"></label><textarea asp-for="Conservacion" class="form-control mb-3" rows="4" maxlength="4000" required></textarea>
-    <p>Indica plazos, inicio del cómputo, excepciones de conservación y responsable de autorizar la eliminación. No se realiza un borrado automático.</p>
+    <p>@Idioma.Texto("Indica plazos, inicio del cómputo, excepciones de conservación y responsable de autorizar la eliminación. No se realiza un borrado automático.")</p>
     <label asp-for="ProcedimientoDerechos" class="form-label"></label><textarea asp-for="ProcedimientoDerechos" class="form-control mb-3" rows="4" maxlength="4000" required></textarea>
-    <p>Describe cómo verificar identidad, entregar información por un canal seguro, ejecutar correcciones o eliminaciones autorizadas, responder retiros e incidentes, y registrar lo realizado. Administración no recibe acceso al expediente clínico mediante este trámite.</p>
-    <label><input asp-for="Confirmada" required /> La institución aprobó estas finalidades, accesos, reglas y procedimientos para su publicación.</label>
-    <div class="mt-3"><button class="dash-button" type="submit">Publicar nueva versión</button></div>
+    <p>@Idioma.Texto("Describe cómo verificar identidad, entregar información por un canal seguro, ejecutar correcciones o eliminaciones autorizadas, responder retiros e incidentes, y registrar lo realizado. Administración no recibe acceso al expediente clínico mediante este trámite.")</p>
+    <label><input asp-for="Confirmada" required /> @Idioma.Texto("La institución aprobó estas finalidades, accesos, reglas y procedimientos para su publicación.")</label>
+    <div class="mt-3"><button class="dash-button" type="submit">@Idioma.Texto("Publicar nueva versión")</button></div>
 </form>

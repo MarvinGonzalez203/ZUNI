@@ -8,16 +8,16 @@
         <span class="auth-liquid auth-liquid-two" aria-hidden="true"></span>
         <div class="auth-network" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <div class="auth-brand-copy">
-            <span class="auth-eyebrow">Tu espacio, a tu manera</span>
-            <h2>Todo comienza con una cuenta segura.</h2>
-            <p>Accede a tus herramientas y mantén tu información disponible cuando la necesites.</p>
-            <div class="auth-trust"><span>Privado</span><span>Humano</span><span>Seguro</span></div>
+            <span class="auth-eyebrow">@Idioma.Texto("Tu espacio, a tu manera")</span>
+            <h2>@Idioma.Texto("Todo comienza con una cuenta segura.")</h2>
+            <p>@Idioma.Texto("Accede a tus herramientas y mantén tu información disponible cuando la necesites.")</p>
+            <div class="auth-trust"><span>@Idioma.Texto("Privado")</span><span>@Idioma.Texto("Humano")</span><span>@Idioma.Texto("Seguro")</span></div>
         </div>
         <small class="auth-copyright position-absolute bottom-0 mb-4">© @DateTime.Now.Year ZUNI</small>
     </aside>
     <div class="col-lg-7 auth-panel p-4 p-md-5 d-flex align-items-center">
         <div class="auth-form mx-auto w-100">
-            <a asp-controller="Home" asp-action="Index" class="auth-mobile-logo d-lg-none"><img src="~/images/zuni-logo-transparent.png" alt="" />ZUNI</a>
+            <a asp-controller="Home" asp-action="Index" class="auth-mobile-logo d-lg-none"><img src="~/images/zuni-logo-transparent.png" alt="" />@Idioma.Texto("ZUNI")</a>
             @RenderBody()
         </div>
     </div>

@@ -2,14 +2,14 @@
 @{ ViewData["Title"] = "Evaluaciones"; }
 @section Styles { <link rel="stylesheet" href="~/css/bigfive-apoyo.css" asp-append-version="true" /> }
 <div class="bf-module">
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">SERVICIOS</span><h1>Evaluaciones</h1><p>Participa a tu ritmo. Tu atención no depende de responder este cuestionario.</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("SERVICIOS")</span><h1>@Idioma.Texto("Evaluaciones")</h1><p>@Idioma.Texto("Participa a tu ritmo. Tu atención no depende de responder este cuestionario.")</p></div></header>
 <section class="dash-card">
-    <h2>Big Five</h2><p>Herramienta opcional de apoyo · 50 afirmaciones · cinco dimensiones.</p>
+    <h2>@Idioma.Texto("Big Five")</h2><p>@Idioma.Texto("Herramienta opcional de apoyo · 50 afirmaciones · cinco dimensiones.")</p>
     <partial name="~/Views/BigFive/_Limitaciones.cshtml" />
-    @if (Model.FechaRetiroConsentimientoUtc != null) { <p>Participación retirada.</p> }
-    else if (Model.FechaFinalizacionUtc != null) { <p>Cuestionario completado · @Model.FechaFinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC · @Model.VersionInstrumento</p> }
-    else if (!Model.TieneSolicitudActiva) { <p>Necesitas una solicitud de atención activa para comenzar; no necesitas tener psicólogo asignado.</p> }
-    <a class="dash-button" asp-controller="BigFive" asp-action="Index">@(Model.Id == null ? "Comenzar" : Model.PuedeResponder ? "Continuar" : "Ver participación")</a>
+    @if (Model.FechaRetiroConsentimientoUtc != null) { <p>@Idioma.Texto("Participación retirada.")</p> }
+    else if (Model.FechaFinalizacionUtc != null) { <p>@Idioma.Texto("Cuestionario completado ·") @Model.FechaFinalizacionUtc?.ToString("dd/MM/yyyy HH:mm") UTC · @Model.VersionInstrumento</p> }
+    else if (!Model.TieneSolicitudActiva) { <p>@Idioma.Texto("Necesitas una solicitud de atención activa para comenzar; no necesitas tener psicólogo asignado.")</p> }
+    <a class="dash-button" asp-controller="BigFive" asp-action="Index">@(Model.Id == null ? "Comenzar" : Model.PuedeResponder ? "Continuar" : Idioma.Texto("Ver participación"))</a>
 </section>
-<a class="dash-text-link bf-back" asp-controller="Estudiante" asp-action="Index">Volver al tablero</a>
+<a class="dash-text-link bf-back" asp-controller="Estudiante" asp-action="Index">@Idioma.Texto("Volver al tablero")</a>
 </div>

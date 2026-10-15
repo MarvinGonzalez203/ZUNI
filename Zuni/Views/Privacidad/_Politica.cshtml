@@ -1,14 +1,14 @@
 @model Zuni.Models.Privacidad.PoliticaPrivacidad
 <section class="dash-card p-4 mb-4">
-    <h2 class="h4">Política de privacidad · versión @Model.Version</h2>
-    <p>@Model.Institucion · Publicada @Zuni.Services.Agenda.AgendaReglas.Local(Model.FechaPublicacionUtc).ToString("dd/MM/yyyy")</p>
+    <h2 class="h4">@Idioma.Texto("Política de privacidad · versión") @Model.Version</h2>
+    <p>@Model.Institucion @Idioma.Texto("· Publicada") @Zuni.Services.Agenda.AgendaReglas.Local(Model.FechaPublicacionUtc).ToString("dd/MM/yyyy")</p>
     <dl>
-        <dt>Responsable institucional</dt><dd>@Model.Responsable</dd>
-        <dt>Contacto para ejercer derechos</dt><dd><a href="mailto:@Model.Contacto">@Model.Contacto</a></dd>
-        <dt>Finalidades</dt><dd class="text-break" style="white-space:pre-line">@Model.Finalidades</dd>
-        <dt>Datos necesarios y accesos</dt><dd class="text-break" style="white-space:pre-line">@Model.DatosYAccesos</dd>
-        <dt>Conservación y eliminación</dt><dd class="text-break" style="white-space:pre-line">@Model.Conservacion</dd>
-        <dt>Derechos e incidentes</dt><dd class="text-break" style="white-space:pre-line">@Model.ProcedimientoDerechos</dd>
+        <dt>@Idioma.Texto("Responsable institucional")</dt><dd>@Model.Responsable</dd>
+        <dt>@Idioma.Texto("Contacto para ejercer derechos")</dt><dd><a href="mailto:@Model.Contacto">@Model.Contacto</a></dd>
+        <dt>@Idioma.Texto("Finalidades")</dt><dd class="text-break" style="white-space:pre-line">@Model.Finalidades</dd>
+        <dt>@Idioma.Texto("Datos necesarios y accesos")</dt><dd class="text-break" style="white-space:pre-line">@Model.DatosYAccesos</dd>
+        <dt>@Idioma.Texto("Conservación y eliminación")</dt><dd class="text-break" style="white-space:pre-line">@Model.Conservacion</dd>
+        <dt>@Idioma.Texto("Derechos e incidentes")</dt><dd class="text-break" style="white-space:pre-line">@Model.ProcedimientoDerechos</dd>
     </dl>
-    <p class="small">La atención, la participación en cuestionarios y la entrega de informes tienen autorizaciones independientes. Retirar un consentimiento no elimina automáticamente registros históricos.</p>
+    <p class="small">@Idioma.Texto("La atención, la participación en cuestionarios y la entrega de informes tienen autorizaciones independientes. Retirar un consentimiento no elimina automáticamente registros históricos.")</p>
 </section>

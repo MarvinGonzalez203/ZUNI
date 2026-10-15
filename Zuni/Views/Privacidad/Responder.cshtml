@@ -1,11 +1,11 @@
 @model Zuni.Models.Privacidad.ResponderDerechoInput
 @{ ViewData["Title"] = "Responder solicitud de datos"; }
-<h1>Responder solicitud de datos</h1>
+<h1>@Idioma.Texto("Responder solicitud de datos")</h1>
 <section class="dash-card p-4">
-    <p>Solicitante: @Model.Solicitante · @Model.Correo</p>
-    <p>Comprobante: @Model.Id · @Model.Solicitud?.Tipo · @Model.Solicitud?.Estado</p>
+    <p>@Idioma.Texto("Solicitante:") @Model.Solicitante · @Model.Correo</p>
+    <p>@Idioma.Texto("Comprobante:") @Model.Id · @Model.Solicitud?.Tipo · @Model.Solicitud?.Estado</p>
     <p class="text-break">@Model.Solicitud?.Detalle</p>
     @if (Model.Solicitud?.Estado == Zuni.Models.Privacidad.EstadoDerechoDatos.Respondida) { <p class="text-break">@Model.Respuesta</p> }
-    else { <form asp-action="Responder" method="post"><input asp-for="Id" type="hidden" /><input asp-for="Revision" type="hidden" /><div asp-validation-summary="All" class="text-danger" role="alert"></div><label asp-for="Respuesta" class="form-label"></label><textarea asp-for="Respuesta" class="form-control mb-3" rows="5" maxlength="2000" required></textarea><p>No copies datos clínicos en la respuesta. Registra las acciones realizadas o el procedimiento, canal seguro y seguimiento acordados. Guardar una respuesta no ejecuta una eliminación ni revoca consentimientos por sí solo.</p><button class="dash-button" type="submit">Registrar respuesta</button></form> }
-    <a asp-action="Solicitudes">Volver a solicitudes</a>
+    else { <form asp-action="Responder" method="post"><input asp-for="Id" type="hidden" /><input asp-for="Revision" type="hidden" /><div asp-validation-summary="All" class="text-danger" role="alert"></div><label asp-for="Respuesta" class="form-label"></label><textarea asp-for="Respuesta" class="form-control mb-3" rows="5" maxlength="2000" required></textarea><p>@Idioma.Texto("No copies datos clínicos en la respuesta. Registra las acciones realizadas o el procedimiento, canal seguro y seguimiento acordados. Guardar una respuesta no ejecuta una eliminación ni revoca consentimientos por sí solo.")</p><button class="dash-button" type="submit">@Idioma.Texto("Registrar respuesta")</button></form> }
+    <a asp-action="Solicitudes">@Idioma.Texto("Volver a solicitudes")</a>
 </section>

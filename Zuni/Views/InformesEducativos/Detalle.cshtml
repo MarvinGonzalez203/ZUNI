@@ -1,28 +1,28 @@
 @model Zuni.Models.Informes.DetalleInforme
 @using Zuni.Models.Informes
 @{ ViewData["Title"] = "Informe educativo"; var v = Model.Version; }
-<header class="dash-profile-heading"><div><h1>Informe de apoyo educativo</h1><p>@v.Estudiante · @v.Carne · Versión @v.Numero · @v.Estado</p></div></header>
-@foreach (var tipo in new[] { "Success", "Error" }) { if (TempData[tipo] is string m) { <p class="dash-notice" role="status">@m</p> } }
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Informe de apoyo educativo")</h1><p>@v.Estudiante · @v.Carne @Idioma.Texto("· Versión") @v.Numero · @Idioma.Texto(Convert.ToString(v.Estado))</p></div></header>
+@foreach (var tipo in new[] { "Success", "Error" }) { if (TempData[tipo] is string m) { <p class="dash-notice" role="status">@Idioma.Texto(m)</p> } }
 <article class="dash-card p-4">
-    <p>@v.Institucion · Psicólogo: @v.Psicologo · Destinatario: @v.Destinatario</p>
-    <p>Comprobante: @v.InformeId · Periodo @v.PeriodoInicio.ToString("dd/MM/yyyy") a @v.PeriodoFin.ToString("dd/MM/yyyy")</p>
-    @if (v.SustituyeNumero is { } anterior) { <p>Esta versión sustituye a la versión @anterior.</p> }
-    <h2 class="h5">Objetivo</h2><p class="text-break" style="white-space:pre-line">@v.Objetivo</p>
-    <h2 class="h5">Fuentes de información</h2><p class="text-break" style="white-space:pre-line">@v.Fuentes</p>
-    <h2 class="h5">Barreras observadas y desempeño</h2><p class="text-break" style="white-space:pre-line">@v.Observaciones</p>
-    <h2 class="h5">Necesidades de apoyo</h2><p class="text-break" style="white-space:pre-line">@v.Necesidades</p>
-    <h2 class="h5">Recomendaciones</h2><p class="text-break" style="white-space:pre-line">@v.Recomendaciones</p>
-    <h2 class="h5">Responsables y seguimiento</h2><p class="text-break" style="white-space:pre-line">@v.ResponsablesAcciones</p><p>Fecha propuesta: @v.FechaSeguimiento.ToString("dd/MM/yyyy")</p>
-    @if (Model.Autorizacion is { } a) { <section class="border rounded p-3 my-3"><h2 class="h5">Autorización específica</h2><p>@a.TextoConsentimiento</p><p class="small">Versión del consentimiento: @a.VersionConsentimiento. Decisión: @(a.FechaRevocacionUtc.HasValue ? "Revocada" : a.Aceptada == true ? "Autorizada" : a.Aceptada == false ? "Rechazada" : "Pendiente").</p></section> }
-    @if (Model.EsAutor && v.Estado == EstadoInforme.Borrador) { <a class="dash-button" asp-action="Editar" asp-route-id="@v.Id">Editar borrador</a> }
+    <p>@v.Institucion @Idioma.Texto("· Psicólogo:") @v.Psicologo @Idioma.Texto("· Destinatario:") @v.Destinatario</p>
+    <p>@Idioma.Texto("Comprobante:") @v.InformeId @Idioma.Texto("· Periodo") @v.PeriodoInicio.ToString("dd/MM/yyyy") @Idioma.Texto("a") @v.PeriodoFin.ToString("dd/MM/yyyy")</p>
+    @if (v.SustituyeNumero is { } anterior) { <p>@Idioma.Texto("Esta versión sustituye a la versión") @anterior.</p> }
+    <h2 class="h5">@Idioma.Texto("Objetivo")</h2><p class="text-break" style="white-space:pre-line">@v.Objetivo</p>
+    <h2 class="h5">@Idioma.Texto("Fuentes de información")</h2><p class="text-break" style="white-space:pre-line">@v.Fuentes</p>
+    <h2 class="h5">@Idioma.Texto("Barreras observadas y desempeño")</h2><p class="text-break" style="white-space:pre-line">@v.Observaciones</p>
+    <h2 class="h5">@Idioma.Texto("Necesidades de apoyo")</h2><p class="text-break" style="white-space:pre-line">@v.Necesidades</p>
+    <h2 class="h5">@Idioma.Texto("Recomendaciones")</h2><p class="text-break" style="white-space:pre-line">@v.Recomendaciones</p>
+    <h2 class="h5">@Idioma.Texto("Responsables y seguimiento")</h2><p class="text-break" style="white-space:pre-line">@v.ResponsablesAcciones</p><p>@Idioma.Texto("Fecha propuesta:") @v.FechaSeguimiento.ToString("dd/MM/yyyy")</p>
+    @if (Model.Autorizacion is { } a) { <section class="border rounded p-3 my-3"><h2 class="h5">@Idioma.Texto("Autorización específica")</h2><p>@a.TextoConsentimiento</p><p class="small">@Idioma.Texto("Versión del consentimiento:") @a.VersionConsentimiento. @Idioma.Texto("Decisión:") @(a.FechaRevocacionUtc.HasValue ? "Revocada" : a.Aceptada == true ? "Autorizada" : a.Aceptada == false ? "Rechazada" : Idioma.Texto("Pendiente")).</p></section> }
+    @if (Model.EsAutor && v.Estado == EstadoInforme.Borrador) { <a class="dash-button" asp-action="Editar" asp-route-id="@v.Id">@Idioma.Texto("Editar borrador")</a> }
     @if (Model.EsEstudiante && v.Estado == EstadoInforme.PendienteAutorizacion)
-    { <form asp-action="Decidir" method="post"><input type="hidden" name="id" value="@v.Id" /><input type="hidden" name="revision" value="@v.Revision" /><label><input type="checkbox" name="confirmada" value="true" required /> Confirmo mi decisión para este texto, versión y destinatario.</label><p>Rechazar no impide continuar la atención.</p><div class="zuni-action-row"><button class="dash-button" name="aceptada" value="true">Autorizar esta versión</button><button class="btn btn-outline-secondary" name="aceptada" value="false">No autorizar</button></div></form> }
+    { <form asp-action="Decidir" method="post"><input type="hidden" name="id" value="@v.Id" /><input type="hidden" name="revision" value="@v.Revision" /><label><input type="checkbox" name="confirmada" value="true" required /> @Idioma.Texto("Confirmo mi decisión para este texto, versión y destinatario.")</label><p>@Idioma.Texto("Rechazar no impide continuar la atención.")</p><div class="zuni-action-row"><button class="dash-button" name="aceptada" value="true">@Idioma.Texto("Autorizar esta versión")</button><button class="btn btn-outline-secondary" name="aceptada" value="false">@Idioma.Texto("No autorizar")</button></div></form> }
     @if (Model.EsAutor && v.Estado == EstadoInforme.Autorizada)
-    { <form asp-action="Emitir" method="post"><input type="hidden" name="id" value="@v.Id" /><input type="hidden" name="revision" value="@v.Revision" /><label><input type="checkbox" name="confirmada" value="true" required /> Revisé este informe y confirmo que contiene únicamente información educativa apropiada para el destinatario autorizado.</label><div class="mt-3"><button class="dash-button">Emitir informe y habilitar PDF</button></div></form> }
-    @if (v.Estado == EstadoInforme.Emitida && Model.Autorizacion?.FechaRevocacionUtc is null) { <a class="dash-button mt-3" asp-action="Pdf" asp-route-id="@v.Id">Descargar PDF</a> }
+    { <form asp-action="Emitir" method="post"><input type="hidden" name="id" value="@v.Id" /><input type="hidden" name="revision" value="@v.Revision" /><label><input type="checkbox" name="confirmada" value="true" required /> @Idioma.Texto("Revisé este informe y confirmo que contiene únicamente información educativa apropiada para el destinatario autorizado.")</label><div class="mt-3"><button class="dash-button">@Idioma.Texto("Emitir informe y habilitar PDF")</button></div></form> }
+    @if (v.Estado == EstadoInforme.Emitida && Model.Autorizacion?.FechaRevocacionUtc is null) { <a class="dash-button mt-3" asp-action="Pdf" asp-route-id="@v.Id">@Idioma.Texto("Descargar PDF")</a> }
     @if (Model.EsEstudiante && Model.Autorizacion?.Aceptada == true && Model.Autorizacion.FechaRevocacionUtc is null)
-    { <details class="mt-3"><summary>Revocar autorización de esta versión</summary><p>Se impedirán nuevas descargas desde ZUNI. Las copias que otras personas ya descargaron no se borran.</p><form asp-action="Revocar" method="post"><input type="hidden" name="id" value="@v.Id" /><input type="hidden" name="revision" value="@v.Revision" /><label><input type="checkbox" name="confirmada" value="true" required /> Confirmo que deseo revocar esta autorización.</label><button class="btn btn-outline-danger">Revocar acceso</button></form></details> }
+    { <details class="mt-3"><summary>@Idioma.Texto("Revocar autorización de esta versión")</summary><p>@Idioma.Texto("Se impedirán nuevas descargas desde ZUNI. Las copias que otras personas ya descargaron no se borran.")</p><form asp-action="Revocar" method="post"><input type="hidden" name="id" value="@v.Id" /><input type="hidden" name="revision" value="@v.Revision" /><label><input type="checkbox" name="confirmada" value="true" required /> @Idioma.Texto("Confirmo que deseo revocar esta autorización.")</label><button class="btn btn-outline-danger">@Idioma.Texto("Revocar acceso")</button></form></details> }
     @if (Model.EsAutor && v.Estado is EstadoInforme.Emitida or EstadoInforme.Rechazada or EstadoInforme.Revocada or EstadoInforme.Sustituida)
-    { <form asp-action="NuevaVersion" method="post" class="mt-3"><input type="hidden" name="id" value="@v.Id" /><input type="hidden" name="revision" value="@v.Revision" /><button class="btn btn-outline-primary">Preparar una nueva versión</button></form> }
+    { <form asp-action="NuevaVersion" method="post" class="mt-3"><input type="hidden" name="id" value="@v.Id" /><input type="hidden" name="revision" value="@v.Revision" /><button class="btn btn-outline-primary">@Idioma.Texto("Preparar una nueva versión")</button></form> }
 </article>
-<a asp-action="Index">Volver a informes educativos</a>
+<a asp-action="Index">@Idioma.Texto("Volver a informes educativos")</a>

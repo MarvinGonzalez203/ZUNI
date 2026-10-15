@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Zuni.Data;
 using Zuni.Models;
 using Zuni.Seguridad;
+using Zuni.Localizacion;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,7 @@ builder.Services.AddScoped<
     PasswordHasher<ApplicationUser>>();
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddZuniIdiomas(builder.Configuration);
 builder.Services.AddScoped<Zuni.Services.BigFive.BigFiveService>();
 builder.Services.AddScoped<Zuni.Services.IAsignacionPsicologoService, Zuni.Services.AsignacionPsicologoService>();
 builder.Services.AddScoped<Zuni.Services.IAutorizacionClinicaService, Zuni.Services.AutorizacionClinicaService>();
@@ -111,6 +112,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseRequestLocalization();
 
 // Después de UseRouting para respetar [EnableRateLimiting] por endpoint.
 app.UseRateLimiter();

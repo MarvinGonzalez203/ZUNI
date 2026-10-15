@@ -3,11 +3,11 @@
     ViewData["Title"] = "Configuración de la institución";
 }
 <section class="container py-4" aria-labelledby="institucion-title">
-    <h1 id="institucion-title">Configuración de la institución</h1>
-    <p>Define los datos de esta institución y cómo se crean sus cuentas.</p>
+    <h1 id="institucion-title">@Idioma.Texto("Configuración de la institución")</h1>
+    <p>@Idioma.Texto("Define los datos de esta institución y cómo se crean sus cuentas.")</p>
     @foreach (var tipo in new[] { "Success", "Error" })
     {
-        if (TempData[tipo] is string mensaje) { <p class="alert @(tipo == "Error" ? "alert-danger" : "alert-success")" role="status">@mensaje</p> }
+        if (TempData[tipo] is string mensaje) { <p class="alert @(tipo == "Error" ? "alert-danger" : "alert-success")" role="status">@Idioma.Texto(mensaje)</p> }
     }
     <form asp-action="Index" method="post" enctype="multipart/form-data" style="max-width: 760px">
         <input asp-for="Revision" type="hidden" />
@@ -20,44 +20,44 @@
         <div class="mb-3">
             <label asp-for="CorreoSoporte" class="form-label"></label>
             <input asp-for="CorreoSoporte" class="form-control" type="email" maxlength="254" />
-            <small>Se muestra como contacto institucional. Guardarlo no activa el envío de correos.</small>
+            <small>@Idioma.Texto("Se muestra como contacto institucional. Guardarlo no activa el envío de correos.")</small>
             <span asp-validation-for="CorreoSoporte" class="text-danger"></span>
         </div>
-        <fieldset class="border rounded p-3 mb-3"><legend class="h5">Identidad visual</legend>
+        <fieldset class="border rounded p-3 mb-3"><legend class="h5">@Idioma.Texto("Identidad visual")</legend>
             <label asp-for="Lema" class="form-label"></label><input asp-for="Lema" class="form-control mb-3" maxlength="80" />
             <label asp-for="ColorPrincipal" class="form-label"></label><input asp-for="ColorPrincipal" type="color" class="form-control form-control-color mb-3" />
-            <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Colores de los botones">
+            <div class="d-flex flex-wrap gap-2 mb-3" role="group" aria-label="@Idioma.Texto("Colores de los botones")">
                 @foreach (var (color, nombreColor) in new[] { ("#cea2fd", "Violeta ZUNI"), ("#111111", "Negro"), ("#b42332", "Rojo"), ("#216e45", "Verde"), ("#2458a6", "Azul") })
                 {
-                    <button type="button" data-color-institucion="@color" aria-pressed="@(Model.ColorPrincipal.Equals(color, StringComparison.OrdinalIgnoreCase) ? "true" : "false")" style="background:@color;color:@Zuni.Services.Institucion.IdentidadInstitucion.Texto(color);border:1px solid transparent;border-radius:9px;padding:.65rem 1rem">@nombreColor</button>
+                    <button type="button" data-color-institucion="@color" aria-pressed="@(Model.ColorPrincipal.Equals(color, StringComparison.OrdinalIgnoreCase) ? "true" : "false")" style="background:@color;color:@Zuni.Services.Institucion.IdentidadInstitucion.Texto(color);border:1px solid transparent;border-radius:9px;padding:.65rem 1rem">@Idioma.Texto(nombreColor)</button>
                 }
             </div>
-            <span id="color-preview" class="d-inline-block px-3 py-2 rounded mb-2">Vista previa del texto</span>
-            <p>El mismo color se utiliza en los botones de todos los perfiles. El texto se ajusta para mantener contraste.</p>
+            <span id="color-preview" class="d-inline-block px-3 py-2 rounded mb-2">@Idioma.Texto("Vista previa del texto")</span>
+            <p>@Idioma.Texto("El mismo color se utiliza en los botones de todos los perfiles. El texto se ajusta para mantener contraste.")</p>
             <label asp-for="Logotipo" class="form-label"></label><input asp-for="Logotipo" type="file" accept="image/png" class="form-control mb-2" />
-            <small>PNG de hasta 128 KB y 1024 × 1024 píxeles. Si no cargas otro archivo, se conserva el actual.</small>
-            @if (Model.TieneLogotipo) { <img src="@Url.Action("Logotipo")" alt="Logotipo institucional actual" width="80" /> }
-            <label class="d-block mt-2"><input asp-for="QuitarLogotipo" /> Quitar el logotipo institucional y volver al de ZUNI</label>
+            <small>@Idioma.Texto("PNG de hasta 128 KB y 1024 × 1024 píxeles. Si no cargas otro archivo, se conserva el actual.")</small>
+            @if (Model.TieneLogotipo) { <img src="@Url.Action("Logotipo")" alt="@Idioma.Texto("Logotipo institucional actual")" width="80" /> }
+            <label class="d-block mt-2"><input asp-for="QuitarLogotipo" /> @Idioma.Texto("Quitar el logotipo institucional y volver al de ZUNI")</label>
             <span asp-validation-for="Logotipo" class="text-danger"></span>
         </fieldset>
         <div class="mb-3">
             <label asp-for="PoliticaCorreo" zuni-required="true" class="form-label"></label>
             <select asp-for="PoliticaCorreo" class="form-select">
-                <option value="0">Registro con dominios autorizados</option>
-                <option value="1">Registro con cualquier correo válido</option>
-                <option value="2">Solo cuentas creadas por el Administrador</option>
+                <option value="0">@Idioma.Texto("Registro con dominios autorizados")</option>
+                <option value="1">@Idioma.Texto("Registro con cualquier correo válido")</option>
+                <option value="2">@Idioma.Texto("Solo cuentas creadas por el Administrador")</option>
             </select>
             <span asp-validation-for="PoliticaCorreo" class="text-danger"></span>
         </div>
         <div class="mb-3">
             <label asp-for="DominiosAutorizados" zuni-required="@(Model.PoliticaCorreo == Zuni.Models.Institucion.PoliticaCorreoInstitucion.DominiosAutorizados)" data-required-conditional class="form-label"></label>
             <textarea asp-for="DominiosAutorizados" required="@(Model.PoliticaCorreo == Zuni.Models.Institucion.PoliticaCorreoInstitucion.DominiosAutorizados)" class="form-control" rows="4" maxlength="2000" aria-describedby="dominios-help"></textarea>
-            <small id="dominios-help">Un dominio por línea, sin @@. Ejemplo: colegio.edu.gt. Solo se restringe el correo en el primer modo. No se admiten subdominios automáticamente.</small>
+            <small id="dominios-help">@Idioma.Texto("Un dominio por línea, sin") @@. @Idioma.Texto("Ejemplo: colegio.edu.gt. Solo se restringe el correo en el primer modo. No se admiten subdominios automáticamente.")</small>
             <span asp-validation-for="DominiosAutorizados" class="text-danger"></span>
         </div>
-        <p>El registro público siempre requiere activación del Administrador. En el modo de altas administradas puedes crear cuentas con cualquier correo válido. Cambiar esta política no modifica cuentas existentes.</p>
-        <div class="zuni-action-row"><button class="btn btn-primary" type="submit">Guardar configuración</button>
-        <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-secondary">Volver al tablero</a></div>
+        <p>@Idioma.Texto("El registro público siempre requiere activación del Administrador. En el modo de altas administradas puedes crear cuentas con cualquier correo válido. Cambiar esta política no modifica cuentas existentes.")</p>
+        <div class="zuni-action-row"><button class="btn btn-primary" type="submit">@Idioma.Texto("Guardar configuración")</button>
+        <a asp-controller="Administrador" asp-action="Index" class="btn btn-outline-secondary">@Idioma.Texto("Volver al tablero")</a></div>
     </form>
 </section>
 @section Scripts {

@@ -1,9 +1,9 @@
 @model Zuni.Models.Agenda.CitaCalendarioResumen
 @inject TimeProvider Reloj
 @if(Model.Estado==Zuni.Models.Agenda.EstadoCita.Solicitada){
-<div class="agenda-pending-review"><strong>Pendiente de revisar @(Model.ProgramadorRol=="Director"?"· Propuesta del Director":"")</strong>
+<div class="agenda-pending-review"><strong>@Idioma.Texto("Pendiente de revisar") @(Model.ProgramadorRol=="Director"?Idioma.Texto("· Propuesta del Director"):"")</strong>
 <form asp-controller="Psicologo" asp-action="GestionarCita" method="post" class="agenda-response-form"><input type="hidden" name="CitaId" value="@Model.Id"/><input type="hidden" name="Revision" value="@Model.Revision"/>
-<label for="respuesta-@Model.Id">Motivo administrativo si no puedes atender @(Model.ProgramadorRol=="Director"?"(obligatorio al rechazar)":"(opcional)")</label><textarea id="respuesta-@Model.Id" name="MotivoCancelacion" maxlength="300" rows="2" class="form-control" placeholder="Ej.: conflicto de horario. Evita incluir datos clínicos."></textarea>
-<div class="agenda-actions">@if(Model.Modalidad==Zuni.Models.Agenda.ModalidadCita.Presencial&&Model.InicioUtc>Reloj.GetUtcNow().UtcDateTime){<button class="dash-button" name="Estado" value="Confirmada">Aceptar cita</button>}<button class="btn btn-outline-secondary" name="Estado" value="Rechazada">No puedo atender / responder</button></div></form>
-@if(Model.Modalidad==Zuni.Models.Agenda.ModalidadCita.Virtual&&Model.InicioUtc>Reloj.GetUtcNow().UtcDateTime){<a asp-controller="Reuniones" asp-action="Preparar" asp-route-citaId="@Model.Id" class="dash-button">Preparar enlace y confirmar cita virtual</a>}
+<label for="respuesta-@Model.Id">@Idioma.Texto("Motivo administrativo si no puedes atender") @(Model.ProgramadorRol=="Director"?Idioma.Texto("(obligatorio al rechazar)"):Idioma.Texto("(opcional)"))</label><textarea id="respuesta-@Model.Id" name="MotivoCancelacion" maxlength="300" rows="2" class="form-control" placeholder="@Idioma.Texto("Ej.: conflicto de horario. Evita incluir datos clínicos.")"></textarea>
+<div class="agenda-actions">@if(Model.Modalidad==Zuni.Models.Agenda.ModalidadCita.Presencial&&Model.InicioUtc>Reloj.GetUtcNow().UtcDateTime){<button class="dash-button" name="Estado" value="Confirmada">@Idioma.Texto("Aceptar cita")</button>}<button class="btn btn-outline-secondary" name="Estado" value="Rechazada">@Idioma.Texto("No puedo atender / responder")</button></div></form>
+@if(Model.Modalidad==Zuni.Models.Agenda.ModalidadCita.Virtual&&Model.InicioUtc>Reloj.GetUtcNow().UtcDateTime){<a asp-controller="Reuniones" asp-action="Preparar" asp-route-citaId="@Model.Id" class="dash-button">@Idioma.Texto("Preparar enlace y confirmar cita virtual")</a>}
 </div>}

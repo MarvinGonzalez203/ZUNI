@@ -1,5 +1,5 @@
 @{
     ViewData["Title"] = "Atención";
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Atención</h1></div></header>
-<section class="dash-card"><h2>Atención de estudiantes asignados</h2><p>El acceso al expediente inicial se realiza desde tus estudiantes con asignación vigente. La creación de notas clínicas aún no está disponible.</p><a class="dash-button" asp-action="Estudiantes">Ver estudiantes</a></section>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("ACOMPAÑAMIENTO ESTUDIANTIL")</span><h1>@Idioma.Texto("Atención")</h1></div></header>
+<section class="dash-card"><h2>@Idioma.Texto("Atención de estudiantes asignados")</h2><p>@Idioma.Texto("El acceso al expediente inicial se realiza desde tus estudiantes con asignación vigente. La creación de notas clínicas aún no está disponible.")</p><a class="dash-button" asp-action="Estudiantes">@Idioma.Texto("Ver estudiantes")</a></section>

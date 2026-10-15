@@ -1,55 +1,55 @@
-﻿@model Zuni.Models.Agenda.CitasEstudianteViewModel
+@model Zuni.Models.Agenda.CitasEstudianteViewModel
 @using Zuni.Models.Agenda
 @using Zuni.Services.Agenda
 @inject TimeProvider Reloj
 @{ ViewData["Title"] = "Mis citas"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">TU ACOMPAÑAMIENTO</span><h1>Mis citas</h1><p>Solicita una cita con tu psicólogo asignado. Completar Big Five es opcional.</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("TU ACOMPAÑAMIENTO")</span><h1>@Idioma.Texto("Mis citas")</h1><p>@Idioma.Texto("Solicita una cita con tu psicólogo asignado. Completar Big Five es opcional.")</p></div></header>
 <section class="dash-card agenda-card" aria-labelledby="disponibles-title">
-    <h2 id="disponibles-title">Horarios disponibles</h2>
+    <h2 id="disponibles-title">@Idioma.Texto("Horarios disponibles")</h2>
     @if (!Model.MayoriaEdadVerificada)
     {
-        <div class="agenda-empty"><h3>Verifica tu mayoría de edad</h3><p>La institución debe revisar tu documento antes de que puedas reservar nuevas citas.</p><a asp-controller="MayoriaEdad" asp-action="Index">Consultar mi verificación</a></div>
+        <div class="agenda-empty"><h3>@Idioma.Texto("Verifica tu mayoría de edad")</h3><p>@Idioma.Texto("La institución debe revisar tu documento antes de que puedas reservar nuevas citas.")</p><a asp-controller="MayoriaEdad" asp-action="Index">@Idioma.Texto("Consultar mi verificación")</a></div>
     }
     else if (!Model.PuedeReservar)
     {
-        <div class="agenda-empty"><h3>Aún no puedes reservar</h3><p>Necesitas tu perfil completo y una asignación vigente a un psicólogo disponible.</p><a asp-action="EstadoSolicitud">Consultar mi solicitud</a> · <a href="/MiCuenta">Revisar mi cuenta</a></div>
+        <div class="agenda-empty"><h3>@Idioma.Texto("Aún no puedes reservar")</h3><p>@Idioma.Texto("Necesitas tu perfil completo y una asignación vigente a un psicólogo disponible.")</p><a asp-action="EstadoSolicitud">@Idioma.Texto("Consultar mi solicitud")</a> · <a href="/MiCuenta">@Idioma.Texto("Revisar mi cuenta")</a></div>
     }
     else
     {
-        <p>Profesional asignado: <strong>@Model.Psicologo</strong></p>
+        <p>@Idioma.Texto("Profesional asignado:") <strong>@Model.Psicologo</strong></p>
 
     }
 </section>
 <partial name="_AgendaCalendario" model="Model.Calendario" />
 <section class="dash-card agenda-card" aria-labelledby="citas-title">
-    <h2 id="citas-title">Mis citas</h2>
-    <p>Horarios de Guatemala (UTC−6). Puedes cancelar una cita antes de su hora de inicio.</p>
-    @if (Model.Citas.Count == 0) { <div class="agenda-empty">Todavía no tienes citas registradas.</div> }
+    <h2 id="citas-title">@Idioma.Texto("Mis citas")</h2>
+    <p>@Idioma.Texto("Horarios de Guatemala (UTC−6). Puedes cancelar una cita antes de su hora de inicio.")</p>
+    @if (Model.Citas.Count == 0) { <div class="agenda-empty">@Idioma.Texto("Todavía no tienes citas registradas.")</div> }
     else
     {
-        <div class="table-responsive"><table><thead><tr><th>Fecha y hora</th><th>Psicólogo</th><th>Modalidad</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+        <div class="table-responsive"><table><thead><tr><th>@Idioma.Texto("Fecha y hora")</th><th>@Idioma.Texto("Psicólogo")</th><th>@Idioma.Texto("Modalidad")</th><th>@Idioma.Texto("Estado")</th><th>@Idioma.Texto("Acciones")</th></tr></thead><tbody>
         @foreach (var cita in Model.Citas)
         {
-            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span></td><td>
+            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@Idioma.Texto(Convert.ToString(cita.Modalidad))</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? Idioma.Texto("No asistió") : cita.Estado.ToString())</span></td><td>
             @if (AgendaReglas.Activa(cita.Estado) && cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime)
             {
-                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelar-cita-@cita.Id">Cancelar cita</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelar-cita-@cita.Id">@Idioma.Texto("Cancelar cita")</button>
             }
             @if (cita.Modalidad == ModalidadCita.Virtual && (cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada) && cita.FinUtc > Reloj.GetUtcNow().UtcDateTime)
             {
-                <a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@cita.Id">@(cita.EnlacePreparado ? "Consultar acceso virtual" : "Enlace virtual pendiente")</a>
+                <a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@cita.Id">@(cita.EnlacePreparado ? Idioma.Texto("Consultar acceso virtual") : "Enlace virtual pendiente")</a>
             }
             @if (cita.Estado == EstadoCita.Cancelada)
             {
-                <p class="small text-muted text-break mb-0">Motivo de cancelación: @(string.IsNullOrWhiteSpace(cita.MotivoCancelacion) ? "Motivo no registrado" : cita.MotivoCancelacion)</p>
+                <p class="small text-muted text-break mb-0">@Idioma.Texto("Motivo de cancelación:") @(string.IsNullOrWhiteSpace(cita.MotivoCancelacion) ? Idioma.Texto("Motivo no registrado") : cita.MotivoCancelacion)</p>
             }
             </td></tr>
         }
         </tbody></table></div>
-        <nav class="agenda-pagination" aria-label="Páginas de mis citas">
-            @if (Model.Pagina > 1) { <a asp-action="Citas" asp-route-fecha="@Model.Fecha.ToString("yyyy-MM-dd")" asp-route-pagina="@(Model.Pagina - 1)">Anterior</a> }
-            <span>Página @Model.Pagina de @Model.Paginas</span>
-            @if (Model.Pagina < Model.Paginas) { <a asp-action="Citas" asp-route-fecha="@Model.Fecha.ToString("yyyy-MM-dd")" asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a> }
+        <nav class="agenda-pagination" aria-label="@Idioma.Texto("Páginas de mis citas")">
+            @if (Model.Pagina > 1) { <a asp-action="Citas" asp-route-fecha="@Model.Fecha.ToString("yyyy-MM-dd")" asp-route-pagina="@(Model.Pagina - 1)">@Idioma.Texto("Anterior")</a> }
+            <span>@Idioma.Texto("Página") @Model.Pagina @Idioma.Texto("de") @Model.Paginas</span>
+            @if (Model.Pagina < Model.Paginas) { <a asp-action="Citas" asp-route-fecha="@Model.Fecha.ToString("yyyy-MM-dd")" asp-route-pagina="@(Model.Pagina + 1)">@Idioma.Texto("Siguiente")</a> }
         </nav>
     }
 </section>

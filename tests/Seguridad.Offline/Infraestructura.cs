@@ -77,6 +77,7 @@ internal static class HostPrueba
         });
         builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));
         builder.Services.AddControllersWithViews().AddApplicationPart(typeof(CuentaController).Assembly);
+        Zuni.Localizacion.ConfiguracionIdioma.AddZuniIdiomas(builder.Services,builder.Configuration);
         builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
         builder.Services.Configure<KeyManagementOptions>(options =>
         {
@@ -101,6 +102,7 @@ internal static class HostPrueba
         app.Urls.Add("http://127.0.0.1:0");
         app.UseMiddleware<CabecerasSeguridadMiddleware>();
         app.UseRouting();
+        app.UseRequestLocalization();
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseMiddleware<Zuni.Middleware.ContenidoPrivadoNoCacheMiddleware>();

@@ -1,23 +1,23 @@
 @model Zuni.Models.Agenda.AtencionPrivadaViewModel
 @using Zuni.Services.Agenda
 @{ ViewData["Title"] = "Atención registrada"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ATENCIÓN CERRADA · SOLO LECTURA</span><h1>Atención registrada</h1><p>@Model.Estudiante · @AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") · @Model.Modalidad</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("ATENCIÓN CERRADA · SOLO LECTURA")</span><h1>@Idioma.Texto("Atención registrada")</h1><p>@Model.Estudiante · @AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") · @Idioma.Texto(Convert.ToString(Model.Modalidad))</p></div></header>
 <section class="dash-card agenda-card atencion-card">
-    <p>Asistencia: <strong>@(Model.Asistio ? "Sí" : "No asistió")</strong></p>
-    <p class="small">Cierre: @AgendaReglas.Local(Model.FechaCierreUtc).ToString("dd/MM/yyyy HH:mm") (Guatemala)</p>
+    <p>@Idioma.Texto("Asistencia:") <strong>@(Model.Asistio ? Idioma.Texto("Sí") : Idioma.Texto("No asistió"))</strong></p>
+    <p class="small">@Idioma.Texto("Cierre:") @AgendaReglas.Local(Model.FechaCierreUtc).ToString("dd/MM/yyyy HH:mm") (Guatemala)</p>
     @if (Model.Asistio)
     {
-        <div class="atencion-privada"><h2>Resultado profesional privado</h2><p class="small">Exclusivo del profesional autorizado. No se comparte con el estudiante.</p><p class="atencion-texto">@Model.ResultadoProfesionalPrivado</p></div>
-        <h2>Resultado breve compartido</h2><p class="atencion-texto">@Model.ResultadoBreveEstudiante</p>
+        <div class="atencion-privada"><h2>@Idioma.Texto("Resultado profesional privado")</h2><p class="small">@Idioma.Texto("Exclusivo del profesional autorizado. No se comparte con el estudiante.")</p><p class="atencion-texto">@Model.ResultadoProfesionalPrivado</p></div>
+        <h2>@Idioma.Texto("Resultado breve compartido")</h2><p class="atencion-texto">@Model.ResultadoBreveEstudiante</p>
     }
     @if (!string.IsNullOrWhiteSpace(Model.ResenaRecomendacionesEstudiante))
     {
-        <h2>@(Model.Asistio ? "Reseña y recomendaciones compartidas" : "Observación de inasistencia")</h2><p class="atencion-texto">@Model.ResenaRecomendacionesEstudiante</p>
+        <h2>@(Model.Asistio ? Idioma.Texto("Reseña y recomendaciones compartidas") : Idioma.Texto("Observación de inasistencia"))</h2><p class="atencion-texto">@Model.ResenaRecomendacionesEstudiante</p>
     }
     @if (Model.RecomiendaOtraCita)
     {
-        <h2>Se recomienda otra cita</h2><p class="atencion-texto">@Model.IndicacionesProximaCita</p><p class="small">No se ha creado una cita automáticamente.</p>
+        <h2>@Idioma.Texto("Se recomienda otra cita")</h2><p class="atencion-texto">@Model.IndicacionesProximaCita</p><p class="small">@Idioma.Texto("No se ha creado una cita automáticamente.")</p>
     }
-    <a asp-action="Historial" class="dash-button">Volver al historial</a>
+    <a asp-action="Historial" class="dash-button">@Idioma.Texto("Volver al historial")</a>
 </section>
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/atencion-cita.css" asp-append-version="true" /> }

@@ -11,60 +11,60 @@
 <div class="student-dashboard">
 <header class="dash-welcome">
     <div class="dash-welcome-copy">
-        <span class="dash-eyebrow">BIENVENIDO A TU ESPACIO</span>
-        <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
-        <p>Tu información y acompañamiento, en un solo lugar.</p>
+        <span class="dash-eyebrow">@Idioma.Texto("BIENVENIDO A TU ESPACIO")</span>
+        <h1>@Idioma.Texto("Hola,") @nombre<span class="dash-greeting-dot">.</span></h1>
+        <p>@Idioma.Texto("Tu información y acompañamiento, en un solo lugar.")</p>
         <div class="dash-welcome-actions">
-            <a class="dash-button" asp-controller="@perfilController" asp-action="@perfilAction">@(Model.PerfilCompleto ? "Ver mi cuenta" : "Completar mis datos") <partial name="_DashboardIcon" model='@("arrow")' /></a>
-            <span class="dash-profile-status">Perfil: @(Model.PerfilCompleto ? "Completo" : "Incompleto")</span>
+            <a class="dash-button" asp-controller="@perfilController" asp-action="@perfilAction">@(Model.PerfilCompleto ? Idioma.Texto("Ver mi cuenta") : Idioma.Texto("Completar mis datos")) <partial name="_DashboardIcon" model='@("arrow")' /></a>
+            <span class="dash-profile-status">@Idioma.Texto("Perfil:") @(Model.PerfilCompleto ? Idioma.Texto("Completo") : Idioma.Texto("Incompleto"))</span>
         </div>
     </div>
-    <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>Conecta contigo.</span></div>
+    <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>@Idioma.Texto("Conecta contigo.")</span></div>
 </header>
 
 <partial name="_ProgresoPerfil" model="Model.DatosPerfil" />
 @if (TempData["Error"] is string errorAtencion)
 {
-    <p class="dash-notice" role="alert">@errorAtencion</p>
+    <p class="dash-notice" role="alert">@Idioma.Texto(errorAtencion)</p>
 }
 @if (TempData["Info"] is string infoAtencion)
 {
-    <p class="dash-notice" role="status">@infoAtencion</p>
+    <p class="dash-notice" role="status">@Idioma.Texto(infoAtencion)</p>
 }
 <section class="dash-card student-attention-card" aria-labelledby="atencion-title">
-    <h2 id="atencion-title" class="h4">Solicitud de atención</h2>
+    <h2 id="atencion-title" class="h4">@Idioma.Texto("Solicitud de atención")</h2>
     @if (Model.EstadoAtencion is { } estado)
     {
-        <p role="status">Estado: <strong>@estado</strong></p>
-        <p>Tu solicitud ya está registrada. No es necesario enviarla nuevamente.</p>
-        <a class="dash-button" asp-action="SolicitarAtencion">Ver estado</a>
+        <p role="status">@Idioma.Texto("Estado:") <strong>@Idioma.Texto(estado)</strong></p>
+        <p>@Idioma.Texto("Tu solicitud ya está registrada. No es necesario enviarla nuevamente.")</p>
+        <a class="dash-button" asp-action="SolicitarAtencion">@Idioma.Texto("Ver estado")</a>
     }
     else
     {
-        <p>Solicita acompañamiento y completa el formulario inicial con consentimiento informado.</p>
-        <a class="dash-button" asp-action="SolicitarAtencion">Solicitar atención</a>
+        <p>@Idioma.Texto("Solicita acompañamiento y completa el formulario inicial con consentimiento informado.")</p>
+        <a class="dash-button" asp-action="SolicitarAtencion">@Idioma.Texto("Solicitar atención")</a>
     }
 </section>
 
-<div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2><span>Todo en un solo lugar</span></div>
-<section class="dash-summary-grid student-service-overview" aria-label="Resumen de servicios">
-    <a class="dash-card dash-summary dash-summary-profile dash-card-link" asp-controller="MiCuenta" asp-action="Index" aria-label="Ver mi cuenta">
-        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><span class="dash-eyebrow">MI CUENTA</span></div>
-        <h3>@(Model.PerfilCompleto ? "Completo" : "Incompleto")</h3>
-        <p>@(Model.PerfilCompleto ? "Tus datos básicos están completos." : "Completa tus datos académicos y de contacto.")</p>
-        <span class="dash-text-link">Ver cuenta <partial name="_DashboardIcon" model='@("arrow")' /></span>
+<div class="dash-section-heading"><h2>@Idioma.Texto("Tu espacio, de un vistazo")</h2><span>@Idioma.Texto("Todo en un solo lugar")</span></div>
+<section class="dash-summary-grid student-service-overview" aria-label="@Idioma.Texto("Resumen de servicios")">
+    <a class="dash-card dash-summary dash-summary-profile dash-card-link" asp-controller="MiCuenta" asp-action="Index" aria-label="@Idioma.Texto("Ver mi cuenta")">
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><span class="dash-eyebrow">@Idioma.Texto("MI CUENTA")</span></div>
+        <h3>@(Model.PerfilCompleto ? Idioma.Texto("Completo") : Idioma.Texto("Incompleto"))</h3>
+        <p>@(Model.PerfilCompleto ? Idioma.Texto("Tus datos básicos están completos.") : Idioma.Texto("Completa tus datos académicos y de contacto."))</p>
+        <span class="dash-text-link">@Idioma.Texto("Ver cuenta") <partial name="_DashboardIcon" model='@("arrow")' /></span>
     </a>
     @foreach (var item in new[] { ("clipboard", "EVALUACIONES", "Desde aquí podrás realizar tus evaluaciones.", "Evaluaciones"), ("results", "RESULTADOS", "Consulta los resultados y reportes que tu psicólogo comparte contigo.", "Resultados"), ("calendar", "CITAS", "Consulta tus citas y solicita un horario disponible.", "Citas") })
     {
         <a class="dash-card dash-summary dash-card-link" asp-controller="Estudiante" asp-action="@item.Item4" aria-label="@item.Item4">
-            <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><span class="dash-eyebrow">@item.Item2</span></div>
-            <h3>@(item.Item4 == "Evaluaciones" ? "Big Five" : item.Item4 == "Resultados" ? "Mis resultados" : "Mis citas")</h3><p>@(item.Item4 == "Evaluaciones" ? "Herramienta opcional de apoyo, sin diagnóstico." : item.Item3)</p><span class="dash-module-label">@(item.Item4 == "Evaluaciones" ? "Participación voluntaria" : "Consulta desde tu perfil")</span>
+            <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item1" /></span><span class="dash-eyebrow">@Idioma.Texto(item.Item2)</span></div>
+            <h3>@(item.Item4 == "Evaluaciones" ? Idioma.Texto("Big Five") : item.Item4 == "Resultados" ? Idioma.Texto("Mis resultados") : Idioma.Texto("Mis citas"))</h3><p>@(item.Item4 == "Evaluaciones" ? Idioma.Texto("Herramienta opcional de apoyo, sin diagnóstico.") : Idioma.Texto(item.Item3))</p><span class="dash-module-label">@(item.Item4 == "Evaluaciones" ? Idioma.Texto("Participación voluntaria") : Idioma.Texto("Consulta desde tu perfil"))</span>
         </a>
     }
 </section>
 
 
-<div class="dash-section-heading"><h2>Tu información</h2><a class="dash-text-link" asp-controller="MiCuenta" asp-action="Index">Ver mi cuenta <partial name="_DashboardIcon" model='@("arrow")' /></a></div>
+<div class="dash-section-heading"><h2>@Idioma.Texto("Tu información")</h2><a class="dash-text-link" asp-controller="MiCuenta" asp-action="Index">@Idioma.Texto("Ver mi cuenta") <partial name="_DashboardIcon" model='@("arrow")' /></a></div>
 <partial name="_DatosPerfil" model="Model.DatosPerfil" />
 
 

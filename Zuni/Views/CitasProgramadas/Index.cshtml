@@ -1,16 +1,16 @@
 @model Zuni.Models.Agenda.ProgramacionListado
 @{ViewData["Title"]="Programación de citas";}
-<header class="dash-profile-heading"><div><h1>Programación de citas</h1><p>Coordina fechas con estudiantes vinculados. Hora de Guatemala.</p></div><a asp-action="Editar" asp-route-psicologoId="@Model.CalendarioDirector?.Calendario.PsicologoId" class="dash-button">Programar nueva cita</a></header>
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Programación de citas")</h1><p>@Idioma.Texto("Coordina fechas con estudiantes vinculados. Hora de Guatemala.")</p></div><a asp-action="Editar" asp-route-psicologoId="@Model.CalendarioDirector?.Calendario.PsicologoId" class="dash-button">@Idioma.Texto("Programar nueva cita")</a></header>
 @if(Model.CalendarioDirector is {}calendario){
-    <p>Selecciona un psicólogo y un día para consultar su disponibilidad y proponer una cita.</p>
+    <p>@Idioma.Texto("Selecciona un psicólogo y un día para consultar su disponibilidad y proponer una cita.")</p>
     <partial name="_CalendarioDirector" model="calendario" />
 }
 <section class="dash-card mt-4">
-    <h2>Listado general de citas activas</h2>
-    <p>Las propuestas pendientes requieren confirmación del psicólogo. Las citas virtuales necesitan un enlace individual preparado por él.</p>
-    @if(Model.Citas.Count==0){<p>No hay citas activas para mostrar.</p>@if(Model.CalendarioDirector is not null){<p>El calendario permite consultar disponibilidad y programar una nueva.</p>}}
-    else{<div class="table-responsive"><table class="table"><thead><tr><th>Estudiante</th><th>Psicólogo</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead><tbody>
-    @foreach(var c in Model.Citas){<tr><td>@c.Estudiante</td><td>@c.Psicologo</td><td>@Zuni.Services.Agenda.AgendaReglas.Local(c.InicioUtc).ToString("dd/MM/yyyy HH:mm")</td><td>@c.Estado</td><td>@if(c.PuedeReprogramar){<a asp-action="Editar" asp-route-citaId="@c.Id" class="btn btn-outline-primary">Reprogramar</a>}else{<span>Consulta el registro de atención.</span>}</td></tr>}
+    <h2>@Idioma.Texto("Listado general de citas activas")</h2>
+    <p>@Idioma.Texto("Las propuestas pendientes requieren confirmación del psicólogo. Las citas virtuales necesitan un enlace individual preparado por él.")</p>
+    @if(Model.Citas.Count==0){<p>@Idioma.Texto("No hay citas activas para mostrar.")</p>@if(Model.CalendarioDirector is not null){<p>@Idioma.Texto("El calendario permite consultar disponibilidad y programar una nueva.")</p>}}
+    else{<div class="table-responsive"><table class="table"><thead><tr><th>@Idioma.Texto("Estudiante")</th><th>@Idioma.Texto("Psicólogo")</th><th>@Idioma.Texto("Fecha")</th><th>@Idioma.Texto("Estado")</th><th>@Idioma.Texto("Acción")</th></tr></thead><tbody>
+    @foreach(var c in Model.Citas){<tr><td>@c.Estudiante</td><td>@c.Psicologo</td><td>@Zuni.Services.Agenda.AgendaReglas.Local(c.InicioUtc).ToString("dd/MM/yyyy HH:mm")</td><td>@Idioma.Texto(Convert.ToString(c.Estado))</td><td>@if(c.PuedeReprogramar){<a asp-action="Editar" asp-route-citaId="@c.Id" class="btn btn-outline-primary">@Idioma.Texto("Reprogramar")</a>}else{<span>@Idioma.Texto("Consulta el registro de atención.")</span>}</td></tr>}
     </tbody></table></div>}
 </section>
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }

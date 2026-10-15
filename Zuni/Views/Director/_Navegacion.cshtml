@@ -5,18 +5,18 @@
     var accion = ViewContext.RouteData.Values["controller"]?.ToString() == "Director"
         ? ViewContext.RouteData.Values["action"]?.ToString() : null;
 }
-<nav class="dash-nav" aria-label="Navegación del Director">
-    <a class="dash-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PruebasDirector" ? "is-active" : "")" asp-controller="PruebasDirector" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Gestión de pruebas</span></a>
-    <span class="dash-nav-label">PANEL INSTITUCIONAL</span>
-    <a class="dash-nav-link @(accion == "Calendario" || (ctrl == "CitasProgramadas" && act is "Index" or "Editar" or "Guardar") ? "is-active" : "")" asp-controller="CitasProgramadas" asp-action="Index"><partial name="_DashboardIcon" model='@("calendar")' /><span>Programación de citas<small>Calendario y seguimiento</small></span></a>
-    <a class="dash-nav-link @Active("InformesEducativos")" asp-controller="InformesEducativos" asp-action="Index"><partial name="_DashboardIcon" model='@("results")' /><span>Informes autorizados</span></a>
-    <a class="dash-nav-link @Active("Privacidad")" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>Privacidad y mis derechos</span></a>
-    <a class="dash-nav-link @(accion == "Index" ? "is-active" : "")" asp-controller="Director" asp-action="Index" aria-current="@(accion == "Index" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Tablero</span></a>
-    <a class="dash-nav-link @(accion == "Carreras" ? "is-active" : "")" asp-controller="Director" asp-action="Carreras" aria-current="@(accion == "Carreras" ? "page" : null)"><partial name="_DashboardIcon" model='@("book")' /><span>Carreras</span></a>
-    <a class="dash-nav-link @(accion == "AvanceEvaluaciones" ? "is-active" : "")" asp-controller="Director" asp-action="AvanceEvaluaciones" aria-current="@(accion == "AvanceEvaluaciones" ? "page" : null)"><partial name="_DashboardIcon" model='@("clipboard")' /><span>Avance de evaluaciones</span></a>
-    <a class="dash-nav-link @(accion == "ResultadosInstitucionales" ? "is-active" : "")" asp-controller="Director" asp-action="ResultadosInstitucionales" aria-current="@(accion == "ResultadosInstitucionales" ? "page" : null)"><partial name="_DashboardIcon" model='@("results")' /><span>Resultados institucionales</span></a>
-    <a class="dash-nav-link @(accion == "Estadisticas" ? "is-active" : "")" asp-controller="Director" asp-action="Estadisticas" aria-current="@(accion == "Estadisticas" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>Estadísticas</span></a>
-    <a class="dash-nav-link @(ctrl=="CitasProgramadas" && act is "Notificaciones" or "Leida" ? "is-active":"")" asp-controller="CitasProgramadas" asp-action="Notificaciones"><partial name="_DashboardIcon" model='@("calendar")' /><span>Notificaciones</span></a>
-    <span class="dash-nav-label dash-nav-label-spaced">CUENTA</span>
-    <a class="dash-nav-link @Active("MiCuenta")" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>Mi cuenta</span></a>
+<nav class="dash-nav" aria-label="@Idioma.Texto("Navegación del Director")">
+    <a class="dash-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PruebasDirector" ? "is-active" : "")" asp-controller="PruebasDirector" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Gestión de pruebas")</span></a>
+    <span class="dash-nav-label">@Idioma.Texto("PANEL INSTITUCIONAL")</span>
+    <a class="dash-nav-link @(accion == "Calendario" || (ctrl == "CitasProgramadas" && act is "Index" or "Editar" or "Guardar") ? "is-active" : "")" asp-controller="CitasProgramadas" asp-action="Index"><partial name="_DashboardIcon" model='@("calendar")' /><span>@Idioma.Texto("Programación de citas")<small>@Idioma.Texto("Calendario y seguimiento")</small></span></a>
+    <a class="dash-nav-link @Active("InformesEducativos")" asp-controller="InformesEducativos" asp-action="Index"><partial name="_DashboardIcon" model='@("results")' /><span>@Idioma.Texto("Informes autorizados")</span></a>
+    <a class="dash-nav-link @Active("Privacidad")" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")' /><span>@Idioma.Texto("Privacidad y mis derechos")</span></a>
+    <a class="dash-nav-link @(accion == "Index" ? "is-active" : "")" asp-controller="Director" asp-action="Index" aria-current="@(accion == "Index" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>@Idioma.Texto("Tablero")</span></a>
+    <a class="dash-nav-link @(accion == "Carreras" ? "is-active" : "")" asp-controller="Director" asp-action="Carreras" aria-current="@(accion == "Carreras" ? "page" : null)"><partial name="_DashboardIcon" model='@("book")' /><span>@Idioma.Texto("Carreras")</span></a>
+    <a class="dash-nav-link @(accion == "AvanceEvaluaciones" ? "is-active" : "")" asp-controller="Director" asp-action="AvanceEvaluaciones" aria-current="@(accion == "AvanceEvaluaciones" ? "page" : null)"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Avance de evaluaciones")</span></a>
+    <a class="dash-nav-link @(accion == "ResultadosInstitucionales" ? "is-active" : "")" asp-controller="Director" asp-action="ResultadosInstitucionales" aria-current="@(accion == "ResultadosInstitucionales" ? "page" : null)"><partial name="_DashboardIcon" model='@("results")' /><span>@Idioma.Texto("Resultados institucionales")</span></a>
+    <a class="dash-nav-link @(accion == "Estadisticas" ? "is-active" : "")" asp-controller="Director" asp-action="Estadisticas" aria-current="@(accion == "Estadisticas" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>@Idioma.Texto("Estadísticas")</span></a>
+    <a class="dash-nav-link @(ctrl=="CitasProgramadas" && act is "Notificaciones" or "Leida" ? "is-active":"")" asp-controller="CitasProgramadas" asp-action="Notificaciones"><partial name="_DashboardIcon" model='@("calendar")' /><span>@Idioma.Texto("Notificaciones")</span></a>
+    <span class="dash-nav-label dash-nav-label-spaced">@Idioma.Texto("CUENTA")</span>
+    <a class="dash-nav-link @Active("MiCuenta")" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")' /><span>@Idioma.Texto("Mi cuenta")</span></a>
 </nav>

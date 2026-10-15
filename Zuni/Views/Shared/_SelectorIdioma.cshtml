@@ -1,0 +1,16 @@
+@using Zuni.Localizacion
+@{
+    var volver=(Context.Request.PathBase+Context.Request.Path+Context.Request.QueryString).ToString();
+    if(!Microsoft.AspNetCore.Http.HttpMethods.IsGet(Context.Request.Method))
+    {
+        volver=Url.Action("Index",ViewData["DashboardController"]?.ToString()??"Home")??Url.Content("~/");
+        if(Uri.TryCreate(Context.Request.Headers.Referer.ToString(),UriKind.Absolute,out var anterior)&&
+           anterior.Scheme==Context.Request.Scheme&&anterior.Authority.Equals(Context.Request.Host.Value,StringComparison.OrdinalIgnoreCase))volver=anterior.PathAndQuery;
+    }
+}
+<form asp-controller="Idioma" asp-action="Cambiar" method="post" class="zuni-language" aria-label="@Idioma.Texto("Cambiar idioma")">
+    <input type="hidden" name="volver" value="@volver" />
+    <span aria-hidden="true" class="zuni-language-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18Z"/></svg></span>
+    <button type="submit" name="idioma" value="es" lang="es" aria-pressed="@(!Idioma.EsIngles ? "true":"false")" aria-label="Español" title="Español">ES</button>
+    <span aria-hidden="true">/</span><button type="submit" name="idioma" value="en" lang="en" aria-pressed="@(Idioma.EsIngles ? "true":"false")" aria-label="English" title="English">EN</button>
+</form>

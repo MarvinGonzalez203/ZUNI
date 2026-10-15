@@ -1,4 +1,4 @@
-﻿@{
+@{
     var accion = ViewContext.RouteData.Values["action"]?.ToString();
     var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
 
@@ -13,8 +13,8 @@
     };
 }
 
-<nav class="dash-nav" aria-label="Navegación del catedrático">
-    <span class="dash-nav-label">MI ESPACIO</span>
+<nav class="dash-nav" aria-label="@Idioma.Texto("Navegación del catedrático")">
+    <span class="dash-nav-label">@Idioma.Texto("MI ESPACIO")</span>
 
     @foreach (var opcion in opciones)
     {
@@ -34,6 +34,6 @@
        asp-action="Index"
        aria-current="@(controlador == "MiCuenta" ? "page" : null)">
         <partial name="_DashboardIcon" model='@("user")' />
-        <span>Mi cuenta</span>
+        <span>@Idioma.Texto("Mi cuenta")</span>
     </a>
 </nav>

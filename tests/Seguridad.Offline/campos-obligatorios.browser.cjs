@@ -23,10 +23,24 @@ function check(value, text) { assert.ok(value, text); checks++; }
             const bootstrap = fs.readFileSync(path.join(root, 'lib/bootstrap/dist/js/bootstrap.bundle.min.js'), 'utf8');
             html = html.replace('<head>', '<head><script>' + bootstrap.replace(/<\/script/gi, '<\\/script') + '</script>');
             await page.setContent(html);
-            for (const css of ['lib/bootstrap/dist/css/bootstrap.min.css', 'css/dashboard.css', 'css/campos-obligatorios.css', 'css/agenda-contexto.css'])
+            for (const href of await page.locator('link[rel="stylesheet"]').evaluateAll(links=>links.map(link=>link.getAttribute('href')))) {
+                const local=path.resolve(root,href.split('?')[0].replace(/^\//,''));
+                if(local.startsWith(root+path.sep)&&fs.existsSync(local)) await page.addStyleTag({path:local});
+            }
+            const scoped=path.resolve(root,'../obj/Release/net8.0/scopedcss/bundle/Zuni.styles.css');
+            if(fs.existsSync(scoped)) await page.addStyleTag({path:scoped});
+            for (const css of ['lib/bootstrap/dist/css/bootstrap.min.css', 'css/dashboard.css', 'css/campos-obligatorios.css', 'css/agenda-contexto.css', 'css/idioma.css'])
                 await page.addStyleTag({ path: path.join(root, css) });
+            await page.addScriptTag({path:path.join(root,'js/idioma.js')});
             for (const script of scripts) await page.addScriptTag({ path: path.join(root, 'js', script) });
             await page.addScriptTag({ path: path.join(root, 'js/campos-obligatorios.js') });
+            await page.addStyleTag({content:'*,*::before,*::after{transition:none!important;animation:none!important}'});
+            const imageData={};
+            for (const src of await page.locator('img[src^="/images/"]').evaluateAll(imgs=>imgs.map(img=>img.getAttribute('src')))) {
+                const local=path.resolve(root,src.split('?')[0].slice(1));
+                if(local.startsWith(root+path.sep)&&fs.existsSync(local)) imageData[src]='data:image/png;base64,'+fs.readFileSync(local).toString('base64');
+            }
+            await page.locator('img[src^="/images/"]').evaluateAll((imgs,data)=>imgs.forEach(img=>{const value=data[img.getAttribute('src')];if(value)img.src=value;}),imageData);
         }
         async function required(id, value) {
             await page.waitForFunction(({ id, value }) => {
@@ -224,6 +238,34 @@ function check(value, text) { assert.ok(value, text); checks++; }
         check(await page.locator('.auth-brand .auth-logo').count()===0,'logo retirado solo del panel lateral del login');
         check(await page.locator('.auth-brand-copy').evaluate(e=>{const a=e.closest('aside').getBoundingClientRect(),b=e.getBoundingClientRect();return Math.abs((a.y+a.height/2)-(b.y+b.height/2))<3;}),'texto de acceso centrado verticalmente');
         await page.screenshot({path:path.join(fixtures,'login-sin-logo-lateral.png'),fullPage:false});
+        for(const name of ['home','login','admin','director','psicologo','estudiante']) {
+            await load('idioma-'+name,['agenda-contexto.js']);
+            if(name==='home'||name==='login') {await page.addStyleTag({path:path.join(root,'css/site.css')});await page.addStyleTag({path:path.join(root,'css/guias-publicas.css')});}
+            check(await page.locator('html').getAttribute('lang')==='en','idioma del documento '+name);
+            const selector=page.locator('.zuni-language');
+            check(await selector.count()===1 && await selector.isVisible(),'selector único visible '+name);
+            check(await selector.locator('[value="en"]').getAttribute('aria-pressed')==='true','estado EN accesible '+name);
+            const submitted=await selector.evaluate(f=>Object.fromEntries(new FormData(f,f.querySelector('[value="es"]'))));
+            check(submitted.idioma==='es' && submitted.__RequestVerificationToken && submitted.volver.startsWith('/'),'cambio nativo a español con protección '+name);
+            await page.setViewportSize({width:390,height:844});await page.evaluate(()=>scrollTo(0,0));
+            check(await selector.isVisible(),'selector disponible sin abrir menú móvil '+name);
+            check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde en inglés '+name+' '+JSON.stringify(await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.right>innerWidth+1&&r.width>0&&!e.closest('.offcanvas,.modal,.table-responsive');}).slice(0,6).map(e=>[e.tagName,e.className,Math.round(e.getBoundingClientRect().width)]))));
+            await page.screenshot({path:path.join(fixtures,'idioma-'+name+'-movil.png'),fullPage:false});
+            await page.setViewportSize({width:1280,height:900});await page.evaluate(()=>scrollTo(0,0));
+            await page.screenshot({path:path.join(fixtures,'idioma-'+name+'.png'),fullPage:false});
+        }
+        await load('idioma-login',['site.js']);await page.addStyleTag({path:path.join(root,'css/site.css')});
+        check(await page.locator('label[for="RememberMe"]').innerText().then(t=>t.includes('Remember me')),'opción recordar traducida');
+        check(await page.locator('#Email').getAttribute('data-val-required').then(t=>t.includes('Enter your email')),'mensaje requerido del validador en inglés');
+        await page.locator('#Email').fill('correo-invalido');
+        await page.locator('#Email').evaluate(e=>e.reportValidity());
+        check(await page.locator('#Email').evaluate(e=>e.validationMessage.includes('Enter a valid email')),'mensaje nativo de correo en inglés');
+        await page.locator('#Email').fill('alumno@example.com');
+        check(await page.locator('#Email').evaluate(e=>!e.validity.customError),'validación se limpia al editar');
+        await load('idioma-alta');
+        check(await page.locator('#Rol option[value="Estudiante"]').innerText()==='Student','opción visible traducida conserva valor Estudiante');
+        await page.selectOption('#Rol','Estudiante');
+        check(await page.locator('#carne-estudiante').isVisible(),'dependencia de rol funciona en inglés');
         const touchContext = await browser.newContext({hasTouch:true,viewport:{width:1280,height:600}});
         const touch = await touchContext.newPage();
         const cssNav=['lib/bootstrap/dist/css/bootstrap.min.css','css/dashboard.css','css/agenda-contexto.css'].map(p=>fs.readFileSync(path.join(root,p),'utf8')).join('\n');

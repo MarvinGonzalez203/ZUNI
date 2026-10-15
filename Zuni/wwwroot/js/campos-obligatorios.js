@@ -19,7 +19,7 @@
                 marker.textContent = ' *';
                 description = document.createElement('span');
                 description.className = 'visually-hidden required-description';
-                description.textContent = ' (Campo obligatorio)';
+                description.textContent = window.ZuniI18n.t(' (Campo obligatorio)');
                 const nested = label.querySelector('input:not([type="checkbox"]), select, textarea');
                 label.insertBefore(marker, nested);
                 label.insertBefore(description, nested);
@@ -35,7 +35,7 @@
             if (!form.querySelector('.required-marker:not([hidden])') || form.querySelector('.required-fields-help')) return;
             const help = document.createElement('p');
             help.className = 'required-fields-help';
-            help.innerHTML = '<span class="required-marker" aria-hidden="true">*</span> Campo obligatorio';
+            help.innerHTML = '<span class="required-marker" aria-hidden="true">*</span> '+window.ZuniI18n.t('Campo obligatorio');
             form.prepend(help);
         });
     };

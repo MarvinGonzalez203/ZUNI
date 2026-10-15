@@ -2,32 +2,32 @@
 @using Zuni.Models.Agenda
 @using Zuni.Services.Agenda
 @{
-    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-GT");
+    var cultura = System.Globalization.CultureInfo.CurrentCulture;
     var minimo = Model.Historico ? DateOnly.MinValue : new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1);
     var maximo = new DateOnly(Model.Hoy.Year, Model.Hoy.Month, 1).AddMonths(12);
     var offset = ((int)Model.Mes.DayOfWeek + 6) % 7;
     var seleccionado=Model.CitaSeleccionada is {}id?Model.Dias.FirstOrDefault(d=>d.Citas.Any(c=>c.Id==id)):null;
 }
-<section id="calendario-citas" class="dash-card agenda-card agenda-mensual" aria-label="Calendario mensual" data-cita-seleccionada="@Model.CitaSeleccionada" data-modal-inicial="@(seleccionado is null?null:"dia-"+seleccionado.Fecha.ToString("yyyy-MM-dd"))">
-    <nav class="agenda-month" aria-label="Mes del calendario">
-        @if (Model.Mes > minimo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(-1).ToString("yyyy-MM-dd")&amp;psicologoId=@Model.PsicologoId">← Anterior</a> }
+<section id="calendario-citas" class="dash-card agenda-card agenda-mensual" aria-label="@Idioma.Texto("Calendario mensual")" data-cita-seleccionada="@Model.CitaSeleccionada" data-modal-inicial="@(seleccionado is null?null:"dia-"+seleccionado.Fecha.ToString("yyyy-MM-dd"))">
+    <nav class="agenda-month" aria-label="@Idioma.Texto("Mes del calendario")">
+        @if (Model.Mes > minimo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(-1).ToString("yyyy-MM-dd")&amp;psicologoId=@Model.PsicologoId">@Idioma.Texto("← Anterior")</a> }
         else { <span></span> }
         <h2>@Model.Mes.ToString("MMMM yyyy", cultura)</h2>
-        @if (Model.Mes < maximo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(1).ToString("yyyy-MM-dd")&amp;psicologoId=@Model.PsicologoId">Siguiente →</a> }
+        @if (Model.Mes < maximo) { <a class="dash-button" href="?fecha=@Model.Mes.AddMonths(1).ToString("yyyy-MM-dd")&amp;psicologoId=@Model.PsicologoId">@Idioma.Texto("Siguiente →")</a> }
         else { <span></span> }
     </nav>
-    @if(Model.Director && Model.Profesionales.Count>1){<form method="get" class="agenda-professional-select"><label for="profesional-calendario">Profesional</label><select id="profesional-calendario" name="psicologoId" asp-items="Model.Profesionales" class="form-select" data-calendario-profesional></select><input type="hidden" name="fecha" value="@Model.Mes.ToString("yyyy-MM-dd")"/><noscript><button class="dash-button">Cambiar profesional</button></noscript></form>}
-    else if(Model.Director && Model.Profesionales.Count==1){<p class="agenda-hint">Psicólogo: <strong>@Model.Profesionales[0].Text</strong></p>}
-    <p class="agenda-legend"><span class="is-free">Disponible</span><span class="is-busy">Ocupado</span><span class="is-pending">Pendiente de revisar</span><span>Sin horarios</span></p>
-    @if(Model.Almuerzo is {}almuerzo){<p class="agenda-hint">Almuerzo: @almuerzo.Inicio.ToString("HH:mm")–@almuerzo.Fin.ToString("HH:mm"). No se pueden asignar citas en ese intervalo.</p>}
-    <p class="agenda-hint">@(Model.Editor ? "Selecciona un día para consultar o configurar sus horarios." : Model.Director ? "Selecciona un día para consultar la disponibilidad del profesional y proponer una cita." : "Selecciona un día para consultar tus citas y las franjas de tu psicólogo asignado.") Hora de Guatemala (UTC−6).</p>
+    @if(Model.Director && Model.Profesionales.Count>1){<form method="get" class="agenda-professional-select"><label for="profesional-calendario">@Idioma.Texto("Profesional")</label><select id="profesional-calendario" name="psicologoId" asp-items="Model.Profesionales" class="form-select" data-calendario-profesional></select><input type="hidden" name="fecha" value="@Model.Mes.ToString("yyyy-MM-dd")"/><noscript><button class="dash-button">@Idioma.Texto("Cambiar profesional")</button></noscript></form>}
+    else if(Model.Director && Model.Profesionales.Count==1){<p class="agenda-hint">@Idioma.Texto("Psicólogo:") <strong>@Model.Profesionales[0].Text</strong></p>}
+    <p class="agenda-legend"><span class="is-free">@Idioma.Texto("Disponible")</span><span class="is-busy">@Idioma.Texto("Ocupado")</span><span class="is-pending">@Idioma.Texto("Pendiente de revisar")</span><span>@Idioma.Texto("Sin horarios")</span></p>
+    @if(Model.Almuerzo is {}almuerzo){<p class="agenda-hint">@Idioma.Texto("Almuerzo:") @almuerzo.Inicio.ToString("HH:mm")–@almuerzo.Fin.ToString("HH:mm"). @Idioma.Texto("No se pueden asignar citas en ese intervalo.")</p>}
+    <p class="agenda-hint">@(Model.Editor ? Idioma.Texto("Selecciona un día para consultar o configurar sus horarios.") : Model.Director ? Idioma.Texto("Selecciona un día para consultar la disponibilidad del profesional y proponer una cita.") : Idioma.Texto("Selecciona un día para consultar tus citas y las franjas de tu psicólogo asignado.")) @Idioma.Texto("Hora de Guatemala (UTC−6).")</p>
     <div class="agenda-grid">
-        @foreach (var nombre in new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" }) { <span class="agenda-weekday">@nombre</span> }
+        @foreach (var nombre in new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" }) { <span class="agenda-weekday">@Idioma.Texto(nombre)</span> }
         @for (var i = 0; i < offset; i++) { <span aria-hidden="true"></span> }
         @foreach (var dia in Model.Dias)
         {
             var estado = dia.Estado == "Disponible" ? "is-free" : dia.Estado == "Ocupado" ? "is-busy" : dia.Estado == "Pendiente de revisar" ? "is-pending" : "";
-            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @dia.Estado"><strong>@dia.Fecha.Day</strong><span>@dia.Estado</span>@if (dia.Citas.Count > 0) { <small>@dia.Citas.Count cita(s)</small> }</button>
+            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @Idioma.Texto(dia.Estado)"><strong>@dia.Fecha.Day</strong><span>@Idioma.Texto(Convert.ToString(dia.Estado))</span>@if (dia.Citas.Count > 0) { <small>@dia.Citas.Count @Idioma.Texto("cita(s)")</small> }</button>
         }
     </div>
 </section>
@@ -36,89 +36,89 @@
     var clave = "dia-" + dia.Fecha.ToString("yyyy-MM-dd");
     <div class="modal fade agenda-modal" id="@clave" tabindex="-1" aria-labelledby="@clave-titulo" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-            <div class="modal-header"><h2 class="modal-title fs-5" id="@clave-titulo">@dia.Fecha.ToString("dddd dd MMMM yyyy", cultura)</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <div class="modal-header"><h2 class="modal-title fs-5" id="@clave-titulo">@dia.Fecha.ToString("dddd dd MMMM yyyy", cultura)</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Idioma.Texto("Cerrar")"></button></div>
             <div class="modal-body">
-                <p class="agenda-hint">Hora de Guatemala (UTC−6)</p><h3 class="h5">Horarios de este día</h3>
-                @if (dia.Bloqueado) { <p class="agenda-notice">Día bloqueado. La configuración se conserva y no admite solicitudes.</p> }
-                @if(dia.PendientesPorRevisar>0){<p class="agenda-pending-review">@dia.PendientesPorRevisar cita(s) pendiente(s) de revisar para esta fecha.</p>}
-                @if(Model.Almuerzo is {}a){<p class="agenda-hint">Almuerzo bloqueado: @a.Inicio.ToString("HH:mm")–@a.Fin.ToString("HH:mm").</p>}
+                <p class="agenda-hint">@Idioma.Texto("Hora de Guatemala (UTC−6)")</p><h3 class="h5">@Idioma.Texto("Horarios de este día")</h3>
+                @if (dia.Bloqueado) { <p class="agenda-notice">@Idioma.Texto("Día bloqueado. La configuración se conserva y no admite solicitudes.")</p> }
+                @if(dia.PendientesPorRevisar>0){<p class="agenda-pending-review">@dia.PendientesPorRevisar @Idioma.Texto("cita(s) pendiente(s) de revisar para esta fecha.")</p>}
+                @if(Model.Almuerzo is {}a){<p class="agenda-hint">@Idioma.Texto("Almuerzo bloqueado:") @a.Inicio.ToString("HH:mm")–@a.Fin.ToString("HH:mm").</p>}
                 @if (!Model.Editor) {
-                    <h3 class="h5">@(Model.Director ? "Programaciones de este día" : "Mis citas de este día")</h3>
-                    @if (dia.Citas.Count == 0) { <p>No hay citas registradas para esta fecha.</p> }
+                    <h3 class="h5">@(Model.Director ? Idioma.Texto("Programaciones de este día") : Idioma.Texto("Mis citas de este día"))</h3>
+                    @if (dia.Citas.Count == 0) { <p>@Idioma.Texto("No hay citas registradas para esta fecha.")</p> }
                     @foreach (var c in dia.Citas) {
-                        <article class="agenda-slot" id="cita-agenda-@c.Id"><strong>@c.Nombre</strong><p>@AgendaReglas.Local(c.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(c.FinUtc).ToString("HH:mm") · @c.Modalidad · @c.Estado</p>
-                        @if(Model.Director && AgendaReglas.Activa(c.Estado) && c.InicioUtc > Model.AhoraUtc && !c.EsImprevista) { <a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@c.Id">Reprogramar cita</a> }
+                        <article class="agenda-slot" id="cita-agenda-@c.Id"><strong>@c.Nombre</strong><p>@AgendaReglas.Local(c.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(c.FinUtc).ToString("HH:mm") · @Idioma.Texto(Convert.ToString(c.Modalidad)) · @Idioma.Texto(Convert.ToString(c.Estado))</p>
+                        @if(Model.Director && AgendaReglas.Activa(c.Estado) && c.InicioUtc > Model.AhoraUtc && !c.EsImprevista) { <a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@c.Id">@Idioma.Texto("Reprogramar cita")</a> }
                         </article>
                     }
-                    @if(Model.Director && dia.Editable && !dia.Bloqueado) { <a class="dash-button mb-3" asp-controller="CitasProgramadas" asp-action="Editar" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" asp-route-psicologoId="@Model.PsicologoId">Proponer cita a un estudiante vinculado</a> }
-                    @if(!Model.Director && !Model.PuedeReservar) { <p class="agenda-hint">Puedes consultar tus citas. Para reservar, completa el perfil, la verificación de edad y la asignación de psicólogo.</p> }
+                    @if(Model.Director && dia.Editable && !dia.Bloqueado) { <a class="dash-button mb-3" asp-controller="CitasProgramadas" asp-action="Editar" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" asp-route-psicologoId="@Model.PsicologoId">@Idioma.Texto("Proponer cita a un estudiante vinculado")</a> }
+                    @if(!Model.Director && !Model.PuedeReservar) { <p class="agenda-hint">@Idioma.Texto("Puedes consultar tus citas. Para reservar, completa el perfil, la verificación de edad y la asignación de psicólogo.")</p> }
                 }
                 @if (Model.Editor) {
-                    <h3 class="h5">Citas y actividades de este día</h3>
-                    @if (dia.Citas.Count == 0) { <p>No hay citas registradas para esta fecha.</p> }
+                    <h3 class="h5">@Idioma.Texto("Citas y actividades de este día")</h3>
+                    @if (dia.Citas.Count == 0) { <p>@Idioma.Texto("No hay citas registradas para esta fecha.")</p> }
                     @foreach (var cita in dia.Citas) {
-                        <article class="agenda-slot" id="cita-agenda-@cita.Id"><strong>@cita.Nombre</strong><p>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(cita.FinUtc).ToString("HH:mm") · @cita.Estado @(cita.EsImprevista ? "· Atención imprevista" : "") @(cita.FinAproximado ? "· Fin aproximado" : "")</p>
+                        <article class="agenda-slot" id="cita-agenda-@cita.Id"><strong>@cita.Nombre</strong><p>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(cita.FinUtc).ToString("HH:mm") · @Idioma.Texto(Convert.ToString(cita.Estado)) @(cita.EsImprevista ? Idioma.Texto("· Atención imprevista") : "") @(cita.FinAproximado ? Idioma.Texto("· Fin aproximado") : "")</p>
                         <partial name="_ResponderCitaPendiente" model="cita" />
-                        @if (cita.TieneRegistroAtencion && cita.Estado == EstadoCita.Completada) { <a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@cita.Id" class="dash-button">Ver reporte compartido y reimprimir</a> }
-                        else if (cita.TieneRegistroAtencion) { <a asp-controller="Psicologo" asp-action="VerAtencion" asp-route-citaId="@cita.Id">Consultar registro</a> }
-                        else if (cita.FinUtc <= Model.AhoraUtc && cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada) { <a asp-controller="Psicologo" asp-action="RegistrarAtencion" asp-route-citaId="@cita.Id" class="dash-button">Completar registro de atención</a> }
+                        @if (cita.TieneRegistroAtencion && cita.Estado == EstadoCita.Completada) { <a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@cita.Id" class="dash-button">@Idioma.Texto("Ver reporte compartido y reimprimir")</a> }
+                        else if (cita.TieneRegistroAtencion) { <a asp-controller="Psicologo" asp-action="VerAtencion" asp-route-citaId="@cita.Id">@Idioma.Texto("Consultar registro")</a> }
+                        else if (cita.FinUtc <= Model.AhoraUtc && cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada) { <a asp-controller="Psicologo" asp-action="RegistrarAtencion" asp-route-citaId="@cita.Id" class="dash-button">@Idioma.Texto("Completar registro de atención")</a> }
                         </article>
-                        @if(AgendaReglas.Activa(cita.Estado)&&cita.InicioUtc>Model.AhoraUtc&&!cita.EsImprevista){<a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@cita.Id" class="btn btn-outline-primary mb-2">Reprogramar cita</a>}
+                        @if(AgendaReglas.Activa(cita.Estado)&&cita.InicioUtc>Model.AhoraUtc&&!cita.EsImprevista){<a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@cita.Id" class="btn btn-outline-primary mb-2">@Idioma.Texto("Reprogramar cita")</a>}
                     }
-                    @if (dia.Fecha <= Model.Hoy) { <a asp-controller="Atenciones" asp-action="Imprevista" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" class="dash-button mb-3">Registrar atención imprevista</a> }
+                    @if (dia.Fecha <= Model.Hoy) { <a asp-controller="Atenciones" asp-action="Imprevista" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" class="dash-button mb-3">@Idioma.Texto("Registrar atención imprevista")</a> }
                 }
                 @if (Model.Editor && dia.Editable)
                 {
-                    <p class="agenda-hint">@(dia.UsaBaseSemanal ? "Se utiliza la disponibilidad semanal como base." : "Configuración exclusiva de esta fecha.")</p>
-                    @if (dia.Intervalos.Count == 0) { <p>Sin horarios para esta fecha.</p> }
+                    <p class="agenda-hint">@(dia.UsaBaseSemanal ? Idioma.Texto("Se utiliza la disponibilidad semanal como base.") : Idioma.Texto("Configuración exclusiva de esta fecha."))</p>
+                    @if (dia.Intervalos.Count == 0) { <p>@Idioma.Texto("Sin horarios para esta fecha.")</p> }
                     @foreach (var h in dia.Intervalos)
                     {
                         <div class="agenda-slot">
-                            <p><strong>@h.Inicio.ToString("HH:mm")–@h.Fin.ToString("HH:mm")</strong> · @h.Modalidad · @(h.DuracionMinutos == 0 ? "Sin duración establecida (cada cita elige su duración)" : $"{h.DuracionMinutos} minutos")</p>
-                            <p>@(h.TieneCitasActivas ? "Con citas activas" : dia.Bloqueado ? "Bloqueado" : "Configurado")</p>
+                            <p><strong>@h.Inicio.ToString("HH:mm")–@h.Fin.ToString("HH:mm")</strong> · @Idioma.Texto(Convert.ToString(h.Modalidad)) · @(h.DuracionMinutos == 0 ? Idioma.Texto("Sin duración establecida (cada cita elige su duración)") : $"{h.DuracionMinutos} minutos")</p>
+                            <p>@(h.TieneCitasActivas ? Idioma.Texto("Con citas activas") : dia.Bloqueado ? Idioma.Texto("Bloqueado") : Idioma.Texto("Configurado"))</p>
                             <form asp-controller="Psicologo" asp-action="CambiarDia" method="post">
                                 <input type="hidden" name="fecha" value="@dia.Fecha.ToString("yyyy-MM-dd")" /><input type="hidden" name="operacion" value="quitar" /><input type="hidden" name="horarioId" value="@h.Id" />
-                                <button class="btn btn-outline-secondary" type="submit" disabled="@h.TieneCitasActivas">Quitar horario</button>
+                                <button class="btn btn-outline-secondary" type="submit" disabled="@h.TieneCitasActivas">@Idioma.Texto("Quitar horario")</button>
                             </form>
                         </div>
                     }
                     @if (!dia.Bloqueado)
                     {
-                        <h3 class="h5 mt-4">Añadir horario disponible</h3>
-                        <p class="agenda-hint">De 08:00 a 18:00, en múltiplos de 5 minutos y sin superposiciones.</p>
+                        <h3 class="h5 mt-4">@Idioma.Texto("Añadir horario disponible")</h3>
+                        <p class="agenda-hint">@Idioma.Texto("De 08:00 a 18:00, en múltiplos de 5 minutos y sin superposiciones.")</p>
                         <form asp-controller="Psicologo" asp-action="AgregarHorarioDia" method="post" class="agenda-form" data-horario-dia="@dia.Fecha.ToString("yyyy-MM-dd")" autocomplete="off">
                             <input type="hidden" name="Fecha" value="@dia.Fecha.ToString("yyyy-MM-dd")" />
-                            <label for="@clave-inicio">Inicio<input id="@clave-inicio" type="time" name="HoraInicio" min="08:00" max="18:00" step="300" required /></label>
-                            <label for="@clave-fin">Fin aproximado (opcional)<input id="@clave-fin" type="time" name="HoraFin" min="08:00" max="18:00" step="300" /></label>
-                            <label zuni-required="true" for="@clave-duracion">Duración de cada cita<select id="@clave-duracion" name="DuracionMinutos"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="50" selected>50 minutos</option><option value="0">Sin duración establecida</option></select></label>
-                            <label zuni-required="true" for="@clave-modalidad">Modalidad<select id="@clave-modalidad" name="Modalidad"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option><option value="Ambas">Ambas</option></select></label>
-                            <label for="@clave-estudiante">Estudiante (opcional)<select id="@clave-estudiante" name="PerfilEstudianteId"><option value="">Solo disponibilidad, sin asignar cita</option>@foreach(var p in Model.EstudiantesProgramables){<option value="@p.Id">@p.Nombre</option>}</select></label><p class="agenda-hint">Si eliges un estudiante se programa la primera franja y se le notifica. Para asignar cita elige modalidad Presencial o Virtual.</p>
-                            <button class="dash-button" type="submit">Guardar horario</button>
-                            <p class="agenda-hint" data-fin-estimado>El fin es opcional. Si lo omites se calcula con la duración elegida; sin duración establecida se estima un bloque de 50 minutos. Es planificación, no duración real de la sesión.</p>
+                            <label for="@clave-inicio">@Idioma.Texto("Hora de inicio")<input id="@clave-inicio" type="time" name="HoraInicio" min="08:00" max="18:00" step="300" required /></label>
+                            <label for="@clave-fin">@Idioma.Texto("Fin aproximado (opcional)")<input id="@clave-fin" type="time" name="HoraFin" min="08:00" max="18:00" step="300" /></label>
+                            <label zuni-required="true" for="@clave-duracion">@Idioma.Texto("Duración de cada cita")<select id="@clave-duracion" name="DuracionMinutos"><option value="15">@Idioma.Texto("15 minutos")</option><option value="30">@Idioma.Texto("30 minutos")</option><option value="50" selected>@Idioma.Texto("50 minutos")</option><option value="0">@Idioma.Texto("Sin duración establecida")</option></select></label>
+                            <label zuni-required="true" for="@clave-modalidad">@Idioma.Texto("Modalidad")<select id="@clave-modalidad" name="Modalidad"><option value="Presencial">@Idioma.Texto("Presencial")</option><option value="Virtual">@Idioma.Texto("Virtual")</option><option value="Ambas">@Idioma.Texto("Ambas")</option></select></label>
+                            <label for="@clave-estudiante">@Idioma.Texto("Estudiante (opcional)")<select id="@clave-estudiante" name="PerfilEstudianteId"><option value="">@Idioma.Texto("Solo disponibilidad, sin asignar cita")</option>@foreach(var p in Model.EstudiantesProgramables){<option value="@p.Id">@p.Nombre</option>}</select></label><p class="agenda-hint">@Idioma.Texto("Si eliges un estudiante se programa la primera franja y se le notifica. Para asignar cita elige modalidad Presencial o Virtual.")</p>
+                            <button class="dash-button" type="submit">@Idioma.Texto("Guardar horario")</button>
+                            <p class="agenda-hint" data-fin-estimado>@Idioma.Texto("El fin es opcional. Si lo omites se calcula con la duración elegida; sin duración establecida se estima un bloque de 50 minutos. Es planificación, no duración real de la sesión.")</p>
                         </form>
                     }
-                    <h3 class="h5 mt-4">Disponibilidad del día</h3>
+                    <h3 class="h5 mt-4">@Idioma.Texto("Disponibilidad del día")</h3>
                     <form asp-controller="Psicologo" asp-action="CambiarDia" method="post" class="agenda-actions">
                         <input type="hidden" name="fecha" value="@dia.Fecha.ToString("yyyy-MM-dd")" />
-                        <button class="dash-button" type="submit" name="operacion" value="@(dia.Bloqueado ? "habilitar" : "bloquear")" disabled="@(!dia.Bloqueado && dia.TieneCitasActivas)">@(dia.Bloqueado ? "Habilitar día" : "Marcar día ocupado")</button>
-                        <button class="btn btn-outline-secondary" type="submit" name="operacion" value="limpiar" disabled="@dia.TieneCitasActivas">Quitar configuración del día</button>
+                        <button class="dash-button" type="submit" name="operacion" value="@(dia.Bloqueado ? "habilitar" : "bloquear")" disabled="@(!dia.Bloqueado && dia.TieneCitasActivas)">@(dia.Bloqueado ? Idioma.Texto("Habilitar día") : Idioma.Texto("Marcar día ocupado"))</button>
+                        <button class="btn btn-outline-secondary" type="submit" name="operacion" value="limpiar" disabled="@dia.TieneCitasActivas">@Idioma.Texto("Quitar configuración del día")</button>
                     </form>
-                    <p class="agenda-hint mt-2">Bloquear conserva los horarios. Quitar la configuración deja solo esta fecha sin horarios; no elimina citas ni cambia otras fechas.</p>
-                    @if (dia.TieneCitasActivas) { <p>Este día tiene citas activas. Debes gestionarlas antes de modificar sus horarios.</p> }
+                    <p class="agenda-hint mt-2">@Idioma.Texto("Bloquear conserva los horarios. Quitar la configuración deja solo esta fecha sin horarios; no elimina citas ni cambia otras fechas.")</p>
+                    @if (dia.TieneCitasActivas) { <p>@Idioma.Texto("Este día tiene citas activas. Debes gestionarlas antes de modificar sus horarios.")</p> }
                 }
                 else if (!Model.Editor && !dia.Bloqueado)
                 {
-                    @if (dia.CitaPropiaActiva) { <p class="agenda-notice">Ya tienes una cita activa para esta fecha.</p> }
-                    @if (dia.Franjas.Count == 0) { <p>No hay franjas futuras disponibles para esta fecha.</p> }
+                    @if (dia.CitaPropiaActiva) { <p class="agenda-notice">@Idioma.Texto("Ya tienes una cita activa para esta fecha.")</p> }
+                    @if (dia.Franjas.Count == 0) { <p>@Idioma.Texto("No hay franjas futuras disponibles para esta fecha.")</p> }
                     @foreach (var h in dia.Franjas)
                     {
                         var campo = clave + "-modalidad-" + h.InicioUtc.Ticks;
                         <div class="agenda-slot @(h.Ocupada ? "is-busy" : "")">
-                            <p><strong>@AgendaReglas.Local(h.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(h.FinUtc).ToString("HH:mm")</strong> · @h.Modalidad · @((h.FinUtc - h.InicioUtc).TotalMinutes) minutos</p>
-                            @if (h.Ocupada) { <p>Reservado / ocupado</p> }
+                            <p><strong>@AgendaReglas.Local(h.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(h.FinUtc).ToString("HH:mm")</strong> · @Idioma.Texto(Convert.ToString(h.Modalidad)) · @((h.FinUtc - h.InicioUtc).TotalMinutes) @Idioma.Texto("minutos")</p>
+                            @if (h.Ocupada) { <p>@Idioma.Texto("Reservado / ocupado")</p> }
                             else
                             {
-                                <p>Disponible</p>
+                                <p>@Idioma.Texto("Disponible")</p>
                                 @if (!dia.CitaPropiaActiva && Model.PuedeReservar && !Model.Director)
                                 {
                                     <form asp-controller="Estudiante" asp-action="ReservarCita" method="post" class="agenda-form">
@@ -126,16 +126,16 @@
                                         {
                                             // Sin duración establecida: la cita ocupa solo [inicio, inicio + duración].
                                             var maximo = (int)(h.FinUtc - h.InicioUtc).TotalMinutes;
-                                            <label for="@(campo)-inicio">Hora de inicio<select id="@(campo)-inicio" name="Inicio" required>
+                                            <label for="@(campo)-inicio">@Idioma.Texto("Hora de inicio")<select id="@(campo)-inicio" name="Inicio" required>
                                                 @for (var inicioOpcion = h.InicioUtc; inicioOpcion.AddMinutes(AgendaReglas.DuracionesVariables[0]) <= h.FinUtc; inicioOpcion = inicioOpcion.AddMinutes(AgendaReglas.PasoVariableMinutos))
                                                 {
                                                     <option value="@inicioOpcion.ToString("O")">@AgendaReglas.Local(inicioOpcion).ToString("HH:mm")</option>
                                                 }
                                             </select></label>
-                                            <label for="@(campo)-duracion">Duración<select id="@(campo)-duracion" name="DuracionMinutos" required>
+                                            <label for="@(campo)-duracion">@Idioma.Texto("Duración")<select id="@(campo)-duracion" name="DuracionMinutos" required>
                                                 @foreach (var minutosOpcion in AgendaReglas.DuracionesVariables.Where(m => m <= maximo))
                                                 {
-                                                    <option value="@minutosOpcion">@minutosOpcion minutos</option>
+                                                    <option value="@minutosOpcion">@minutosOpcion @Idioma.Texto("minutos")</option>
                                                 }
                                             </select></label>
                                         }
@@ -143,19 +143,19 @@
                                         {
                                             <input type="hidden" name="Inicio" value="@h.InicioUtc.ToString("O")" />
                                         }
-                                        <label for="@campo">Modalidad<select id="@campo" name="Modalidad" required>
-                                            @if (h.Modalidad is ModalidadDisponibilidad.Presencial or ModalidadDisponibilidad.Ambas) { <option value="Presencial">Presencial</option> }
-                                            @if (h.Modalidad is ModalidadDisponibilidad.Virtual or ModalidadDisponibilidad.Ambas) { <option value="Virtual">Virtual</option> }
-                                        </select></label><button class="dash-button" type="submit">Solicitar cita</button>
+                                        <label for="@campo">@Idioma.Texto("Modalidad")<select id="@campo" name="Modalidad" required>
+                                            @if (h.Modalidad is ModalidadDisponibilidad.Presencial or ModalidadDisponibilidad.Ambas) { <option value="Presencial">@Idioma.Texto("Presencial")</option> }
+                                            @if (h.Modalidad is ModalidadDisponibilidad.Virtual or ModalidadDisponibilidad.Ambas) { <option value="Virtual">@Idioma.Texto("Virtual")</option> }
+                                        </select></label><button class="dash-button" type="submit">@Idioma.Texto("Solicitar cita")</button>
                                     </form>
                                 }
                             }
-                            @if (h.Variable && !h.Ocupada) { <p class="agenda-hint">Horario sin duración fija: elige la hora de inicio y la duración de tu cita. Debe terminar antes de las @AgendaReglas.Local(h.FinUtc).ToString("HH:mm").</p> }
+                            @if (h.Variable && !h.Ocupada) { <p class="agenda-hint">@Idioma.Texto("Horario sin duración fija: elige la hora de inicio y la duración de tu cita. Debe terminar antes de las") @AgendaReglas.Local(h.FinUtc).ToString("HH:mm").</p> }
                         </div>
                     }
                 }
             </div>
-            <div class="modal-footer"><button type="button" class="dash-button" data-bs-dismiss="modal">Cerrar</button></div>
+            <div class="modal-footer"><button type="button" class="dash-button" data-bs-dismiss="modal">@Idioma.Texto("Cerrar")</button></div>
         </div></div>
     </div>
 }

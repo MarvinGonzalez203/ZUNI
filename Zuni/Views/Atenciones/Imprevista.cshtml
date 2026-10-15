@@ -1,13 +1,13 @@
 @model Zuni.Models.Agenda.ImprevistaInput
 @{ ViewData["Title"] = "Registrar atención imprevista"; }
-<section class="dash-card"><h1>Registrar atención imprevista</h1><p>Registra una atención que ocurrió sin cita programada. Puedes indicar una hora pasada del día seleccionado; no requiere disponibilidad previa. Hora de Guatemala.</p>
+<section class="dash-card"><h1>@Idioma.Texto("Registrar atención imprevista")</h1><p>@Idioma.Texto("Registra una atención que ocurrió sin cita programada. Puedes indicar una hora pasada del día seleccionado; no requiere disponibilidad previa. Hora de Guatemala.")</p>
 <form asp-action="Imprevista" method="post">
     <input asp-for="OperacionId" type="hidden" /><div asp-validation-summary="All" class="text-danger"></div>
     <label asp-for="Fecha" class="form-label"></label><input asp-for="Fecha" type="date" class="form-control mb-3" required />
-    <label asp-for="PerfilEstudianteId" class="form-label"></label><select asp-for="PerfilEstudianteId" class="form-select mb-3" required><option value="">Selecciona un estudiante</option>@foreach(var p in Model.Estudiantes) { <option value="@p.Id">@p.Nombre</option> }</select>
+    <label asp-for="PerfilEstudianteId" class="form-label"></label><select asp-for="PerfilEstudianteId" class="form-select mb-3" required><option value="">@Idioma.Texto("Selecciona un estudiante")</option>@foreach(var p in Model.Estudiantes) { <option value="@p.Id">@p.Nombre</option> }</select>
     <label asp-for="HoraInicio" class="form-label"></label><input asp-for="HoraInicio" type="time" class="form-control mb-3" required />
     <label asp-for="HoraFin" class="form-label"></label><input asp-for="HoraFin" type="time" class="form-control mb-3" />
-    <p>Si omites el fin se guarda una estimación de hasta 50 minutos, sin superar la hora actual ni el día indicado. No representa una medición de la duración real.</p>
-    <label asp-for="Modalidad" class="form-label" zuni-required="true"></label><select asp-for="Modalidad" class="form-select mb-3"><option value="Presencial">Presencial</option><option value="Virtual">Virtual</option></select>
-    <div class="zuni-action-row"><button class="dash-button">Registrar actividad</button><a asp-controller="Psicologo" asp-action="Agenda" class="btn btn-outline-secondary">Volver a Agenda</a></div>
+    <p>@Idioma.Texto("Si omites el fin se guarda una estimación de hasta 50 minutos, sin superar la hora actual ni el día indicado. No representa una medición de la duración real.")</p>
+    <label asp-for="Modalidad" class="form-label" zuni-required="true"></label><select asp-for="Modalidad" class="form-select mb-3"><option value="Presencial">@Idioma.Texto("Presencial")</option><option value="Virtual">@Idioma.Texto("Virtual")</option></select>
+    <div class="zuni-action-row"><button class="dash-button">@Idioma.Texto("Registrar actividad")</button><a asp-controller="Psicologo" asp-action="Agenda" class="btn btn-outline-secondary">@Idioma.Texto("Volver a Agenda")</a></div>
 </form></section>

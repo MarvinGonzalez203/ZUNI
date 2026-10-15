@@ -560,6 +560,7 @@ await ProgramacionChecks.Run(app, opciones, clave, reloj, perfil2);
 await AmpliacionPortalChecks.Run(app, opciones, clave, reloj, perfil2);
 await AlmuerzoRevisionChecks.Run(app, opciones, clave, reloj);
 await AdministradorEdicionChecks.Run(app, opciones, clave);
+await IdiomaChecks.Run(app, opciones, clave);
 
 using (var c = HostPrueba.Cliente(app))
 {

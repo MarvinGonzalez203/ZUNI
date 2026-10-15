@@ -1,36 +1,36 @@
 @model Zuni.Models.Privacidad.PrivacidadViewModel
 @using Zuni.Models.Privacidad
 @{ ViewData["Title"] = "Privacidad y mis derechos"; }
-<header class="dash-profile-heading"><div><h1>Privacidad y mis derechos</h1><p>Conoce el uso de tus datos y registra una solicitud ante tu institución.</p></div></header>
-@foreach (var tipo in new[] { "Success", "Error" }) { if (TempData[tipo] is string m) { <p class="dash-notice" role="status">@m</p> } }
-@if (Model.Politica is null) { <section class="dash-card p-4"><p>La institución todavía debe publicar su política. Puedes ejercer tus derechos mediante el formulario siguiente.</p></section> }
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Privacidad y mis derechos")</h1><p>@Idioma.Texto("Conoce el uso de tus datos y registra una solicitud ante tu institución.")</p></div></header>
+@foreach (var tipo in new[] { "Success", "Error" }) { if (TempData[tipo] is string m) { <p class="dash-notice" role="status">@Idioma.Texto(m)</p> } }
+@if (Model.Politica is null) { <section class="dash-card p-4"><p>@Idioma.Texto("La institución todavía debe publicar su política. Puedes ejercer tus derechos mediante el formulario siguiente.")</p></section> }
 else
 {
     <partial name="_Politica" model="Model.Politica" />
-    @if (Model.Aceptada) { <p class="dash-notice">Tu lectura y aceptación de esta versión quedaron registradas.</p> }
+    @if (Model.Aceptada) { <p class="dash-notice">@Idioma.Texto("Tu lectura y aceptación de esta versión quedaron registradas.")</p> }
     else
     {
         <form asp-action="Aceptar" method="post" class="dash-card p-4 mb-4">
             <input type="hidden" name="politicaId" value="@Model.Politica.Id" />
-            <label><input type="checkbox" name="confirmada" value="true" required /> Leí la política y acepto el tratamiento de mis datos para las finalidades indicadas.</label>
-            <p>Puedes solicitar información o retirar tu consentimiento sin aceptar. La aceptación no autoriza a compartir informes educativos con terceros.</p>
-            <button class="dash-button" type="submit">Registrar aceptación</button>
+            <label><input type="checkbox" name="confirmada" value="true" required /> @Idioma.Texto("Leí la política y acepto el tratamiento de mis datos para las finalidades indicadas.")</label>
+            <p>@Idioma.Texto("Puedes solicitar información o retirar tu consentimiento sin aceptar. La aceptación no autoriza a compartir informes educativos con terceros.")</p>
+            <button class="dash-button" type="submit">@Idioma.Texto("Registrar aceptación")</button>
         </form>
     }
 }
 <section class="dash-card p-4 my-4">
-    <h2 class="h4">Solicitar revisión de mis datos</h2>
-    <p>No incluyas diagnósticos, narraciones de consultas, contraseñas, DPI ni fotografías. Identifica el dato o procedimiento que necesitas revisar.</p>
-    <p>Para actualizar tu nombre y datos de contacto puedes usar <a asp-controller="MiCuenta" asp-action="Editar">Editar mi cuenta</a>. Para revocar un informe utiliza su opción en <a asp-controller="InformesEducativos" asp-action="Index">Informes educativos</a>. Big Five conserva su retiro independiente.</p>
+    <h2 class="h4">@Idioma.Texto("Solicitar revisión de mis datos")</h2>
+    <p>@Idioma.Texto("No incluyas diagnósticos, narraciones de consultas, contraseñas, DPI ni fotografías. Identifica el dato o procedimiento que necesitas revisar.")</p>
+    <p>@Idioma.Texto("Para actualizar tu nombre y datos de contacto puedes usar") <a asp-controller="MiCuenta" asp-action="Editar">@Idioma.Texto("Editar mi cuenta")</a>@Idioma.Texto(". Para revocar un informe utiliza su opción en") <a asp-controller="InformesEducativos" asp-action="Index">@Idioma.Texto("Informes educativos")</a>@Idioma.Texto(". Big Five conserva su retiro independiente.")</p>
     <form asp-action="Solicitar" method="post">
         <div asp-validation-summary="All" class="text-danger" role="alert"></div>
         <label asp-for="Nueva.Tipo" zuni-required="true" class="form-label"></label>
-        <select asp-for="Nueva.Tipo" class="form-select mb-3"><option value="0">Acceso a mis datos</option><option value="1">Corrección de datos</option><option value="2">Supresión de datos</option><option value="3">Retiro de consentimiento</option></select>
+        <select asp-for="Nueva.Tipo" class="form-select mb-3"><option value="0">@Idioma.Texto("Acceso a mis datos")</option><option value="1">@Idioma.Texto("Corrección de datos")</option><option value="2">@Idioma.Texto("Supresión de datos")</option><option value="3">@Idioma.Texto("Retiro de consentimiento")</option></select>
         <label asp-for="Nueva.Detalle" class="form-label"></label><textarea asp-for="Nueva.Detalle" class="form-control mb-3" rows="3" maxlength="1000" required></textarea>
-        <button class="dash-button" type="submit">Enviar solicitud a la institución</button>
+        <button class="dash-button" type="submit">@Idioma.Texto("Enviar solicitud a la institución")</button>
     </form>
 </section>
-<section class="dash-card p-4"><h2 class="h4">Mis solicitudes</h2>
-    @if (Model.Solicitudes.Count == 0) { <p>No tienes solicitudes registradas.</p> }
-    @foreach (var s in Model.Solicitudes) { <article class="border rounded p-3 mb-3"><h3 class="h6">@s.Tipo · @s.Estado</h3><p class="small">Comprobante: @s.Id · @Zuni.Services.Agenda.AgendaReglas.Local(s.FechaSolicitudUtc).ToString("dd/MM/yyyy HH:mm")</p><p class="text-break">@s.Detalle</p>@if (s.Respuesta is not null) { <p class="text-break" style="white-space:pre-line"><strong>Respuesta institucional:</strong> @s.Respuesta</p> }</article> }
+<section class="dash-card p-4"><h2 class="h4">@Idioma.Texto("Mis solicitudes")</h2>
+    @if (Model.Solicitudes.Count == 0) { <p>@Idioma.Texto("No tienes solicitudes registradas.")</p> }
+    @foreach (var s in Model.Solicitudes) { <article class="border rounded p-3 mb-3"><h3 class="h6">@Idioma.Texto(Convert.ToString(s.Tipo)) · @Idioma.Texto(Convert.ToString(s.Estado))</h3><p class="small">@Idioma.Texto("Comprobante:") @s.Id · @Zuni.Services.Agenda.AgendaReglas.Local(s.FechaSolicitudUtc).ToString("dd/MM/yyyy HH:mm")</p><p class="text-break">@s.Detalle</p>@if (s.Respuesta is not null) { <p class="text-break" style="white-space:pre-line"><strong>@Idioma.Texto("Respuesta institucional:")</strong> @s.Respuesta</p> }</article> }
 </section>

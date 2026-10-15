@@ -19,7 +19,7 @@ public sealed class AgendaExceptionFilter : ExceptionFilterAttribute
                     new Microsoft.AspNetCore.Mvc.ModelBinding.EmptyModelMetadataProvider(), context.ModelState) { Model = ex.Message }
             },
             Microsoft.EntityFrameworkCore.DbUpdateException or Npgsql.NpgsqlException =>
-                new ContentResult { StatusCode = 503, Content = "Agenda no disponible temporalmente. Revisa tus citas antes de repetir una operación." },
+                new ContentResult { StatusCode = 503, Content = Zuni.Localizacion.Idioma.Texto("Agenda no disponible temporalmente. Revisa tus citas antes de repetir una operación.") },
             _ => null
         };
         context.ExceptionHandled = context.Result is not null;

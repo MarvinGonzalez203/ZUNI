@@ -6,8 +6,8 @@
 <section class="container py-4 py-md-5" aria-labelledby="alta-title">
     <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
          style="max-width: 820px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
-        <h1 id="alta-title" class="h2 fw-bold mb-2">Agregar usuario</h1>
-        <p class="mb-4">La cuenta estará activa. El usuario deberá cambiar su contraseña temporal al iniciar sesión.</p>
+        <h1 id="alta-title" class="h2 fw-bold mb-2">@Idioma.Texto("Agregar usuario")</h1>
+        <p class="mb-4">@Idioma.Texto("La cuenta estará activa. El usuario deberá cambiar su contraseña temporal al iniciar sesión.")</p>
         <form asp-action="AgregarUsuario" method="post" autocomplete="off">
             <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
             <div class="mb-3">
@@ -16,36 +16,36 @@
                 <span asp-validation-for="NombreCompleto" class="text-danger small"></span>
             </div>
             <div class="mb-3">
-                <label asp-for="Correo" class="form-label">Correo electrónico</label>
+                <label asp-for="Correo" class="form-label">@Idioma.Texto("Correo electrónico")</label>
                 <input asp-for="Correo" type="email" class="form-control" placeholder="nombre@correo.com" />
                 <span asp-validation-for="Correo" class="text-danger small"></span>
             </div>
             <div class="mb-3">
                 <label asp-for="Rol" class="form-label"></label>
                 <select asp-for="Rol" class="form-select" required>
-                    <option value="">Selecciona un rol...</option>
+                    <option value="">@Idioma.Texto("Selecciona un rol...")</option>
                     @foreach (var rol in Zuni.Models.Administrador.AgregarUsuarioViewModel.RolesPermitidos)
                     {
-                        <option value="@rol">@(rol == "Psicologo" ? "Psicólogo" : rol == "Catedratico" ? "Catedrático" : rol)</option>
+                        <option value="@rol">@(rol == "Psicologo" ? Idioma.Texto("Psicólogo") : rol == "Catedratico" ? Idioma.Texto("Catedrático") : Idioma.Texto(rol))</option>
                     }
                 </select>
                 <span asp-validation-for="Rol" class="text-danger small"></span>
             </div>
             <div class="mb-3">
                 <label asp-for="MayorEdadDeclarada" class="form-label"></label>
-                <select asp-for="MayorEdadDeclarada" class="form-select" required><option value="">Selecciona...</option><option value="true">Mayor de edad (18 años o más)</option><option value="false">Menor de edad</option></select>
+                <select asp-for="MayorEdadDeclarada" class="form-select" required><option value="">@Idioma.Texto("Selecciona...")</option><option value="true">@Idioma.Texto("Mayor de edad (18 años o más)")</option><option value="false">@Idioma.Texto("Menor de edad")</option></select>
                 <span asp-validation-for="MayorEdadDeclarada" class="text-danger small"></span>
-                <p class="form-text">Clasificación administrativa. No sustituye la verificación de edad ni habilita la atención a menores.</p>
+                <p class="form-text">@Idioma.Texto("Clasificación administrativa. No sustituye la verificación de edad ni habilita la atención a menores.")</p>
             </div>
             <fieldset id="carne-estudiante" class="mb-3">
-                <legend class="fs-6" zuni-required="@(Model.Rol == "Estudiante")" data-required-conditional>Carné institucional (solo Estudiante)</legend>
-                <p class="small">Último bloque de 2 a 6 dígitos: 1590-18-25 o 7490-26-125678.</p>
+                <legend class="fs-6" zuni-required="@(Model.Rol == "Estudiante")" data-required-conditional>@Idioma.Texto("Carné institucional (solo Estudiante)")</legend>
+                <p class="small">@Idioma.Texto("Último bloque de 2 a 6 dígitos: 1590-18-25 o 7490-26-125678.")</p>
                 <div class="d-flex align-items-center gap-2">
-                    <input asp-for="CarneParte1" class="form-control" aria-label="Primer bloque del carné" placeholder="0000" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" />
+                    <input asp-for="CarneParte1" class="form-control" aria-label="@Idioma.Texto("Primer bloque del carné")" placeholder="0000" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" />
                     <span aria-hidden="true">−</span>
-                    <input asp-for="CarneParte2" class="form-control" aria-label="Segundo bloque del carné" placeholder="00" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" />
+                    <input asp-for="CarneParte2" class="form-control" aria-label="@Idioma.Texto("Segundo bloque del carné")" placeholder="00" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" />
                     <span aria-hidden="true">−</span>
-                    <input asp-for="CarneParte3" class="form-control" aria-label="Tercer bloque del carné" placeholder="0000" inputmode="numeric" minlength="2" maxlength="6" pattern="[0-9]{2,6}" />
+                    <input asp-for="CarneParte3" class="form-control" aria-label="@Idioma.Texto("Tercer bloque del carné")" placeholder="0000" inputmode="numeric" minlength="2" maxlength="6" pattern="[0-9]{2,6}" />
                 </div>
                 <span asp-validation-for="CarneParte1" class="text-danger small"></span>
             </fieldset>
@@ -61,16 +61,16 @@
                     <span asp-validation-for="ConfirmarContrasenaTemporal" class="text-danger small"></span>
                 </div>
             </div>
-            <p class="small">La contraseña temporal no volverá a mostrarse después de crear la cuenta.</p>
+            <p class="small">@Idioma.Texto("La contraseña temporal no volverá a mostrarse después de crear la cuenta.")</p>
             <div class="mb-4">
-                <label asp-for="Motivo" class="form-label">Motivo (opcional)</label>
+                <label asp-for="Motivo" class="form-label">@Idioma.Texto("Motivo (opcional)")</label>
                 <textarea asp-for="Motivo" class="form-control" rows="3" maxlength="500" aria-describedby="motivo-ayuda"></textarea>
-                <div id="motivo-ayuda" class="form-text">No incluyas contraseñas ni información sensible. Máximo 500 caracteres.</div>
+                <div id="motivo-ayuda" class="form-text">@Idioma.Texto("No incluyas contraseñas ni información sensible. Máximo 500 caracteres.")</div>
                 <span asp-validation-for="Motivo" class="text-danger small"></span>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" class="dash-button px-4">Crear usuario</button>
-                <a asp-action="Index" class="btn btn-outline-dark px-4">Cancelar</a>
+                <button type="submit" class="dash-button px-4">@Idioma.Texto("Crear usuario")</button>
+                <a asp-action="Index" class="btn btn-outline-dark px-4">@Idioma.Texto("Cancelar")</a>
             </div>
         </form>
     </div>

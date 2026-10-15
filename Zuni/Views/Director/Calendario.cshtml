@@ -1,5 +1,5 @@
 @model Zuni.Models.Agenda.CalendarioDirectorViewModel
 @{ ViewData["Title"]="Calendario de citas"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">COORDINACIÓN INSTITUCIONAL</span><h1>Calendario de citas</h1><p>Consulta la disponibilidad por profesional y propone citas a sus estudiantes vinculados. El psicólogo confirma la atención.</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("COORDINACIÓN INSTITUCIONAL")</span><h1>@Idioma.Texto("Calendario de citas")</h1><p>@Idioma.Texto("Consulta la disponibilidad por profesional y propone citas a sus estudiantes vinculados. El psicólogo confirma la atención.")</p></div></header>
 <partial name="_CalendarioDirector" model="Model" />
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }

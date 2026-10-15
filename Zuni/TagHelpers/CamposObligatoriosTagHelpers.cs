@@ -12,7 +12,7 @@ namespace Zuni.TagHelpers;
 [HtmlTargetElement("h2", Attributes = "zuni-required")]
 public sealed class EtiquetaObligatoriaTagHelper : TagHelper
 {
-    internal const string Marca = "<span class=\"required-marker\" aria-hidden=\"true\"> *</span><span class=\"visually-hidden required-description\"> (Campo obligatorio)</span>";
+    internal static string Marca => "<span class=\"required-marker\" aria-hidden=\"true\"> *</span><span class=\"visually-hidden required-description\"> ("+Zuni.Localizacion.Idioma.Texto("Campo obligatorio")+")</span>";
     [HtmlAttributeName("asp-for")] public ModelExpression? For { get; set; }
     [HtmlAttributeName("zuni-required")] public bool? Obligatorio { get; set; }
     public override int Order => 1000;
@@ -46,6 +46,6 @@ public sealed class LeyendaObligatoriaTagHelper : TagHelper
     {
         var child = await output.GetChildContentAsync();
         if (child.GetContent().Contains("class=\"required-marker\"", StringComparison.Ordinal))
-            output.PreContent.AppendHtml("<p class=\"required-fields-help\"><span class=\"required-marker\" aria-hidden=\"true\">*</span> Campo obligatorio</p>");
+            output.PreContent.AppendHtml("<p class=\"required-fields-help\"><span class=\"required-marker\" aria-hidden=\"true\">*</span> "+Zuni.Localizacion.Idioma.Texto("Campo obligatorio")+"</p>");
     }
 }

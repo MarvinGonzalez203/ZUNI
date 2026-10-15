@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Estudiantes";
 }
 
@@ -8,31 +8,29 @@
     <div class="dash-section-heading">
         <div>
             <h1 id="estudiantes-titulo" class="h2 mb-2">
-                Estudiantes
+                @Idioma.Texto("Estudiantes")
             </h1>
 
             <p>
-                Aquí podrás consultar información académica
-                de los estudiantes que tengas autorizados.
+                @Idioma.Texto("Aquí podrás consultar información académica de los estudiantes que tengas autorizados.")
             </p>
         </div>
 
-        <span class="dash-badge">Próximamente</span>
+        <span class="dash-badge">@Idioma.Texto("Próximamente")</span>
     </div>
 
     <div class="table-responsive mt-4">
         <table class="table align-middle">
             <caption>
-                La consulta estará disponible cuando se integren
-                las asignaciones académicas.
+                @Idioma.Texto("La consulta estará disponible cuando se integren las asignaciones académicas.")
             </caption>
 
             <thead>
                 <tr>
-                    <th scope="col">Carné</th>
-                    <th scope="col">Estudiante</th>
-                    <th scope="col">Curso</th>
-                    <th scope="col">Sección</th>
+                    <th scope="col">@Idioma.Texto("Carné")</th>
+                    <th scope="col">@Idioma.Texto("Estudiante")</th>
+                    <th scope="col">@Idioma.Texto("Curso")</th>
+                    <th scope="col">@Idioma.Texto("Sección")</th>
                 </tr>
             </thead>
 
@@ -45,12 +43,11 @@
                         </span>
 
                         <strong class="d-block mb-2">
-                            Información aún no disponible
+                            @Idioma.Texto("Información aún no disponible")
                         </strong>
 
                         <p class="text-secondary mb-0">
-                            Aquí aparecerán únicamente los estudiantes
-                            vinculados a tus asignaciones autorizadas.
+                            @Idioma.Texto("Aquí aparecerán únicamente los estudiantes vinculados a tus asignaciones autorizadas.")
                         </p>
                     </td>
                 </tr>
@@ -59,14 +56,13 @@
     </div>
 
     <p class="small text-secondary mt-3">
-        Esta sección no permite buscar estudiantes ni consultar
-        expedientes clínicos.
+        @Idioma.Texto("Esta sección no permite buscar estudiantes ni consultar expedientes clínicos.")
     </p>
 
     <a class="dash-button mt-3"
        asp-controller="Catedratico"
        asp-action="Index">
-        Volver al tablero
+        @Idioma.Texto("Volver al tablero")
         <partial name="_DashboardIcon" model='@("arrow")' />
     </a>
 </section>

@@ -1,18 +1,18 @@
 @model Zuni.Models.Agenda.GuardarReunionInput
 @{ ViewData["Title"] = "Preparar cita virtual"; }
-<header class="dash-profile-heading"><div><h1>Preparar cita virtual</h1><p>@Model.Estudiante · @Zuni.Services.Agenda.AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") (Guatemala)</p></div></header>
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Preparar cita virtual")</h1><p>@Model.Estudiante · @Zuni.Services.Agenda.AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") (Guatemala)</p></div></header>
 <section class="dash-card p-4">
-    <p>Crea una reunión individual en tu cuenta institucional de Google Meet. Invita únicamente al estudiante correspondiente; configura acceso restringido, admisión por el anfitrión y, si tu cuenta lo permite, desactiva las solicitudes de personas no invitadas.</p>
-    <p>Comprueba con una cuenta externa que no entra sin autorización. ZUNI valida el enlace y quién puede verlo; los permisos de la reunión se configuran en Google. No uses un enlace general ni grabes o transcribas automáticamente.</p>
-    <p><a href="https://support.google.com/a/users/answer/11989526?hl=es" target="_blank" rel="noopener noreferrer">Consultar controles de acceso de Google Meet</a></p>
+    <p>@Idioma.Texto("Crea una reunión individual en tu cuenta institucional de Google Meet. Invita únicamente al estudiante correspondiente; configura acceso restringido, admisión por el anfitrión y, si tu cuenta lo permite, desactiva las solicitudes de personas no invitadas.")</p>
+    <p>@Idioma.Texto("Comprueba con una cuenta externa que no entra sin autorización. ZUNI valida el enlace y quién puede verlo; los permisos de la reunión se configuran en Google. No uses un enlace general ni grabes o transcribas automáticamente.")</p>
+    <p><a href="https://support.google.com/a/users/answer/11989526?hl=es" target="_blank" rel="noopener noreferrer">@Idioma.Texto("Consultar controles de acceso de Google Meet")</a></p>
     <form asp-action="Preparar" method="post">
         <input asp-for="CitaId" type="hidden" /><input asp-for="Revision" type="hidden" />
         <div asp-validation-summary="All" class="text-danger" role="alert"></div>
         <label asp-for="Enlace" class="form-label"></label><input asp-for="Enlace" type="url" class="form-control mb-3" maxlength="120" placeholder="https://meet.google.com/abc-defg-hij" required />
-        <label><input asp-for="AccesoRestringidoRevisado" required /> Revisé el acceso restringido, los invitados, la admisión por el anfitrión y la prueba con una persona no invitada.</label>
-        <p>El enlace no se puede reutilizar en otra cita. Si lo cambias, revisa de nuevo sus permisos e invitados.</p>
-        <button class="dash-button" name="ConfirmarCita" value="false">Guardar enlace</button>
-        @if (Model.Estado == Zuni.Models.Agenda.EstadoCita.Solicitada) { <button class="btn btn-outline-primary" name="ConfirmarCita" value="true">Guardar y confirmar cita virtual</button> }
+        <label><input asp-for="AccesoRestringidoRevisado" required /> @Idioma.Texto("Revisé el acceso restringido, los invitados, la admisión por el anfitrión y la prueba con una persona no invitada.")</label>
+        <p>@Idioma.Texto("El enlace no se puede reutilizar en otra cita. Si lo cambias, revisa de nuevo sus permisos e invitados.")</p>
+        <button class="dash-button" name="ConfirmarCita" value="false">@Idioma.Texto("Guardar enlace")</button>
+        @if (Model.Estado == Zuni.Models.Agenda.EstadoCita.Solicitada) { <button class="btn btn-outline-primary" name="ConfirmarCita" value="true">@Idioma.Texto("Guardar y confirmar cita virtual")</button> }
     </form>
-    <a asp-controller="Psicologo" asp-action="Agenda">Volver a mi agenda</a>
+    <a asp-controller="Psicologo" asp-action="Agenda">@Idioma.Texto("Volver a mi agenda")</a>
 </section>

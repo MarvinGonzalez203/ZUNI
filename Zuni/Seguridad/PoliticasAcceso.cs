@@ -46,11 +46,11 @@ public static class PoliticasAcceso
                 response.ContentType = "text/html; charset=utf-8";
                 // Sin detalles internos (ni IP, ni política, ni contadores).
                 await response.WriteAsync(
-                    "<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"utf-8\"><title>Demasiados intentos · ZUNI</title>" +
+                    "<!DOCTYPE html><html lang=\""+Zuni.Localizacion.Idioma.Codigo+"\"><head><meta charset=\"utf-8\"><title>"+Zuni.Localizacion.Idioma.Texto("Demasiados intentos")+" · ZUNI</title>" +
                     "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" +
                     "<body style=\"font-family:system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem\">" +
-                    "<h1>Demasiados intentos</h1><p>" + MensajeLimite + "</p>" +
-                    "<p><a href=\"/Cuenta/IniciarSesion\">Volver a iniciar sesión</a></p></body></html>",
+                    "<h1>"+Zuni.Localizacion.Idioma.Texto("Demasiados intentos")+"</h1><p>" + Zuni.Localizacion.Idioma.Texto(MensajeLimite) + "</p>" +
+                    "<p><a href=\"/Cuenta/IniciarSesion\">"+Zuni.Localizacion.Idioma.Texto("Volver a iniciar sesión")+"</a></p></body></html>",
                     cancellationToken);
             };
         });

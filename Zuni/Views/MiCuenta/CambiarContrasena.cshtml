@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Cambiar contraseña";
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">MI CUENTA</span><h1>Cambiar contraseña</h1><p>Al actualizar tu contraseña, deberás iniciar sesión nuevamente.</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("MI CUENTA")</span><h1>@Idioma.Texto("Cambiar contraseña")</h1><p>@Idioma.Texto("Al actualizar tu contraseña, deberás iniciar sesión nuevamente.")</p></div></header>
 <form asp-action="CambiarContrasena" method="post" class="dash-card">
     <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
     <div class="mb-3">
@@ -13,7 +13,7 @@
     <div class="mb-3">
         <label asp-for="NuevaContrasena" class="form-label"></label>
         <input asp-for="NuevaContrasena" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="100" required aria-describedby="nueva-ayuda nueva-error" />
-        <p id="nueva-ayuda" class="small text-secondary mt-1">Usa entre 8 y 100 caracteres y una contraseña diferente de la actual.</p>
+        <p id="nueva-ayuda" class="small text-secondary mt-1">@Idioma.Texto("Usa entre 8 y 100 caracteres y una contraseña diferente de la actual.")</p>
         <span asp-validation-for="NuevaContrasena" id="nueva-error" class="text-danger small"></span>
     </div>
     <div class="mb-4">
@@ -22,7 +22,7 @@
         <span asp-validation-for="ConfirmarNuevaContrasena" id="confirmacion-error" class="text-danger small"></span>
     </div>
     <div class="d-flex flex-wrap gap-3 align-items-center">
-        <button type="submit" class="dash-button">Actualizar contraseña</button>
-        <a asp-action="Index" class="dash-text-link">Cancelar</a>
+        <button type="submit" class="dash-button">@Idioma.Texto("Actualizar contraseña")</button>
+        <a asp-action="Index" class="dash-text-link">@Idioma.Texto("Cancelar")</a>
     </div>
 </form>

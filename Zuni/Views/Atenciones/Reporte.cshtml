@@ -1,10 +1,10 @@
 @model Zuni.Models.Agenda.ReporteCompartido
 @{ ViewData["Title"] = "Reporte compartido de atención"; }
-<section class="dash-card"><h1>Reporte compartido de atención</h1><p>@Model.Estudiante · @Zuni.Helpers.CarneHelper.Formatear(Model.Carne)</p><p>Psicólogo: @Model.Psicologo</p>
-<p>@Zuni.Services.Agenda.AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") · Fin @(Model.FinAproximado ? "aproximado" : "programado"): @Zuni.Services.Agenda.AgendaReglas.Local(Model.FinUtc).ToString("HH:mm") (Guatemala)</p>
-<h2>Resultado compartido</h2><p style="white-space:pre-wrap">@Model.Resultado</p>
-<h2>Recomendaciones compartidas</h2><p style="white-space:pre-wrap">@Model.Recomendaciones</p>
-@if(Model.OtraCita) { <h2>Próxima atención recomendada</h2><p>@Model.Indicaciones</p> }
-<p>Este reporte contiene únicamente información compartida con el estudiante. No incluye notas profesionales privadas ni equivale a un informe educativo autorizado para terceros.</p>
-<a asp-action="Pdf" asp-route-citaId="@Model.CitaId" class="dash-button">Descargar PDF para reimprimir</a>
-<a asp-controller='@(User.IsInRole("Psicologo") ? "Psicologo" : "Estudiante")' asp-action='@(User.IsInRole("Psicologo") ? "Agenda" : "Resultados")' class="btn btn-outline-secondary">Volver</a></section>
+<section class="dash-card"><h1>@Idioma.Texto("Reporte compartido de atención")</h1><p>@Model.Estudiante · @Zuni.Helpers.CarneHelper.Formatear(Model.Carne)</p><p>@Idioma.Texto("Psicólogo:") @Model.Psicologo</p>
+<p>@Zuni.Services.Agenda.AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") @Idioma.Texto("· Fin") @(Model.FinAproximado ? Idioma.Texto("aproximado") : Idioma.Texto("programado")): @Zuni.Services.Agenda.AgendaReglas.Local(Model.FinUtc).ToString("HH:mm") (Guatemala)</p>
+<h2>@Idioma.Texto("Resultado compartido")</h2><p style="white-space:pre-wrap">@Model.Resultado</p>
+<h2>@Idioma.Texto("Recomendaciones compartidas")</h2><p style="white-space:pre-wrap">@Model.Recomendaciones</p>
+@if(Model.OtraCita) { <h2>@Idioma.Texto("Próxima atención recomendada")</h2><p>@Model.Indicaciones</p> }
+<p>@Idioma.Texto("Este reporte contiene únicamente información compartida con el estudiante. No incluye notas profesionales privadas ni equivale a un informe educativo autorizado para terceros.")</p>
+<a asp-action="Pdf" asp-route-citaId="@Model.CitaId" class="dash-button">@Idioma.Texto("Descargar PDF para reimprimir")</a>
+<a asp-controller='@(User.IsInRole("Psicologo") ? "Psicologo" : "Estudiante")' asp-action='@(User.IsInRole("Psicologo") ? "Agenda" : "Resultados")' class="btn btn-outline-secondary">@Idioma.Texto("Volver")</a></section>

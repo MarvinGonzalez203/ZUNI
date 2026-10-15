@@ -21,122 +21,122 @@
          style="max-width: 920px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
         <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
             <div>
-                <p class="small fw-semibold mb-2">Panel Administrador · Solicitudes de atención</p>
-                <h1 id="detalle-title" class="h2 fw-bold mb-0">Gestionar solicitud</h1>
+                <p class="small fw-semibold mb-2">@Idioma.Texto("Panel Administrador · Solicitudes de atención")</p>
+                <h1 id="detalle-title" class="h2 fw-bold mb-0">@Idioma.Texto("Gestionar solicitud")</h1>
             </div>
-            <a asp-action="Index" class="btn btn-outline-dark">Volver a solicitudes</a>
+            <a asp-action="Index" class="btn btn-outline-dark">@Idioma.Texto("Volver a solicitudes")</a>
         </div>
 
         @if (TempData["Error"] is string error)
         {
-            <div class="alert alert-danger" role="alert">@error</div>
+            <div class="alert alert-danger" role="alert">@Idioma.Texto(error)</div>
         }
 
         <dl class="row mb-4">
-            <dt class="col-sm-4">Estudiante</dt><dd class="col-sm-8 text-break">@s.Estudiante</dd>
-            <dt class="col-sm-4">Carné</dt><dd class="col-sm-8">@CarneHelper.Formatear(s.Carne)</dd>
-            <dt class="col-sm-4">Carrera</dt><dd class="col-sm-8 text-break">@(s.Carrera ?? "—")</dd>
-            <dt class="col-sm-4">Fecha de solicitud</dt><dd class="col-sm-8">@AgendaReglas.Local(s.FechaSolicitudUtc).ToString("dd/MM/yyyy HH:mm") (hora de Guatemala)</dd>
-            <dt class="col-sm-4">Estado</dt><dd class="col-sm-8">@estado</dd>
-            <dt class="col-sm-4">Psicólogo asignado</dt><dd class="col-sm-8 text-break">@(s.Psicologo ?? "—")@(s.PsicologoActivo == false ? " (cuenta inactiva: reasigna o finaliza)" : "")</dd>
-            <dt class="col-sm-4">Fecha de asignación</dt><dd class="col-sm-8">@(s.FechaAsignacionUtc is { } f ? AgendaReglas.Local(f).ToString("dd/MM/yyyy HH:mm") : "—")</dd>
-            <dt class="col-sm-4">Citas activas</dt><dd class="col-sm-8">@Model.CitasActivas</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Estudiante")</dt><dd class="col-sm-8 text-break">@s.Estudiante</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Carné")</dt><dd class="col-sm-8">@CarneHelper.Formatear(s.Carne)</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Carrera")</dt><dd class="col-sm-8 text-break">@(s.Carrera ?? "—")</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Fecha de solicitud")</dt><dd class="col-sm-8">@AgendaReglas.Local(s.FechaSolicitudUtc).ToString("dd/MM/yyyy HH:mm") @Idioma.Texto("(hora de Guatemala)")</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Estado")</dt><dd class="col-sm-8">@Idioma.Texto(estado)</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Psicólogo asignado")</dt><dd class="col-sm-8 text-break">@(s.Psicologo ?? "—")@(s.PsicologoActivo == false ? Idioma.Texto(" (cuenta inactiva: reasigna o finaliza)") : "")</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Fecha de asignación")</dt><dd class="col-sm-8">@(s.FechaAsignacionUtc is { } f ? AgendaReglas.Local(f).ToString("dd/MM/yyyy HH:mm") : "—")</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Citas activas")</dt><dd class="col-sm-8">@Model.CitasActivas</dd>
         </dl>
-        <p class="small">Solo datos administrativos. El motivo de consulta, el expediente, los contactos de emergencia, Big Five y las notas profesionales no se muestran al Administrador.</p>
+        <p class="small">@Idioma.Texto("Solo datos administrativos. El motivo de consulta, el expediente, los contactos de emergencia, Big Five y las notas profesionales no se muestran al Administrador.")</p>
 
         @if (bloqueadaPorCitas && s.Estado != EstadoSolicitudAtencion.Cerrada)
         {
-            <div class="alert alert-warning" role="status">El estudiante tiene citas activas. Para reasignar, finalizar o cerrar, primero deben cancelarse o registrarse su atención.</div>
+            <div class="alert alert-warning" role="status">@Idioma.Texto("El estudiante tiene citas activas. Para reasignar, finalizar o cerrar, primero deben cancelarse o registrarse su atención.")</div>
         }
 
         @if (s.Estado == EstadoSolicitudAtencion.Pendiente)
         {
-            <h2 class="h4 mt-4">Asignar psicólogo</h2>
+            <h2 class="h4 mt-4">@Idioma.Texto("Asignar psicólogo")</h2>
             @if (Model.Elegibles.Count == 0)
             {
-                <p>No hay psicólogos elegibles (cuenta activa, rol Psicólogo y sin roles institucionales).</p>
+                <p>@Idioma.Texto("No hay psicólogos elegibles (cuenta activa, rol Psicólogo y sin roles institucionales).")</p>
             }
             else
             {
                 <form asp-action="Asignar" asp-route-id="@s.SolicitudId" method="post" class="mb-4">
                     <input type="hidden" name="SolicitudId" value="@s.SolicitudId" />
-                    <label zuni-required="true" for="asignar-psicologo" class="form-label">Psicólogo</label>
+                    <label zuni-required="true" for="asignar-psicologo" class="form-label">@Idioma.Texto("Psicólogo")</label>
                     <select id="asignar-psicologo" name="PsicologoUsuarioId" class="form-select mb-3" required>
-                        <option value="">Selecciona un psicólogo</option>
+                        <option value="">@Idioma.Texto("Selecciona un psicólogo")</option>
                         @foreach (var p in Model.Elegibles)
                         {
-                            <option value="@p.Id">@(p.Nombre + (p.DebeCambiarContrasena ? " (debe cambiar su contraseña antes de atender)" : ""))</option>
+                            <option value="@p.Id">@(p.Nombre + (p.DebeCambiarContrasena ? Idioma.Texto(" (debe cambiar su contraseña antes de atender)") : ""))</option>
                         }
                     </select>
-                    <label for="asignar-motivo" class="form-label">Motivo (opcional)</label>
+                    <label for="asignar-motivo" class="form-label">@Idioma.Texto("Motivo (opcional)")</label>
                     <textarea id="asignar-motivo" name="Motivo" class="form-control mb-3" rows="2" maxlength="500"></textarea>
-                    <button type="submit" class="dash-button">Asignar psicólogo</button>
+                    <button type="submit" class="dash-button">@Idioma.Texto("Asignar psicólogo")</button>
                 </form>
             }
         }
 
         @if (s.Estado == EstadoSolicitudAtencion.Asignada)
         {
-            <h2 class="h4 mt-4">Reasignar psicólogo</h2>
+            <h2 class="h4 mt-4">@Idioma.Texto("Reasignar psicólogo")</h2>
             @if (opcionesNuevas.Count == 0)
             {
-                <p>No hay otro psicólogo elegible para reasignar.</p>
+                <p>@Idioma.Texto("No hay otro psicólogo elegible para reasignar.")</p>
             }
             else
             {
                 <form asp-action="Reasignar" asp-route-id="@s.SolicitudId" method="post" class="mb-4">
                     <input type="hidden" name="SolicitudId" value="@s.SolicitudId" />
-                    <label zuni-required="true" for="reasignar-psicologo" class="form-label">Nuevo psicólogo</label>
+                    <label zuni-required="true" for="reasignar-psicologo" class="form-label">@Idioma.Texto("Nuevo psicólogo")</label>
                     <select id="reasignar-psicologo" name="PsicologoUsuarioId" class="form-select mb-3" required>
-                        <option value="">Selecciona un psicólogo</option>
+                        <option value="">@Idioma.Texto("Selecciona un psicólogo")</option>
                         @foreach (var p in opcionesNuevas)
                         {
-                            <option value="@p.Id">@(p.Nombre + (p.DebeCambiarContrasena ? " (debe cambiar su contraseña antes de atender)" : ""))</option>
+                            <option value="@p.Id">@(p.Nombre + (p.DebeCambiarContrasena ? Idioma.Texto(" (debe cambiar su contraseña antes de atender)") : ""))</option>
                         }
                     </select>
-                    <label for="reasignar-motivo" class="form-label">Motivo (opcional)</label>
+                    <label for="reasignar-motivo" class="form-label">@Idioma.Texto("Motivo (opcional)")</label>
                     <textarea id="reasignar-motivo" name="Motivo" class="form-control mb-3" rows="2" maxlength="500"></textarea>
-                    <button type="submit" class="dash-button" disabled="@bloqueadaPorCitas">Reasignar</button>
+                    <button type="submit" class="dash-button" disabled="@bloqueadaPorCitas">@Idioma.Texto("Reasignar")</button>
                 </form>
             }
 
-            <h2 class="h4 mt-4">Finalizar asignación</h2>
-            <p class="small">Termina la asignación actual sin cerrar la solicitud. La solicitud vuelve a <strong>Pendiente</strong> para asignar a otro psicólogo. El psicólogo anterior deja de tener acceso clínico al expediente.</p>
+            <h2 class="h4 mt-4">@Idioma.Texto("Finalizar asignación")</h2>
+            <p class="small">@Idioma.Texto("Termina la asignación actual sin cerrar la solicitud. La solicitud vuelve a") <strong>@Idioma.Texto("Pendiente")</strong> @Idioma.Texto("para asignar a otro psicólogo. El psicólogo anterior deja de tener acceso clínico al expediente.")</p>
             <form asp-action="FinalizarAsignacion" asp-route-id="@s.SolicitudId" method="post" class="mb-4">
                 <input type="hidden" name="SolicitudId" value="@s.SolicitudId" />
-                <label for="finalizar-motivo" class="form-label">Motivo (opcional)</label>
+                <label for="finalizar-motivo" class="form-label">@Idioma.Texto("Motivo (opcional)")</label>
                 <textarea id="finalizar-motivo" name="Motivo" class="form-control mb-3" rows="2" maxlength="500"></textarea>
-                <button type="submit" class="btn btn-outline-dark" disabled="@bloqueadaPorCitas">Finalizar asignación</button>
+                <button type="submit" class="btn btn-outline-dark" disabled="@bloqueadaPorCitas">@Idioma.Texto("Finalizar asignación")</button>
             </form>
         }
 
         @if (s.Estado != EstadoSolicitudAtencion.Cerrada)
         {
-            <h2 class="h4 mt-4">Cerrar solicitud</h2>
-            <p class="small">Finaliza cualquier asignación vigente y marca la solicitud como <strong>Cerrada</strong>. No se borra ningún dato. Una solicitud cerrada no puede reabrirse; el estudiante podrá iniciar una nueva solicitud.</p>
+            <h2 class="h4 mt-4">@Idioma.Texto("Cerrar solicitud")</h2>
+            <p class="small">@Idioma.Texto("Finaliza cualquier asignación vigente y marca la solicitud como") <strong>@Idioma.Texto("Cerrada")</strong>@Idioma.Texto(". No se borra ningún dato. Una solicitud cerrada no puede reabrirse; el estudiante podrá iniciar una nueva solicitud.")</p>
             <form asp-action="Cerrar" asp-route-id="@s.SolicitudId" method="post" class="mb-4">
                 <input type="hidden" name="SolicitudId" value="@s.SolicitudId" />
-                <label for="cerrar-motivo" class="form-label">Motivo (opcional)</label>
+                <label for="cerrar-motivo" class="form-label">@Idioma.Texto("Motivo (opcional)")</label>
                 <textarea id="cerrar-motivo" name="Motivo" class="form-control mb-3" rows="2" maxlength="500"></textarea>
                 <div class="form-check mb-3">
                     <input id="cerrar-confirmar" name="Confirmar" type="checkbox" value="true" class="form-check-input" required />
-                    <label zuni-required="true" for="cerrar-confirmar" class="form-check-label">Confirmo que deseo cerrar esta solicitud.</label>
+                    <label zuni-required="true" for="cerrar-confirmar" class="form-check-label">@Idioma.Texto("Confirmo que deseo cerrar esta solicitud.")</label>
                 </div>
-                <button type="submit" class="btn btn-outline-danger" disabled="@bloqueadaPorCitas">Cerrar solicitud</button>
+                <button type="submit" class="btn btn-outline-danger" disabled="@bloqueadaPorCitas">@Idioma.Texto("Cerrar solicitud")</button>
             </form>
         }
 
-        <h2 class="h4 mt-4">Historial de asignaciones del estudiante</h2>
+        <h2 class="h4 mt-4">@Idioma.Texto("Historial de asignaciones del estudiante")</h2>
         @if (Model.Historial.Count == 0)
         {
-            <p>Sin asignaciones registradas.</p>
+            <p>@Idioma.Texto("Sin asignaciones registradas.")</p>
         }
         else
         {
-            <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="Historial de asignaciones">
+            <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="@Idioma.Texto("Historial de asignaciones")">
                 <table class="table align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: #111111;">
                     <thead style="background: rgba(206,162,253,.18);">
-                        <tr><th scope="col" class="p-3">Psicólogo</th><th scope="col" class="p-3">Asignación</th><th scope="col" class="p-3">Finalización</th></tr>
+                        <tr><th scope="col" class="p-3">@Idioma.Texto("Psicólogo")</th><th scope="col" class="p-3">@Idioma.Texto("Asignación")</th><th scope="col" class="p-3">@Idioma.Texto("Finalización")</th></tr>
                     </thead>
                     <tbody>
                         @foreach (var h in Model.Historial)
@@ -144,7 +144,7 @@
                             <tr>
                                 <td class="p-3 text-break">@h.Psicologo</td>
                                 <td class="p-3 text-nowrap">@AgendaReglas.Local(h.FechaAsignacionUtc).ToString("dd/MM/yyyy HH:mm")</td>
-                                <td class="p-3 text-nowrap">@(h.FechaFinalizacionUtc is { } fin ? AgendaReglas.Local(fin).ToString("dd/MM/yyyy HH:mm") : "Vigente")</td>
+                                <td class="p-3 text-nowrap">@(h.FechaFinalizacionUtc is { } fin ? AgendaReglas.Local(fin).ToString("dd/MM/yyyy HH:mm") : Idioma.Texto("Vigente"))</td>
                             </tr>
                         }
                     </tbody>

@@ -1,6 +1,7 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Política de privacidad";
 }
-<h1>@ViewData["Title"]</h1>
+<h1>@Idioma.Texto("Política de privacidad")</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<p>@Idioma.Texto("Consulta la política publicada por tu institución.")</p>
+<a asp-controller="Privacidad" asp-action="Politica" class="btn btn-zuni">@Idioma.Texto("Política institucional")</a>

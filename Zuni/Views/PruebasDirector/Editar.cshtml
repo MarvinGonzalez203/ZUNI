@@ -1,46 +1,46 @@
 @model Zuni.Models.Pruebas.EditarPruebaViewModel
 @{ ViewData["Title"] = Model.Id.HasValue ? "Editar prueba" : "Crear prueba"; }
-<header class="dash-welcome"><div><a asp-action="Index">← Catálogo</a><h1>@ViewData["Title"]</h1><p>Guarda un borrador y revisa su contenido antes de activarlo.</p></div></header>
+<header class="dash-welcome"><div><a asp-action="Index">@Idioma.Texto("← Catálogo")</a><h1>@ViewData["Title"]</h1><p>@Idioma.Texto("Guarda un borrador y revisa su contenido antes de activarlo.")</p></div></header>
 <form asp-action="Guardar" method="post" id="prueba-editor">
     <input asp-for="Id" type="hidden" /><input asp-for="Revision" type="hidden" />
     <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
     <section class="dash-card p-4 mb-3">
-        <h2>Datos del instrumento</h2>
+        <h2>@Idioma.Texto("Datos del instrumento")</h2>
         <label asp-for="Nombre" class="form-label"></label><input asp-for="Nombre" class="form-control mb-3" maxlength="150" required />
         <label asp-for="Descripcion" class="form-label"></label><textarea asp-for="Descripcion" class="form-control mb-3" maxlength="2000" required></textarea>
         <label asp-for="Instrucciones" class="form-label"></label><textarea asp-for="Instrucciones" class="form-control mb-3" maxlength="2000" required></textarea>
         <label asp-for="Fuente" class="form-label"></label><input asp-for="Fuente" class="form-control mb-3" maxlength="500" required />
         <label asp-for="Idioma" class="form-label"></label><input asp-for="Idioma" class="form-control" maxlength="80" required />
     </section>
-    <section class="dash-card p-4 mb-3"><h2>Dimensiones</h2><p>Usa un nombre único por dimensión y selecciónalo en cada pregunta.</p>
+    <section class="dash-card p-4 mb-3"><h2>@Idioma.Texto("Dimensiones")</h2><p>@Idioma.Texto("Usa un nombre único por dimensión y selecciónalo en cada pregunta.")</p>
         <div id="dimensiones">
         @for (var i = 0; i < Model.Dimensiones.Count; i++)
         {
-            <div data-dimension class="d-flex gap-2 mb-2"><label class="flex-grow-1">Nombre de dimensión<input asp-for="Dimensiones[i].Nombre" data-field="Nombre" class="form-control" maxlength="100" required /></label><button type="button" data-remove class="btn btn-outline-danger">Quitar</button></div>
+            <div data-dimension class="d-flex gap-2 mb-2"><label class="flex-grow-1">@Idioma.Texto("Nombre de dimensión")<input asp-for="Dimensiones[i].Nombre" data-field="Nombre" class="form-control" maxlength="100" required /></label><button type="button" data-remove class="btn btn-outline-danger">@Idioma.Texto("Quitar")</button></div>
         }
-        </div><button type="button" id="agregar-dimension" class="btn btn-outline-primary">Agregar dimensión</button>
+        </div><button type="button" id="agregar-dimension" class="btn btn-outline-primary">@Idioma.Texto("Agregar dimensión")</button>
     </section>
-    <section class="dash-card p-4 mb-3"><h2>Preguntas y opciones</h2><p>El orden de las preguntas y opciones corresponde a su posición en el editor. Los valores se guardan como parte de la configuración.</p>
+    <section class="dash-card p-4 mb-3"><h2>@Idioma.Texto("Preguntas y opciones")</h2><p>@Idioma.Texto("El orden de las preguntas y opciones corresponde a su posición en el editor. Los valores se guardan como parte de la configuración.")</p>
         <div id="preguntas">
         @for (var i = 0; i < Model.Preguntas.Count; i++)
         {
-            <fieldset data-pregunta class="border rounded p-3 mb-3"><legend class="h5">Pregunta @(i + 1)</legend>
-                <label class="d-block">Texto<textarea asp-for="Preguntas[i].Texto" data-field="Texto" class="form-control mb-2" maxlength="1000" required></textarea></label>
-                <label class="d-block">Dimensión<input asp-for="Preguntas[i].Dimension" data-field="Dimension" list="dimension-nombres" class="form-control mb-2" maxlength="100" required /></label>
+            <fieldset data-pregunta class="border rounded p-3 mb-3"><legend class="h5">@Idioma.Texto("Pregunta") @(i + 1)</legend>
+                <label class="d-block">@Idioma.Texto("Texto")<textarea asp-for="Preguntas[i].Texto" data-field="Texto" class="form-control mb-2" maxlength="1000" required></textarea></label>
+                <label class="d-block">@Idioma.Texto("Dimensión")<input asp-for="Preguntas[i].Dimension" data-field="Dimension" list="dimension-nombres" class="form-control mb-2" maxlength="100" required /></label>
                 <div data-opciones>
                 @for (var j = 0; j < Model.Preguntas[i].Opciones.Count; j++)
                 {
-                    <div data-opcion class="d-flex flex-wrap gap-2 mb-2"><label class="flex-grow-1">Opción<input asp-for="Preguntas[i].Opciones[j].Texto" data-field="Texto" class="form-control" maxlength="300" required /></label><label>Valor<input asp-for="Preguntas[i].Opciones[j].Valor" data-field="Valor" type="number" min="-10000" max="10000" class="form-control" required /></label><button type="button" data-remove class="btn btn-outline-danger">Quitar opción</button></div>
+                    <div data-opcion class="d-flex flex-wrap gap-2 mb-2"><label class="flex-grow-1">@Idioma.Texto("Opción")<input asp-for="Preguntas[i].Opciones[j].Texto" data-field="Texto" class="form-control" maxlength="300" required /></label><label>@Idioma.Texto("Valor")<input asp-for="Preguntas[i].Opciones[j].Valor" data-field="Valor" type="number" min="-10000" max="10000" class="form-control" required /></label><button type="button" data-remove class="btn btn-outline-danger">@Idioma.Texto("Quitar opción")</button></div>
                 }
-                </div><button type="button" data-add-opcion class="btn btn-outline-primary">Agregar opción</button> <button type="button" data-remove class="btn btn-outline-danger">Quitar pregunta</button>
+                </div><button type="button" data-add-opcion class="btn btn-outline-primary">@Idioma.Texto("Agregar opción")</button> <button type="button" data-remove class="btn btn-outline-danger">@Idioma.Texto("Quitar pregunta")</button>
             </fieldset>
         }
-        </div><button type="button" id="agregar-pregunta" class="btn btn-outline-primary">Agregar pregunta</button>
+        </div><button type="button" id="agregar-pregunta" class="btn btn-outline-primary">@Idioma.Texto("Agregar pregunta")</button>
     </section>
     <datalist id="dimension-nombres"></datalist>
-    <button class="btn btn-primary mb-4">Guardar borrador</button> <a asp-action="Index" class="btn btn-outline-secondary mb-4">Cancelar</a>
+    <button class="btn btn-primary mb-4">@Idioma.Texto("Guardar borrador")</button> <a asp-action="Index" class="btn btn-outline-secondary mb-4">@Idioma.Texto("Cancelar")</a>
 </form>
-<template id="dimension-template"><div data-dimension class="d-flex gap-2 mb-2"><label class="flex-grow-1">Nombre de dimensión<input data-field="Nombre" class="form-control" maxlength="100" required /></label><button type="button" data-remove class="btn btn-outline-danger">Quitar</button></div></template>
-<template id="pregunta-template"><fieldset data-pregunta class="border rounded p-3 mb-3"><legend class="h5">Pregunta</legend><label class="d-block">Texto<textarea data-field="Texto" class="form-control mb-2" maxlength="1000" required></textarea></label><label class="d-block">Dimensión<input data-field="Dimension" list="dimension-nombres" class="form-control mb-2" maxlength="100" required /></label><div data-opciones></div><button type="button" data-add-opcion class="btn btn-outline-primary">Agregar opción</button> <button type="button" data-remove class="btn btn-outline-danger">Quitar pregunta</button></fieldset></template>
-<template id="opcion-template"><div data-opcion class="d-flex flex-wrap gap-2 mb-2"><label class="flex-grow-1">Opción<input data-field="Texto" class="form-control" maxlength="300" required /></label><label>Valor<input data-field="Valor" type="number" value="0" min="-10000" max="10000" class="form-control" required /></label><button type="button" data-remove class="btn btn-outline-danger">Quitar opción</button></div></template>
+<template id="dimension-template"><div data-dimension class="d-flex gap-2 mb-2"><label class="flex-grow-1">@Idioma.Texto("Nombre de dimensión")<input data-field="Nombre" class="form-control" maxlength="100" required /></label><button type="button" data-remove class="btn btn-outline-danger">@Idioma.Texto("Quitar")</button></div></template>
+<template id="pregunta-template"><fieldset data-pregunta class="border rounded p-3 mb-3"><legend class="h5">@Idioma.Texto("Pregunta")</legend><label class="d-block">@Idioma.Texto("Texto")<textarea data-field="Texto" class="form-control mb-2" maxlength="1000" required></textarea></label><label class="d-block">@Idioma.Texto("Dimensión")<input data-field="Dimension" list="dimension-nombres" class="form-control mb-2" maxlength="100" required /></label><div data-opciones></div><button type="button" data-add-opcion class="btn btn-outline-primary">@Idioma.Texto("Agregar opción")</button> <button type="button" data-remove class="btn btn-outline-danger">@Idioma.Texto("Quitar pregunta")</button></fieldset></template>
+<template id="opcion-template"><div data-opcion class="d-flex flex-wrap gap-2 mb-2"><label class="flex-grow-1">@Idioma.Texto("Opción")<input data-field="Texto" class="form-control" maxlength="300" required /></label><label>@Idioma.Texto("Valor")<input data-field="Valor" type="number" value="0" min="-10000" max="10000" class="form-control" required /></label><button type="button" data-remove class="btn btn-outline-danger">@Idioma.Texto("Quitar opción")</button></div></template>
 @section Scripts { <script src="~/js/pruebas-director.js" asp-append-version="true"></script> }

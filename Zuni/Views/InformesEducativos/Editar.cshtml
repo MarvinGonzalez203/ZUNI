@@ -1,10 +1,10 @@
 @model Zuni.Models.Informes.EditarInformeInput
 @{ ViewData["Title"] = "Preparar informe educativo"; }
-<header class="dash-profile-heading"><div><h1>Preparar informe educativo</h1><p>Redacta recomendaciones útiles para la autoridad educativa, sin copiar las notas clínicas.</p></div></header>
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Preparar informe educativo")</h1><p>@Idioma.Texto("Redacta recomendaciones útiles para la autoridad educativa, sin copiar las notas clínicas.")</p></div></header>
 <form asp-action="Guardar" method="post" class="dash-card p-4">
     <input asp-for="Id" type="hidden" /><input asp-for="SolicitudAtencionId" type="hidden" /><input asp-for="Revision" type="hidden" />
     <div asp-validation-summary="All" class="text-danger" role="alert"></div>
-    <p>Excluye diagnósticos, DPI, contactos de emergencia, narraciones íntimas y respuestas individuales de pruebas. Describe conductas observadas y necesidades de apoyo; evita etiquetas personales. El sistema no determina causas ni genera diagnósticos.</p>
+    <p>@Idioma.Texto("Excluye diagnósticos, DPI, contactos de emergencia, narraciones íntimas y respuestas individuales de pruebas. Describe conductas observadas y necesidades de apoyo; evita etiquetas personales. El sistema no determina causas ni genera diagnósticos.")</p>
     <label asp-for="Objetivo" class="form-label"></label><textarea asp-for="Objetivo" class="form-control mb-3" rows="3" maxlength="1000" required></textarea>
     <div class="row"><div class="col-md-6"><label asp-for="PeriodoInicio" class="form-label"></label><input asp-for="PeriodoInicio" type="date" class="form-control mb-3" required /></div><div class="col-md-6"><label asp-for="PeriodoFin" class="form-label"></label><input asp-for="PeriodoFin" type="date" class="form-control mb-3" required /></div></div>
     <label asp-for="Fuentes" class="form-label"></label><textarea asp-for="Fuentes" class="form-control mb-3" rows="3" maxlength="2000" required></textarea>
@@ -13,8 +13,8 @@
     <label asp-for="Recomendaciones" class="form-label"></label><textarea asp-for="Recomendaciones" class="form-control mb-3" rows="5" maxlength="3000" required></textarea>
     <label asp-for="ResponsablesAcciones" class="form-label"></label><textarea asp-for="ResponsablesAcciones" class="form-control mb-3" rows="3" maxlength="1000" required></textarea>
     <label asp-for="FechaSeguimiento" class="form-label"></label><input asp-for="FechaSeguimiento" type="date" class="form-control mb-3" required />
-    <label asp-for="DestinatarioUsuarioId" class="form-label"></label><select asp-for="DestinatarioUsuarioId" asp-items="Model.Destinatarios" class="form-select mb-3" required><option value="">Selecciona un Director</option></select>
-    <p>Guardar conserva un borrador privado. Solicitar autorización fija el texto y el destinatario de esta versión; las correcciones posteriores requieren otra versión.</p>
-    <button class="dash-button" type="submit" name="solicitar" value="false">Guardar borrador</button>
-    <button class="btn btn-outline-primary" type="submit" name="solicitar" value="true">Solicitar autorización al estudiante</button>
+    <label asp-for="DestinatarioUsuarioId" class="form-label"></label><select asp-for="DestinatarioUsuarioId" asp-items="Model.Destinatarios" class="form-select mb-3" required><option value="">@Idioma.Texto("Selecciona un Director")</option></select>
+    <p>@Idioma.Texto("Guardar conserva un borrador privado. Solicitar autorización fija el texto y el destinatario de esta versión; las correcciones posteriores requieren otra versión.")</p>
+    <button class="dash-button" type="submit" name="solicitar" value="false">@Idioma.Texto("Guardar borrador")</button>
+    <button class="btn btn-outline-primary" type="submit" name="solicitar" value="true">@Idioma.Texto("Solicitar autorización al estudiante")</button>
 </form>

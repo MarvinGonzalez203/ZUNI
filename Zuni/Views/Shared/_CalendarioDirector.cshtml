@@ -1,4 +1,4 @@
 @model Zuni.Models.Agenda.CalendarioDirectorViewModel
 @{ Model.Calendario.Profesionales=Model.Psicologos; }
-@if(Model.Psicologos.Count==0){<section class="dash-card mb-4">No hay psicólogos disponibles para consultar su calendario.</section>}
+@if(Model.Psicologos.Count==0){<section class="dash-card mb-4">@Idioma.Texto("No hay psicólogos disponibles para consultar su calendario.")</section>}
 else{<partial name="_AgendaCalendario" model="Model.Calendario" />}

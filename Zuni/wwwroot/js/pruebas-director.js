@@ -19,7 +19,7 @@
             lista.append(option);
         });
         [...preguntas.children].forEach((q, i) => {
-            q.querySelector('legend').textContent = `Pregunta ${i + 1}`;
+            q.querySelector('legend').textContent = window.ZuniI18n.t('Pregunta {0}',i+1);
             q.querySelector('textarea').name = `Preguntas[${i}].Texto`;
             q.querySelector('[data-field="Dimension"]').name = `Preguntas[${i}].Dimension`;
             [...q.querySelector('[data-opciones]').children].forEach((o, j) => {

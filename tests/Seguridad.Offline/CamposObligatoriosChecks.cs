@@ -21,14 +21,14 @@ internal static class CamposObligatoriosChecks
             Check(html.Contains("required-fields-help") && html.Contains("Campo obligatorio"), "leyenda en " + name);
             var path = Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");
             if (!string.IsNullOrEmpty(path)) { Directory.CreateDirectory(path); await File.WriteAllTextAsync(Path.Combine(path, name + ".html"), html); }
-            return html;
+            return WebUtility.HtmlDecode(html);
         }
         using var anonimo = HostPrueba.Cliente(app);
         var login = await Read(anonimo, "/Cuenta/IniciarSesion", "login");
         Check(Marca(login, "Email") && Marca(login, "Password"), "correo y contraseña marcados");
         Check(!Marca(login, "RememberMe"), "recordar sesión sigue opcional");
         var registro = await Read(anonimo, "/Cuenta/Registro", "registro");
-        Check(Marca(registro, "FullName") && Marca(registro, "Telefono") && registro.Contains("Carné<span class=\"required-marker\""), "datos obligatorios y carné agrupado");
+        Check(Marca(registro, "FullName") && Marca(registro, "Telefono") && WebUtility.HtmlDecode(registro).Contains("Carné<span class=\"required-marker\""), "datos obligatorios y carné agrupado");
         Check(!registro.Contains("zuni-required="), "atributo de servidor no se filtra al HTML");
         using var admin = HostPrueba.Cliente(app);
         await HostPrueba.Login(admin, "admin@miumg.edu.gt", clave);

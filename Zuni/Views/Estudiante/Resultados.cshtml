@@ -1,25 +1,25 @@
 @model IReadOnlyList<Zuni.Models.Agenda.ResultadoAtencionEstudianteViewModel>
 @using Zuni.Services.Agenda
 @{ ViewData["Title"] = "Mis resultados"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Mis resultados</h1><p>Consulta la información que tu profesional compartió contigo después de cada atención.</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("ACOMPAÑAMIENTO ESTUDIANTIL")</span><h1>@Idioma.Texto("Mis resultados")</h1><p>@Idioma.Texto("Consulta la información que tu profesional compartió contigo después de cada atención.")</p></div></header>
 @if (Model.Count == 0)
 {
-    <section class="dash-card agenda-card"><p>No tienes resultados de atención disponibles.</p></section>
+    <section class="dash-card agenda-card"><p>@Idioma.Texto("No tienes resultados de atención disponibles.")</p></section>
 }
 @foreach (var resultado in Model)
 {
     <article class="dash-card agenda-card atencion-card">
-        <h2>Atención del @AgendaReglas.Local(resultado.InicioUtc).ToString("dd/MM/yyyy HH:mm")</h2><p>@resultado.Modalidad · Hora de Guatemala</p>
-        <h2>Resultado breve</h2><p class="atencion-texto">@resultado.ResultadoBreveEstudiante</p>
-        <h2>Reseña y recomendaciones</h2><p class="atencion-texto">@resultado.ResenaRecomendacionesEstudiante</p>
-        <a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@resultado.CitaId" class="dash-button">Ver reporte compartido y reimprimir</a>
+        <h2>@Idioma.Texto("Atención del") @AgendaReglas.Local(resultado.InicioUtc).ToString("dd/MM/yyyy HH:mm")</h2><p>@Idioma.Texto(Convert.ToString(resultado.Modalidad)) @Idioma.Texto("· Hora de Guatemala")</p>
+        <h2>@Idioma.Texto("Resultado breve")</h2><p class="atencion-texto">@resultado.ResultadoBreveEstudiante</p>
+        <h2>@Idioma.Texto("Reseña y recomendaciones")</h2><p class="atencion-texto">@resultado.ResenaRecomendacionesEstudiante</p>
+        <a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@resultado.CitaId" class="dash-button">@Idioma.Texto("Ver reporte compartido y reimprimir")</a>
         @if (resultado.RecomiendaOtraCita)
         {
-            <p><strong>El profesional recomienda programar otra cita.</strong></p>
+            <p><strong>@Idioma.Texto("El profesional recomienda programar otra cita.")</strong></p>
             <p class="atencion-texto">@resultado.IndicacionesProximaCita</p>
-            <a class="dash-button" asp-action="Citas">Solicitar otra cita</a>
+            <a class="dash-button" asp-action="Citas">@Idioma.Texto("Solicitar otra cita")</a>
         }
     </article>
 }
-<p class="mt-3"><a class="dash-button" asp-action="Index">Volver al tablero</a></p>
+<p class="mt-3"><a class="dash-button" asp-action="Index">@Idioma.Texto("Volver al tablero")</a></p>
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/atencion-cita.css" asp-append-version="true" /> }

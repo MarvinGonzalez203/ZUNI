@@ -7,71 +7,71 @@
 
 <header class="dash-welcome">
     <div class="dash-welcome-copy">
-        <span class="dash-eyebrow">ESPACIO INSTITUCIONAL</span>
-        <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
-        <p>Gestiona instrumentos y prepara asignaciones para los estudiantes.</p>
+        <span class="dash-eyebrow">@Idioma.Texto("ESPACIO INSTITUCIONAL")</span>
+        <h1>@Idioma.Texto("Hola,") @nombre<span class="dash-greeting-dot">.</span></h1>
+        <p>@Idioma.Texto("Gestiona instrumentos y prepara asignaciones para los estudiantes.")</p>
     </div>
     <div class="dash-welcome-art" aria-hidden="true">
         <div class="dash-glass-orbit"></div>
         <div class="dash-glass-orbit orbit-small"></div>
         <img src="~/images/zuni-logo-transparent.png" alt="" />
-        <span>Mirada institucional.</span>
+        <span>@Idioma.Texto("Mirada institucional.")</span>
     </div>
 </header>
 
 <section class="dash-card p-4 mb-3">
-    <h2>Gestión de pruebas</h2>
-    <p>Crea y revisa dimensiones, preguntas y opciones. Activa los instrumentos preparados y asígnalos a estudiantes.</p>
-    <a class="btn btn-primary" asp-controller="PruebasDirector" asp-action="Index">Abrir catálogo de pruebas</a>
+    <h2>@Idioma.Texto("Gestión de pruebas")</h2>
+    <p>@Idioma.Texto("Crea y revisa dimensiones, preguntas y opciones. Activa los instrumentos preparados y asígnalos a estudiantes.")</p>
+    <a class="btn btn-primary" asp-controller="PruebasDirector" asp-action="Index">@Idioma.Texto("Abrir catálogo de pruebas")</a>
 </section>
 
 <div class="dash-section-heading">
-    <h2>Resumen institucional</h2>
-    <span>Información disponible en ZUNI</span>
+    <h2>@Idioma.Texto("Resumen institucional")</h2>
+    <span>@Idioma.Texto("Información disponible en ZUNI")</span>
 </div>
 
-<section class="dash-summary-grid" aria-label="Secciones del panel del Director">
+<section class="dash-summary-grid" aria-label="@Idioma.Texto("Secciones del panel del Director")">
     <a class="dash-card dash-summary dash-card-link" asp-controller="Director" asp-action="Carreras">
-        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("book")' /></span><span class="dash-eyebrow">COBERTURA</span></div>
-        <h3>Carreras</h3>
-        <p>Aquí podrás consultar la participación y cobertura de las carreras.</p>
-        <span class="dash-module-label">Sin datos disponibles</span>
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("book")' /></span><span class="dash-eyebrow">@Idioma.Texto("COBERTURA")</span></div>
+        <h3>@Idioma.Texto("Carreras")</h3>
+        <p>@Idioma.Texto("Aquí podrás consultar la participación y cobertura de las carreras.")</p>
+        <span class="dash-module-label">@Idioma.Texto("Sin datos disponibles")</span>
     </a>
 
     <a class="dash-card dash-summary dash-card-link" asp-controller="Director" asp-action="AvanceEvaluaciones">
-        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("clipboard")' /></span><span class="dash-eyebrow">PARTICIPACIÓN</span></div>
-        <h3>Avance de evaluaciones</h3>
-        <p>El avance se mostrará cuando se integre el módulo de evaluaciones.</p>
-        <span class="dash-module-label">Estudiantes: Sin datos disponibles</span>
-        <span class="dash-module-label">Completadas y pendientes: Sin datos disponibles</span>
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("clipboard")' /></span><span class="dash-eyebrow">@Idioma.Texto("PARTICIPACIÓN")</span></div>
+        <h3>@Idioma.Texto("Avance de evaluaciones")</h3>
+        <p>@Idioma.Texto("El avance se mostrará cuando se integre el módulo de evaluaciones.")</p>
+        <span class="dash-module-label">@Idioma.Texto("Estudiantes: Sin datos disponibles")</span>
+        <span class="dash-module-label">@Idioma.Texto("Completadas y pendientes: Sin datos disponibles")</span>
     </a>
 
     <a class="dash-card dash-summary dash-card-link" asp-controller="Director" asp-action="ResultadosInstitucionales">
-        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("results")' /></span><span class="dash-eyebrow">VISTA AGREGADA</span></div>
-        <h3>Resultados institucionales</h3>
-        <p>Consulta futura de información institucional agregada.</p>
-        <span class="dash-module-label">Próximamente</span>
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("results")' /></span><span class="dash-eyebrow">@Idioma.Texto("VISTA AGREGADA")</span></div>
+        <h3>@Idioma.Texto("Resultados institucionales")</h3>
+        <p>@Idioma.Texto("Consulta futura de información institucional agregada.")</p>
+        <span class="dash-module-label">@Idioma.Texto("Próximamente")</span>
     </a>
 
     <a class="dash-card dash-summary dash-card-link" asp-controller="Director" asp-action="Estadisticas">
-        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("grid")' /></span><span class="dash-eyebrow">INDICADORES</span></div>
-        <h3>Estadísticas</h3>
-        <p>Un espacio para consultar indicadores institucionales cuando existan datos.</p>
-        <span class="dash-module-label">Próximamente</span>
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("grid")' /></span><span class="dash-eyebrow">@Idioma.Texto("INDICADORES")</span></div>
+        <h3>@Idioma.Texto("Estadísticas")</h3>
+        <p>@Idioma.Texto("Un espacio para consultar indicadores institucionales cuando existan datos.")</p>
+        <span class="dash-module-label">@Idioma.Texto("Próximamente")</span>
     </a>
 </section>
 
 <section class="dash-card dash-evaluations" aria-labelledby="director-graficas-title">
     <div class="dash-section-heading">
         <div>
-            <h2 id="director-graficas-title">Panorama institucional</h2>
-            <p>Espacio para futuras gráficas de participación y cobertura.</p>
+            <h2 id="director-graficas-title">@Idioma.Texto("Panorama institucional")</h2>
+            <p>@Idioma.Texto("Espacio para futuras gráficas de participación y cobertura.")</p>
         </div>
-        <span class="dash-badge">Próximamente</span>
+        <span class="dash-badge">@Idioma.Texto("Próximamente")</span>
     </div>
     <div class="dash-chart-placeholder">
         <div class="dash-empty-symbol" aria-hidden="true"><span></span><span></span><partial name="_DashboardIcon" model='@("spark")' /></div>
-        <h3>Sin datos disponibles</h3>
-        <p>Las estadísticas aparecerán aquí cuando existan evaluaciones registradas.</p>
+        <h3>@Idioma.Texto("Sin datos disponibles")</h3>
+        <p>@Idioma.Texto("Las estadísticas aparecerán aquí cuando existan evaluaciones registradas.")</p>
     </div>
 </section>

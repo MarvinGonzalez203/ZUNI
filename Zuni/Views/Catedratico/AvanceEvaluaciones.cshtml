@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Avance de evaluaciones";
 }
 
@@ -8,30 +8,29 @@
     <div class="dash-section-heading">
         <div>
             <h1 id="avance-titulo" class="h2 mb-2">
-                Avance de evaluaciones
+                @Idioma.Texto("Avance de evaluaciones")
             </h1>
 
             <p>
-                Aquí podrás consultar la participación en evaluaciones
-                de los estudiantes que tengas autorizados.
+                @Idioma.Texto("Aquí podrás consultar la participación en evaluaciones de los estudiantes que tengas autorizados.")
             </p>
         </div>
 
-        <span class="dash-badge">Próximamente</span>
+        <span class="dash-badge">@Idioma.Texto("Próximamente")</span>
     </div>
 
     <div class="table-responsive mt-4">
         <table class="table align-middle">
             <caption>
-                El resumen de participación todavía no está disponible.
+                @Idioma.Texto("El resumen de participación todavía no está disponible.")
             </caption>
 
             <thead>
                 <tr>
-                    <th scope="col">Curso / Sección</th>
-                    <th scope="col">Evaluación</th>
-                    <th scope="col">Completadas</th>
-                    <th scope="col">Pendientes</th>
+                    <th scope="col">@Idioma.Texto("Curso / Sección")</th>
+                    <th scope="col">@Idioma.Texto("Evaluación")</th>
+                    <th scope="col">@Idioma.Texto("Completadas")</th>
+                    <th scope="col">@Idioma.Texto("Pendientes")</th>
                 </tr>
             </thead>
 
@@ -44,13 +43,11 @@
                         </span>
 
                         <strong class="d-block mb-2">
-                            Información aún no disponible
+                            @Idioma.Texto("Información aún no disponible")
                         </strong>
 
                         <p class="text-secondary mb-0">
-                            El avance aparecerá cuando se integren
-                            las evaluaciones y las asignaciones
-                            académicas autorizadas.
+                            @Idioma.Texto("El avance aparecerá cuando se integren las evaluaciones y las asignaciones académicas autorizadas.")
                         </p>
                     </td>
                 </tr>
@@ -59,14 +56,13 @@
     </div>
 
     <p class="small text-secondary mt-3">
-        Esta sección estará destinada al seguimiento de participación.
-        No mostrará respuestas individuales ni información clínica.
+        @Idioma.Texto("Esta sección estará destinada al seguimiento de participación. No mostrará respuestas individuales ni información clínica.")
     </p>
 
     <a class="dash-button mt-3"
        asp-controller="Catedratico"
        asp-action="Index">
-        Volver al tablero
+        @Idioma.Texto("Volver al tablero")
         <partial name="_DashboardIcon" model='@("arrow")' />
     </a>
 </section>

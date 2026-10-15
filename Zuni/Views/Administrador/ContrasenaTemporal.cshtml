@@ -6,35 +6,35 @@
 <section class="container py-4 py-md-5" aria-labelledby="temporal-title">
     <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
          style="max-width: 720px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
-        <h1 id="temporal-title" class="h2 fw-bold mb-4">Asignar contraseña temporal</h1>
+        <h1 id="temporal-title" class="h2 fw-bold mb-4">@Idioma.Texto("Asignar contraseña temporal")</h1>
         <dl>
-            <dt>Usuario seleccionado</dt>
+            <dt>@Idioma.Texto("Usuario seleccionado")</dt>
             <dd class="text-break">@Model.NombreUsuario</dd>
-            <dt>Correo</dt>
-            <dd class="text-break">@(Model.Email ?? "Sin correo")</dd>
-            <dt>Estado</dt>
-            <dd>@(Model.Activo ? "Activo" : "Inactivo (seguirá inactivo)")</dd>
+            <dt>@Idioma.Texto("Correo")</dt>
+            <dd class="text-break">@(Model.Email ?? Idioma.Texto("Sin correo"))</dd>
+            <dt>@Idioma.Texto("Estado")</dt>
+            <dd>@(Model.Activo ? "Activo" : Idioma.Texto("Inactivo (seguirá inactivo)"))</dd>
         </dl>
-        <p>Se generará una contraseña temporal segura que verás <strong>una sola vez</strong>. Al confirmar:</p>
+        <p>@Idioma.Texto("Se generará una contraseña temporal segura que verás") <strong>@Idioma.Texto("una sola vez")</strong>@Idioma.Texto(". Al confirmar:")</p>
         <ul>
-            <li>la contraseña actual deja de funcionar y se cierran todas las sesiones del usuario;</li>
-            <li>los enlaces de recuperación pendientes quedan invalidados;</li>
-            <li>el usuario deberá cambiar la contraseña al iniciar sesión;</li>
-            <li>el estado de la cuenta (activa o inactiva) no cambia.</li>
+            <li>@Idioma.Texto("la contraseña actual deja de funcionar y se cierran todas las sesiones del usuario;")</li>
+            <li>@Idioma.Texto("los enlaces de recuperación pendientes quedan invalidados;")</li>
+            <li>@Idioma.Texto("el usuario deberá cambiar la contraseña al iniciar sesión;")</li>
+            <li>@Idioma.Texto("el estado de la cuenta (activa o inactiva) no cambia.")</li>
         </ul>
-        <p class="small">Entrega la contraseña al usuario por un canal seguro. No la envíes por chats públicos ni la guardes en documentos.</p>
+        <p class="small">@Idioma.Texto("Entrega la contraseña al usuario por un canal seguro. No la envíes por chats públicos ni la guardes en documentos.")</p>
         <form asp-controller="Administrador" asp-action="ContrasenaTemporal" method="post">
             <input asp-for="UsuarioId" type="hidden" />
             <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
             <div class="mb-4">
-                <label asp-for="Motivo" class="form-label">Motivo (opcional)</label>
+                <label asp-for="Motivo" class="form-label">@Idioma.Texto("Motivo (opcional)")</label>
                 <textarea asp-for="Motivo" class="form-control" rows="3" maxlength="500" aria-describedby="motivo-ayuda"></textarea>
-                <div id="motivo-ayuda" class="form-text">Máximo 500 caracteres. No escribas contraseñas ni información sensible.</div>
+                <div id="motivo-ayuda" class="form-text">@Idioma.Texto("Máximo 500 caracteres. No escribas contraseñas ni información sensible.")</div>
                 <span asp-validation-for="Motivo" class="text-danger small"></span>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" class="dash-button px-4">Generar contraseña temporal</button>
-                <a asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="btn btn-outline-dark px-4">Cancelar</a>
+                <button type="submit" class="dash-button px-4">@Idioma.Texto("Generar contraseña temporal")</button>
+                <a asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="btn btn-outline-dark px-4">@Idioma.Texto("Cancelar")</a>
             </div>
         </form>
     </div>

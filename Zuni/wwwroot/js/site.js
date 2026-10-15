@@ -12,6 +12,6 @@ document.addEventListener("click", function (event) {
     const showPassword = input.type === "password";
     input.type = showPassword ? "text" : "password";
     toggle.setAttribute("aria-pressed", String(showPassword));
-    toggle.setAttribute("aria-label", showPassword ? "Ocultar contraseña" : "Mostrar contraseña");
+    toggle.setAttribute("aria-label", window.ZuniI18n.t(showPassword ? "Ocultar contraseña" : "Mostrar contraseña"));
     toggle.querySelector("span").textContent = showPassword ? "◌" : "◉";
 });

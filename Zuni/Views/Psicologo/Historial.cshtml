@@ -1,41 +1,41 @@
-﻿@model Zuni.Models.Agenda.HistorialCitasViewModel
+@model Zuni.Models.Agenda.HistorialCitasViewModel
 @using Zuni.Models.Agenda
 @using Zuni.Services.Agenda
 @{ ViewData["Title"] = "Historial de citas"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Historial de citas</h1><p>Consulta tus citas completadas, canceladas, rechazadas y con inasistencia.</p></div></header>
-<section class="dash-card agenda-card" aria-label="Historial">
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("ACOMPAÑAMIENTO ESTUDIANTIL")</span><h1>@Idioma.Texto("Historial de citas")</h1><p>@Idioma.Texto("Consulta tus citas completadas, canceladas, rechazadas y con inasistencia.")</p></div></header>
+<section class="dash-card agenda-card" aria-label="@Idioma.Texto("Historial")">
     <form method="get" class="agenda-actions">
-        <label for="busqueda">Estudiante</label><input id="busqueda" name="busqueda" value="@Model.Busqueda" maxlength="80" class="form-control" />
-        <label for="estado">Estado</label><select id="estado" name="estado" class="form-select"><option value="">Todos</option>
-            @foreach (var estado in new[] { EstadoCita.Completada, EstadoCita.Cancelada, EstadoCita.NoAsistio, EstadoCita.Rechazada }) { <option value="@estado" selected="@(Model.Estado == estado)">@(estado == EstadoCita.NoAsistio ? "No asistió" : estado.ToString())</option> }
-        </select><button type="submit" class="dash-button">Filtrar</button>
+        <label for="busqueda">@Idioma.Texto("Estudiante")</label><input id="busqueda" name="busqueda" value="@Model.Busqueda" maxlength="80" class="form-control" />
+        <label for="estado">@Idioma.Texto("Estado")</label><select id="estado" name="estado" class="form-select"><option value="">@Idioma.Texto("Todos")</option>
+            @foreach (var estado in new[] { EstadoCita.Completada, EstadoCita.Cancelada, EstadoCita.NoAsistio, EstadoCita.Rechazada }) { <option value="@estado" selected="@(Model.Estado == estado)">@(estado == EstadoCita.NoAsistio ? Idioma.Texto("No asistió") : Idioma.Texto(estado))</option> }
+        </select><button type="submit" class="dash-button">@Idioma.Texto("Filtrar")</button>
     </form>
-    <p class="mt-3">Horarios de Guatemala (UTC−6).</p>
-    @if (Model.Citas.Count == 0) { <div class="agenda-empty">No hay citas que coincidan con estos filtros.</div> }
+    <p class="mt-3">@Idioma.Texto("Horarios de Guatemala (UTC−6).")</p>
+    @if (Model.Citas.Count == 0) { <div class="agenda-empty">@Idioma.Texto("No hay citas que coincidan con estos filtros.")</div> }
     else
     {
-        <div class="table-responsive"><table><thead><tr><th>Fecha y hora</th><th>Estudiante</th><th>Modalidad</th><th>Estado</th></tr></thead><tbody>
+        <div class="table-responsive"><table><thead><tr><th>@Idioma.Texto("Fecha y hora")</th><th>@Idioma.Texto("Estudiante")</th><th>@Idioma.Texto("Modalidad")</th><th>@Idioma.Texto("Estado")</th></tr></thead><tbody>
         @foreach (var cita in Model.Citas)
         {
-            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@cita.Modalidad</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? "No asistió" : cita.Estado.ToString())</span>
+            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@Idioma.Texto(Convert.ToString(cita.Modalidad))</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? Idioma.Texto("No asistió") : cita.Estado.ToString())</span>
             @if (cita.Estado == EstadoCita.Cancelada)
             {
-                <p class="small text-muted text-break mt-2 mb-0">Motivo de cancelación: @(string.IsNullOrWhiteSpace(cita.MotivoCancelacion) ? "Motivo no registrado" : cita.MotivoCancelacion)</p>
+                <p class="small text-muted text-break mt-2 mb-0">@Idioma.Texto("Motivo de cancelación:") @(string.IsNullOrWhiteSpace(cita.MotivoCancelacion) ? Idioma.Texto("Motivo no registrado") : cita.MotivoCancelacion)</p>
             }
             @if (cita.TieneRegistroAtencion && cita.Estado is EstadoCita.Completada or EstadoCita.NoAsistio)
             {
-                <p class="mt-2 mb-0"><a asp-action="VerAtencion" asp-route-citaId="@cita.Id">Ver atención</a></p>
-                @if (cita.Estado == EstadoCita.Completada) { <p><a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@cita.Id">Ver reporte compartido y reimprimir</a></p> }
+                <p class="mt-2 mb-0"><a asp-action="VerAtencion" asp-route-citaId="@cita.Id">@Idioma.Texto("Ver atención")</a></p>
+                @if (cita.Estado == EstadoCita.Completada) { <p><a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@cita.Id">@Idioma.Texto("Ver reporte compartido y reimprimir")</a></p> }
             }
             </td></tr>
         }
         </tbody></table></div>
     }
-    <nav class="agenda-pagination" aria-label="Páginas del historial">
-        @if (Model.Pagina > 1) { <a asp-action="Historial" asp-route-busqueda="@Model.Busqueda" asp-route-estado="@Model.Estado" asp-route-pagina="@(Model.Pagina - 1)">Anterior</a> }
-        <span>Página @Model.Pagina de @Model.Paginas</span>
-        @if (Model.Pagina < Model.Paginas) { <a asp-action="Historial" asp-route-busqueda="@Model.Busqueda" asp-route-estado="@Model.Estado" asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a> }
+    <nav class="agenda-pagination" aria-label="@Idioma.Texto("Páginas del historial")">
+        @if (Model.Pagina > 1) { <a asp-action="Historial" asp-route-busqueda="@Model.Busqueda" asp-route-estado="@Model.Estado" asp-route-pagina="@(Model.Pagina - 1)">@Idioma.Texto("Anterior")</a> }
+        <span>@Idioma.Texto("Página") @Model.Pagina @Idioma.Texto("de") @Model.Paginas</span>
+        @if (Model.Pagina < Model.Paginas) { <a asp-action="Historial" asp-route-busqueda="@Model.Busqueda" asp-route-estado="@Model.Estado" asp-route-pagina="@(Model.Pagina + 1)">@Idioma.Texto("Siguiente")</a> }
     </nav>
-    <p class="mt-3"><a asp-action="Agenda">Volver a mi agenda</a></p>
+    <p class="mt-3"><a asp-action="Agenda">@Idioma.Texto("Volver a mi agenda")</a></p>
 </section>
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }

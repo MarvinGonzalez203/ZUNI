@@ -6,30 +6,30 @@
 }
 <header class="dash-welcome">
     <div class="dash-welcome-copy">
-        <span class="dash-eyebrow">TU ESPACIO DE ACOMPAÑAMIENTO</span>
-        <h1>Hola, @nombre<span class="dash-greeting-dot">.</span></h1>
-        <p>Consulta tus estudiantes asignados y sus expedientes iniciales autorizados.</p>
-        <a class="dash-button" asp-action="Estudiantes">Ver estudiantes <partial name="_DashboardIcon" model='@("arrow")' /></a>
+        <span class="dash-eyebrow">@Idioma.Texto("TU ESPACIO DE ACOMPAÑAMIENTO")</span>
+        <h1>@Idioma.Texto("Hola,") @nombre<span class="dash-greeting-dot">.</span></h1>
+        <p>@Idioma.Texto("Consulta tus estudiantes asignados y sus expedientes iniciales autorizados.")</p>
+        <a class="dash-button" asp-action="Estudiantes">@Idioma.Texto("Ver estudiantes") <partial name="_DashboardIcon" model='@("arrow")' /></a>
     </div>
-    <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>Acompañar y conectar.</span></div>
+    <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>@Idioma.Texto("Acompañar y conectar.")</span></div>
 </header>
-<div class="dash-section-heading"><h2>Tu espacio, de un vistazo</h2></div>
-<section class="dash-summary-grid" aria-label="Accesos rápidos">
+<div class="dash-section-heading"><h2>@Idioma.Texto("Tu espacio, de un vistazo")</h2></div>
+<section class="dash-summary-grid" aria-label="@Idioma.Texto("Accesos rápidos")">
     <a class="dash-card dash-summary dash-card-link" asp-action="Estudiantes">
-        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><h2>Estudiantes asignados</h2></div>
+        <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model='@("user")' /></span><h2>@Idioma.Texto("Estudiantes asignados")</h2></div>
         <strong class="fs-2">@Model.EstudiantesAsignados</strong>
-        <p>@(Model.EstudiantesAsignados == 1 ? "Estudiante asignado actualmente" : "Estudiantes asignados actualmente")</p><span class="dash-text-link">Ver estudiantes</span>
+        <p>@(Model.EstudiantesAsignados == 1 ? Idioma.Texto("Estudiante asignado actualmente") : Idioma.Texto("Estudiantes asignados actualmente"))</p><span class="dash-text-link">@Idioma.Texto("Ver estudiantes")</span>
     </a>
-    <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes"><h2>Solicitudes asignadas</h2><strong class="fs-2">@Model.SolicitudesAsignadas</strong><p>De estudiantes con asignación vigente a tu cuenta.</p><span class="dash-text-link">Ver quién realizó la solicitud</span></a>
-    <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes" asp-route-expedientes="true"><h2>Expedientes disponibles</h2><strong class="fs-2">@Model.ExpedientesDisponibles</strong><p>Con consentimiento aceptado y asignación vigente.</p><span class="dash-text-link">Consultar expedientes</span></a>
+    <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes"><h2>@Idioma.Texto("Solicitudes asignadas")</h2><strong class="fs-2">@Model.SolicitudesAsignadas</strong><p>@Idioma.Texto("De estudiantes con asignación vigente a tu cuenta.")</p><span class="dash-text-link">@Idioma.Texto("Ver quién realizó la solicitud")</span></a>
+    <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes" asp-route-expedientes="true"><h2>@Idioma.Texto("Expedientes disponibles")</h2><strong class="fs-2">@Model.ExpedientesDisponibles</strong><p>@Idioma.Texto("Con consentimiento aceptado y asignación vigente.")</p><span class="dash-text-link">@Idioma.Texto("Consultar expedientes")</span></a>
 </section>
-<div class="dash-section-heading"><h2>Herramientas de atención</h2></div>
-<section class="dash-summary-grid" aria-label="Módulos de atención">
+<div class="dash-section-heading"><h2>@Idioma.Texto("Herramientas de atención")</h2></div>
+<section class="dash-summary-grid" aria-label="@Idioma.Texto("Módulos de atención")">
     @foreach (var item in new[] { ("Agenda", "Agenda", "calendar", "Disponibilidad, almuerzo y citas pendientes de revisar."), ("Resultados", "Resultados", "results", "Consulta las pruebas indicadas y sus resúmenes."), ("Solicitudes", "Atención", "clipboard", "Solicitudes y expedientes de tus estudiantes vinculados."), ("Historial", "Historial", "book", "Consulta las citas pasadas y sus registros de atención.") })
     {
         <a class="dash-card dash-summary dash-card-link" asp-action="@item.Item1">
-            <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item3" /></span><h2>@item.Item2</h2></div>
-            <p>@item.Item4</p>
+            <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item3" /></span><h2>@Idioma.Texto(item.Item2)</h2></div>
+            <p>@Idioma.Texto(item.Item4)</p>
         </a>
     }
 </section>

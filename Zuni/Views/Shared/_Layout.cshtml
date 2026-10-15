@@ -1,14 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 @inject Zuni.Data.ApplicationDbContext DbInstitucion
 @{
     var configuracionInstitucion = ViewData["Institucion"] as Zuni.Models.Institucion.ConfiguracionInstitucion
         ?? await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
 }
-<html lang="es">
+<html lang="@Idioma.Codigo">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ZUNI</title>
+    <title>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString())) - ZUNI</title>
+    <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/guias-publicas.css" asp-append-version="true" />
@@ -21,16 +22,17 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-light zuni-navbar py-3">
             <div class="container">
-                <a class="navbar-brand brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/zuni-logo-transparent.png" alt="" />ZUNI<span>.</span></a>
+                <a class="navbar-brand brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/zuni-logo-transparent.png" alt="" />@Idioma.Texto("ZUNI")<span>.</span></a>
                 <span class="small me-3">@configuracionInstitucion.Nombre</span>
-                @if (configuracionInstitucion.LogotipoPng is not null) { <img src="@Url.Action("Logotipo", "Institucion")" alt="Logotipo de @configuracionInstitucion.Nombre" style="max-width:100px;max-height:45px;object-fit:contain" /> }
+                @if (configuracionInstitucion.LogotipoPng is not null) { <img src="@Url.Action("Logotipo", "Institucion")" alt="@Idioma.Texto("Logo de {0}", configuracionInstitucion.Nombre)" style="max-width:100px;max-height:45px;object-fit:contain" /> }
+                <partial name="_SelectorIdioma" />
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                        aria-expanded="false" aria-label="@Idioma.Texto("Toggle navigation")">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-lg-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Inicio</a></li> 
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">@Idioma.Texto("Inicio")</a></li>
                     </ul>
                     <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
                         @if (User.Identity?.IsAuthenticated == true)
@@ -40,15 +42,15 @@
                             var displayName = firstName.Length == 0
                                 ? "Usuario"
                                 : char.ToUpper(firstName[0], System.Globalization.CultureInfo.CurrentCulture) + firstName[1..].ToLower(System.Globalization.CultureInfo.CurrentCulture);
-                            <span class="text-secondary small me-2">Hola, <strong class="text-dark">@displayName</strong></span>
-                            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="btn btn-outline-secondary" type="submit">Cerrar sesión</button></form>
+                            <span class="text-secondary small me-2">@Idioma.Texto("Hola,") <strong class="text-dark">@displayName</strong></span>
+                            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="btn btn-outline-secondary" type="submit">@Idioma.Texto("Cerrar sesión")</button></form>
                         }
                         else
                         {
-                            <a class="btn btn-link text-dark text-decoration-none" asp-controller="Cuenta" asp-action="IniciarSesion">Iniciar sesión</a>
+                            <a class="btn btn-link text-dark text-decoration-none" asp-controller="Cuenta" asp-action="IniciarSesion">@Idioma.Texto("Iniciar sesión")</a>
                             @if (configuracionInstitucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas)
                             {
-                                <a class="btn btn-zuni" asp-controller="Cuenta" asp-action="Registro">Crear cuenta</a>
+                                <a class="btn btn-zuni" asp-controller="Cuenta" asp-action="Registro">@Idioma.Texto("Crear cuenta")</a>
                             }
                         }
                     </div>
@@ -63,13 +65,14 @@
     </div>
 
     <footer class="zuni-footer"><div class="container"><div class="footer-grid">
-        <section><a class="brand" asp-controller="Home" asp-action="Index"><img src="~/images/zuni-logo-transparent.png" alt="Logotipo ZUNI" />ZUNI<span>.</span></a><p>Acompañamiento, organización y seguimiento educativo en un espacio pensado para tu bienestar.</p><small>@configuracionInstitucion.Nombre</small>@if(!string.IsNullOrWhiteSpace(configuracionInstitucion.CorreoSoporte)) { <a href="mailto:@configuracionInstitucion.CorreoSoporte">@configuracionInstitucion.CorreoSoporte</a> }</section>
-        <section><h2>Explora ZUNI</h2><a asp-controller="Home" asp-action="Guia" asp-route-tema="cita">Solicitar y organizar citas</a><a asp-controller="Home" asp-action="Guia" asp-route-tema="seguimiento">Seguimiento y reportes</a><a asp-controller="Home" asp-action="Guia" asp-route-tema="bienestar">Bienestar y herramientas</a></section>
-        <section><h2>Tu información</h2><a asp-controller="Home" asp-action="Guia" asp-route-tema="privacidad">Cómo se protege y comparte</a><a asp-controller="Privacidad" asp-action="Politica">Política institucional</a><a asp-controller="Privacidad" asp-action="Index">Privacidad y mis derechos</a><p>Consulta la guía antes de autorizar un informe.</p></section>
-        <section><h2>Empieza aquí</h2><a asp-controller="Home" asp-action="Index">Inicio</a><a asp-controller="Cuenta" asp-action="IniciarSesion">Ingresar a mi cuenta</a>@if(configuracionInstitucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas) { <a asp-controller="Cuenta" asp-action="Registro">Crear una cuenta</a> }<p>Para soporte, contacta al responsable de tu institución.</p></section>
-    </div><div class="footer-bottom"><span>© @DateTime.Now.Year ZUNI. Todos los derechos reservados.</span><span>Tu espacio. Tu ritmo.</span></div></div></footer>
+        <section><a class="brand" asp-controller="Home" asp-action="Index"><img src="~/images/zuni-logo-transparent.png" alt="Logotipo ZUNI" />@Idioma.Texto("ZUNI")<span>.</span></a><p>@Idioma.Texto("Acompañamiento, organización y seguimiento educativo en un espacio pensado para tu bienestar.")</p><small>@configuracionInstitucion.Nombre</small>@if(!string.IsNullOrWhiteSpace(configuracionInstitucion.CorreoSoporte)) { <a href="mailto:@configuracionInstitucion.CorreoSoporte">@configuracionInstitucion.CorreoSoporte</a> }</section>
+        <section><h2>@Idioma.Texto("Explora ZUNI")</h2><a asp-controller="Home" asp-action="Guia" asp-route-tema="cita">@Idioma.Texto("Solicitar y organizar citas")</a><a asp-controller="Home" asp-action="Guia" asp-route-tema="seguimiento">@Idioma.Texto("Seguimiento y reportes")</a><a asp-controller="Home" asp-action="Guia" asp-route-tema="bienestar">@Idioma.Texto("Bienestar y herramientas")</a></section>
+        <section><h2>@Idioma.Texto("Tu información")</h2><a asp-controller="Home" asp-action="Guia" asp-route-tema="privacidad">@Idioma.Texto("Cómo se protege y comparte")</a><a asp-controller="Privacidad" asp-action="Politica">@Idioma.Texto("Política institucional")</a><a asp-controller="Privacidad" asp-action="Index">@Idioma.Texto("Privacidad y mis derechos")</a><p>@Idioma.Texto("Consulta la guía antes de autorizar un informe.")</p></section>
+        <section><h2>@Idioma.Texto("Empieza aquí")</h2><a asp-controller="Home" asp-action="Index">@Idioma.Texto("Inicio")</a><a asp-controller="Cuenta" asp-action="IniciarSesion">@Idioma.Texto("Ingresar a mi cuenta")</a>@if(configuracionInstitucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas) { <a asp-controller="Cuenta" asp-action="Registro">@Idioma.Texto("Crear una cuenta")</a> }<p>@Idioma.Texto("Para soporte, contacta al responsable de tu institución.")</p></section>
+    </div><div class="footer-bottom"><span>© @DateTime.Now.Year @Idioma.Texto("ZUNI. Todos los derechos reservados.")</span><span>@Idioma.Texto("Tu espacio. Tu ritmo.")</span></div></div></footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_IdiomaScripts" />
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/campos-obligatorios.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

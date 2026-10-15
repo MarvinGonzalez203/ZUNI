@@ -1,6 +1,6 @@
 @model IReadOnlyList<(Guid Id,string Estudiante,string Prueba,DateTime? Fin)>
 @{ViewData["Title"]="Pruebas de mis estudiantes";}
-<header class="dash-profile-heading"><div><h1>Pruebas de mis estudiantes</h1><p>Participaciones con inducción registrada. El resumen está disponible al finalizar y únicamente para el profesional vinculado.</p></div></header>
-<p><a asp-action="Habilitar" class="dash-button">Indicar prueba e inducción</a></p>
-@if(Model.Count==0){<section class="dash-card">No hay participaciones habilitadas.</section>}
-@foreach(var a in Model){<article class="dash-card mb-3"><h2>@a.Estudiante</h2><p>@a.Prueba</p>@if(a.Fin is null){<span class="dash-badge">Pendiente de finalizar</span>}else{<a asp-action="Resumen" asp-route-id="@a.Id" class="dash-button">Consultar resumen exploratorio</a>}</article>}
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Pruebas de mis estudiantes")</h1><p>@Idioma.Texto("Participaciones con inducción registrada. El resumen está disponible al finalizar y únicamente para el profesional vinculado.")</p></div></header>
+<p><a asp-action="Habilitar" class="dash-button">@Idioma.Texto("Indicar prueba e inducción")</a></p>
+@if(Model.Count==0){<section class="dash-card">@Idioma.Texto("No hay participaciones habilitadas.")</section>}
+@foreach(var a in Model){<article class="dash-card mb-3"><h2>@a.Estudiante</h2><p>@a.Prueba</p>@if(a.Fin is null){<span class="dash-badge">@Idioma.Texto("Pendiente de finalizar")</span>}else{<a asp-action="Resumen" asp-route-id="@a.Id" class="dash-button">@Idioma.Texto("Consultar resumen exploratorio")</a>}</article>}

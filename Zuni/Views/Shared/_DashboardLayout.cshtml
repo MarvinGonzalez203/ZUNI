@@ -10,11 +10,12 @@
     var navegacion = ViewData["DashboardNavigation"] as string;
 }
 <!DOCTYPE html>
-<html lang="es">
+<html lang="@Idioma.Codigo">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] · ZUNI</title>
+    <title>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString())) · ZUNI</title>
+    <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/campos-obligatorios.css" asp-append-version="true" />
@@ -24,46 +25,47 @@
     <partial name="_IdentidadInstitucion" model="identidadInstitucion" />
 </head>
 <body class="dashboard-app">
-    <a href="#dashboard-main" class="dash-skip">Saltar al contenido</a>
-    <aside class="dashboard-sidebar offcanvas offcanvas-start" tabindex="-1" id="dashboard-sidebar" aria-labelledby="sidebar-title">
+    <a href="#dashboard-main" class="dash-skip">@Idioma.Texto("Saltar al contenido")</a>
+    <aside class="dashboard-sidebar offcanvas offcanvas-start" tabindex="-1" id="dashboard-sidebar" aria-labelledby="sidebar-title" data-nav-key="@navegacion">
         <div class="dash-brand-row">
-            <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><img src="~/images/zuni-logo-transparent.png" alt="" /> ZUNI<span>.</span></a>
-            <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" aria-label="Cerrar menú"></button>
+            <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><img src="~/images/zuni-logo-transparent.png" alt="" /> @Idioma.Texto("ZUNI")<span>.</span></a>
+            <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" aria-label="@Idioma.Texto("Cerrar menú")"></button>
         </div>
         <p class="dash-sidebar-caption">@identidadInstitucion.Nombre<br />@identidadInstitucion.Lema</p>
-        @if (identidadInstitucion.LogotipoPng is not null) { <img src="@Url.Action("Logotipo", "Institucion")" alt="Logotipo de @identidadInstitucion.Nombre" style="max-width:160px;max-height:80px;object-fit:contain;margin-bottom:16px" /> }
+        @if (identidadInstitucion.LogotipoPng is not null) { <img src="@Url.Action("Logotipo", "Institucion")" alt="@Idioma.Texto("Logo de {0}", identidadInstitucion.Nombre)" style="max-width:160px;max-height:80px;object-fit:contain;margin-bottom:16px" /> }
         @if (navegacion is not null)
         {
             @await Html.PartialAsync(navegacion)
         }
         <div class="dash-sidebar-bottom">
-            <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>Tu bienestar también<br />forma parte del camino.</p></div>
+            <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>@Idioma.Texto("Tu bienestar también")<br />@Idioma.Texto("forma parte del camino.")</p></div>
             @if (ViewData["DashboardAccountUnavailable"] is true)
             {
-                <div class="dash-account"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@rol</small></div></div>
+                <div class="dash-account"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@Idioma.Roles(rol)</small></div></div>
             }
             else
             {
-                <a class="dash-account" asp-controller="MiCuenta" asp-action="Index" aria-label="Ver mi cuenta: @corto"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@rol</small></div></a>
+                <a class="dash-account" asp-controller="MiCuenta" asp-action="Index" aria-label="@Idioma.Texto("Ver mi cuenta: {0}", corto)"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span><div><strong title="@nombre">@corto</strong><small>@Idioma.Roles(rol)</small></div></a>
             }
-            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-logout" type="submit"><partial name="_DashboardIcon" model='@("logout")' />Cerrar sesión</button></form>
+            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-logout" type="submit"><partial name="_DashboardIcon" model='@("logout")' />@Idioma.Texto("Cerrar sesión")</button></form>
         </div>
     </aside>
     <div class="dashboard-workspace">
         <header class="dashboard-topbar">
-            <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="Abrir menú"><partial name="_DashboardIcon" model='@("menu")' /></button><span>Mi espacio <span class="dash-slash">/</span> <strong>@ViewData["Title"]</strong></span></div>
-            <div class="dash-top-account">@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoCitas")<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />Sesión activa</span><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></div>
+            <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="@Idioma.Texto("Abrir menú")"><partial name="_DashboardIcon" model='@("menu")' /></button><span>@Idioma.Texto("Mi espacio") <span class="dash-slash">/</span> <strong>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString()))</strong></span></div>
+            <div class="dash-top-account"><partial name="_SelectorIdioma" />@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoCitas")<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />@Idioma.Texto("Sesión activa")</span><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></div>
         </header>
         <main id="dashboard-main" class="dashboard-main" tabindex="-1">
             @if (TempData["Success"] is string mensaje)
             {
-                <div class="dash-notice" role="status">@mensaje</div>
+                <div class="dash-notice" role="status">@Idioma.Texto(mensaje)</div>
             }
             @RenderBody()
-            <footer class="dash-footer"><span>ZUNI · Bienestar y acompañamiento estudiantil</span><span>Tu espacio. Tu ritmo.</span></footer>
+            <footer class="dash-footer"><span>@Idioma.Texto("ZUNI · Bienestar y acompañamiento estudiantil")</span><span>@Idioma.Texto("Tu espacio. Tu ritmo.")</span></footer>
         </main>
     </div>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_IdiomaScripts" />
     <script src="~/js/campos-obligatorios.js" asp-append-version="true"></script>
     <script src="~/js/agenda-contexto.js" asp-append-version="true"></script>
     <script>

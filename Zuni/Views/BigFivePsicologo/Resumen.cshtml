@@ -8,16 +8,16 @@
 }
 @section Styles { <link rel="stylesheet" href="~/css/bigfive-apoyo.css" asp-append-version="true" /> }
 <div class="bf-module">
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">CONSULTA CONFIDENCIAL Y AUDITADA</span><h1>Resumen Big Five</h1></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("CONSULTA CONFIDENCIAL Y AUDITADA")</span><h1>@Idioma.Texto("Resumen Big Five")</h1></div></header>
 <partial name="~/Views/BigFive/_Limitaciones.cshtml" />
 @if (Model == null)
 {
-    <section class="dash-card"><h2>No hay un resumen disponible para consultar.</h2><p>La participación es opcional. La atención puede continuar sin este cuestionario.</p></section>
+    <section class="dash-card"><h2>@Idioma.Texto("No hay un resumen disponible para consultar.")</h2><p>@Idioma.Texto("La participación es opcional. La atención puede continuar sin este cuestionario.")</p></section>
 }
 else
 {
-    <p>Versión: @Model.VersionInstrumento · Finalizado: @Model.FechaFinalizacionUtc.ToString("dd/MM/yyyy HH:mm") UTC.</p>
-    <p class="bf-notice">Las puntuaciones describen tendencias. No constituyen un diagnóstico y deben interpretarse junto con la entrevista y el contexto del estudiante.</p>
+    <p>@Idioma.Texto("Versión:") @Model.VersionInstrumento @Idioma.Texto("· Finalizado:") @Model.FechaFinalizacionUtc.ToString("dd/MM/yyyy HH:mm") UTC.</p>
+    <p class="bf-notice">@Idioma.Texto("Las puntuaciones describen tendencias. No constituyen un diagnóstico y deben interpretarse junto con la entrevista y el contexto del estudiante.")</p>
     <div class="bf-traits">
     @foreach (var dimension in Model.Dimensiones)
     {
@@ -28,7 +28,7 @@ else
         </article>
     }
     </div>
-    <p>Las barras representan visualmente la escala de 1 a 5; no son porcentajes de personalidad ni percentiles.</p>
+    <p>@Idioma.Texto("Las barras representan visualmente la escala de 1 a 5; no son porcentajes de personalidad ni percentiles.")</p>
 }
-<a class="dash-button bf-back" asp-controller="Psicologo" asp-action="Expediente" asp-route-solicitudId="@ViewData["SolicitudId"]">Volver al expediente</a>
+<a class="dash-button bf-back" asp-controller="Psicologo" asp-action="Expediente" asp-route-solicitudId="@ViewData["SolicitudId"]">@Idioma.Texto("Volver al expediente")</a>
 </div>

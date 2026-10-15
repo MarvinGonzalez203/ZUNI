@@ -6,24 +6,23 @@
 <section class="container py-4 py-md-5" aria-labelledby="generada-title">
     <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
          style="max-width: 720px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
-        <h1 id="generada-title" class="h2 fw-bold mb-4">Contraseña temporal generada</h1>
+        <h1 id="generada-title" class="h2 fw-bold mb-4">@Idioma.Texto("Contraseña temporal generada")</h1>
         <dl>
-            <dt>Usuario</dt>
+            <dt>@Idioma.Texto("Usuario")</dt>
             <dd class="text-break">@Model.NombreUsuario</dd>
-            <dt>Correo</dt>
-            <dd class="text-break">@(Model.Email ?? "Sin correo")</dd>
+            <dt>@Idioma.Texto("Correo")</dt>
+            <dd class="text-break">@(Model.Email ?? Idioma.Texto("Sin correo"))</dd>
         </dl>
         <div class="alert alert-warning" role="alert">
-            Esta es la <strong>única vez</strong> que se muestra la contraseña. No se guarda en ZUNI ni en la auditoría.
-            Si cierras o recargas esta página sin copiarla, tendrás que generar otra.
+            @Idioma.Texto("Esta es la") <strong>@Idioma.Texto("única vez")</strong> @Idioma.Texto("que se muestra la contraseña. No se guarda en ZUNI ni en la auditoría. Si cierras o recargas esta página sin copiarla, tendrás que generar otra.")
         </div>
-        <p class="mb-1">Contraseña temporal:</p>
+        <p class="mb-1">@Idioma.Texto("Contraseña temporal:")</p>
         <p><code id="contrasena-temporal" class="fs-4 user-select-all">@Model.ContrasenaTemporal</code></p>
         @if (!Model.Activo)
         {
-            <p class="small">La cuenta sigue <strong>inactiva</strong>: el usuario no podrá iniciar sesión hasta que la actives.</p>
+            <p class="small">@Idioma.Texto("La cuenta sigue") <strong>@Idioma.Texto("inactiva")</strong>@Idioma.Texto(": el usuario no podrá iniciar sesión hasta que la actives.")</p>
         }
-        <p class="small">Al iniciar sesión, el usuario deberá cambiarla por una contraseña personal.</p>
-        <a asp-controller="Administrador" asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="dash-button px-4">Volver al usuario</a>
+        <p class="small">@Idioma.Texto("Al iniciar sesión, el usuario deberá cambiarla por una contraseña personal.")</p>
+        <a asp-controller="Administrador" asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="dash-button px-4">@Idioma.Texto("Volver al usuario")</a>
     </div>
 </section>

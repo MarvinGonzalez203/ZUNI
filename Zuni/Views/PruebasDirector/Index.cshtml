@@ -1,16 +1,16 @@
 @model List<Zuni.Models.Pruebas.Prueba>
 @{ ViewData["Title"] = "Pruebas"; }
-<header class="dash-welcome"><div><span class="dash-eyebrow">DIRECTOR</span><h1>Catálogo de pruebas</h1><p>Prepara instrumentos y asignaciones. El catálogo no contiene respuestas ni historias clínicas.</p></div></header>
+<header class="dash-welcome"><div><span class="dash-eyebrow">@Idioma.Texto("DIRECTOR")</span><h1>@Idioma.Texto("Catálogo de pruebas")</h1><p>@Idioma.Texto("Prepara instrumentos y asignaciones. El catálogo no contiene respuestas ni historias clínicas.")</p></div></header>
 <partial name="_Mensaje" />
 <section class="dash-card p-4">
-    <a class="btn btn-primary mb-3" asp-action="Crear">Crear prueba</a>
-    @if (Model.Count == 0) { <p>Aún no hay pruebas. Crea un borrador para comenzar.</p> }
+    <a class="btn btn-primary mb-3" asp-action="Crear">@Idioma.Texto("Crear prueba")</a>
+    @if (Model.Count == 0) { <p>@Idioma.Texto("Aún no hay pruebas. Crea un borrador para comenzar.")</p> }
     else
     {
-        <div class="table-responsive"><table class="table"><thead><tr><th>Nombre</th><th>Idioma</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+        <div class="table-responsive"><table class="table"><thead><tr><th>@Idioma.Texto("Nombre")</th><th>@Idioma.Texto("Idioma")</th><th>@Idioma.Texto("Estado")</th><th>@Idioma.Texto("Acciones")</th></tr></thead><tbody>
         @foreach (var p in Model)
         {
-            <tr><td>@p.Nombre @if(p.Subtitulo is not null){<small class="d-block text-muted">@p.Subtitulo</small>} @if(p.Nivel is not null){<span class="dash-badge">Nivel @p.Nivel · @p.Preguntas.Count preguntas</span>}</td><td>@p.Idioma</td><td>@(p.Activa ? "Activa" : "Borrador para revisión")</td><td><a asp-action="Detalle" asp-route-id="@p.Id">Ver prueba</a> · <a asp-action="Asignar" asp-route-id="@p.Id">Asignaciones</a></td></tr>
+            <tr><td>@p.Nombre @if(p.Subtitulo is not null){<small class="d-block text-muted">@p.Subtitulo</small>} @if(p.Nivel is not null){<span class="dash-badge">@Idioma.Texto("Nivel") @p.Nivel · @p.Preguntas.Count @Idioma.Texto("preguntas")</span>}</td><td>@p.Idioma</td><td>@(p.Activa ? "Activa" : Idioma.Texto("Borrador para revisión"))</td><td><a asp-action="Detalle" asp-route-id="@p.Id">@Idioma.Texto("Ver prueba")</a> · <a asp-action="Asignar" asp-route-id="@p.Id">@Idioma.Texto("Asignaciones")</a></td></tr>
         }
         </tbody></table></div>
     }

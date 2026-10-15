@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Tablero";
 
     var nombreCompleto = User.Identity?.Name ?? "Catedrático";
@@ -19,22 +19,21 @@
 
 <header class="dash-welcome">
     <div class="dash-welcome-copy">
-        <span class="dash-eyebrow">TU ESPACIO DOCENTE</span>
+        <span class="dash-eyebrow">@Idioma.Texto("TU ESPACIO DOCENTE")</span>
 
         <h1>
-            Hola, @nombre<span class="dash-greeting-dot">.</span>
+            @Idioma.Texto("Hola,") @nombre<span class="dash-greeting-dot">.</span>
         </h1>
 
         <p>
-            Consulta el avance académico y la participación
-            de tus estudiantes.
+            @Idioma.Texto("Consulta el avance académico y la participación de tus estudiantes.")
         </p>
 
         <div class="dash-welcome-actions">
             <a class="dash-button"
                asp-controller="Catedratico"
                asp-action="MisCursos">
-                Ver mis cursos
+                @Idioma.Texto("Ver mis cursos")
                 <partial name="_DashboardIcon" model='@("arrow")' />
             </a>
         </div>
@@ -44,16 +43,16 @@
         <div class="dash-glass-orbit"></div>
         <div class="dash-glass-orbit orbit-small"></div>
         <img src="~/images/zuni-logo-transparent.png" alt="" />
-        <span>Acompaña su aprendizaje.</span>
+        <span>@Idioma.Texto("Acompaña su aprendizaje.")</span>
     </div>
 </header>
 
 <div class="dash-section-heading">
-    <h2>Tu actividad, de un vistazo</h2>
-    <span>Módulos en preparación</span>
+    <h2>@Idioma.Texto("Tu actividad, de un vistazo")</h2>
+    <span>@Idioma.Texto("Módulos en preparación")</span>
 </div>
 
-<section class="dash-summary-grid" aria-label="Resumen académico">
+<section class="dash-summary-grid" aria-label="@Idioma.Texto("Resumen académico")">
     @foreach (var indicador in indicadores)
     {
         <a class="dash-card dash-summary dash-card-link"
@@ -68,9 +67,9 @@
                 <span class="dash-eyebrow">@indicador.Item2</span>
             </div>
 
-            <h3>Próximamente</h3>
-            <p>Se habilitará al integrar el módulo correspondiente.</p>
-            <span class="dash-module-label">Sin datos disponibles</span>
+            <h3>@Idioma.Texto("Próximamente")</h3>
+            <p>@Idioma.Texto("Se habilitará al integrar el módulo correspondiente.")</p>
+            <span class="dash-module-label">@Idioma.Texto("Sin datos disponibles")</span>
         </a>
     }
 </section>
@@ -81,11 +80,11 @@
     <div class="dash-section-heading">
         <div>
             <h2 id="participacion-titulo">
-                Participación de estudiantes por curso
+                @Idioma.Texto("Participación de estudiantes por curso")
             </h2>
-            <p>Un espacio para consultar la participación en evaluaciones.</p>
+            <p>@Idioma.Texto("Un espacio para consultar la participación en evaluaciones.")</p>
         </div>
-        <span class="dash-badge">Próximamente</span>
+        <span class="dash-badge">@Idioma.Texto("Próximamente")</span>
     </div>
 
     <div id="participacion-contenido" class="dash-chart-placeholder">
@@ -95,16 +94,14 @@
             <partial name="_DashboardIcon" model='@("results")' />
         </div>
 
-        <h3>Sin datos disponibles</h3>
+        <h3>@Idioma.Texto("Sin datos disponibles")</h3>
         <p>
-            La gráfica estará disponible cuando se integren
-            los cursos asignados y los registros de participación.
+            @Idioma.Texto("La gráfica estará disponible cuando se integren los cursos asignados y los registros de participación.")
         </p>
-        <small>Por ahora no se calculan cantidades ni porcentajes.</small>
+        <small>@Idioma.Texto("Por ahora no se calculan cantidades ni porcentajes.")</small>
     </div>
 </section>
 
 <p class="small text-secondary mt-4">
-    Este panel solo mostrará información autorizada para tu rol.
-    No incluye notas clínicas, diagnósticos ni sesiones privadas.
+    @Idioma.Texto("Este panel solo mostrará información autorizada para tu rol. No incluye notas clínicas, diagnósticos ni sesiones privadas.")
 </p>

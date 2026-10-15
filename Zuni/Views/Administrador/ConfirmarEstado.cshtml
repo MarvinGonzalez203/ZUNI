@@ -8,39 +8,39 @@
 <section class="container py-4 py-md-5" aria-labelledby="estado-title">
     <div class="mx-auto rounded-4 border shadow-sm p-4 p-md-5"
          style="max-width: 720px; background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(237,232,208,.82)); color: #111111;">
-        <h1 id="estado-title" class="h2 fw-bold mb-4">@titulo</h1>
+        <h1 id="estado-title" class="h2 fw-bold mb-4">@Idioma.Texto(titulo)</h1>
         <dl>
-            <dt>Usuario seleccionado</dt>
+            <dt>@Idioma.Texto("Usuario seleccionado")</dt>
             <dd class="text-break">@Model.NombreUsuario</dd>
-            <dt>Estado actual</dt>
-            <dd>@(Model.EstadoActual ? "Activo" : Model.PendienteActivacion ? "Pendiente de activación (autorregistro)" : "Inactivo")</dd>
+            <dt>@Idioma.Texto("Estado actual")</dt>
+            <dd>@(Model.EstadoActual ? "Activo" : Model.PendienteActivacion ? Idioma.Texto("Pendiente de activación (autorregistro)") : "Inactivo")</dd>
         </dl>
         <p>
             @if (Model.EstadoActual)
             {
-                <text>¿Confirmas que deseas desactivar esta cuenta? El usuario perderá el acceso y sus sesiones se invalidarán.</text>
+                <text>@Idioma.Texto("¿Confirmas que deseas desactivar esta cuenta? El usuario perderá el acceso y sus sesiones se invalidarán.")</text>
             }
             else if (Model.PendienteActivacion)
             {
-                <text>Esta cuenta fue creada por autorregistro. Verifica que el correo y el carné correspondan a un estudiante real antes de activarla. Al activarla podrá iniciar sesión.</text>
+                <text>@Idioma.Texto("Esta cuenta fue creada por autorregistro. Verifica que el correo y el carné correspondan a un estudiante real antes de activarla. Al activarla podrá iniciar sesión.")</text>
             }
             else
             {
-                <text>¿Confirmas que deseas reactivar esta cuenta? El usuario podrá iniciar sesión nuevamente y conservará sus roles actuales.</text>
+                <text>@Idioma.Texto("¿Confirmas que deseas reactivar esta cuenta? El usuario podrá iniciar sesión nuevamente y conservará sus roles actuales.")</text>
             }
         </p>
         <form asp-controller="Administrador" asp-action="@operacion" method="post">
             <input asp-for="UsuarioId" type="hidden" />
             <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
             <div class="mb-4">
-                <label asp-for="Motivo" class="form-label">Motivo (opcional)</label>
+                <label asp-for="Motivo" class="form-label">@Idioma.Texto("Motivo (opcional)")</label>
                 <textarea asp-for="Motivo" class="form-control" rows="4" maxlength="500" aria-describedby="motivo-ayuda"></textarea>
-                <div id="motivo-ayuda" class="form-text">Máximo 500 caracteres. Evita incluir información sensible.</div>
+                <div id="motivo-ayuda" class="form-text">@Idioma.Texto("Máximo 500 caracteres. Evita incluir información sensible.")</div>
                 <span asp-validation-for="Motivo" class="text-danger small"></span>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" class="dash-button px-4">Confirmar: @(Model.PendienteActivacion ? "activar registro" : operacion.ToLowerInvariant())</button>
-                <a asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="btn btn-outline-dark px-4">Cancelar</a>
+                <button type="submit" class="dash-button px-4">@Idioma.Texto("Confirmar:") @(Model.PendienteActivacion ? Idioma.Texto("activar registro") : operacion.ToLowerInvariant())</button>
+                <a asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="btn btn-outline-dark px-4">@Idioma.Texto("Cancelar")</a>
             </div>
         </form>
     </div>

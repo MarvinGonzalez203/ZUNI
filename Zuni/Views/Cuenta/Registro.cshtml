@@ -6,23 +6,23 @@
     ViewData["Institucion"] = institucion;
 }
 
-<a asp-controller="Home" asp-action="Index" class="auth-back">← Volver al inicio</a>
-<h1 class="h2 fw-bold mb-2">Crea tu cuenta</h1>
+<a asp-controller="Home" asp-action="Index" class="auth-back">@Idioma.Texto("← Volver al inicio")</a>
+<h1 class="h2 fw-bold mb-2">@Idioma.Texto("Crea tu cuenta")</h1>
 <p class="fw-semibold">@institucion.Nombre</p>
 <p class="text-secondary">@Zuni.Services.Institucion.PoliticaCorreoReglas.Descripcion(institucion)</p>
-<p class="text-secondary mb-4">Solo tomará un minuto. Un administrador revisará y activará tu cuenta antes de que puedas iniciar sesión.</p>
+<p class="text-secondary mb-4">@Idioma.Texto("Solo tomará un minuto. Un administrador revisará y activará tu cuenta antes de que puedas iniciar sesión.")</p>
 <form method="post" novalidate class="auth-form-fields">
     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
-    <div class="form-floating mb-3"><input asp-for="FullName" class="form-control" placeholder="Nombre" autocomplete="name" /><label asp-for="FullName"></label><span asp-validation-for="FullName" class="text-danger small"></span></div>
-    <div class="form-floating mb-3"><input asp-for="Email" class="form-control" placeholder="Correo" autocomplete="email" /><label asp-for="Email"></label><span asp-validation-for="Email" class="text-danger small"></span></div>
+    <div class="form-floating mb-3"><input asp-for="FullName" class="form-control" placeholder="@Idioma.Texto("Nombre")" autocomplete="name" /><label asp-for="FullName"></label><span asp-validation-for="FullName" class="text-danger small"></span></div>
+    <div class="form-floating mb-3"><input asp-for="Email" class="form-control" placeholder="@Idioma.Texto("Correo")" autocomplete="email" /><label asp-for="Email"></label><span asp-validation-for="Email" class="text-danger small"></span></div>
     <fieldset class="carne-fieldset mb-3">
-        <legend zuni-required="true">Carné</legend>
+        <legend zuni-required="true">@Idioma.Texto("Carné")</legend>
         <div class="carne-segmented">
-            <input asp-for="CarneParte1" class="form-control" aria-label="Primer bloque del carné" placeholder="0000" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+            <input asp-for="CarneParte1" class="form-control" aria-label="@Idioma.Texto("Primer bloque del carné")" placeholder="0000" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
             <span aria-hidden="true">−</span>
-            <input asp-for="CarneParte2" class="form-control" aria-label="Segundo bloque del carné" placeholder="00" type="text" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+            <input asp-for="CarneParte2" class="form-control" aria-label="@Idioma.Texto("Segundo bloque del carné")" placeholder="00" type="text" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
             <span aria-hidden="true">−</span>
-            <input asp-for="CarneParte3" class="form-control" aria-label="Tercer bloque del carné" placeholder="0000" type="text" inputmode="numeric" minlength="2" maxlength="6" pattern="[0-9]{2,6}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+            <input asp-for="CarneParte3" class="form-control" aria-label="@Idioma.Texto("Tercer bloque del carné")" placeholder="0000" type="text" inputmode="numeric" minlength="2" maxlength="6" pattern="[0-9]{2,6}" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
         </div>
         <div class="carne-validation">
             <span asp-validation-for="CarneParte1" class="text-danger small validation-message"></span>
@@ -30,15 +30,15 @@
             <span asp-validation-for="CarneParte3" class="text-danger small validation-message"></span>
         </div>
     </fieldset>
-    <div class="form-floating mb-3"><input asp-for="Telefono" class="form-control" placeholder="Teléfono" type="tel" autocomplete="tel" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" /><label asp-for="Telefono"></label><span asp-validation-for="Telefono" class="text-danger small"></span></div>
+    <div class="form-floating mb-3"><input asp-for="Telefono" class="form-control" placeholder="@Idioma.Texto("Teléfono")" type="tel" autocomplete="tel" inputmode="numeric" maxlength="8" pattern="[0-9]{8}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" /><label asp-for="Telefono"></label><span asp-validation-for="Telefono" class="text-danger small"></span></div>
     <div class="row g-3 mb-4 password-row">
-        <div class="col-md-6"><div class="form-floating password-field"><input asp-for="Password" class="form-control" placeholder="Contraseña" autocomplete="new-password" /><label asp-for="Password"></label><button type="button" class="password-toggle" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false"><span aria-hidden="true">◉</span></button></div><span asp-validation-for="Password" class="text-danger small validation-message"></span></div>
-        <div class="col-md-6"><div class="form-floating password-field"><input asp-for="ConfirmPassword" class="form-control" placeholder="Confirmar" autocomplete="new-password" /><label asp-for="ConfirmPassword"></label><button type="button" class="password-toggle" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false"><span aria-hidden="true">◉</span></button></div><span asp-validation-for="ConfirmPassword" class="text-danger small validation-message"></span></div>
+        <div class="col-md-6"><div class="form-floating password-field"><input asp-for="Password" class="form-control" placeholder="@Idioma.Texto("Contraseña")" autocomplete="new-password" /><label asp-for="Password"></label><button type="button" class="password-toggle" data-password-toggle aria-label="@Idioma.Texto("Mostrar contraseña")" aria-pressed="false"><span aria-hidden="true">◉</span></button></div><span asp-validation-for="Password" class="text-danger small validation-message"></span></div>
+        <div class="col-md-6"><div class="form-floating password-field"><input asp-for="ConfirmPassword" class="form-control" placeholder="@Idioma.Texto("Confirmar")" autocomplete="new-password" /><label asp-for="ConfirmPassword"></label><button type="button" class="password-toggle" data-password-toggle aria-label="@Idioma.Texto("Mostrar contraseña")" aria-pressed="false"><span aria-hidden="true">◉</span></button></div><span asp-validation-for="ConfirmPassword" class="text-danger small validation-message"></span></div>
     </div>
     @{ var privacidad = await Zuni.Services.Privacidad.PrivacidadService.VigenteAsync(DbInstitucion, CancellationToken.None); }
     <input type="hidden" name="PoliticaPrivacidadId" value="@privacidad?.Id" />
-    <div class="mb-3"><label><input asp-for="AceptaPrivacidad" required /> Leí y acepto el tratamiento de mis datos para las finalidades de la <a asp-controller="Privacidad" asp-action="Politica" target="_blank" rel="noopener">política de privacidad vigente</a>.</label></div>
-    <p class="small">Último bloque del carné: de 2 a 6 dígitos. Ejemplos: 1590-18-25 y 7490-26-125678.</p>
-    <button class="btn btn-zuni w-100 btn-lg" type="submit">Crear mi cuenta</button>
+    <div class="mb-3"><label><input asp-for="AceptaPrivacidad" required /> @Idioma.Texto("Leí y acepto el tratamiento de mis datos para las finalidades de la") <a asp-controller="Privacidad" asp-action="Politica" target="_blank" rel="noopener">@Idioma.Texto("política de privacidad vigente")</a>.</label></div>
+    <p class="small">@Idioma.Texto("Último bloque del carné: de 2 a 6 dígitos. Ejemplos: 1590-18-25 y 7490-26-125678.")</p>
+    <button class="btn btn-zuni w-100 btn-lg" type="submit">@Idioma.Texto("Crear mi cuenta")</button>
 </form>
-<p class="text-center text-secondary mt-4 mb-0">¿Ya tienes una cuenta? <a asp-action="IniciarSesion" class="link-success fw-semibold">Iniciar sesión</a></p>
+<p class="text-center text-secondary mt-4 mb-0">@Idioma.Texto("¿Ya tienes una cuenta?") <a asp-action="IniciarSesion" class="link-success fw-semibold">@Idioma.Texto("Iniciar sesión")</a></p>

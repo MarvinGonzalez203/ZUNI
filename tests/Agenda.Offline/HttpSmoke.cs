@@ -25,6 +25,7 @@ internal static class HttpSmoke
         builder.WebHost.UseKestrel();
         builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));
         builder.Services.AddControllersWithViews().AddApplicationPart(typeof(PsicologoController).Assembly);
+        Zuni.Localizacion.ConfiguracionIdioma.AddZuniIdiomas(builder.Services,builder.Configuration);
         builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
         builder.Services.Configure<KeyManagementOptions>(options =>
         {
@@ -45,6 +46,7 @@ internal static class HttpSmoke
         await using var app = builder.Build();
         app.Urls.Add("http://127.0.0.1:0");
         app.UseRouting();
+        app.UseRequestLocalization();
         app.Use((ctx, next) =>
         {
             var actor = ctx.Request.Headers["X-Offline-Actor"].ToString();

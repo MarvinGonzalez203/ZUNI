@@ -16,12 +16,12 @@
 <section class="dash-admin-panel" aria-labelledby="solicitudes-title">
     <div class="dash-card">
         <div class="mb-4">
-            <p class="small fw-semibold mb-2">Panel Administrador</p>
-            <h1 id="solicitudes-title" class="display-6 fw-bold mb-2">Solicitudes de atención</h1>
-            <p class="mb-0">Asigna, reasigna o cierra solicitudes. Esta vista muestra solo datos administrativos: el contenido clínico no está disponible para el Administrador.</p>
+            <p class="small fw-semibold mb-2">@Idioma.Texto("Panel Administrador")</p>
+            <h1 id="solicitudes-title" class="display-6 fw-bold mb-2">@Idioma.Texto("Solicitudes de atención")</h1>
+            <p class="mb-0">@Idioma.Texto("Asigna, reasigna o cierra solicitudes. Esta vista muestra solo datos administrativos: el contenido clínico no está disponible para el Administrador.")</p>
         </div>
 
-        <div class="row g-2 mb-3" aria-label="Resumen de solicitudes">
+        <div class="row g-2 mb-3" aria-label="@Idioma.Texto("Resumen de solicitudes")">
             @foreach (var dato in new[] { ("Pendientes", Model.Pendientes), ("Asignadas", Model.Asignadas), ("Cerradas", Model.Cerradas) })
             {
                 <div class="col-12 col-md-4"><div class="dash-card dash-summary h-100">
@@ -31,42 +31,42 @@
         </div>
 
         <form asp-action="Index" method="get" class="row g-3 align-items-end mb-4">
-            <div class="col-12 col-lg-6"><label for="buscar" class="form-label">Estudiante o carné</label><input id="buscar" name="buscar" value="@Model.Buscar" maxlength="100" class="form-control" type="search" /></div>
-            <div class="col-6 col-lg-3"><label for="estado" class="form-label">Estado</label><select id="estado" name="estado" class="form-select">
-                <option value="">Todos</option>
+            <div class="col-12 col-lg-6"><label for="buscar" class="form-label">@Idioma.Texto("Estudiante o carné")</label><input id="buscar" name="buscar" value="@Model.Buscar" maxlength="100" class="form-control" type="search" /></div>
+            <div class="col-6 col-lg-3"><label for="estado" class="form-label">@Idioma.Texto("Estado")</label><select id="estado" name="estado" class="form-select">
+                <option value="">@Idioma.Texto("Todos")</option>
                 @foreach (var opcion in Enum.GetValues<EstadoSolicitudAtencion>())
                 {
                     <option value="@opcion" selected="@(Model.Estado == opcion)">@Estado(opcion)</option>
                 }
             </select></div>
-            <div class="col-6 col-lg-3 d-flex flex-wrap gap-2"><button class="dash-button" type="submit">Filtrar</button><a asp-action="Index" class="btn btn-outline-dark">Limpiar</a></div>
+            <div class="col-6 col-lg-3 d-flex flex-wrap gap-2"><button class="dash-button" type="submit">@Idioma.Texto("Filtrar")</button><a asp-action="Index" class="btn btn-outline-dark">@Idioma.Texto("Limpiar")</a></div>
         </form>
 
         @if (TempData["Error"] is string error)
         {
-            <div class="alert alert-danger" role="alert">@error</div>
+            <div class="alert alert-danger" role="alert">@Idioma.Texto(error)</div>
         }
 
         @if (Model.Solicitudes.Count == 0)
         {
-            <div class="rounded-3 border p-4">No hay solicitudes que coincidan con los filtros seleccionados.</div>
+            <div class="rounded-3 border p-4">@Idioma.Texto("No hay solicitudes que coincidan con los filtros seleccionados.")</div>
         }
         else
         {
-            <p class="small">Fechas en hora de Guatemala.</p>
-            <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="Listado de solicitudes">
+            <p class="small">@Idioma.Texto("Fechas en hora de Guatemala.")</p>
+            <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="@Idioma.Texto("Listado de solicitudes")">
                 <table class="table align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: #111111;">
-                    <caption class="visually-hidden">Solicitudes de atención con su estado y psicólogo asignado.</caption>
+                    <caption class="visually-hidden">@Idioma.Texto("Solicitudes de atención con su estado y psicólogo asignado.")</caption>
                     <thead style="background: rgba(206,162,253,.18);">
                         <tr>
-                            <th scope="col" class="p-3">Estudiante</th>
-                            <th scope="col" class="p-3">Carné</th>
-                            <th scope="col" class="p-3">Carrera</th>
-                            <th scope="col" class="p-3">Solicitud</th>
-                            <th scope="col" class="p-3">Estado</th>
-                            <th scope="col" class="p-3">Psicólogo</th>
-                            <th scope="col" class="p-3">Asignación</th>
-                            <th scope="col" class="p-3">Acciones</th>
+                            <th scope="col" class="p-3">@Idioma.Texto("Estudiante")</th>
+                            <th scope="col" class="p-3">@Idioma.Texto("Carné")</th>
+                            <th scope="col" class="p-3">@Idioma.Texto("Carrera")</th>
+                            <th scope="col" class="p-3">@Idioma.Texto("Solicitud")</th>
+                            <th scope="col" class="p-3">@Idioma.Texto("Estado")</th>
+                            <th scope="col" class="p-3">@Idioma.Texto("Psicólogo")</th>
+                            <th scope="col" class="p-3">@Idioma.Texto("Asignación")</th>
+                            <th scope="col" class="p-3">@Idioma.Texto("Acciones")</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,18 +78,18 @@
                                 <td class="p-3 text-break">@(s.Carrera ?? "—")</td>
                                 <td class="p-3 text-nowrap">@AgendaReglas.Local(s.FechaSolicitudUtc).ToString("dd/MM/yyyy HH:mm")</td>
                                 <td class="p-3">@Estado(s.Estado)</td>
-                                <td class="p-3 text-break">@(s.Psicologo ?? "—")@(s.PsicologoActivo == false ? " (cuenta inactiva)" : "")</td>
+                                <td class="p-3 text-break">@(s.Psicologo ?? "—")@(s.PsicologoActivo == false ? Idioma.Texto(" (cuenta inactiva)") : "")</td>
                                 <td class="p-3 text-nowrap">@(s.FechaAsignacionUtc is { } f ? AgendaReglas.Local(f).ToString("dd/MM/yyyy HH:mm") : "—")</td>
-                                <td class="p-3"><a asp-action="Detalle" asp-route-id="@s.SolicitudId" class="btn btn-sm btn-outline-dark">Gestionar</a></td>
+                                <td class="p-3"><a asp-action="Detalle" asp-route-id="@s.SolicitudId" class="btn btn-sm btn-outline-dark">@Idioma.Texto("Gestionar")</a></td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-            <nav class="d-flex gap-3 mt-3" aria-label="Paginación">
-                @if (Model.Pagina > 1) { <a asp-action="Index" asp-route-estado="@Model.Estado" asp-route-buscar="@Model.Buscar" asp-route-pagina="@(Model.Pagina - 1)">Anterior</a> }
-                <span>Página @Model.Pagina de @Model.Paginas</span>
-                @if (Model.Pagina < Model.Paginas) { <a asp-action="Index" asp-route-estado="@Model.Estado" asp-route-buscar="@Model.Buscar" asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a> }
+            <nav class="d-flex gap-3 mt-3" aria-label="@Idioma.Texto("Paginación")">
+                @if (Model.Pagina > 1) { <a asp-action="Index" asp-route-estado="@Model.Estado" asp-route-buscar="@Model.Buscar" asp-route-pagina="@(Model.Pagina - 1)">@Idioma.Texto("Anterior")</a> }
+                <span>@Idioma.Texto("Página") @Model.Pagina @Idioma.Texto("de") @Model.Paginas</span>
+                @if (Model.Pagina < Model.Paginas) { <a asp-action="Index" asp-route-estado="@Model.Estado" asp-route-buscar="@Model.Buscar" asp-route-pagina="@(Model.Pagina + 1)">@Idioma.Texto("Siguiente")</a> }
             </nav>
         }
     </div>

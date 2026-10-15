@@ -82,7 +82,7 @@ internal static class AmpliacionPortalChecks
         Check((await HostPrueba.Post(estudiante,url,"/PruebasAplicadas/Contestar",datos.ToArray())).StatusCode==HttpStatusCode.Redirect,"respuestas completas finalizan");
         await using(var db=new OfflineDb(options))Check(await db.Set<RespuestaPrueba>().CountAsync(r=>r.AsignacionPruebaId==a.Id)==15,"quince respuestas almacenadas");
         Check((await HostPrueba.Post(estudiante,url,"/PruebasAplicadas/Contestar",datos.ToArray())).StatusCode==HttpStatusCode.Conflict,"reenvío finalizado no sobrescribe");
-        var resumen=await psy.GetStringAsync("/PruebasAplicadas/Resumen/"+a.Id);Check(resumen.Contains("7 / 10")&&resumen.Contains("Promedio aritmético"),"resumen descriptivo por dimensión");
+        var resumen=await psy.GetStringAsync("/PruebasAplicadas/Resumen/"+a.Id);Check(resumen.Contains("7 / 10")&&System.Net.WebUtility.HtmlDecode(resumen).Contains("Promedio aritmético"),"resumen descriptivo por dimensión");
         foreach(var c in new[]{admin,director,otro,psyOtro})Check((await c.GetAsync("/PruebasAplicadas/Resumen/"+a.Id)).StatusCode==HttpStatusCode.Redirect,"resumen no expuesto a cuentas ajenas");
         Check((await HostPrueba.Post(estudiante,"/PruebasAplicadas","/PruebasAplicadas/Retirar",("id",a.Id.ToString()))).StatusCode==HttpStatusCode.Redirect,"retiro voluntario");
         Check((await psy.GetAsync("/PruebasAplicadas/Resumen/"+a.Id)).StatusCode==HttpStatusCode.Redirect,"retiro oculta resumen");

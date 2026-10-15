@@ -5,44 +5,44 @@
     ViewData["Title"] = "Registrar atención";
     var cita = (PrepararAtencionViewModel)ViewData["Cita"]!;
 }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">ACOMPAÑAMIENTO ESTUDIANTIL</span><h1>Registrar atención</h1><p>@cita.Estudiante · @AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") · @cita.Modalidad</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("ACOMPAÑAMIENTO ESTUDIANTIL")</span><h1>@Idioma.Texto("Registrar atención")</h1><p>@cita.Estudiante · @AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") · @Idioma.Texto(Convert.ToString(cita.Modalidad))</p></div></header>
 <section class="dash-card agenda-card atencion-card">
-    <p>El cierre es definitivo. Revisa los textos privados y compartidos antes de guardar.</p>
+    <p>@Idioma.Texto("El cierre es definitivo. Revisa los textos privados y compartidos antes de guardar.")</p>
     <form asp-action="RegistrarAtencion" method="post" id="atencion-form">
         <input asp-for="CitaId" type="hidden" />
         <div asp-validation-summary="All" class="text-danger" role="alert"></div>
         <div class="mb-4">
-            <label asp-for="Asistio" class="form-label">¿Asistió el estudiante?</label>
-            <select asp-for="Asistio" class="form-select" required><option value="">Selecciona una opción</option><option value="true">Sí</option><option value="false">No</option></select>
+            <label asp-for="Asistio" class="form-label">@Idioma.Texto("¿Asistió el estudiante?")</label>
+            <select asp-for="Asistio" class="form-select" required><option value="">@Idioma.Texto("Selecciona una opción")</option><option value="true">@Idioma.Texto("Sí")</option><option value="false">@Idioma.Texto("No")</option></select>
             <span asp-validation-for="Asistio" class="text-danger"></span>
         </div>
         <div class="mb-4" data-con-asistencia data-contenido-privado>
-            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResultadoProfesionalPrivado" class="form-label">Resultado profesional privado</label>
-            <p id="privacidad-ayuda" class="small">Esta información es privada y solo puede ser consultada por el profesional autorizado.</p>
+            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResultadoProfesionalPrivado" class="form-label">@Idioma.Texto("Resultado profesional privado")</label>
+            <p id="privacidad-ayuda" class="small">@Idioma.Texto("Esta información es privada y solo puede ser consultada por el profesional autorizado.")</p>
             <textarea asp-for="ResultadoProfesionalPrivado" class="form-control" rows="6" maxlength="4000" aria-describedby="privacidad-ayuda"></textarea>
             <span asp-validation-for="ResultadoProfesionalPrivado" class="text-danger"></span>
         </div>
         <div class="mb-4">
-            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResenaRecomendacionesEstudiante" class="form-label">Reseña y recomendaciones para el estudiante</label>
-            <p class="small">Visible para el estudiante cuando asistió. En caso de inasistencia puedes dejar una observación opcional.</p>
+            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResenaRecomendacionesEstudiante" class="form-label">@Idioma.Texto("Reseña y recomendaciones para el estudiante")</label>
+            <p class="small">@Idioma.Texto("Visible para el estudiante cuando asistió. En caso de inasistencia puedes dejar una observación opcional.")</p>
             <textarea asp-for="ResenaRecomendacionesEstudiante" class="form-control" rows="4" maxlength="2000"></textarea>
             <span asp-validation-for="ResenaRecomendacionesEstudiante" class="text-danger"></span>
         </div>
         <div class="mb-4" data-con-asistencia>
-            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResultadoBreveEstudiante" class="form-label">Resultado breve para compartir con el estudiante</label>
+            <label zuni-required="@(Model.Asistio == true)" data-required-conditional asp-for="ResultadoBreveEstudiante" class="form-label">@Idioma.Texto("Resultado breve para compartir con el estudiante")</label>
             <textarea asp-for="ResultadoBreveEstudiante" class="form-control" rows="3" maxlength="2000"></textarea>
             <span asp-validation-for="ResultadoBreveEstudiante" class="text-danger"></span>
         </div>
         <div class="form-check mb-4" data-con-asistencia>
-            <input asp-for="RecomiendaOtraCita" class="form-check-input" /><label asp-for="RecomiendaOtraCita" class="form-check-label">Recomiendo otra cita</label>
+            <input asp-for="RecomiendaOtraCita" class="form-check-input" /><label asp-for="RecomiendaOtraCita" class="form-check-label">@Idioma.Texto("Recomiendo otra cita")</label>
         </div>
         <div class="mb-4" id="proxima-cita">
-            <label zuni-required="@(Model.Asistio == true && Model.RecomiendaOtraCita)" data-required-conditional asp-for="IndicacionesProximaCita" class="form-label">Indicaciones para la próxima cita</label>
+            <label zuni-required="@(Model.Asistio == true && Model.RecomiendaOtraCita)" data-required-conditional asp-for="IndicacionesProximaCita" class="form-label">@Idioma.Texto("Indicaciones para la próxima cita")</label>
             <textarea asp-for="IndicacionesProximaCita" class="form-control" rows="3" maxlength="2000"></textarea>
             <span asp-validation-for="IndicacionesProximaCita" class="text-danger"></span>
-            <p class="small">Esta recomendación no reserva una nueva cita. El estudiante decidirá solicitarla desde su agenda.</p>
+            <p class="small">@Idioma.Texto("Esta recomendación no reserva una nueva cita. El estudiante decidirá solicitarla desde su agenda.")</p>
         </div>
-        <div class="agenda-actions"><button type="submit" class="dash-button">Guardar y cerrar atención</button><a asp-action="Agenda">Volver a mi agenda</a></div>
+        <div class="agenda-actions"><button type="submit" class="dash-button">@Idioma.Texto("Guardar y cerrar atención")</button><a asp-action="Agenda">@Idioma.Texto("Volver a mi agenda")</a></div>
     </form>
 </section>
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /><link rel="stylesheet" href="~/css/atencion-cita.css" asp-append-version="true" /> }
