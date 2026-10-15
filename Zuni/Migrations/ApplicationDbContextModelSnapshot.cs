@@ -1318,6 +1318,11 @@ namespace Zuni.Migrations
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)");
 
+                    b.Property<string>("ColorProveedor")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
                     b.Property<decimal>("Mensual")
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)");

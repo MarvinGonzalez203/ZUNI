@@ -13,3 +13,5 @@
 .dash-top-profile{display:inline-flex;align-items:center;gap:10px;color:inherit;text-decoration:none;white-space:nowrap}.dash-top-profile:hover{color:inherit}.dash-top-profile:focus-visible{outline:2px solid var(--institucion-color,#cea2fd);outline-offset:5px;border-radius:12px}
 .prueba-preview-scale{display:flex;gap:8px;overflow-x:auto;padding:5px 0}.prueba-preview-cell{flex:1 0 48px;min-height:48px;border:1px solid var(--institucion-color,#cea2fd);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;font-weight:700}.prueba-preview-cell small{font-weight:400;font-size:11px;text-align:center;overflow-wrap:anywhere}
 @media(max-width:600px){.dash-top-profile{gap:0}.dash-top-profile>span:last-child{display:none}}
+
+.dash-space-link{color:inherit;text-decoration:none}.dash-space-link:hover{text-decoration:underline;color:inherit}.dash-space-link:focus-visible{outline:2px solid var(--institucion-color,#cea2fd);outline-offset:4px;border-radius:3px}

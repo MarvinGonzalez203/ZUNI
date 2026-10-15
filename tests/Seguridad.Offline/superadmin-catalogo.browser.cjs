@@ -25,7 +25,7 @@ let checks=0;function check(v,m){assert.ok(v,m);checks++;}
  await page.screenshot({path:path.join(fixtures,'tarifas-beneficios-oscuro.png'),fullPage:true});
  await page.goto('http://zuni.test/SuperAdmin/Tarifas');
  check((await page.locator('.tarifa-grid').innerText()).includes('PROPUESTO'),'SuperAdmin sí ve precio propuesto');
- check(await page.locator('a[href="/Tarifas/Editar"]').count()===1,'proveedor tiene editor de precios');
+ check(await page.locator('main a[href="/Tarifas/Editar"]').count()===1,'proveedor tiene editor de precios');
  check(await page.locator('.dash-nav a[href="/Administrador"]').count()===0,'sin acceso institucional en menú proveedor');
  await page.goto('http://zuni.test/Tarifas/Editar');
  for(const id of ['Mensual','Trimestral','Semestral','Anual']){

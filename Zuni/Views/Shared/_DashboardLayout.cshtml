@@ -2,13 +2,15 @@
 @{
     var esProveedor = User.IsInRole("SuperAdmin");
     var identidadInstitucion = esProveedor ? new Zuni.Models.Institucion.ConfiguracionInstitucion() : await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
+    if(esProveedor) identidadInstitucion.ColorPrincipal = (await Zuni.Services.Institucion.TarifasService.Apariencia(DbInstitucion,Context.RequestAborted)).ColorPrincipal;
     Layout = null;
     var nombre = ViewData["DashboardName"] as string ?? User.Identity?.Name ?? "Usuario";
     var primero = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Usuario";
     var corto = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(primero.ToLower());
     var rol = ViewData["DashboardRole"] as string ?? string.Empty;
-    var inicio = ViewData["DashboardController"] as string ?? "Home";
-    var navegacion = ViewData["DashboardNavigation"] as string;
+    var inicio = esProveedor ? "SuperAdmin" : ViewData["DashboardController"] as string ?? "Home";
+    var panel = esProveedor ? "SuperAdmin" : ViewData["PanelController"] as string ?? new[]{"Administrador","Director","Psicologo","Estudiante"}.FirstOrDefault(User.IsInRole) ?? inicio;
+    var navegacion = esProveedor ? "~/Views/SuperAdmin/_Navegacion.cshtml" : ViewData["DashboardNavigation"] as string;
 }
 <!DOCTYPE html>
 <html lang="@Idioma.Codigo">
@@ -54,7 +56,7 @@
     </aside>
     <div class="dashboard-workspace">
         <header class="dashboard-topbar">
-            <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="@Idioma.Texto("Abrir menú")"><partial name="_DashboardIcon" model='@("menu")' /></button><span>@Idioma.Texto("Mi espacio") <span class="dash-slash">/</span> <strong>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString()))</strong></span></div>
+            <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="@Idioma.Texto("Abrir menú")"><partial name="_DashboardIcon" model='@("menu")' /></button><span><a class="dash-space-link" asp-controller="@panel" asp-action="Index">@Idioma.Texto("Mi espacio")</a> <span class="dash-slash">/</span> <strong>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString()))</strong></span></div>
             <div class="dash-top-account">@if(!esProveedor){@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoCitas")}<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />@Idioma.Texto("Sesión activa")</span><a class="dash-top-profile" asp-controller="MiCuenta" asp-action="Index" aria-label="@Idioma.Texto("Ver mi cuenta: {0}", corto)"><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></a><partial name="_ControlesVista" /></div>
         </header>
         <main id="dashboard-main" class="dashboard-main" tabindex="-1">

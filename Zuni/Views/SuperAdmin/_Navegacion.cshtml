@@ -1,7 +1,20 @@
-@{var controlador=ViewContext.RouteData.Values["controller"]?.ToString();}
+@{
+    var c=ViewContext.RouteData.Values["controller"]?.ToString();var a=ViewContext.RouteData.Values["action"]?.ToString();
+    bool Es(string controlador,string accion)=>c==controlador&&a==accion;
+    string Act(bool valor)=>valor?"is-active":"";string? Actual(bool valor)=>valor?"page":null;
+}
 <nav class="dash-nav" aria-label="@Idioma.Texto("Navegación de SuperAdmin")">
 <span class="dash-nav-label">@Idioma.Texto("ADMINISTRACIÓN DE ZUNI")</span>
-<a class="dash-nav-link @(controlador=="SuperAdmin"?"is-active":"")" asp-controller="SuperAdmin" asp-action="Index"><partial name="_DashboardIcon" model='@("grid")'/><span>@Idioma.Texto("Tablero")</span></a>
-<a class="dash-nav-link @(controlador=="MiCuenta"?"is-active":"")" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")'/><span>@Idioma.Texto("Mi cuenta")</span></a>
-<a class="dash-nav-link @(controlador=="Tarifas"?"is-active":"")" asp-controller="Tarifas" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")'/><span>@Idioma.Texto("Tarifas y periodos")</span></a>
+<a class="dash-nav-link @Act(Es("SuperAdmin","Index"))" asp-controller="SuperAdmin" asp-action="Index" aria-current="@Actual(Es("SuperAdmin","Index"))"><partial name="_DashboardIcon" model='@("grid")'/><span>@Idioma.Texto("Tablero")</span></a>
+<details class="dash-nav-group" open="@(c=="Tarifas")"><summary><partial name="_DashboardIcon" model='@("clipboard")'/><span>@Idioma.Texto("Tarifas y periodos")</span></summary><div class="dash-nav-children">
+<a class="dash-nav-link @Act(Es("Tarifas","Index"))" asp-controller="Tarifas" asp-action="Index" aria-current="@Actual(Es("Tarifas","Index"))"><span>@Idioma.Texto("Ver tarifas")</span></a>
+<a class="dash-nav-link @Act(Es("Tarifas","Editar"))" asp-controller="Tarifas" asp-action="Editar" aria-current="@Actual(Es("Tarifas","Editar"))"><span>@Idioma.Texto("Editar precios")</span></a>
+</div></details>
+<details class="dash-nav-group" open="@(c=="MiCuenta"||c=="Privacidad")"><summary><partial name="_DashboardIcon" model='@("user")'/><span>@Idioma.Texto("Mi cuenta")</span></summary><div class="dash-nav-children">
+<a class="dash-nav-link @Act(Es("MiCuenta","Index"))" asp-controller="MiCuenta" asp-action="Index" aria-current="@Actual(Es("MiCuenta","Index"))"><span>@Idioma.Texto("Resumen")</span></a>
+<a class="dash-nav-link @Act(Es("MiCuenta","Editar"))" asp-controller="MiCuenta" asp-action="Editar" aria-current="@Actual(Es("MiCuenta","Editar"))"><span>@Idioma.Texto("Editar datos")</span></a>
+<a class="dash-nav-link @Act(Es("MiCuenta","CambiarContrasena"))" asp-controller="MiCuenta" asp-action="CambiarContrasena" aria-current="@Actual(Es("MiCuenta","CambiarContrasena"))"><span>@Idioma.Texto("Cambiar contraseña")</span></a>
+<a class="dash-nav-link @Act(c=="Privacidad")" asp-controller="Privacidad" asp-action="Index" aria-current="@Actual(c=="Privacidad")"><span>@Idioma.Texto("Privacidad y mis derechos")</span></a>
+</div></details>
+<a class="dash-nav-link @Act(Es("SuperAdmin","Apariencia"))" asp-controller="SuperAdmin" asp-action="Apariencia" aria-current="@Actual(Es("SuperAdmin","Apariencia"))"><partial name="_DashboardIcon" model='@("settings")'/><span>@Idioma.Texto("Colores del panel")</span></a>
 </nav>

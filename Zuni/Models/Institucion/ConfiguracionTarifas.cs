@@ -10,6 +10,14 @@ public sealed class ConfiguracionTarifas
     [Precision(12,2)] public decimal Semestral { get; set; }=1075m;
     [Precision(12,2)] public decimal Anual { get; set; }=2030m;
     [ConcurrencyCheck] public Guid Revision { get; set; }
+    [Required,MaxLength(7)] public string ColorProveedor { get; set; }="#cea2fd";
+}
+
+public sealed class AparienciaProveedorInput
+{
+    public Guid Revision { get; set; }
+    [Required,RegularExpression("^#[a-fA-F0-9]{6}$"),Display(Name="Color de botones y navegación")]
+    public string ColorPrincipal { get; set; }="#cea2fd";
 }
 
 public sealed class EditarTarifasInput : IValidatableObject

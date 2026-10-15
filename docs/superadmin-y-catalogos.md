@@ -33,3 +33,12 @@ No hay todavía alta central de instituciones, gestión de instalaciones remotas
 Se respaldó ZuniDb antes de preparar el usuario y eliminar exclusivamente Daniel Chavarr, ID 9177fd79-d6d6-4a1a-8d78-18eb0f11c065. Era un borrador inactivo sin asignaciones. Los tres instrumentos conservan 15, 35 y 54 preguntas. No se modificaron respuestas, atenciones o consentimientos.
 
 La corrección incorpora la migración aditiva 20261015215836_AddConfiguracionTarifasComerciales, aplicada con respaldo previo. Los precios se guardan en ConfiguracionTarifas, con importe positivo de dos decimales, revisión de concurrencia y auditoría. Solo el proveedor puede editarlos; Administrador consulta los importes actualizados. Los ahorros se calculan contra la tarifa mensual vigente, no contra un valor fijo. No se alteran contratos ni se generan cargos. Las pruebas automatizadas usan SQLite y documentos ficticios; las visuales usan archivos locales sin acceder a la base real.
+
+
+## Navegación comercial y apariencia independiente
+
+La navegación de SuperAdmin permanece en todas sus vistas, incluidas Mi cuenta, datos, contraseña, privacidad, catálogo y editor de precios. Tarifas y Mi cuenta usan submenús con la V del sistema, con una sola opción activa y persistencia del estado y desplazamiento lateral. Mi espacio es un enlace al tablero del rol en todos los perfiles.
+
+SuperAdmin → Colores del panel permite elegir violeta, negro, rojo, amarillo #F9DB5C, celeste #BBF1F8 o un color personalizado. Se guarda ColorProveedor en la configuración comercial, sin leer ni editar la identidad de una institución. La vista previa conserva contraste y efecto cristal. Guardar apariencia no modifica precios y guardar precios conserva el color. Ambos usan revisión de concurrencia; si otra configuración cambió, se requiere recargar.
+
+La migración aditiva 20261015222408_AddColorPanelProveedor agrega únicamente la preferencia de color, con violeta como valor inicial para los registros existentes. Se realiza respaldo previo. La tarjeta de capacidades de SuperAdmin se incorpora a las cinco tarjetas de funciones y se renderiza solamente para el proveedor; los demás perfiles conservan sus cinco tarjetas.

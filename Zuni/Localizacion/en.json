@@ -2135,5 +2135,16 @@
   "Servicios para instituciones educativas": "Services for educational institutions",
   "Administra los precios del servicio para las instituciones educativas.": "Manage service prices for educational institutions.",
   "Gestión comercial y privacidad": "Commercial management and privacy",
-  "Esta cuenta se utiliza exclusivamente para los servicios de ZUNI. No permite consultar alumnos, citas, pruebas respondidas, expedientes ni reportes de las instituciones.": "This account is used exclusively for ZUNI services. It cannot access institutional students, appointments, completed tests, student files or reports."
+  "Esta cuenta se utiliza exclusivamente para los servicios de ZUNI. No permite consultar alumnos, citas, pruebas respondidas, expedientes ni reportes de las instituciones.": "This account is used exclusively for ZUNI services. It cannot access institutional students, appointments, completed tests, student files or reports.",
+  "Colores del panel": "Dashboard colors",
+  "Personaliza el panel comercial de ZUNI. Esta preferencia es independiente de los colores de las instituciones.": "Customize ZUNI's commercial dashboard. This preference is independent of institutional colors.",
+  "El color se utiliza en los botones y la pestaña seleccionada, con contraste para el texto y efecto cristal.": "The color is used for buttons and the selected tab, with text contrast and a glass effect.",
+  "Guardar colores": "Save colors",
+  "La configuración cambió. Recarga esta página antes de guardar.": "Settings changed. Reload this page before saving.",
+  "Colores del panel comercial actualizados.": "Commercial dashboard colors updated.",
+  "Editar precios de los periodos de ZUNI": "Edit prices for ZUNI periods",
+  "Consultar el catálogo comercial": "View the commercial catalog",
+  "Personalizar los colores del panel comercial": "Customize the commercial dashboard colors",
+  "Actualizar sus datos y contraseña": "Update personal details and password",
+  "Gestión comercial sin acceso a alumnos ni expedientes.": "Commercial management without access to students or student files."
 }
