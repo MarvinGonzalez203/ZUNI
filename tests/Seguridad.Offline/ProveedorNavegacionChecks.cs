@@ -41,7 +41,7 @@ internal static class ProveedorNavegacionChecks
         await using(var db=new OfflineDb(options))antes=await TarifasService.Apariencia(db,default);
         await Save(antes.Revision,"#cea2fd");
         var preview=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");if(!string.IsNullOrEmpty(preview)){
-            foreach(var (url,file) in new[]{("/SuperAdmin/Apariencia","proveedor-apariencia"),("/MiCuenta","proveedor-cuenta"),("/MiCuenta/Editar","proveedor-datos"),("/MiCuenta/CambiarContrasena","proveedor-clave"),("/Tarifas","tarifas-superadmin"),("/Tarifas/Editar","tarifas-editor")})await File.WriteAllTextAsync(Path.Combine(preview,file+".html"),await super.GetStringAsync(url));
+            foreach(var (url,file) in new[]{("/","proveedor-home"),("/SuperAdmin/Apariencia","proveedor-apariencia"),("/MiCuenta","proveedor-cuenta"),("/MiCuenta/Editar","proveedor-datos"),("/MiCuenta/CambiarContrasena","proveedor-clave"),("/Tarifas","tarifas-superadmin"),("/Tarifas/Editar","tarifas-editor")})await File.WriteAllTextAsync(Path.Combine(preview,file+".html"),await super.GetStringAsync(url));
         }
         Console.WriteLine($"OK: {checks} comprobaciones de navegación unificada y colores aislados.");
     }
