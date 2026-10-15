@@ -61,7 +61,7 @@ namespace Zuni.Controllers
 
         public IActionResult Guia(string tema = "cita")
         {
-            if (tema is not ("cita" or "seguimiento" or "bienestar" or "privacidad")) return NotFound();
+            if (tema is not ("cita" or "seguimiento" or "bienestar" or "privacidad" or "cuenta" or "pruebas" or "informes")) return NotFound();
             return View(model: tema);
         }
 

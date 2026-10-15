@@ -30,6 +30,11 @@ internal static class IdiomaChecks
         Check(Decode(await invalid.Content.ReadAsStringAsync()).Contains("Enter your email address."),"validación de servidor traducida");
         var path=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");
         if(!string.IsNullOrEmpty(path)){await File.WriteAllTextAsync(Path.Combine(path,"idioma-home.html"),english);await File.WriteAllTextAsync(Path.Combine(path,"idioma-login.html"),await anon.GetStringAsync("/Cuenta/IniciarSesion"));await File.WriteAllTextAsync(Path.Combine(path,"idioma-guia.html"),await anon.GetStringAsync("/Home/Guia?tema=privacidad"));}
+        foreach(var (topic,title) in new[]{("cuenta","Your account and access, step by step"),("pruebas","Complete a test with guidance"),("informes","Review, authorize and keep your documents")}) {
+            var html=await anon.GetStringAsync("/Home/Guia?tema="+topic);
+            Check(Decode(html).Contains(title),"guía adicional traducida "+topic);
+            if(!string.IsNullOrEmpty(path))await File.WriteAllTextAsync(Path.Combine(path,"guia-"+topic+"-en.html"),html);
+        }
         foreach(var (email,route,name,expected) in new[]{("admin@miumg.edu.gt","/Administrador","admin","Add user"),("director@miumg.edu.gt","/Director","director","Test management"),("psi3@miumg.edu.gt","/Psicologo/Agenda","psicologo","My availability"),("est2@miumg.edu.gt","/Estudiante","estudiante","My account")})
         {
             using var c=HostPrueba.Cliente(app);await Switch(c,"en");await HostPrueba.Login(c,email,clave);

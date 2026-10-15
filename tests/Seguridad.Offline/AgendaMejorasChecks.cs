@@ -13,7 +13,7 @@ internal static class AgendaMejorasChecks
         int checks = 0; void Check(bool ok, string label) { if (!ok) throw new Exception("Mejoras agenda: " + label); checks++; }
         using var anon = HostPrueba.Cliente(app); using var psy = HostPrueba.Cliente(app); using var student = HostPrueba.Cliente(app); using var other = HostPrueba.Cliente(app); using var admin = HostPrueba.Cliente(app); using var director = HostPrueba.Cliente(app);
         await HostPrueba.Login(psy,"psi3@miumg.edu.gt",clave); await HostPrueba.Login(student,"est2@miumg.edu.gt",clave); await HostPrueba.Login(other,"est@miumg.edu.gt",clave); await HostPrueba.Login(admin,"admin@miumg.edu.gt",clave); await HostPrueba.Login(director,"director@miumg.edu.gt",clave);
-        foreach(var tema in new[]{"cita","seguimiento","bienestar","privacidad"}) Check((await anon.GetAsync("/Home/Guia?tema="+tema)).StatusCode == HttpStatusCode.OK,"guía pública sin login");
+        foreach(var tema in new[]{"cita","seguimiento","bienestar","privacidad","cuenta","pruebas","informes"}) Check((await anon.GetAsync("/Home/Guia?tema="+tema)).StatusCode == HttpStatusCode.OK,"guía pública sin login");
         Check((await anon.GetAsync("/Home/Guia?tema=desconocido")).StatusCode == HttpStatusCode.NotFound,"tema desconocido rechazado");
         var hoy = AgendaReglas.Hoy(reloj.Ahora.UtcDateTime); var fecha = hoy.AddDays(-4);
         var normal = new HorarioDiaInput { Fecha = hoy.AddDays(2), HoraInicio = new(9,0), DuracionMinutos = 50 };

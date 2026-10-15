@@ -5,7 +5,7 @@
 .home-page .hero-content>.fw-semibold{margin-bottom:8px}
 .home-page .hero-lead{font-size:clamp(18px,2.7vh,24px);margin-bottom:18px;line-height:1.4}
 .home-page .hero-cta .btn{padding:.65rem 1.2rem;min-height:46px;font-size:1rem}
-.home-page .quick-panel{margin-top:4px;flex-shrink:0}
+.home-page .quick-panel{margin-top:4px;flex-shrink:0;min-height:90px}
 .home-page .quick-intro{padding:.9rem 1.1rem}
 .home-page .quick-actions a{padding:.85rem}
 .home-page .hero-foot{margin-top:0}
@@ -23,3 +23,4 @@ html[data-theme=dark] .home-scroll-cue{color:#ead5ff;filter:drop-shadow(0 1px 3p
 @media(max-width:575.98px){.home-page .landing-hero{min-height:0;padding:24px 18px 36px;gap:18px}.home-page .hero-content{width:100%}.home-page .landing-hero h1{font-size:46px}.home-page .hero-symbol{position:relative;top:auto;right:auto;width:130px;margin:0 auto}.home-page .hero-cta .btn{min-width:0;flex:1;width:auto;padding:.65rem;font-size:.9rem}.home-page .quick-actions a{padding:.75rem .5rem;gap:.5rem}.home-page .quick-actions strong{font-size:.74rem}.home-page .quick-actions small{font-size:.65rem}.home-page .quick-panel{width:100%}.home-page .hero-foot{font-size:.65rem}.home-page .hero-kicker{font-size:.55rem;letter-spacing:.06em}}
 @media(prefers-reduced-motion:reduce){.home-scroll-cue svg{animation:none}}
 @media(min-width:992px) and (max-height:680px){.home-page .landing-hero{padding-top:20px;padding-bottom:34px;gap:12px}.home-page .hero-lead{margin-bottom:14px}.home-page .quick-intro{padding-block:.75rem}}
+@media(max-width:991.98px){.home-page .quick-panel{min-height:0}.home-page .quick-intro{min-height:64px}.home-page .quick-actions{grid-auto-rows:minmax(74px,auto)}}

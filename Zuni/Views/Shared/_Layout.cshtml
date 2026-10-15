@@ -24,7 +24,7 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-light zuni-navbar py-3">
             <div class="container">
-                <a class="navbar-brand brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/zuni-logo-transparent.png" alt="" />@Idioma.Texto("ZUNI")<span>.</span></a>
+                <a class="navbar-brand brand" asp-area="" asp-controller="Home" asp-action="Index"><img class="zuni-logo-disc" src="~/images/zuni-logo-transparent.png" alt="" />@Idioma.Texto("ZUNI")<span>.</span></a>
                 <span class="small me-3">@configuracionInstitucion.Nombre</span>
                 @if (configuracionInstitucion.LogotipoPng is not null) { <img src="@Url.Action("Logotipo", "Institucion")" alt="@Idioma.Texto("Logo de {0}", configuracionInstitucion.Nombre)" style="max-width:100px;max-height:45px;object-fit:contain" /> }
                 <partial name="_ControlesVista" />
@@ -67,7 +67,7 @@
     </div>
 
     <footer class="zuni-footer" id="zuni-footer" tabindex="-1"><div class="container"><div class="footer-grid">
-        <section><a class="brand" asp-controller="Home" asp-action="Index"><img src="~/images/zuni-logo-transparent.png" alt="Logotipo ZUNI" />@Idioma.Texto("ZUNI")<span>.</span></a><p>@Idioma.Texto("Acompañamiento, organización y seguimiento educativo en un espacio pensado para tu bienestar.")</p><small>@configuracionInstitucion.Nombre</small>@if(!string.IsNullOrWhiteSpace(configuracionInstitucion.CorreoSoporte)) { <a href="mailto:@configuracionInstitucion.CorreoSoporte">@configuracionInstitucion.CorreoSoporte</a> }</section>
+        <section><a class="brand" asp-controller="Home" asp-action="Index"><img class="zuni-logo-disc" src="~/images/zuni-logo-transparent.png" alt="Logotipo ZUNI" />@Idioma.Texto("ZUNI")<span>.</span></a><p>@Idioma.Texto("Acompañamiento, organización y seguimiento educativo en un espacio pensado para tu bienestar.")</p><small>@configuracionInstitucion.Nombre</small>@if(!string.IsNullOrWhiteSpace(configuracionInstitucion.CorreoSoporte)) { <a href="mailto:@configuracionInstitucion.CorreoSoporte">@configuracionInstitucion.CorreoSoporte</a> }</section>
         <section><h2>@Idioma.Texto("Explora ZUNI")</h2><a asp-controller="Home" asp-action="Guia" asp-route-tema="cita">@Idioma.Texto("Solicitar y organizar citas")</a><a asp-controller="Home" asp-action="Guia" asp-route-tema="seguimiento">@Idioma.Texto("Seguimiento y reportes")</a><a asp-controller="Home" asp-action="Guia" asp-route-tema="bienestar">@Idioma.Texto("Bienestar y herramientas")</a></section>
         <section><h2>@Idioma.Texto("Tu información")</h2><a asp-controller="Home" asp-action="Guia" asp-route-tema="privacidad">@Idioma.Texto("Cómo se protege y comparte")</a><a asp-controller="Privacidad" asp-action="Politica">@Idioma.Texto("Política institucional")</a><a asp-controller="Privacidad" asp-action="Index">@Idioma.Texto("Privacidad y mis derechos")</a><p>@Idioma.Texto("Consulta la guía antes de autorizar un informe.")</p></section>
         <section><h2>@Idioma.Texto("Empieza aquí")</h2><a asp-controller="Home" asp-action="Index">@Idioma.Texto("Inicio")</a><a asp-controller="Cuenta" asp-action="IniciarSesion">@Idioma.Texto("Ingresar a mi cuenta")</a>@if(configuracionInstitucion.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas) { <a asp-controller="Cuenta" asp-action="Registro">@Idioma.Texto("Crear una cuenta")</a> }<p>@Idioma.Texto("Para soporte, contacta al responsable de tu institución.")</p></section>
@@ -76,6 +76,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <partial name="_IdiomaScripts" />
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/modales.js" asp-append-version="true"></script>
     <script src="~/js/campos-obligatorios.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

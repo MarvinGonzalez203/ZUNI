@@ -1,4 +1,13 @@
 .modal-backdrop.show { opacity: 1; background-color: rgba(17,17,17,.38); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.modal,.modal-body,.modal-content{scrollbar-width:none;-ms-overflow-style:none}
+.modal::-webkit-scrollbar,.modal-body::-webkit-scrollbar,.modal-content::-webkit-scrollbar{display:none}
+.modal-scroll-cue{position:fixed;z-index:2;transform:translateX(-50%);width:48px;height:40px;display:grid;place-items:center;padding:0;border:0;background:transparent;color:#43275a;filter:drop-shadow(0 1px 3px #fdfbf6);cursor:pointer}
+.modal-scroll-cue svg{width:28px;height:28px;animation:modal-scroll-hint 1.8s ease-in-out infinite}
+.modal-scroll-cue[hidden]{display:none}
+.modal-scroll-cue:focus-visible{outline:2px solid #9564bb;outline-offset:2px;border-radius:8px}
+html[data-theme=dark] .modal-scroll-cue{color:#ead5ff;filter:drop-shadow(0 1px 3px #2b2532)}
+@keyframes modal-scroll-hint{0%,100%{transform:translateY(-3px)}50%{transform:translateY(3px)}}
+@media(prefers-reduced-motion:reduce){.modal-scroll-cue svg{animation:none}}
 @media print {
     .atencion-privada, [data-contenido-privado] { display: none !important; }
     .dashboard-sidebar, .dashboard-topbar, .dash-button, .btn { display: none !important; }

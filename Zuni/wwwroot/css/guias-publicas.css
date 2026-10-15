@@ -28,3 +28,6 @@
 .guide-callout { margin-top:1.5rem; padding:1.6rem 2rem; border-radius:1.25rem; background:#111; color:#fdfcf9; display:flex; justify-content:space-between; gap:1.5rem; align-items:center; }.guide-callout p { color:#ede8d0; margin:.5rem 0 0; }.guide-callout .btn { white-space:nowrap; }
 @media(max-width:800px) { .footer-grid { grid-template-columns:1fr 1fr; }.guide-hero,.guide-grid { grid-template-columns:1fr; }.guide-callout { flex-direction:column; align-items:flex-start; } }
 @media(max-width:480px) { .footer-grid { grid-template-columns:1fr; gap:1.5rem; }.footer-bottom { flex-direction:column; }.guide-card { padding:1.25rem; } }
+.zuni-logo-disc{background:#fff;border-radius:50%;padding:3px;box-sizing:border-box;flex-shrink:0}
+.guide-status{margin:.75rem 0;color:var(--zuni-muted,#625d63)}
+html[data-theme=dark] .guide-tabs a[aria-current=page]{background:#503763;border-color:#927aa3;color:#fff}
