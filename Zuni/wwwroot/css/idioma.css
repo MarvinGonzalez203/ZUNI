@@ -1,3 +1,12 @@
-.zuni-language{display:inline-flex;align-items:center;gap:.35rem;flex-shrink:0;margin:0;padding:.25rem .4rem;border:1px solid #d9d0df;border-radius:9px;background:#faf8f2;color:#43275a}.zuni-language-icon{display:inline-flex}.zuni-language svg{width:18px;height:18px}.zuni-language button{border:0;border-radius:6px;background:transparent;padding:.4rem .5rem;color:#62596a;font-family:inherit;font-size:.75rem;font-weight:600;line-height:1.2;min-width:36px;min-height:36px}.zuni-language button[aria-pressed=true]{background:#e9d7fa;color:#43275a}.zuni-language button:focus-visible{outline:2px solid #9564bb;outline-offset:2px}.zuni-language button:hover{background:#e9d7fa}.dash-top-account{flex-wrap:wrap}.zuni-navbar .zuni-language{margin-left:auto;margin-right:.75rem}@media(max-width:600px){.dashboard-topbar{gap:.5rem;align-items:flex-start}.dash-top-account{gap:.4rem}.dash-session{display:none}.zuni-language{gap:.15rem}.zuni-navbar .zuni-language{margin-right:.4rem}.zuni-language-icon{display:none}}
-
-@media(max-width:600px){.dashboard-topbar{flex-wrap:wrap}.dash-top-title{min-width:0;flex:1 1 140px}.dash-top-title>span{overflow-wrap:anywhere}.dash-top-account{max-width:100%;justify-content:flex-end}}
+.zuni-view-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto}
+.zuni-language{margin:0;display:flex;flex:0 0 auto}
+.zuni-square-control{width:48px;height:48px;min-width:48px;flex:0 0 48px;border:1px solid #d9d0df;border-radius:10px;background:#faf8f2;color:#43275a;display:flex;align-items:center;justify-content:center;position:relative;padding:0;font-family:inherit;font-size:10px;font-weight:700;line-height:1;cursor:pointer}
+.zuni-language .zuni-square-control{flex-direction:column;gap:3px}
+.zuni-square-control svg{display:block;width:20px;height:20px;flex:0 0 20px}
+.zuni-square-control:hover{background:#e9d7fa}.zuni-square-control:focus-visible{outline:3px solid #9564bb;outline-offset:3px}
+.zuni-theme-toggle .theme-sun{display:none}html[data-theme=dark] .zuni-theme-toggle .theme-moon{display:none}html[data-theme=dark] .zuni-theme-toggle .theme-sun{display:block}
+.zuni-navbar .zuni-view-controls{order:3;margin-left:16px}.zuni-navbar .navbar-toggler{order:2;margin-left:auto}.zuni-navbar .navbar-collapse{order:1}
+.zuni-navbar>.container{max-width:none;padding-inline:clamp(22px,3vw,48px)}
+.dash-top-account{min-width:0}.dashboard-topbar{min-height:78px;height:auto;padding-top:12px;padding-bottom:12px}.dash-top-title{min-width:0}.dash-top-title>span{overflow-wrap:anywhere}
+@media(max-width:991.98px){.zuni-navbar .navbar-collapse{order:4;flex-basis:100%}.zuni-navbar .container>.small{display:none}}
+@media(max-width:600px){.zuni-navbar>.container{padding-inline:16px}.dash-session,.dash-top-account>.dash-avatar,.dash-top-account>span:last-of-type{display:none}.dashboard-topbar{gap:8px;padding-left:16px;padding-right:16px}.dash-top-account{gap:6px;flex-shrink:0}.dash-top-title{font-size:11px}.dash-slash{margin:0 4px}}

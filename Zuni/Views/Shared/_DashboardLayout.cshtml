@@ -15,7 +15,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString())) · ZUNI</title>
-    <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/campos-obligatorios.css" asp-append-version="true" />
@@ -23,6 +22,8 @@
     <link rel="stylesheet" href="~/css/agenda-contexto.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
     <partial name="_IdentidadInstitucion" model="identidadInstitucion" />
+    <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
+    <partial name="_TemaHead" />
 </head>
 <body class="dashboard-app">
     <a href="#dashboard-main" class="dash-skip">@Idioma.Texto("Saltar al contenido")</a>
@@ -53,7 +54,7 @@
     <div class="dashboard-workspace">
         <header class="dashboard-topbar">
             <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="@Idioma.Texto("Abrir menú")"><partial name="_DashboardIcon" model='@("menu")' /></button><span>@Idioma.Texto("Mi espacio") <span class="dash-slash">/</span> <strong>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString()))</strong></span></div>
-            <div class="dash-top-account"><partial name="_SelectorIdioma" />@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoCitas")<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />@Idioma.Texto("Sesión activa")</span><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></div>
+            <div class="dash-top-account">@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoCitas")<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />@Idioma.Texto("Sesión activa")</span><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span><partial name="_ControlesVista" /></div>
         </header>
         <main id="dashboard-main" class="dashboard-main" tabindex="-1">
             @if (TempData["Success"] is string mensaje)

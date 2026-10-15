@@ -15,7 +15,7 @@ Si una propuesta cambió de fecha o estado después de abrir la agenda, responde
 
 ## Tres instrumentos exploratorios
 
-El catálogo del Director incluye los títulos y subtítulos solicitados para niveles de 15, 35 y 55 afirmaciones, con diez opciones por afirmación: 1 = totalmente en desacuerdo / nada identificado; 10 = totalmente de acuerdo / totalmente identificado. Los subtítulos aparecen en letra pequeña. Los tres se cargan como borradores inactivos para revisar sus preguntas antes de activarlos.
+El catálogo del Director incluye los títulos y subtítulos solicitados para niveles de 15, 35 y 54 afirmaciones, con diez opciones por afirmación: 1 = totalmente en desacuerdo / nada identificado; 10 = totalmente de acuerdo / totalmente identificado. Los subtítulos aparecen en letra pequeña. Los tres se cargan como borradores inactivos para revisar sus preguntas antes de activarlos.
 
 Las preguntas son una propuesta original de ZUNI, no ítems entregados por el usuario ni una reproducción de un instrumento estandarizado. Se organizan en interacción/comunicación, organización, afrontamiento cotidiano, decisiones/adaptación e intereses/motivación académica. El catálogo informa la fuente y sus límites. No se implementan ML.NET, diagnósticos, percentiles, baremos, umbrales de riesgo ni afirmaciones de alta exactitud. [Las directrices de la Comisión Internacional de Tests](https://www.intestcom.org/page/15) piden evidencia de fiabilidad y validez que sustente las inferencias sobre puntuaciones; aquí no se dispone de esa validación.
 

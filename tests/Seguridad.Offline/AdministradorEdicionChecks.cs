@@ -63,7 +63,7 @@ internal static class AdministradorEdicionChecks
         }
         var demoHtml=await estudiante.GetStringAsync("/Demostracion");
         Check(demoHtml.Contains("13 de octubre de 2026")&&demoHtml.Contains("14:00"),"cita ficticia con fecha y hora pedidas");
-        var respuestas=Regex.Matches(demoHtml,"name=\"(Respuestas\\[[^\\]]+\\])\"").Select(m=>(m.Groups[1].Value,"5")).ToList();
+        var respuestas=Regex.Matches(demoHtml,"name=\"(Respuestas\\[[^\\]]+\\])\"").Select(m=>(m.Groups[1].Value,"5")).Distinct().ToList();
         Check(respuestas.Count==15,"nivel 1 con 15 preguntas");
         var sinConsentir=await HostPrueba.Post(estudiante,"/Demostracion","/Demostracion",respuestas.ToArray());
         Check(!(await sinConsentir.Content.ReadAsStringAsync()).Contains("Demostración terminada"),"participación voluntaria obligatoria en práctica");

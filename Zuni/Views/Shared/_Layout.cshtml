@@ -9,7 +9,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString())) - ZUNI</title>
-    <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/guias-publicas.css" asp-append-version="true" />
@@ -17,6 +16,8 @@
     <link rel="stylesheet" href="~/css/modales.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Zuni.styles.css" asp-append-version="true" />
     <partial name="_IdentidadInstitucion" model="configuracionInstitucion" />
+    <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
+    <partial name="_TemaHead" />
 </head>
 <body class="public-shell @ViewData["BodyClass"]">
     <header>
@@ -25,7 +26,7 @@
                 <a class="navbar-brand brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/zuni-logo-transparent.png" alt="" />@Idioma.Texto("ZUNI")<span>.</span></a>
                 <span class="small me-3">@configuracionInstitucion.Nombre</span>
                 @if (configuracionInstitucion.LogotipoPng is not null) { <img src="@Url.Action("Logotipo", "Institucion")" alt="@Idioma.Texto("Logo de {0}", configuracionInstitucion.Nombre)" style="max-width:100px;max-height:45px;object-fit:contain" /> }
-                <partial name="_SelectorIdioma" />
+                <partial name="_ControlesVista" />
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="@Idioma.Texto("Toggle navigation")">
                     <span class="navbar-toggler-icon"></span>

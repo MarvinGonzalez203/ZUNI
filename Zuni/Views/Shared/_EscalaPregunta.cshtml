@@ -1,0 +1,13 @@
+@model Zuni.Models.Pruebas.EscalaPreguntaViewModel
+<fieldset class="dash-card mb-3 test-question" data-question>
+    <legend class="h5"><span class="dash-eyebrow d-block mb-2">@Idioma.Texto("Pregunta") @Model.Numero @Idioma.Texto("de") @Model.Total</span>@Model.Pregunta.Texto</legend>
+    <p class="small text-secondary">@Idioma.Texto("Grado de identificación")</p>
+    <div class="likert-scroll"><div class="likert-bar">
+    @foreach(var opcion in Model.Pregunta.Opciones.OrderBy(o=>o.Valor))
+    {
+        var valor=Model.ValorNumerico ? opcion.Valor.ToString() : opcion.Id.ToString();
+        <label class="likert-cell"><input type="radio" name="@Model.NombreCampo" value="@valor" checked="@(valor==Model.Seleccionada)" disabled="@Model.SoloLectura" aria-label="@opcion.Valor" /><span>@opcion.Valor</span></label>
+    }
+    </div></div>
+    <div class="likert-endpoints"><span>@Idioma.Texto("Totalmente en desacuerdo")</span><span>@Idioma.Texto("Totalmente de acuerdo")</span></div>
+</fieldset>

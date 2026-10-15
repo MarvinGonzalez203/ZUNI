@@ -9113,86 +9113,6 @@ namespace Zuni.Migrations
                         },
                         new
                         {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000421"),
-                            Orden = 1,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "1 · Totalmente en desacuerdo / Nada identificado",
-                            Valor = 1
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000422"),
-                            Orden = 2,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "2",
-                            Valor = 2
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000423"),
-                            Orden = 3,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "3",
-                            Valor = 3
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000424"),
-                            Orden = 4,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "4",
-                            Valor = 4
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000425"),
-                            Orden = 5,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "5",
-                            Valor = 5
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000426"),
-                            Orden = 6,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "6",
-                            Valor = 6
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000427"),
-                            Orden = 7,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "7",
-                            Valor = 7
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000428"),
-                            Orden = 8,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "8",
-                            Valor = 8
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000429"),
-                            Orden = 9,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "9",
-                            Valor = 9
-                        },
-                        new
-                        {
-                            Id = new Guid("eeeeeeee-0004-0003-0000-000000000430"),
-                            Orden = 10,
-                            PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            Texto = "10 · Totalmente de acuerdo / Totalmente identificado",
-                            Valor = 10
-                        },
-                        new
-                        {
                             Id = new Guid("eeeeeeee-0004-0003-0000-000000000431"),
                             Orden = 1,
                             PreguntaPruebaId = new Guid("eeeeeeee-0003-0003-0000-000000000044"),
@@ -10921,17 +10841,9 @@ namespace Zuni.Migrations
                         },
                         new
                         {
-                            Id = new Guid("eeeeeeee-0003-0003-0000-000000000043"),
-                            DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000004"),
-                            Orden = 43,
-                            PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
-                            Texto = "Puedo cambiar de estrategia cuando una forma de trabajar no da resultado."
-                        },
-                        new
-                        {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000044"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000004"),
-                            Orden = 44,
+                            Orden = 43,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Reviso un problema desde más de un punto de vista."
                         },
@@ -10939,7 +10851,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000045"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 45,
+                            Orden = 44,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Identifico actividades académicas que despiertan mi interés."
                         },
@@ -10947,7 +10859,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000046"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 46,
+                            Orden = 45,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Me motiva aprender habilidades que pueda utilizar en el futuro."
                         },
@@ -10955,7 +10867,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000047"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 47,
+                            Orden = 46,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Relaciono mis estudios con metas que son importantes para mí."
                         },
@@ -10963,7 +10875,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000048"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 48,
+                            Orden = 47,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Disfruto explorar temas nuevos aunque no sean obligatorios."
                         },
@@ -10971,7 +10883,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000049"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 49,
+                            Orden = 48,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Reconozco qué tareas me resultan especialmente interesantes."
                         },
@@ -10979,7 +10891,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000050"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 50,
+                            Orden = 49,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Busco oportunidades para poner en práctica lo que aprendo."
                         },
@@ -10987,7 +10899,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000051"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 51,
+                            Orden = 50,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Puedo explicar por qué elegí mi área de estudio."
                         },
@@ -10995,7 +10907,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000052"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 52,
+                            Orden = 51,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Mantengo curiosidad por distintas formas de ejercer una profesión."
                         },
@@ -11003,7 +10915,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000053"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 53,
+                            Orden = 52,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Reviso mis metas académicas cuando conozco nuevas posibilidades."
                         },
@@ -11011,7 +10923,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000054"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 54,
+                            Orden = 53,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Me interesa conocer actividades de trabajo antes de decidir si son para mí."
                         },
@@ -11019,7 +10931,7 @@ namespace Zuni.Migrations
                         {
                             Id = new Guid("eeeeeeee-0003-0003-0000-000000000055"),
                             DimensionId = new Guid("eeeeeeee-0002-0003-0000-000000000005"),
-                            Orden = 55,
+                            Orden = 54,
                             PruebaId = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Texto = "Encuentro motivos personales para continuar una tarea que requiere esfuerzo."
                         });
@@ -11111,13 +11023,13 @@ namespace Zuni.Migrations
                             Id = new Guid("eeeeeeee-0001-0003-0000-000000000000"),
                             Activa = false,
                             CreadaUtc = new DateTime(2026, 10, 14, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Descripcion = "Nivel 3: 55 afirmaciones para explorar tendencias declaradas. Preguntas propuestas de ZUNI para revisión profesional; instrumento sin validación psicométrica ni baremos. No produce diagnósticos, banderas automáticas de riesgo ni decisiones académicas.",
+                            Descripcion = "Nivel 3: 54 afirmaciones para explorar tendencias declaradas. Preguntas propuestas de ZUNI para revisión profesional; instrumento sin validación psicométrica ni baremos. No produce diagnósticos, banderas automáticas de riesgo ni decisiones académicas.",
                             Fuente = "Propuesta original ZUNI de ítems exploratorios. Pendiente de revisión y validación profesional; no corresponde a un test estandarizado publicado.",
                             Idioma = "Español",
                             Instrucciones = "No existen respuestas correctas ni incorrectas; responde según lo que mejor describa tu forma habitual de pensar, sentir o actuar. Escala: 1 = totalmente en desacuerdo / nada identificado; 10 = totalmente de acuerdo / totalmente identificado. Los valores intermedios expresan grados de identificación. Puedes guardar un avance o retirar tu participación. El psicólogo debe explicarte la consigna antes de habilitar el cuestionario.",
                             Nivel = 3,
                             Nombre = "Perfil Integral de Tendencias de Personalidad, Actitudes y Patrones Conductuales",
-                            Revision = new Guid("eeeeeeee-0005-0003-0000-000000000000"),
+                            Revision = new Guid("eeeeeeee-0005-0003-0000-000000000001"),
                             Subtitulo = "Inventario Clínico/Psicopedagógico de Tendencias Globales"
                         });
                 });

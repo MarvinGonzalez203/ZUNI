@@ -50,8 +50,19 @@ internal static class AmpliacionPortalChecks
         Guid prueba;
         await using(var db=new OfflineDb(options)) {
             var niveles=await db.PruebasDirector.Include(p=>p.Preguntas).ThenInclude(q=>q.Opciones).Where(p=>p.Nivel!=null).OrderBy(p=>p.Nivel).ToListAsync();
-            Check(niveles.Select(p=>p.Preguntas.Count).SequenceEqual(new[]{15,35,55}),"tres niveles y cantidades exactas");
+            Check(niveles.Select(p=>p.Preguntas.Count).SequenceEqual(new[]{15,35,54}),"tres niveles y cantidades exactas");
             Check(niveles.All(p=>!p.Activa&&p.Preguntas.All(q=>q.Opciones.Select(o=>o.Valor).Order().SequenceEqual(Enumerable.Range(1,10)))),"borradores con escala completa 1–10");
+            foreach(var nivel in niveles) {
+                Check(nivel.Preguntas.OrderBy(q=>q.Orden).Select(q=>q.Orden).SequenceEqual(Enumerable.Range(1,nivel.Preguntas.Count)),"numeración consecutiva nivel "+nivel.Nivel);
+                var detalleNivel=WebUtility.HtmlDecode(await director.GetStringAsync("/PruebasDirector/Detalle/"+nivel.Id));
+                var anterior=-1;
+                foreach(var preguntaNivel in nivel.Preguntas.OrderBy(q=>q.Orden)) {
+                    var posicion=detalleNivel.IndexOf(preguntaNivel.Texto,StringComparison.Ordinal);
+                    Check(posicion>anterior,"orden visible de preguntas nivel "+nivel.Nivel+" pregunta "+preguntaNivel.Orden);
+                    anterior=posicion;
+                }
+            }
+            Check(!niveles[2].Preguntas.Any(q=>q.Id==Guid.Parse("eeeeeeee-0003-0003-0000-000000000043")) && niveles[2].Preguntas.Any(q=>q.Id==Guid.Parse("eeeeeeee-0003-0003-0000-000000000055")),"se retira ítem redundante y se conserva la pregunta final original");
             prueba=niveles[0].Id;niveles[0].Activa=true;await db.SaveChangesAsync();
         }
         foreach(var c in new[]{admin,director,estudiante})Check((await c.GetAsync("/PruebasAplicadas/Habilitar")).StatusCode==HttpStatusCode.Redirect,"solo psicólogo indica pruebas");
@@ -70,7 +81,11 @@ internal static class AmpliacionPortalChecks
         AsignacionPrueba a;Prueba instrumento;await using(var db=new OfflineDb(options)){a=await db.AsignacionesPrueba.AsNoTracking().SingleAsync(a=>a.PruebaId==prueba&&a.PerfilEstudianteId==perfil);instrumento=await db.PruebasDirector.AsNoTracking().Include(p=>p.Preguntas).ThenInclude(q=>q.Opciones).SingleAsync(p=>p.Id==prueba);Check(a.CitaInduccionId!=null&&a.InduccionUtc!=null&&a.PsicologoInductorId=="psi3","inducción enlazada a cita atendida");}
         string url="/PruebasAplicadas/Contestar/"+a.Id;
         Check((await otro.GetAsync(url)).StatusCode==HttpStatusCode.Redirect,"cuestionario ajeno denegado");
-        Check((await estudiante.GetStringAsync(url)).Contains("No existen respuestas correctas"),"consigna presente");
+        var cuestionarioHtml=await estudiante.GetStringAsync(url);
+        Check(cuestionarioHtml.Contains("No existen respuestas correctas"),"consigna presente");
+        Check(cuestionarioHtml.Contains("data-questionnaire") && cuestionarioHtml.Contains("likert-bar"),"cuestionario con escala táctil y paginación");
+        var previewCuestionario=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");
+        if(!string.IsNullOrEmpty(previewCuestionario))await File.WriteAllTextAsync(Path.Combine(previewCuestionario,"cuestionario-aplicado.html"),cuestionarioHtml);
         var q=instrumento.Preguntas.First();var otraQ=instrumento.Preguntas.Last();
         Check((await HostPrueba.Post(estudiante,url,"/PruebasAplicadas/Contestar",("Id",a.Id.ToString()),("Revision",a.Revision.ToString()),("Consentimiento","true"),("Respuestas[0].PreguntaId",q.Id.ToString()),("Respuestas[0].OpcionId",otraQ.Opciones.First().Id.ToString()))).StatusCode==HttpStatusCode.Conflict,"opción de otra pregunta rechazada");
         Check((await HostPrueba.Post(estudiante,url,"/PruebasAplicadas/Contestar",("Id",a.Id.ToString()),("Revision",a.Revision.ToString()),("Consentimiento","true"),("Finalizar","true"))).StatusCode==HttpStatusCode.Conflict,"no finaliza incompleta");

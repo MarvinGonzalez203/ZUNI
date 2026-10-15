@@ -31,6 +31,9 @@ function check(value, text) { assert.ok(value, text); checks++; }
             if(fs.existsSync(scoped)) await page.addStyleTag({path:scoped});
             for (const css of ['lib/bootstrap/dist/css/bootstrap.min.css', 'css/dashboard.css', 'css/campos-obligatorios.css', 'css/agenda-contexto.css', 'css/idioma.css'])
                 await page.addStyleTag({ path: path.join(root, css) });
+            await page.addStyleTag({path:path.join(root,'css/tema.css')});
+            await page.addScriptTag({path:path.join(root,'js/tema.js')});
+            await page.evaluate(()=>document.dispatchEvent(new Event('DOMContentLoaded')));
             await page.addScriptTag({path:path.join(root,'js/idioma.js')});
             for (const script of scripts) await page.addScriptTag({ path: path.join(root, 'js', script) });
             await page.addScriptTag({ path: path.join(root, 'js/campos-obligatorios.js') });
@@ -223,10 +226,20 @@ function check(value, text) { assert.ok(value, text); checks++; }
         for(const name of ['solicitud-estudiante','solicitudes-psicologo','expedientes-psicologo']){
             await load(name,['agenda-contexto.js']);check(await page.locator('.dash-nav a.is-active').count()===1,'submenú único '+name);await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde móvil '+name);await page.setViewportSize({width:1280,height:900});
         }
-        await load('demostracion-estudiante',['agenda-contexto.js']);
-        check(await page.locator('select[name^="Respuestas["]').count()===15,'demo tiene 15 respuestas');
+        await load('demostracion-estudiante',['agenda-contexto.js','cuestionario.js']);
+        check(await page.locator('[data-question]').count()===15,'demo tiene 15 preguntas');
+        check(await page.locator('[data-question]:visible').count()===3,'solo tres preguntas visibles');
         check(await page.locator('.dash-nav a.is-active').count()===1,'demo con selección lateral exclusiva');
-        for(const select of await page.locator('select[name^="Respuestas["]').all()) await select.selectOption('5');
+        await page.locator('[data-test-next]').click();
+        check(await page.locator('[data-test-error]').isVisible(),'no avanza con preguntas vacías');
+        for(let block=0;block<5;block++) {
+            for(const question of await page.locator('[data-question]:visible').all()) await question.locator('input[value="5"]').check({force:true});
+            if(block<4) await page.locator('[data-test-next]').click();
+        }
+        check(await page.locator('[data-test-progress]').evaluate(e=>e.value)===100,'barra completa al responder las quince');
+        await page.locator('[data-test-back]').click();
+        check(await page.locator('[data-question]:visible input:checked').count()===3,'volver conserva respuestas');
+        await page.locator('[data-test-next]').click();
         check(await page.locator('form[action="/Demostracion"]').evaluate(f=>!f.checkValidity()),'demo exige confirmación voluntaria');
         await page.locator('#Consentimiento').check();
         check(await page.locator('form[action="/Demostracion"]').evaluate(f=>f.checkValidity()),'demo permite finalizar 15 respuestas válidas');
@@ -234,6 +247,44 @@ function check(value, text) { assert.ok(value, text); checks++; }
         check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'demo sin desborde móvil');
         await page.screenshot({path:path.join(fixtures,'demostracion-estudiante.png'),fullPage:false});
         await page.setViewportSize({width:1280,height:900});
+        // Exercise the real applied form, including uneven last pages and UUID option values.
+        for(const total of [35,54]) {
+            await load('cuestionario-aplicado');
+            await page.evaluate(total => {
+                const form=document.querySelector('form[data-questionnaire]');
+                const template=form.querySelector('[data-question]').cloneNode(true);
+                form.querySelectorAll('[data-question],input[name^="Respuestas["]').forEach(e=>e.remove());
+                const nav=form.querySelector('.test-navigation');
+                for(let i=0;i<total;i++) {
+                    const q=template.cloneNode(true);
+                    q.querySelectorAll('input').forEach(input=>{input.name=`Respuestas[${i}].OpcionId`;input.checked=false;});
+                    form.insertBefore(q,nav);
+                }
+            },total);
+            await page.addScriptTag({path:path.join(root,'js/cuestionario.js')});
+            await page.evaluate(()=>scrollTo(0,0));
+            const pages=Math.ceil(total/3);
+            for(let i=0;i<pages;i++) {
+                check(await page.locator('[data-question]:visible').count()===Math.min(3,total-i*3),'bloque de tres o último parcial '+total+' '+i);
+                for(const q of await page.locator('[data-question]:visible').all()) await q.locator('.likert-cell').nth(6).click();
+                if(i<pages-1) await page.locator('[data-test-next]').click();
+            }
+            check(await page.locator('[data-test-progress]').evaluate(e=>e.value)===100,'total respondido '+total);
+            check(await page.locator('[data-test-final]').isVisible(),'finalizar disponible al terminar '+total);
+            check(await page.locator('[data-questionnaire]').evaluate(f=>[...new FormData(f)].filter(([key])=>key.endsWith('.OpcionId')).length)===total,'envío incluye páginas anteriores '+total);
+            await page.locator('.zuni-theme-toggle').click();
+            await page.setViewportSize({width:390,height:844});
+            check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'escala horizontal sin desborde del documento '+total);
+            await page.screenshot({path:path.join(fixtures,'test-'+total+'-oscuro-movil.png'),fullPage:false});
+            await page.setViewportSize({width:1280,height:900});
+        }
+        await load('agenda-revision');
+        await page.locator('.zuni-theme-toggle').click();
+        await page.addScriptTag({path:path.join(root,'js/agenda-contexto.js')});
+        await page.locator('.agenda-modal.show').waitFor({state:'visible'});
+        check(await page.locator('.agenda-modal.show').isVisible(),'modal de agenda disponible en modo oscuro');
+        check(await page.locator('.agenda-modal.show .modal-content').evaluate(e=>getComputedStyle(e).backgroundColor==='rgb(43, 37, 50)'),'superficie oscura del modal');
+        await page.screenshot({path:path.join(fixtures,'agenda-modal-oscuro.png'),fullPage:false});
         await load('login'); await page.addStyleTag({path:path.join(root,'css/site.css')});
         check(await page.locator('.auth-brand .auth-logo').count()===0,'logo retirado solo del panel lateral del login');
         check(await page.locator('.auth-brand-copy').evaluate(e=>{const a=e.closest('aside').getBoundingClientRect(),b=e.getBoundingClientRect();return Math.abs((a.y+a.height/2)-(b.y+b.height/2))<3;}),'texto de acceso centrado verticalmente');
@@ -244,7 +295,8 @@ function check(value, text) { assert.ok(value, text); checks++; }
             check(await page.locator('html').getAttribute('lang')==='en','idioma del documento '+name);
             const selector=page.locator('.zuni-language');
             check(await selector.count()===1 && await selector.isVisible(),'selector único visible '+name);
-            check(await selector.locator('[value="en"]').getAttribute('aria-pressed')==='true','estado EN accesible '+name);
+            check(await selector.locator('button').innerText().then(t=>t.trim()==='EN'),'estado EN visible '+name);
+            check(await selector.locator('button').evaluate(e=>e.offsetWidth===e.offsetHeight),'botón idioma cuadrado '+name);
             const submitted=await selector.evaluate(f=>Object.fromEntries(new FormData(f,f.querySelector('[value="es"]'))));
             check(submitted.idioma==='es' && submitted.__RequestVerificationToken && submitted.volver.startsWith('/'),'cambio nativo a español con protección '+name);
             await page.setViewportSize({width:390,height:844});await page.evaluate(()=>scrollTo(0,0));
@@ -253,6 +305,17 @@ function check(value, text) { assert.ok(value, text); checks++; }
             await page.screenshot({path:path.join(fixtures,'idioma-'+name+'-movil.png'),fullPage:false});
             await page.setViewportSize({width:1280,height:900});await page.evaluate(()=>scrollTo(0,0));
             await page.screenshot({path:path.join(fixtures,'idioma-'+name+'.png'),fullPage:false});
+            const control=page.locator('.zuni-theme-toggle');
+            const before=await control.boundingBox();
+            await control.click();
+            check(await page.locator('html').getAttribute('data-theme')==='dark','tema oscuro '+name);
+            const after=await control.boundingBox();
+            check(Math.abs(before.x-after.x)<1&&Math.abs(before.y-after.y)<1,'icono permanece fijo '+name);
+            check(await control.evaluate(e=>e.offsetWidth===e.offsetHeight),'tema cuadrado '+name);
+            check(await page.locator('.theme-sun').isVisible(),'sol visible en modo oscuro '+name);
+            await page.screenshot({path:path.join(fixtures,'tema-oscuro-'+name+'.png'),fullPage:false});
+            await control.click();
+            check(await page.locator('html').getAttribute('data-theme')==='light','regresa a claro '+name);
         }
         await load('idioma-login',['site.js']);await page.addStyleTag({path:path.join(root,'css/site.css')});
         check(await page.locator('label[for="RememberMe"]').innerText().then(t=>t.includes('Remember me')),'opción recordar traducida');

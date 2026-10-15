@@ -1928,5 +1928,10 @@
   "Crea una reunión individual en tu cuenta institucional de Google Meet. Invita únicamente al estudiante correspondiente; configura acceso restringido, admisión por el anfitrión y, si tu cuenta lo permite, desactiva las solicitudes de personas no invitadas.": "Create an individual meeting in your institutional Google Meet account. Invite only the relevant student; configure restricted access, host admission and, if your account allows, disable requests from uninvited people.",
   "Comprueba con una cuenta externa que no entra sin autorización. ZUNI valida el enlace y quién puede verlo; los permisos de la reunión se configuran en Google. No uses un enlace general ni grabes o transcribas automáticamente.": "Test with an external account to check that unauthorized entry is blocked. ZUNI validates the link and who can see it; meeting permissions are configured in Google. Do not use a general link or automatically record or transcribe.",
   "El fin es opcional. Si lo omites se calcula con la duración elegida; sin duración establecida se estima un bloque de 50 minutos. Es planificación, no duración real de la sesión.": "The end time is optional. If omitted, it is calculated using the selected duration; without a fixed duration, a 50-minute block is estimated. This is planning, not the actual session length.",
-  "Bloquear conserva los horarios. Quitar la configuración deja solo esta fecha sin horarios; no elimina citas ni cambia otras fechas.": "Blocking retains time slots. Removing settings leaves only this date without availability; it does not delete appointments or change other dates."
+  "Bloquear conserva los horarios. Quitar la configuración deja solo esta fecha sin horarios; no elimina citas ni cambia otras fechas.": "Blocking retains time slots. Removing settings leaves only this date without availability; it does not delete appointments or change other dates.",
+  "Navegación de preguntas": "Question navigation",
+  "Avance de respuestas": "Answer progress",
+  "Responde las preguntas de esta pantalla para continuar.": "Answer the questions on this page to continue.",
+  "Totalmente en desacuerdo": "Strongly disagree",
+  "Totalmente de acuerdo": "Strongly agree"
 }

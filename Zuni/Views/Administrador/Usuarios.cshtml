@@ -42,7 +42,7 @@
         else
         {
             <div class="table-responsive rounded-3 border" tabindex="0" role="region" aria-label="Listado de @Model.Titulo">
-                <table class="table align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: #111111;">
+                <table class="table align-middle mb-0" style="--bs-table-bg: transparent;">
                     <caption class="visually-hidden">@Idioma.Texto(Model.Titulo) @Idioma.Texto("de ZUNI. Usa Gestionar para ver las acciones disponibles.")</caption>
                     <thead style="background: rgba(206,162,253,.18);">
                         <tr>
@@ -66,7 +66,7 @@
                                 @if (Model.EsPsicologos) { <td class="p-3" data-asignaciones="@usuario.AsignacionesVigentes">@usuario.AsignacionesVigentes</td> }
                                 <td class="p-3">
                                     <span class="badge rounded-pill border text-dark"
-                                          style="background: @(usuario.IsActive ? "rgba(206,162,253,.25)" : "rgba(237,232,208,.65)");">
+                                          style="background: @(usuario.IsActive ? "rgba(206,162,253,.25)" : "var(--zuni-inactive-bg,rgba(237,232,208,.65))");">
                                         @(usuario.IsActive ? "Activo" : usuario.PendienteActivacion ? Idioma.Texto("Pendiente de activación") : "Inactivo")
                                     </span>
                                 </td>

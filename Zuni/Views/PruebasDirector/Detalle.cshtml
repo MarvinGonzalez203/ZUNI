@@ -17,7 +17,7 @@
 </section>
 <section class="dash-card p-4"><h2>@Idioma.Texto("Dimensiones y preguntas")</h2>
     @if (p.Preguntas.Count == 0) { <p>@Idioma.Texto("Este borrador todavía no tiene preguntas.")</p> }
-    @foreach (var d in p.Dimensiones.OrderBy(x => x.Nombre))
+    @foreach (var d in p.Dimensiones.OrderBy(x => p.Preguntas.Where(q => q.DimensionId == x.Id).Select(q => q.Orden).DefaultIfEmpty(int.MaxValue).Min()).ThenBy(x => x.Nombre))
     {
         <h3>@d.Nombre</h3>
         @foreach (var q in p.Preguntas.Where(x => x.DimensionId == d.Id).OrderBy(x => x.Orden))

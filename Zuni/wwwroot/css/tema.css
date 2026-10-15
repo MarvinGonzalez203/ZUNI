@@ -1,0 +1,51 @@
+/* Dark surfaces retain ZUNI's violet, neutral palette and translucent state colors. */
+.zuni-admin-surface{background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(237,232,208,.82));color:#111}
+html[data-theme=dark] .zuni-admin-surface{background:linear-gradient(145deg,#302938,#25202d);color:#eeeaf2}
+html[data-theme=dark]{--bs-body-bg:#19171e;--bs-body-color:#eeeaf2;--bs-secondary-color:#beb5c7;--bs-border-color:#494050;--bs-tertiary-bg:#29242f;--bs-emphasis-color:#fff;background:#19171e}
+html[data-theme=dark] body{--dash-ink:#eeeaf2;--dash-muted:#c1b6cb;--dash-line:rgba(222,205,238,.18);--zuni-ink:#eeeaf2;--zuni-muted:#c1b6cb;--zuni-bg:#19171e;background:#19171e;color:#eeeaf2}
+html[data-theme=dark] :is(.dashboard-sidebar.offcanvas,.dashboard-topbar,.zuni-navbar,.zuni-footer){background:rgba(35,30,41,.97);border-color:#494050;color:#eeeaf2}
+html[data-theme=dark] :is(.dash-card,.card,.guide-mini,.guide-card,.agenda-notice,.modal-content,.agenda-modal .modal-content,.dropdown-menu,.offcanvas,.popover,.auth-card,.auth-form-panel){background:rgba(43,37,50,.96);border-color:#514458;color:#eeeaf2;box-shadow:0 12px 36px #0003}
+html[data-theme=dark] :is(.dash-welcome,.guide-hero,.hero,.hero-section,.quick-actions,.dash-support-note){background:radial-gradient(ellipse at 90% 20%,#cea2fd26,transparent 65%),linear-gradient(120deg,#302b32,#27212f);border-color:#514458;color:#eeeaf2}
+html[data-theme=dark] :is(h1,h2,h3,h4,h5,h6,.dash-top-title strong,.brand,.navbar-brand,.nav-link,.text-dark,.text-body,.guide-hero p,.guide-eyebrow,.dash-eyebrow,.agenda-hint,.dash-logout,.dash-support-note p){color:#eeeaf2!important}
+html[data-theme=dark] :is(.text-muted,.text-secondary,.form-text,.dash-nav-link small,.footer-grid p,.footer-grid a:not(.brand)){color:#c1b6cb!important}
+html[data-theme=dark] :is(.form-control,.form-select,.agenda-form input,.agenda-form select,textarea,input:not([type=radio]):not([type=checkbox]):not([type=hidden])){background-color:#211c27;color:#eeeaf2;border-color:#776382;color-scheme:dark}
+html[data-theme=dark] :is(input,textarea)::placeholder{color:#b5a8bf;opacity:1}
+html[data-theme=dark] :is(.form-control:disabled,.form-select:disabled){background:#332c3b;color:#c1b6cb}
+html[data-theme=dark] :is(.modal-header,.modal-footer,.border,.border-top,.border-bottom,.dash-footer){border-color:#514458!important}
+html[data-theme=dark] .btn-close{filter:invert(1) grayscale(1)}
+html[data-theme=dark] :is(.zuni-square-control,.dash-menu){background:#302638;color:#ead5ff;border-color:#79638c}
+html[data-theme=dark] :is(.zuni-square-control:hover,.dash-nav-link.is-active){background:#503763;color:#f2e6ff}
+html[data-theme=dark] .table{--bs-table-bg:transparent;--bs-table-color:#eeeaf2;--bs-table-border-color:#514458;--bs-table-striped-bg:#ffffff08;--bs-table-hover-bg:#cea2fd15}
+html[data-theme=dark] :is(.agenda-day,.agenda-legend span,.agenda-slot){background:#302c37;color:#eeeaf2;border-color:#685d70}
+html[data-theme=dark] :is(.agenda-day.is-free,.agenda-legend .is-free){background:#489a6a30;border-color:#72b48a;color:#def9e7}
+html[data-theme=dark] :is(.agenda-day.is-busy,.agenda-legend .is-busy,.agenda-slot.is-busy){background:#d65f6b30;border-color:#cf7b84;color:#ffe1e5}
+html[data-theme=dark] :is(.agenda-day.is-pending,.agenda-legend .is-pending){background:#e5b94c30;border-color:#c9a95b;color:#fff0bf}
+html[data-theme=dark] .agenda-day:disabled{background:#28242f;color:#b7adbf}
+html[data-theme=dark] :is(.badge,.guide-icon,.dash-avatar){background:#554064;color:#f2e6ff}
+html[data-theme=dark] .bg-light{background:#302938!important}html[data-theme=dark] .bg-white{background:#2b2532!important}
+html[data-theme=dark] .btn-outline-secondary{color:#e2d4ed;border-color:#a28aaf}html[data-theme=dark] .btn-outline-secondary:hover{background:#503763;color:#fff}
+html[data-theme=dark] .navbar-toggler-icon{filter:invert(1)}html[data-theme=dark] .navbar-toggler{border-color:#79638c}
+html[data-theme=dark] :is(.landing-hero,.profile-welcome-card,.quick-panel,.auth-shell,.guide-callout,.dash-summary-profile,.dash-chart-placeholder){background:radial-gradient(ellipse at 90% 15%,#cea2fd26,transparent 60%),linear-gradient(120deg,#312a38,#25202d);color:#eeeaf2;border-color:#514458;box-shadow:0 18px 48px #0003}
+html[data-theme=dark] :is(.auth-panel,.guide-tabs a,.guide-card .guide-place,.notification-data div,.dash-notice){background:rgba(53,43,63,.88);border-color:#776382;color:#eeeaf2}
+html[data-theme=dark] :is(.hero-lead,.hero-detail,.hero-kicker,.hero-foot,.quick-actions a,.quick-actions small,.profile-welcome-copy p,.auth-back,.auth-mobile-logo,.carne-fieldset legend,.auth-options .form-check-label,.password-toggle,.form-floating>label,.notification-data dt,.dash-summary h3,.dash-details dt,.guide-callout p){color:#d9cde3}
+html[data-theme=dark] :is(.hero-kicker,.session-pill,.quick-icon,.dash-icon-tile,.dash-badge){background:#513c6380;color:#ead5ff;border-color:#79638c}
+html[data-theme=dark] .landing-hero h1 em{color:#cea2fd;text-shadow:none}
+html[data-theme=dark] .landing-hero::after,html[data-theme=dark] .liquid-b{background:linear-gradient(142deg,#cea2fd15,#cea2fd05);border-color:#cea2fd40;box-shadow:inset 20px 20px 40px #cea2fd08}
+html[data-theme=dark] .landing-hero::before{opacity:.25}
+html[data-theme=dark] .quick-actions{background:transparent}
+html[data-theme=dark] .btn-crystal{background:#cea2fd20;border-color:#79638c;color:#eeeaf2}
+html[data-theme=dark] .dashboard-app .btn-outline-primary{color:#ead5ff}
+html[data-theme=dark] .dash-notification{color:#e3c4ff}
+html[data-theme=dark] :is(.auth-options a,.auth-panel a:not(.btn),.dash-text-link,.text-primary){color:#dbb6ff!important}
+html[data-theme=dark] :is(.text-danger,.required-marker,.field-validation-error){color:#ff9ba8!important}
+html[data-theme=dark] .text-success{color:#99e2b8!important}
+html[data-theme=dark] :is(.bf-notice,.bf-summary,.bf-result,.student-attention-card){background:#cea2fd18;color:#eeeaf2;border-color:#79638c}
+html[data-theme=dark] :is(.student-progress p,.student-optional,.student-attention-card p){color:#c1b6cb}
+html[data-theme=dark] body{--zuni-inactive-bg:rgba(237,232,208,.14)}
+html[data-theme=dark] :is(.guide-card p,.dash-readonly,.dash-details dd){color:#d9cde3}
+html[data-theme=dark] :is(.modal-content,.agenda-modal .modal-content){background:#2b2532}
+html[data-theme=dark] .alert{background:#322b3c;color:#eeeaf2;border-color:#927aa3}
+html[data-theme=dark] .alert-danger{border-color:#d98b9b}html[data-theme=dark] .alert-success{border-color:#72b48a}html[data-theme=dark] .alert-warning{border-color:#c9a95b}
+html[data-theme=dark] .agenda-pending-review{background:#e5b94c25;border-color:#c9a95b;color:#fff0bf}
+html[data-theme=dark] :focus-visible{outline-color:#cea2fd}
+@media print{html[data-theme=dark] body{background:#fff;color:#111}.zuni-view-controls{display:none!important}}
