@@ -86,6 +86,7 @@ internal static class AmpliacionPortalChecks
         Check(cuestionarioHtml.Contains("data-questionnaire") && cuestionarioHtml.Contains("likert-bar"),"cuestionario con escala táctil y paginación");
         var previewCuestionario=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");
         if(!string.IsNullOrEmpty(previewCuestionario))await File.WriteAllTextAsync(Path.Combine(previewCuestionario,"cuestionario-aplicado.html"),cuestionarioHtml);
+        if(!string.IsNullOrEmpty(previewCuestionario)){await File.WriteAllTextAsync(Path.Combine(previewCuestionario,"catalogo-contraste.html"),await director.GetStringAsync("/PruebasDirector"));await File.WriteAllTextAsync(Path.Combine(previewCuestionario,"informes-contraste.html"),await director.GetStringAsync("/InformesEducativos"));}
         var q=instrumento.Preguntas.First();var otraQ=instrumento.Preguntas.Last();
         Check((await HostPrueba.Post(estudiante,url,"/PruebasAplicadas/Contestar",("Id",a.Id.ToString()),("Revision",a.Revision.ToString()),("Consentimiento","true"),("Respuestas[0].PreguntaId",q.Id.ToString()),("Respuestas[0].OpcionId",otraQ.Opciones.First().Id.ToString()))).StatusCode==HttpStatusCode.Conflict,"opción de otra pregunta rechazada");
         Check((await HostPrueba.Post(estudiante,url,"/PruebasAplicadas/Contestar",("Id",a.Id.ToString()),("Revision",a.Revision.ToString()),("Consentimiento","true"),("Finalizar","true"))).StatusCode==HttpStatusCode.Conflict,"no finaliza incompleta");

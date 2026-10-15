@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="~/css/campos-obligatorios.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/modales.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Zuni.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
     <partial name="_IdentidadInstitucion" model="configuracionInstitucion" />
     <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
     <partial name="_TemaHead" />
@@ -65,7 +66,7 @@
         </main>
     </div>
 
-    <footer class="zuni-footer"><div class="container"><div class="footer-grid">
+    <footer class="zuni-footer" id="zuni-footer" tabindex="-1"><div class="container"><div class="footer-grid">
         <section><a class="brand" asp-controller="Home" asp-action="Index"><img src="~/images/zuni-logo-transparent.png" alt="Logotipo ZUNI" />@Idioma.Texto("ZUNI")<span>.</span></a><p>@Idioma.Texto("Acompañamiento, organización y seguimiento educativo en un espacio pensado para tu bienestar.")</p><small>@configuracionInstitucion.Nombre</small>@if(!string.IsNullOrWhiteSpace(configuracionInstitucion.CorreoSoporte)) { <a href="mailto:@configuracionInstitucion.CorreoSoporte">@configuracionInstitucion.CorreoSoporte</a> }</section>
         <section><h2>@Idioma.Texto("Explora ZUNI")</h2><a asp-controller="Home" asp-action="Guia" asp-route-tema="cita">@Idioma.Texto("Solicitar y organizar citas")</a><a asp-controller="Home" asp-action="Guia" asp-route-tema="seguimiento">@Idioma.Texto("Seguimiento y reportes")</a><a asp-controller="Home" asp-action="Guia" asp-route-tema="bienestar">@Idioma.Texto("Bienestar y herramientas")</a></section>
         <section><h2>@Idioma.Texto("Tu información")</h2><a asp-controller="Home" asp-action="Guia" asp-route-tema="privacidad">@Idioma.Texto("Cómo se protege y comparte")</a><a asp-controller="Privacidad" asp-action="Politica">@Idioma.Texto("Política institucional")</a><a asp-controller="Privacidad" asp-action="Index">@Idioma.Texto("Privacidad y mis derechos")</a><p>@Idioma.Texto("Consulta la guía antes de autorizar un informe.")</p></section>

@@ -6,6 +6,8 @@
     var institucion = await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
     ViewData["Institucion"] = institucion;
 }
+@section Styles { <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" /> }
+@section Scripts { <script src="~/js/home.js" asp-append-version="true"></script> }
 @if (TempData["Success"] is string message)
 {
     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">@Idioma.Texto(message)<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@Idioma.Texto("Cerrar")"></button></div>
@@ -57,7 +59,7 @@
         <path d="M26 366C156 350 177 249 286 239c103-10 139 74 232 10 62-43 86-116 176-178" />
         <circle cx="27" cy="366" r="5"/><circle cx="286" cy="239" r="5"/><circle cx="518" cy="249" r="5"/><circle cx="694" cy="71" r="7"/>
     </svg>
-    <div class="hero-symbol" aria-hidden="true"><img src="~/images/zuni-logo-transparent.png" alt="" /></div>
+    <div class="hero-symbol" aria-hidden="true"><div class="hero-glass-orbit"></div><div class="hero-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /></div>
 
     <div class="quick-panel" aria-label="@Idioma.Texto("Accesos principales de ZUNI")">
         <div class="quick-intro"><span class="quick-spark">✦</span><div><small>@Idioma.Texto("Tu espacio ZUNI")</small><strong>@Idioma.Texto("¿Qué necesitas hoy?")</strong></div></div>
@@ -71,3 +73,4 @@
 
     <div class="hero-foot"><span><i></i> @Idioma.Texto("Privado y confidencial")</span><span>@Idioma.Texto("Diseñado para la comunidad educativa")</span><span>@Idioma.Texto("Bienestar · Conexión · Confianza")</span></div>
 </section>
+<button class="home-scroll-cue" type="button" aria-label="@Idioma.Texto("Ver más contenido")" aria-controls="zuni-footer" hidden><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 9 7 7 7-7" /></svg></button>
