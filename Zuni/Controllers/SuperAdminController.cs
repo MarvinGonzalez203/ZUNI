@@ -10,7 +10,7 @@ public sealed class SuperAdminController(ApplicationDbContext db):Controller
     [HttpGet] public async Task<IActionResult> Index(CancellationToken ct)
     {
         var id=User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if(!await db.Users.AnyAsync(u=>u.Id==id&&u.IsActive&&!u.DebeCambiarContrasena&&db.UserRoles.Any(ur=>ur.UserId==u.Id&&db.Roles.Any(r=>r.Id==ur.RoleId&&r.NormalizedName=="SUPERADMIN")),ct))return Forbid();
+        if(!await Zuni.Services.Institucion.TarifasService.EsSuperAdmin(db,id,ct))return Forbid();
         ViewData["DashboardName"]=await db.Users.Where(u=>u.Id==id).Select(u=>u.FullName).SingleAsync(ct);
         return View();
     }

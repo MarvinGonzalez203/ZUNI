@@ -4,7 +4,7 @@ const fixtures=process.argv[2],root=path.resolve(__dirname,'../../Zuni/wwwroot')
 let checks=0;function check(v,m){assert.ok(v,m);checks++;}
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const page=await browser.newPage({viewport:{width:1600,height:1000},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- const pages={'/Tarifas':'tarifas','/SuperAdmin/Tarifas':'tarifas-superadmin','/SuperAdmin':'superadmin','/CarrerasAdmin':'carreras-simple','/Institucion':'institucion-paleta','/PruebasDirector/Detalle':'prueba-director-escala'};
+ const pages={'/Tarifas':'tarifas','/Tarifas/Editar':'tarifas-editor','/SuperAdmin/Tarifas':'tarifas-superadmin','/SuperAdmin':'superadmin','/CarrerasAdmin':'carreras-simple','/Institucion':'institucion-paleta','/PruebasDirector/Detalle':'prueba-director-escala'};
  await page.route('**/*',async route=>{const url=new URL(route.request().url());if(url.origin!=='http://zuni.test')return route.abort();if(route.request().isNavigationRequest()){const fixture=pages[url.pathname];if(!fixture)return route.abort();return route.fulfill({contentType:'text/html',body:fs.readFileSync(path.join(fixtures,fixture+'.html'),'utf8')});}const file=path.resolve(root,url.pathname.slice(1));const type={'.css':'text/css','.js':'text/javascript','.png':'image/png'}[path.extname(file)];return type&&file.startsWith(root+path.sep)&&fs.existsSync(file)?route.fulfill({contentType:type,body:fs.readFileSync(file)}):route.abort();});
  await page.goto('http://zuni.test/Tarifas');
  check(!(await page.locator('.tarifa-grid').innerText()).includes('PROPUESTO'),'Administrador no ve precio propuesto');
@@ -25,6 +25,17 @@ let checks=0;function check(v,m){assert.ok(v,m);checks++;}
  await page.screenshot({path:path.join(fixtures,'tarifas-beneficios-oscuro.png'),fullPage:true});
  await page.goto('http://zuni.test/SuperAdmin/Tarifas');
  check((await page.locator('.tarifa-grid').innerText()).includes('PROPUESTO'),'SuperAdmin sí ve precio propuesto');
+ check(await page.locator('a[href="/Tarifas/Editar"]').count()===1,'proveedor tiene editor de precios');
+ check(await page.locator('.dash-nav a[href="/Administrador"]').count()===0,'sin acceso institucional en menú proveedor');
+ await page.goto('http://zuni.test/Tarifas/Editar');
+ for(const id of ['Mensual','Trimestral','Semestral','Anual']){
+  const input=page.locator('#'+id);check(await input.getAttribute('step')==='0.01'&&await input.getAttribute('min')==='0.01','importe decimal positivo '+id);
+ }
+ await page.locator('#Mensual').fill('0');check(!await page.locator('#Mensual').evaluate(e=>e.checkValidity()),'precio cero inválido');
+ await page.locator('#Mensual').fill('199.001');check(!await page.locator('#Mensual').evaluate(e=>e.checkValidity()),'tres decimales inválidos');
+ await page.locator('#Mensual').fill('199.00');check(await page.locator('#Mensual').evaluate(e=>e.checkValidity()),'precio válido');
+ for(const width of [1366,390,320]){await page.setViewportSize({width,height:950});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'editor sin desborde '+width);}
+ await page.evaluate(()=>document.documentElement.dataset.theme='dark');await page.screenshot({path:path.join(fixtures,'tarifas-editor-oscuro.png'),fullPage:true});await page.setViewportSize({width:1600,height:1000});
  await page.goto('http://zuni.test/CarrerasAdmin');
  check(await page.locator('form[action="/CarrerasAdmin/AgregarArea"] #Area').isVisible(),'área separada visible');
  check(await page.locator('#Carreras').isVisible(),'carreras separadas visibles');

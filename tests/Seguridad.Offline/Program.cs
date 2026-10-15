@@ -563,6 +563,7 @@ await AdministradorEdicionChecks.Run(app, opciones, clave);
 await IdiomaChecks.Run(app, opciones, clave);
 await CoordinacionEducativaChecks.Run(app, opciones, clave,reloj);
 await SuperAdminCatalogoChecks.Run(app, opciones, clave);
+await TarifasAislamientoChecks.Run(app, opciones, clave,reloj);
 
 using (var c = HostPrueba.Cliente(app))
 {

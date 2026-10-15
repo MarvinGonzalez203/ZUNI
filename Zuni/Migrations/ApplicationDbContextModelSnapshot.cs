@@ -1306,6 +1306,39 @@ namespace Zuni.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Zuni.Models.Institucion.ConfiguracionTarifas", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Anual")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<decimal>("Mensual")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Semestral")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<decimal>("Trimestral")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ConfiguracionTarifas");
+                });
+
             modelBuilder.Entity("Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad", b =>
                 {
                     b.Property<Guid>("PerfilEstudianteId")

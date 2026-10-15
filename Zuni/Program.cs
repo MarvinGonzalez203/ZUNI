@@ -125,6 +125,7 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<Zuni.Middleware.ContenidoPrivadoNoCacheMiddleware>();
 app.UseMiddleware<Zuni.Middleware.CambioContrasenaObligatorioMiddleware>();
+app.UseMiddleware<Zuni.Middleware.AislamientoSuperAdminMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(

@@ -107,6 +107,7 @@ internal static class HostPrueba
         app.UseAuthentication();
         app.UseMiddleware<Zuni.Middleware.ContenidoPrivadoNoCacheMiddleware>();
         app.UseMiddleware<Zuni.Middleware.CambioContrasenaObligatorioMiddleware>();
+        app.UseMiddleware<Zuni.Middleware.AislamientoSuperAdminMiddleware>();
         app.UseAuthorization();
         app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
         await app.StartAsync();

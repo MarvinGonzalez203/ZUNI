@@ -2,7 +2,6 @@
 <nav class="dash-nav" aria-label="@Idioma.Texto("Navegación de SuperAdmin")">
 <span class="dash-nav-label">@Idioma.Texto("ADMINISTRACIÓN DE ZUNI")</span>
 <a class="dash-nav-link @(controlador=="SuperAdmin"?"is-active":"")" asp-controller="SuperAdmin" asp-action="Index"><partial name="_DashboardIcon" model='@("grid")'/><span>@Idioma.Texto("Tablero")</span></a>
-@if(User.IsInRole("Administrador")){<a class="dash-nav-link" asp-controller="Administrador" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")'/><span>@Idioma.Texto("Administrar esta institución")</span></a>}
 <a class="dash-nav-link @(controlador=="MiCuenta"?"is-active":"")" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")'/><span>@Idioma.Texto("Mi cuenta")</span></a>
 <a class="dash-nav-link @(controlador=="Tarifas"?"is-active":"")" asp-controller="Tarifas" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")'/><span>@Idioma.Texto("Tarifas y periodos")</span></a>
 </nav>

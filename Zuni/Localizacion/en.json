@@ -2118,5 +2118,22 @@
   "Indica un área académica y al menos una carrera, una por línea.": "Enter an academic area and at least one program, one per line.",
   "Solo se eliminan pruebas personalizadas sin asignaciones y con confirmación.": "Only custom tests with no assignments can be deleted, after confirmation.",
   "No se eliminó la prueba porque cambió o tiene registros vinculados.": "The test was not deleted because it changed or has linked records.",
-  "Prueba eliminada.": "Test deleted."
+  "Prueba eliminada.": "Test deleted.",
+  "Total de 1 mes (GTQ)": "Total for 1 month (GTQ)",
+  "Total de 3 meses (GTQ)": "Total for 3 months (GTQ)",
+  "Total de 6 meses (GTQ)": "Total for 6 months (GTQ)",
+  "Total de 12 meses (GTQ)": "Total for 12 months (GTQ)",
+  "Usa un importe en quetzales con un máximo de dos decimales.": "Enter a quetzal amount with no more than two decimal places.",
+  "Editar precios de ZUNI": "Edit ZUNI prices",
+  "Define el precio total en quetzales de cada periodo. El equivalente mensual y el ahorro se calculan automáticamente.": "Set the total price in quetzales for each period. Monthly equivalents and savings are calculated automatically.",
+  "Este cambio actualiza el catálogo comercial; no genera cobros ni modifica contratos existentes.": "This change updates the commercial catalog; it does not generate charges or change existing contracts.",
+  "Guardar precios": "Save prices",
+  "Volver a tarifas": "Back to pricing",
+  "Editar precios": "Edit prices",
+  "Las tarifas cambiaron. Recarga el editor antes de guardar nuevamente.": "Pricing changed. Reload the editor before saving again.",
+  "Tarifas actualizadas. Los administradores verán los nuevos precios.": "Pricing updated. Administrators will see the new prices.",
+  "Servicios para instituciones educativas": "Services for educational institutions",
+  "Administra los precios del servicio para las instituciones educativas.": "Manage service prices for educational institutions.",
+  "Gestión comercial y privacidad": "Commercial management and privacy",
+  "Esta cuenta se utiliza exclusivamente para los servicios de ZUNI. No permite consultar alumnos, citas, pruebas respondidas, expedientes ni reportes de las instituciones.": "This account is used exclusively for ZUNI services. It cannot access institutional students, appointments, completed tests, student files or reports."
 }

@@ -34,7 +34,7 @@ internal static class SuperAdminCatalogoChecks
         await HostPrueba.Login(admin,"admin@miumg.edu.gt",clave);await HostPrueba.Login(director,"director@miumg.edu.gt",clave);await HostPrueba.Login(estudiante,"est@miumg.edu.gt",clave);
         Check((await activo.GetAsync("/SuperAdmin")).StatusCode==HttpStatusCode.OK,"panel SuperAdmin disponible");
         Check((await admin.GetAsync("/SuperAdmin")).StatusCode==HttpStatusCode.Redirect,"Administrador no entra a proveedor");
-        foreach(var path in new[]{"/Administrador","/Psicologo","/Director","/Estudiante"})Check((await activo.GetAsync(path)).StatusCode==HttpStatusCode.Redirect,"SuperAdmin solo no hereda "+path);
+        foreach(var path in new[]{"/Administrador","/Psicologo","/Director","/Estudiante"})Check((await activo.GetAsync(path)).StatusCode==HttpStatusCode.Forbidden,"SuperAdmin solo no hereda "+path);
         var tarifasAdmin=WebUtility.HtmlDecode(await admin.GetStringAsync("/Tarifas"));var tarifasSuper=WebUtility.HtmlDecode(await activo.GetStringAsync("/Tarifas"));
         Check(!tarifasAdmin.Contains("PRECIO PROPUESTO")&&tarifasSuper.Contains("PRECIO PROPUESTO"),"leyenda exclusiva del proveedor");
         Check(tarifasAdmin.Contains("Funciones compartidas")&&!tarifasAdmin.Contains("<h3>SuperAdmin"),"beneficios por cuatro roles y funciones comunes");

@@ -22,6 +22,8 @@ public static class SuperAdministrador
         var rol=await db.Roles.SingleAsync(r=>r.NormalizedName=="SUPERADMIN",ct);
         var normal=correo.ToUpperInvariant();
         var user=await db.Users.SingleOrDefaultAsync(u=>u.NormalizedEmail==normal,ct);
+        if(user is not null&&await db.UserRoles.AnyAsync(ur=>ur.UserId==user.Id&&ur.RoleId!=rol.Id,ct))
+        {await salida.WriteLineAsync("Usa una cuenta exclusiva del proveedor, sin roles institucionales. No se modificó la cuenta.");return 2;}
         if(user is not null&&await db.UserRoles.AnyAsync(r=>r.UserId==user.Id&&r.RoleId==rol.Id,ct))
         {await salida.WriteLineAsync("La cuenta ya tiene SuperAdmin. No se cambió su contraseña.");return 1;}
         var ahora=DateTime.UtcNow;
