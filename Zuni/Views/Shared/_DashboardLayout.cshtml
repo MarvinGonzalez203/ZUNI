@@ -49,9 +49,18 @@
         <div class="dash-sidebar-bottom">
             <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>@Idioma.Texto("Tu bienestar también")<br />@Idioma.Texto("forma parte del camino.")</p></div>
             <div class="dash-bottom-controls">
-            @if(ViewData["DashboardAccountUnavailable"] is not true){<a class="dash-round-control dash-account" asp-controller="MiCuenta" asp-action="Index" title="@Idioma.Texto("Ver mi cuenta: {0}",nombre)" aria-label="@Idioma.Texto("Ver mi cuenta: {0}",nombre)"><span class="dash-avatar" aria-hidden="true">@corto[..1]</span></a>}
-            <a class="dash-round-control" asp-controller="Home" asp-action="Index" title="@Idioma.Texto("Ir al inicio")" aria-label="@Idioma.Texto("Ir al inicio")"><partial name="_DashboardIcon" model='@("home")'/></a>
-            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-round-control dash-logout" type="submit" title="@Idioma.Texto("Cerrar sesión")" aria-label="@Idioma.Texto("Cerrar sesión")"><partial name="_DashboardIcon" model='@("logout")'/></button></form>
+            @if(ViewData["DashboardAccountUnavailable"] is not true){
+                <a class="dash-bottom-action dash-account" asp-controller="MiCuenta" asp-action="Index" title="@Idioma.Texto("Ver mi cuenta: {0}",nombre)">
+                    <span class="dash-round-control" aria-hidden="true"><span class="dash-avatar">@corto[..1]</span></span>
+                    <span class="dash-bottom-label"><strong>@corto</strong><small>@Idioma.Roles(rol)</small></span>
+                </a>
+            }
+            <a class="dash-bottom-action" asp-controller="Home" asp-action="Index">
+                <span class="dash-round-control" aria-hidden="true"><partial name="_DashboardIcon" model='@("home")'/></span><span class="dash-bottom-label">@Idioma.Texto("Inicio")</span>
+            </a>
+            <form asp-controller="Cuenta" asp-action="CerrarSesion" method="post"><button class="dash-bottom-action dash-logout" type="submit">
+                <span class="dash-round-control" aria-hidden="true"><partial name="_DashboardIcon" model='@("logout")'/></span><span class="dash-bottom-label">@Idioma.Texto("Cerrar sesión")</span>
+            </button></form>
             </div>
         </div>
     </aside>

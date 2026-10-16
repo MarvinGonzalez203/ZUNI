@@ -7,8 +7,8 @@
 }
 <nav class="dash-nav" aria-label="@Idioma.Texto("Navegación del Director")">
     <a class="dash-nav-link @(accion == "Index" ? "is-active" : "")" asp-controller="Director" asp-action="Index" aria-current="@(accion == "Index" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>@Idioma.Texto("Tablero")</span></a>
-<details class="dash-nav-group" open="@(ctrl=="PruebasDirector"||accion is "AvanceEvaluaciones" or "Estadisticas")"><summary><partial name="_DashboardIcon" model='@("clipboard")'/><span>@Idioma.Texto("Pruebas y evaluaciones")</span></summary><div class="dash-nav-children">
-    <a class="dash-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PruebasDirector" ? "is-active" : "")" asp-controller="PruebasDirector" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Gestión de pruebas")</span></a>
+<details class="dash-nav-group" open="@(ctrl=="PruebasDirector"||accion is "AvanceEvaluaciones" or "Estadisticas")"><summary><partial name="_DashboardIcon" model='@("clipboard")'/><span>@Idioma.Texto("Cuestionarios y evaluaciones")</span></summary><div class="dash-nav-children">
+    <a class="dash-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "PruebasDirector" ? "is-active" : "")" asp-controller="PruebasDirector" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Gestión de cuestionarios")</span></a>
     <a class="dash-nav-link @(accion == "AvanceEvaluaciones" ? "is-active" : "")" asp-controller="Director" asp-action="AvanceEvaluaciones" aria-current="@(accion == "AvanceEvaluaciones" ? "page" : null)"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Avance de evaluaciones")</span></a>
     <a class="dash-nav-link @(accion == "Estadisticas" ? "is-active" : "")" asp-controller="Director" asp-action="Estadisticas" aria-current="@(accion == "Estadisticas" ? "page" : null)"><partial name="_DashboardIcon" model='@("grid")' /><span>@Idioma.Texto("Estadísticas")</span></a>
 </div></details>

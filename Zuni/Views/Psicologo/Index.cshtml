@@ -25,9 +25,9 @@
 </section>
 <div class="dash-section-heading"><h2>@Idioma.Texto("Herramientas de atención")</h2></div>
 <section class="dash-summary-grid" aria-label="@Idioma.Texto("Módulos de atención")">
-    @foreach (var item in new[] { ("Agenda", "Agenda", "calendar", "Disponibilidad, almuerzo y citas pendientes de revisar."), ("Resultados", "Resultados", "results", "Consulta las pruebas indicadas y sus resúmenes."), ("Solicitudes", "Atención", "clipboard", "Solicitudes y expedientes de tus estudiantes vinculados."), ("Historial", "Historial", "book", "Consulta las citas pasadas y sus registros de atención.") })
+    @foreach (var item in new[] { ("Agenda", "Agenda", "calendar", "Disponibilidad, almuerzo y citas pendientes de revisar."), ("Resultados", "Cuestionarios", "results", "Consulta los cuestionarios indicados y sus resúmenes."), ("Solicitudes", "Atención", "clipboard", "Solicitudes y expedientes de tus estudiantes vinculados."), ("Historial", "Historial", "book", "Consulta las citas pasadas y sus registros de atención.") })
     {
-        <a class="dash-card dash-summary dash-card-link" asp-action="@item.Item1">
+        <a class="dash-card dash-summary dash-card-link" asp-controller="@(item.Item1=="Resultados"?"PruebasAplicadas":"Psicologo")" asp-action="@item.Item1">
             <div class="dash-summary-top"><span class="dash-icon-tile"><partial name="_DashboardIcon" model="item.Item3" /></span><h2>@Idioma.Texto(item.Item2)</h2></div>
             <p>@Idioma.Texto(item.Item4)</p>
         </a>

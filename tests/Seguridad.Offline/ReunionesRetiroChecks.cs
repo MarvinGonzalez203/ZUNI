@@ -72,7 +72,7 @@ internal static class ReunionesRetiroChecks
         Check((await Leer(cita.Id)).Estado == EstadoCita.Cancelada && (await student.GetAsync(Entrada(cita.Id))).StatusCode == HttpStatusCode.Conflict, "cancelación cierra acceso inmediato");
         reloj.Ahora = fechaOriginal;
         var referenciaJson = System.Text.Json.JsonSerializer.Serialize(cita.Id);
-        await using (var db = Db()) Check(await db.EnlacesReunionUsados.CountAsync(e => e.CitaId == cita.Id) == 2 && await db.AuditoriaUsuarios.AnyAsync(a => a.Accion == "CITA_REUNION_ACCEDIDA" && a.DatosNuevos == referenciaJson) && !await db.AuditoriaUsuarios.AnyAsync(a => a.DatosNuevos != null && a.DatosNuevos.Contains("meet.google.com")), "registro antirreutilización y auditoría sin URL");
+        await using (var db = Db()) {var eventos=await db.AuditoriaUsuarios.AsNoTracking().ToListAsync(); Check(await db.EnlacesReunionUsados.CountAsync(e => e.CitaId == cita.Id) == 2 && eventos.Any(a => a.Accion == "CITA_REUNION_ACCEDIDA" && a.DatosNuevos == referenciaJson) && !eventos.Any(a => a.DatosNuevos != null && a.DatosNuevos.Contains("meet.google.com")), "registro antirreutilización y auditoría sin URL");}
 
         using var retired = HostPrueba.Cliente(app);
         var login = await HostPrueba.Login(retired, "retirado@miumg.edu.gt", clave);
@@ -86,7 +86,7 @@ internal static class ReunionesRetiroChecks
         await HostPrueba.Post(admin, "/Administrador/CambiarRol/retirado", "/Administrador/CambiarRol", ("UsuarioId", "retirado"), ("NuevoRol", "Catedratico"));
         await using (var db = Db()) Check(await db.UserRoles.AnyAsync(r => r.UserId == "retirado" && r.RoleId == "Catedratico") && !await db.UserRoles.AnyAsync(r => r.UserId == "retirado" && r.RoleId != "Catedratico"), "sin eliminación ni conversión automática");
         await HostPrueba.Post(admin, "/Administrador/CambiarRol/retirado", "/Administrador/CambiarRol", ("UsuarioId", "retirado"), ("NuevoRol", "Director"), ("Motivo", "Revisión institucional de prueba"));
-        await using (var db = Db()) Check(await db.UserRoles.AnyAsync(r => r.UserId == "retirado" && r.RoleId == "Director") && !await db.UserRoles.AnyAsync(r => r.UserId == "retirado" && r.RoleId == "Catedratico") && await db.AuditoriaUsuarios.AnyAsync(a => a.UsuarioAfectadoId == "retirado" && a.DatosAnteriores != null && a.DatosAnteriores.Contains("Catedratico")), "cambio explícito auditado conserva historia");
+        await using (var db = Db()) {var eventos=await db.AuditoriaUsuarios.AsNoTracking().Where(a=>a.UsuarioAfectadoId=="retirado").ToListAsync(); Check(await db.UserRoles.AnyAsync(r => r.UserId == "retirado" && r.RoleId == "Director") && !await db.UserRoles.AnyAsync(r => r.UserId == "retirado" && r.RoleId == "Catedratico") && eventos.Any(a => a.DatosAnteriores != null && a.DatosAnteriores.Contains("Catedratico")), "cambio explícito auditado conserva historia");}
         Check((await HostPrueba.Login(retired, "retirado@miumg.edu.gt", clave)).Headers.Location!.OriginalString.Contains("Director"), "solo la revisión explícita habilita el panel nuevo");
         Console.WriteLine($"OK: {checks} comprobaciones de reuniones y retiro de Catedrático.");
     }

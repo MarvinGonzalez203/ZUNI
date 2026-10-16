@@ -2,6 +2,7 @@
 @{
     var claves = new[] { "Campo obligatorio", " (Campo obligatorio)", "Mostrar contraseña", "Ocultar contraseña", "Pregunta {0}", "Bloque {0} de {1} · 10 afirmaciones", "{0} de 50 respondidas", "Tienes respuestas sin guardar.", "Guardando…", "Guarda los cambios antes de finalizar.", "Fin estimado si lo omites: {0}. Es planificación; la sesión real puede durar más.", "Ese inicio no deja espacio para la duración antes de las 18:00. Elige otro inicio o duración.", "Ingresa un correo válido.", "Utiliza el formato indicado.", "Ingresa un valor válido." };
 }
+<script type="application/json" id="zuni-i18n-data">@Html.Raw(JsonSerializer.Serialize(new { language=Idioma.Codigo, messages=claves.ToDictionary(k=>k,k=>Idioma.Texto(k)) }))</script>
 <script>
     window.ZuniI18n = { language: @Html.Raw(JsonSerializer.Serialize(Idioma.Codigo)), messages: @Html.Raw(JsonSerializer.Serialize(claves.ToDictionary(k=>k,k=>Idioma.Texto(k)))), t: function(key,...values) { return (this.messages[key] || key).replace(/\{(\d+)\}/g,(_,i)=>values[i] ?? ''); } };
 </script>

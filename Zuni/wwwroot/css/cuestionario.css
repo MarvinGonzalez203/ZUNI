@@ -2,3 +2,4 @@
 .test-navigation{background:#fdfcf9}
 html[data-theme=dark] .dashboard-app .test-navigation{background:#2b2532}
 @media(max-width:600px){.likert-bar{grid-template-columns:repeat(10,minmax(28px,1fr));min-width:307px;gap:3px}.likert-cell span{font-size:.8rem;border-radius:7px}.test-navigation{padding:16px}.test-navigation .zuni-action-row{gap:8px}.test-question{scroll-margin-top:90px}}
+.test-question-heading{padding-top:4px;margin-bottom:24px}.test-question-heading h2{font-size:1.08rem;line-height:1.55;margin:0;overflow-wrap:anywhere}.test-question{padding:24px}

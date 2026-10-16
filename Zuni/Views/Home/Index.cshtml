@@ -23,7 +23,7 @@
         <p class="hero-lead">@Idioma.Texto("Un espacio de apoyo, conexión y bienestar para tu desarrollo estudiantil.")</p>
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <div class="session-pill"><span>✓</span><div><small>@Idioma.Texto("Sesión activa")</small><strong>@Idioma.Texto("Qué gusto verte,") @Model.PrimerNombre</strong></div></div>
+            <div class="home-session-row"><div class="session-pill"><span>✓</span><div><small>@Idioma.Texto("Sesión activa")</small><strong>@Idioma.Texto("Qué gusto verte,") @Model.PrimerNombre</strong></div></div><a class="home-session-entry" asp-controller="@(new[]{"SuperAdmin","Administrador","Director","Psicologo","Estudiante"}.FirstOrDefault(User.IsInRole)??"MiCuenta")" asp-action="Index">@Idioma.Texto("Ingresar") <span aria-hidden="true">→</span></a></div>
 
             @if (Model.MostrarAvisoCompletarPerfil)
             {

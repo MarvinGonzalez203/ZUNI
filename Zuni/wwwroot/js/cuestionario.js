@@ -3,7 +3,7 @@ document.querySelectorAll('form[data-questionnaire]').forEach(form => {
     const nav = form.querySelector('.test-navigation');
     if (!questions.length || !nav) return;
     const pages = Math.ceil(questions.length / 3), readonly = form.dataset.readonly === 'true';
-    const en = document.documentElement.lang.startsWith('en');
+    const en = () => document.documentElement.lang.startsWith('en');
     const back = nav.querySelector('[data-test-back]'), next = nav.querySelector('[data-test-next]');
     const error = nav.querySelector('[data-test-error]');
     let page = 0;
@@ -15,8 +15,8 @@ document.querySelectorAll('form[data-questionnaire]').forEach(form => {
         const count = questions.filter(answered).length;
         nav.hidden = false;
         nav.querySelector('[data-test-progress]').value = count / questions.length * 100;
-        nav.querySelector('[data-test-status]').textContent = en ? `${count} of ${questions.length} answered · ${Math.round(count / questions.length * 100)}%` : `${count} de ${questions.length} respondidas · ${Math.round(count / questions.length * 100)}%`;
-        nav.querySelector('[data-test-page]').textContent = en ? `Page ${page+1} of ${pages}` : `Pantalla ${page+1} de ${pages}`;
+        nav.querySelector('[data-test-status]').textContent = en() ? `${count} of ${questions.length} answered · ${Math.round(count / questions.length * 100)}%` : `${count} de ${questions.length} respondidas · ${Math.round(count / questions.length * 100)}%`;
+        nav.querySelector('[data-test-page]').textContent = en() ? `Page ${page+1} of ${pages}` : `Pantalla ${page+1} de ${pages}`;
         back.disabled = page === 0; next.hidden = page === pages - 1;
         form.querySelectorAll('[data-test-final]').forEach(el => { el.hidden = page !== pages - 1; });
         error.hidden = true;
@@ -36,5 +36,6 @@ document.querySelectorAll('form[data-questionnaire]').forEach(form => {
         const empty = questions.findIndex(q => !answered(q));
         if(empty >= 0) { event.preventDefault(); page = Math.floor(empty/3); show(true); error.hidden = false; }
     });
+    document.addEventListener('zuni:languagechange', () => { const hidden=error.hidden;show();error.hidden=hidden; });
     show();
 });

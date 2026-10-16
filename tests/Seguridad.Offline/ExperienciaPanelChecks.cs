@@ -25,6 +25,7 @@ internal static class ExperienciaPanelChecks
         var home=await alumno.GetStringAsync("/MiCuenta");Check(Regex.Matches(home,"class=\"dash-round-control").Count==3,"tres controles inferiores");
         Check(home.Contains("dash-logo-glass-second")&&home.Contains("dashboard-scroll-cue"),"logo y señal de desplazamiento compartidos");
         Check(home.Contains("/MiCuenta/CambiarContrasena")&&home.Contains("/Preferencias/Colores?rol=Estudiante"),"menú del estudiante desglosado");
+        var previewEs=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");if(!string.IsNullOrEmpty(previewEs))await File.WriteAllTextAsync(Path.Combine(previewEs,"demo-espanol.html"),await demo.GetStringAsync("/Demostracion"));
         await HostPrueba.Post(demo,"/MiCuenta","/Idioma/Cambiar",("idioma","en"),("volver","/Demostracion"));
         var en=await demo.GetStringAsync("/Demostracion");
         Check(Regex.IsMatch(en,"<details class=\"dash-nav-group\"\\s+open"),"demostración abre su sección Pruebas");

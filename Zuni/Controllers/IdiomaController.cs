@@ -15,6 +15,8 @@ public sealed class IdiomaController(IConfiguration config) : Controller
         Response.Cookies.Append(ConfiguracionIdioma.NombreCookie(config),CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(idioma=="en"?"en-US":"es-GT",idioma)),new CookieOptions {
             HttpOnly=true,Secure=Request.IsHttps,SameSite=SameSiteMode.Lax,IsEssential=true,Path=Request.PathBase.HasValue?Request.PathBase.Value:"/",MaxAge=TimeSpan.FromDays(365)
         });
-        return LocalRedirect(Url.IsLocalUrl(volver)&&!volver!.StartsWith("/Idioma",StringComparison.OrdinalIgnoreCase)?volver:Url.Content("~/"));
+        var destino=Url.IsLocalUrl(volver)&&!volver!.StartsWith("/Idioma",StringComparison.OrdinalIgnoreCase)?volver:Url.Content("~/");
+        if(Request.Headers.Accept.Any(v=>v?.Contains("application/json",StringComparison.OrdinalIgnoreCase)==true))return Json(new {idioma,volver=destino});
+        return LocalRedirect(destino);
     }
 }

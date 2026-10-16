@@ -1,24 +1,21 @@
 @model Zuni.Models.Pruebas.AsignarPruebaViewModel
 @{ ViewData["Title"] = "Asignaciones"; }
-<header class="dash-welcome"><div><a asp-action="Detalle" asp-route-id="@Model.Id">@Idioma.Texto("← Ver prueba")</a><h1>@Idioma.Texto("Asignar:") @Model.Nombre</h1><p>@Idioma.Texto("Registra qué estudiante debe recibir el instrumento.")</p></div></header>
+<header class="dash-welcome"><div><a asp-action="Detalle" asp-route-id="@Model.Id">@Idioma.Texto("← Ver cuestionario")</a><h1>@Idioma.Texto("Asignar:") @TextoPrueba.Texto(Model.Id,Model.Nombre)</h1><p>@Idioma.Texto("Registra qué estudiante debe recibir el instrumento.")</p></div></header>
 <partial name="_Mensaje" />
 <section class="dash-card p-4 mb-3">
-    @if (ViewData["Activa"] is true)
-    {
-        @if (Model.Estudiantes.Count == 0) { <p>@Idioma.Texto("No hay estudiantes activos pendientes de asignación para esta prueba.")</p> }
+    @if(ViewData["Activa"] is not true){<p class="dash-notice">@Idioma.Texto("Activa el cuestionario desde su detalle para confirmar nuevas asignaciones. Puedes consultar aquí los estudiantes disponibles.") <a asp-action="Detalle" asp-route-id="@Model.Id">@Idioma.Texto("Ver cuestionario")</a></p>}
+        @if (Model.Estudiantes.Count == 0) { <p>@Idioma.Texto("No hay estudiantes activos pendientes de asignación para este cuestionario.")</p> }
         else
         {
             <form asp-action="Asignar" method="post">
                 <input asp-for="Id" type="hidden" /><input asp-for="Revision" type="hidden" />
                 <div asp-validation-summary="All" class="text-danger" role="alert"></div>
                 <label asp-for="PerfilEstudianteId" class="form-label"></label>
-                <select asp-for="PerfilEstudianteId" asp-items="Model.Estudiantes" class="form-select mb-3"><option value="">@Idioma.Texto("Selecciona un estudiante")</option></select>
-                <button class="btn btn-primary">@Idioma.Texto("Confirmar asignación")</button>
+                <select asp-for="PerfilEstudianteId" asp-items="Model.Estudiantes" class="form-select mb-3" required><option value="">@Idioma.Texto("Selecciona un estudiante")</option></select>
+                <button class="btn btn-primary" disabled="@(ViewData["Activa"] is not true)">@Idioma.Texto("Confirmar asignación")</button>
             </form>
         }
-    }
-    else { <p>@Idioma.Texto("Esta prueba está inactiva. Actívala desde su detalle para registrar nuevas asignaciones.")</p> }
-    <p class="mt-3 mb-0">@Idioma.Texto("Este flujo prepara las asignaciones. La aplicación del instrumento, el consentimiento específico y las respuestas se integrarán en el módulo del estudiante. Aquí no se generan diagnósticos.")</p>
+    <p class="mt-3 mb-0">@Idioma.Texto("La asignación prepara el cuestionario para el estudiante. Su psicólogo debe registrar la inducción después de una cita atendida para habilitar las respuestas. No existen respuestas correctas ni incorrectas ni se generan diagnósticos automáticos.")</p>
 </section>
 <section class="dash-card p-4"><h2>@Idioma.Texto("Asignaciones registradas")</h2>
     @if (Model.Asignaciones.Count == 0) { <p>@Idioma.Texto("Aún no hay asignaciones.")</p> }

@@ -30,6 +30,8 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
 
         // Crear opciones no abre conexiones. Solo una orden de actualización autorizada lo hará.
         return new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(connection).Options);
+            .UseNpgsql(connection).Options, Zuni.Seguridad.ProteccionPersistencia.Cargar(
+                Zuni.Seguridad.RutasSeguridad.Obtener(builder.Configuration,builder.Environment).Claves,
+                Zuni.Seguridad.AislamientoInstalacion.Nombre(builder.Configuration)));
     }
 }

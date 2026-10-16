@@ -64,7 +64,7 @@ ZUNI **no** aplica migraciones automáticamente al iniciar.
 4. Nunca ejecutar `Down`/`database update <anterior>` sobre datos reales sin revisión: algunas migraciones
    antiguas (`AddFlujoAtencionInicial`, `AddBigFiveApoyo`, `AddAgendaYCitas`) eliminan tablas en su `Down`.
 
-Este endurecimiento **no agregó migraciones** ni cambios de esquema.
+La protección de textos clínicos y la auditoría firmada incorporan una migración y una conversión de datos en mantenimiento. Antes de publicar o actualizar, seguir [Protección clínica y auditoría](proteccion-clinica-y-auditoria.md), incluidas la custodia de claves, las copias externas y la separación del rol de migración y ejecución.
 
 ## 7. Primer Administrador
 

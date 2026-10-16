@@ -80,6 +80,8 @@ public sealed class PruebasAplicadasService(ApplicationDbContext db,IAutorizacio
             if(r.OpcionId is null){if(anterior is not null)db.Remove(anterior);continue;}
             if(anterior is null)db.Add(new RespuestaPrueba{AsignacionPruebaId=input.Id,PreguntaPruebaId=r.PreguntaId,OpcionPruebaId=r.OpcionId.Value});else anterior.OpcionPruebaId=r.OpcionId.Value;
         }
+        if(!await db.RegistrosSeguridad.AnyAsync(r=>r.Tipo=="CONSENTIMIENTO_PRUEBA"&&r.Referencia==input.Id.ToString(),ct))
+            db.RegistrarConsentimiento("PRUEBA",input.Id.ToString(),p.UsuarioId,true,"ZUNI-PRUEBA-1:"+c.Prueba.Revision.ToString("D"),Zuni.Localizacion.TextoPrueba.Texto(c.Prueba.Id,c.Prueba.Instrucciones)+"\n"+Zuni.Resources.EvidenciaConsentimiento.ParticipacionPrueba);
         c.Asignacion.Revision=Guid.NewGuid();if(input.Finalizar)c.Asignacion.FinalizadaUtc=reloj.GetUtcNow().UtcDateTime;
         PrivacidadService.Auditar(db,p.UsuarioId,p.UsuarioId,input.Finalizar?"PRUEBA_FINALIZADA":"PRUEBA_AVANCE_GUARDADO",reloj,input.Id);
         await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);

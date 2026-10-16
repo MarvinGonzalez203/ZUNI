@@ -12,6 +12,7 @@ else
     {
         <form asp-action="Aceptar" method="post" class="dash-card p-4 mb-4">
             <input type="hidden" name="politicaId" value="@Model.Politica.Id" />
+<partial name="_AvisoEvidenciaConsentimiento" />
             <label><input type="checkbox" name="confirmada" value="true" required /> @Idioma.Texto("Leí la política y acepto el tratamiento de mis datos para las finalidades indicadas.")</label>
             <p>@Idioma.Texto("Puedes solicitar información o retirar tu consentimiento sin aceptar. La aceptación no autoriza a compartir informes educativos con terceros.")</p>
             <button class="dash-button" type="submit">@Idioma.Texto("Registrar aceptación")</button>

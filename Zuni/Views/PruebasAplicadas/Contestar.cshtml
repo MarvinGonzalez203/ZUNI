@@ -1,5 +1,5 @@
 @model Zuni.Models.Pruebas.CuestionarioAplicado
-@{ViewData["Title"]="Responder prueba";var terminada=Model.Asignacion.FinalizadaUtc is not null;var qs=Model.Prueba.Preguntas.OrderBy(q=>q.Orden).ToList();}
+@{ViewData["Title"]="Responder cuestionario";var terminada=Model.Asignacion.FinalizadaUtc is not null;var qs=Model.Prueba.Preguntas.OrderBy(q=>q.Orden).ToList();}
 <header class="dash-profile-heading"><div><h1>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Nombre)</h1><small>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Subtitulo)</small><p>@qs.Count @Idioma.Texto("preguntas · Escala del 1 al 10")</p></div></header>
 <section class="dash-card mb-4"><h2>@Idioma.Texto("Antes de responder")</h2><p>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Instrucciones)</p><p>@Idioma.Texto("Responde con calma, según tu experiencia habitual. El resultado describe tus respuestas y será revisado por tu psicólogo; no entrega un diagnóstico automático.")</p></section>
 @section Styles { <link rel="stylesheet" href="~/css/cuestionario.css" asp-append-version="true" /> }
@@ -9,6 +9,7 @@
 @for(int i=0;i<qs.Count;i++){var q=qs[i];var selected=Model.Respuestas.SingleOrDefault(r=>r.PreguntaPruebaId==q.Id)?.OpcionPruebaId;
 <input type="hidden" name="Respuestas[@i].PreguntaId" value="@q.Id"/>
 <partial name="_EscalaPregunta" model="@(new Zuni.Models.Pruebas.EscalaPreguntaViewModel(q,i+1,qs.Count,$"Respuestas[{i}].OpcionId",selected?.ToString(),terminada))" />}
-@if(!terminada){<section class="dash-card"><label class="d-block mb-3"><input type="checkbox" name="Consentimiento" value="true" required/> @Idioma.Texto("Comprendí las instrucciones y participo voluntariamente. Mis respuestas estarán disponibles para mi psicólogo vinculado.")</label><div class="zuni-action-row"><button class="btn btn-outline-secondary" name="Finalizar" value="false">@Idioma.Texto("Guardar avance")</button> <button class="dash-button" name="Finalizar" value="true" data-test-final>@Idioma.Texto("Finalizar respuestas")</button></div></section>}else{<p>@Idioma.Texto("Finalizado. Se conservan tus respuestas.")</p>}
+<partial name="_AvisoEvidenciaConsentimiento" />
+@if(!terminada){<section class="dash-card"><label class="d-block mb-3"><input type="checkbox" name="Consentimiento" value="true" required/> @Zuni.Resources.EvidenciaConsentimiento.ParticipacionPrueba</label><div class="zuni-action-row"><button class="btn btn-outline-secondary" name="Finalizar" value="false">@Idioma.Texto("Guardar avance")</button> <button class="dash-button" name="Finalizar" value="true" data-test-final>@Idioma.Texto("Finalizar respuestas")</button></div></section>}else{<p>@Idioma.Texto("Finalizado. Se conservan tus respuestas.")</p>}
 <partial name="_NavegacionPrueba" />
 </form>

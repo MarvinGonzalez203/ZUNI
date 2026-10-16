@@ -144,7 +144,7 @@ public sealed class MiCuentaController(
         return View(new EditarMiCuentaViewModel
         {
             NombreCompleto = usuario.FullName,
-            PuedeEditarContacto = (roles.Contains("Administrador") || roles.Contains("SuperAdmin")), Correo = usuario.Email, Telefono = usuario.PhoneNumber,
+            PuedeEditarContacto = true, Correo = usuario.Email, Telefono = usuario.PhoneNumber,
             PuedeEditarEstudiante = permitido,
             Carreras = permitido ? await Zuni.Services.CatalogoCarreras.Opciones(db, usuario.PerfilEstudiante?.Carrera, ct) : [],
             Estudiante = permitido ? usuario.PerfilEstudiante is { } perfil ? Datos(perfil) : new() : null,
@@ -171,7 +171,9 @@ public sealed class MiCuentaController(
             return Forbid();
 
         model.PuedeEditarEstudiante = roles.Contains("Estudiante");
-        model.PuedeEditarContacto = (roles.Contains("Administrador") || roles.Contains("SuperAdmin"));
+        model.PuedeEditarContacto = true;
+        if(!Request.Form.ContainsKey(nameof(model.Correo)))model.Correo=usuario.Email;
+        if(!Request.Form.ContainsKey(nameof(model.Telefono)))model.Telefono=usuario.PhoneNumber;
         if (model.PuedeEditarContacto)
         {
             var correo = model.Correo?.Trim();
@@ -182,6 +184,12 @@ public sealed class MiCuentaController(
                 var normalizado = correo!.ToUpperInvariant();
                 if (await db.Users.AnyAsync(u => u.Id != usuario.Id && (u.NormalizedEmail == normalizado || u.NormalizedUserName == normalizado), ct))
                     ModelState.AddModelError(nameof(model.Correo), "Ya existe una cuenta con este correo.");
+                if(!roles.Contains("Administrador")&&!roles.Contains("SuperAdmin")&&!string.Equals(usuario.Email,correo,StringComparison.OrdinalIgnoreCase))
+                {
+                    var institucion=await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(db,ct);
+                    var error=Zuni.Services.Institucion.PoliticaCorreoReglas.ValidarCorreo(institucion,correo,false);
+                    if(error is not null)ModelState.AddModelError(nameof(model.Correo),error);
+                }
             }
         }
         else
@@ -231,6 +239,9 @@ public sealed class MiCuentaController(
         if (!ModelState.IsValid) return View(model);
 
         var cambioNombre = usuario.FullName != nombre;
+        var contactoAnterior=JsonSerializer.Serialize(new {usuario.FullName,usuario.PhoneNumber});
+        var telefonoAnterior=usuario.PhoneNumber;
+        if(model.PuedeEditarEstudiante)model.Telefono=model.Estudiante?.Telefono;
         var cambioCorreo = model.PuedeEditarContacto && !string.Equals(usuario.Email, model.Correo!.Trim(), StringComparison.OrdinalIgnoreCase);
         if (model.PuedeEditarContacto)
         {
@@ -248,6 +259,8 @@ public sealed class MiCuentaController(
             usuario.PhoneNumber = Opcional(model.Telefono);
         }
         usuario.FullName = nombre;
+        if(cambioNombre||telefonoAnterior!=usuario.PhoneNumber)
+            db.AuditoriaUsuarios.Add(new AuditoriaUsuario{UsuarioAfectadoId=usuario.Id,AdministradorId=usuario.Id,Accion="CONTACTO_PROPIO_ACTUALIZADO",DatosAnteriores=contactoAnterior,DatosNuevos=JsonSerializer.Serialize(new{usuario.FullName,usuario.PhoneNumber}),FechaUtc=DateTime.UtcNow});
         // Solo se genera en servidor; jamás se acepta el stamp desde el formulario.
         usuario.ConcurrencyStamp = Guid.NewGuid().ToString();
         if (model.PuedeEditarEstudiante && model.Estudiante is { } datos)

@@ -24,4 +24,5 @@
         }));
     });
     window.addEventListener('storage', event => { if (event.key === key) apply(event.newValue === 'dark' ? 'dark' : 'light'); });
+    document.addEventListener('zuni:languagechange',()=>apply(root.dataset.theme));
 })();

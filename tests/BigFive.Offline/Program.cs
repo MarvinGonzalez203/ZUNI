@@ -213,7 +213,7 @@ foreach (var method in typeof(BigFiveController).GetMethods().Where(m => m.GetCu
 
 // Proveedor Npgsql: solo construir metadatos y SQL, nunca abrir conexión.
 await using var pg = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>()
-    .UseNpgsql("Host=127.0.0.1;Port=1;Database=OfflineNeverConnect;Username=offline").Options);
+    .UseNpgsql("Host=127.0.0.1;Port=1;Database=OfflineNeverConnect;Username=offline").Options, SeguridadPrueba.Proteccion);
 var assembly = pg.GetService<IMigrationsAssembly>();
 var migration = assembly.CreateMigration(assembly.Migrations.Single(m => m.Key.EndsWith("_AddBigFiveApoyo")).Value, pg.Database.ProviderName!);
 var allowed = new[] { "ParticipacionesBigFive", "RespuestasBigFive" };
@@ -230,7 +230,7 @@ Check(migration.UpOperations.OfType<CreateIndexOperation>().Count(i => i.IsUniqu
 Check(migration.UpOperations.OfType<CreateTableOperation>().Single(t => t.Name == "RespuestasBigFive").CheckConstraints.Count == 2, "Restricciones ítem y rango");
 Console.WriteLine($"OK: {checks} comprobaciones offline. PostgreSQL no fue abierto ni modificado.");
 
-sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options) : ApplicationDbContext(options)
+sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options) : ApplicationDbContext(options, SeguridadPrueba.Proteccion)
 {
     public bool FallarAuditoria { get; set; }
     public bool FallarFinalizacion { get; set; }
@@ -252,3 +252,5 @@ sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options) : Applica
         return base.SaveChangesAsync(ct);
     }
 }
+
+static class SeguridadPrueba { public static readonly Zuni.Seguridad.ProteccionPersistencia Proteccion = Zuni.Seguridad.ProteccionPersistencia.Efimera(); }

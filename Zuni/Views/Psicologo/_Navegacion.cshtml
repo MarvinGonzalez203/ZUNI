@@ -3,7 +3,8 @@
     bool Es(string controller,params string[] actions)=>c==controller&&(actions.Length==0||actions.Contains(a));
     bool expedientes=string.Equals(Context.Request.Query["expedientes"],"true",StringComparison.OrdinalIgnoreCase);
     var agenda=Es("CitasProgramadas")||Es("Psicologo","Agenda")||(Es("Reuniones")||Es("Ubicaciones"))||Es("Atenciones","Imprevista");
-    var atencion=Es("Psicologo","Estudiantes","Solicitudes","Expediente","Atencion","Historial","VerAtencion","RegistrarAtencion","Resultados")||Es("PruebasAplicadas")||Es("InformesEducativos")||Es("Atenciones","Reporte");
+    var atencion=Es("Psicologo","Estudiantes","Solicitudes","Expediente","Atencion","Historial","VerAtencion","RegistrarAtencion")||Es("InformesEducativos")||Es("Atenciones","Reporte");
+    var cuestionarios=Es("PruebasAplicadas")||Es("Psicologo","Resultados");
     string Act(bool selected)=>selected?"is-active":"";string? Actual(bool selected)=>selected?"page":null;
 }
 <nav class="dash-nav" aria-label="@Idioma.Texto("Navegación del psicólogo")">
@@ -19,9 +20,12 @@
         <a class="dash-nav-link @Act(Es("Psicologo","Estudiantes"))" asp-controller="Psicologo" asp-action="Estudiantes"><span>@Idioma.Texto("Estudiantes vinculados")</span></a>
         <a class="dash-nav-link @Act(Es("Psicologo","Atencion")||(Es("Psicologo","Solicitudes")&&!expedientes))" asp-controller="Psicologo" asp-action="Solicitudes"><span>@Idioma.Texto("Solicitudes asignadas")</span></a>
         <a class="dash-nav-link @Act(Es("Psicologo","Expediente")||(Es("Psicologo","Solicitudes")&&expedientes))" asp-controller="Psicologo" asp-action="Solicitudes" asp-route-expedientes="true"><span>@Idioma.Texto("Expedientes disponibles")</span></a>
-        <a class="dash-nav-link @Act(Es("PruebasAplicadas")||Es("Psicologo","Resultados"))" asp-controller="PruebasAplicadas" asp-action="Resultados"><span>@Idioma.Texto("Pruebas e inducción")</span></a>
         <a class="dash-nav-link @Act(Es("InformesEducativos"))" asp-controller="InformesEducativos" asp-action="Index"><span>@Idioma.Texto("Informes educativos")</span></a>
         <a class="dash-nav-link @Act(Es("Psicologo","Historial","VerAtencion","RegistrarAtencion")||Es("Atenciones","Reporte"))" asp-controller="Psicologo" asp-action="Historial"><span>@Idioma.Texto("Historial y registros")</span></a>
+    </div></details>
+    <details class="dash-nav-group" open="@cuestionarios"><summary><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Cuestionarios")</span></summary><div class="dash-nav-children">
+        <a class="dash-nav-link @Act(Es("PruebasAplicadas","Habilitar"))" asp-controller="PruebasAplicadas" asp-action="Habilitar"><span>@Idioma.Texto("Asignar cuestionario e inducción")</span></a>
+        <a class="dash-nav-link @Act(Es("PruebasAplicadas","Resultados","Resumen")||Es("Psicologo","Resultados"))" asp-controller="PruebasAplicadas" asp-action="Resultados"><span>@Idioma.Texto("Participaciones y resúmenes")</span></a>
     </div></details>
     <span class="dash-nav-label dash-nav-label-spaced">@Idioma.Texto("CUENTA")</span>
     <partial name="_CuentaSubmenu" />

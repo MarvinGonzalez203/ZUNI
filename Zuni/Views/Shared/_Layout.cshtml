@@ -4,6 +4,10 @@
     var configuracionInstitucion = ViewData["Institucion"] as Zuni.Models.Institucion.ConfiguracionInstitucion
         ?? await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbInstitucion);
     var panelCuenta = new[]{"SuperAdmin","Administrador","Director","Psicologo","Estudiante"}.FirstOrDefault(User.IsInRole);
+    // La portada pública usa la identidad de ZUNI, nunca la preferencia de otra cuenta.
+    configuracionInstitucion.ColorPrincipal = "#cea2fd";
+    if(User.Identity?.IsAuthenticated==true && panelCuenta is not null && User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value is string idVista)
+        configuracionInstitucion.ColorPrincipal=(await Zuni.Services.Institucion.PreferenciasVistaService.Obtener(DbInstitucion,idVista,panelCuenta,"#cea2fd",Context.RequestAborted)).ColorPrincipal;
 }
 <html lang="@Idioma.Codigo">
 <head>

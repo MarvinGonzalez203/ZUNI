@@ -19,9 +19,9 @@
         <a class="dash-nav-link @Act(Es("InformesEducativos"))" asp-controller="InformesEducativos" asp-action="Index"><span>@Idioma.Texto("Informes educativos")</span></a>
         <a class="dash-nav-link @Act(Es("CitasProgramadas","Notificaciones","Leida"))" asp-controller="CitasProgramadas" asp-action="Notificaciones"><partial name="_DashboardIcon" model='@("calendar")' /><span>@Idioma.Texto("Notificaciones")</span></a>
     </div></details>
-    <details class="dash-nav-group" open="@pruebas"><summary><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Pruebas")</span></summary><div class="dash-nav-children">
+    <details class="dash-nav-group" open="@pruebas"><summary><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Cuestionarios")</span></summary><div class="dash-nav-children">
     @if(demo) { <a class="dash-nav-link @Act(Es("Demostracion"))" asp-controller="Demostracion" asp-action="Index"><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Demostración · Nivel 1")</span></a> }
-        <a class="dash-nav-link @Act(Es("PruebasAplicadas"))" asp-controller="PruebasAplicadas" asp-action="Index"><span>@Idioma.Texto("Pruebas indicadas")</span></a>
+        <a class="dash-nav-link @Act(Es("PruebasAplicadas"))" asp-controller="PruebasAplicadas" asp-action="Index"><span>@Idioma.Texto("Cuestionarios indicadas")</span></a>
         <a class="dash-nav-link @Act(Es("BigFive")||Es("Estudiante","Evaluaciones"))" asp-controller="Estudiante" asp-action="Evaluaciones"><span>@Idioma.Texto("Big Five · opcional")</span></a>
     </div></details>
     <partial name="_CuentaSubmenu" />

@@ -127,7 +127,7 @@ internal static class PrivacidadInformesChecks
             await File.WriteAllTextAsync(Path.Combine(previewAnalisis,"informe-rendimiento.html"),await psi.GetStringAsync(detalle));
         }
         var referenciaJson = System.Text.Json.JsonSerializer.Serialize(version);
-        await using (var db = Db()) Check(await db.AuditoriaUsuarios.AnyAsync(a => a.Accion == "INFORME_PDF_DESCARGADO" && a.DatosNuevos == referenciaJson) && !await db.AuditoriaUsuarios.AnyAsync(a => a.DatosNuevos != null && a.DatosNuevos.Contains("Dificultad observada")), "descarga auditada sin contenido educativo o clínico");
+        await using (var db = Db()) { var eventos=await db.AuditoriaUsuarios.AsNoTracking().ToListAsync(); Check(eventos.Any(a => a.Accion == "INFORME_PDF_DESCARGADO" && a.DatosNuevos == referenciaJson) && !eventos.Any(a => a.DatosNuevos != null && a.DatosNuevos.Contains("Dificultad observada")), "descarga auditada sin contenido educativo o clínico"); }
         await HostPrueba.Post(psi, detalle, "/InformesEducativos/NuevaVersion", ("id", version.ToString()), ("revision", v1.Revision.ToString()));
         Guid segunda;
         await using (var db = Db()) segunda = await db.VersionesInformesEducativos.Where(v => v.Numero == 2).Select(v => v.Id).SingleAsync();

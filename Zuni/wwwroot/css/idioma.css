@@ -12,3 +12,4 @@
 @media(max-width:991.98px){.home-account-links{order:4;flex-basis:100%;gap:4px}.home-account-links~.navbar-collapse{order:5}.home-entry-button:first-child{padding-left:0}}
 @media(max-width:991.98px){.zuni-navbar .navbar-collapse{order:4;flex-basis:100%}.zuni-navbar .container>.small{display:none}}
 @media(max-width:600px){.zuni-navbar>.container{padding-inline:16px}.dash-session,.dash-top-account>.dash-avatar,.dash-top-account>span:last-of-type{display:none}.dashboard-topbar{gap:8px;padding-left:16px;padding-right:16px}.dash-top-account{gap:6px;flex-shrink:0}.dash-top-title{font-size:11px}.dash-slash{margin:0 4px}}
+.zuni-language{position:relative}.language-error{position:absolute;top:100%;right:0;width:240px;padding:12px;background:var(--dash-paper,#fffaf4);color:var(--dash-ink,#302238);border:1px solid #9564bb;border-radius:12px;z-index:1100;font-size:.8rem}

@@ -42,7 +42,8 @@ internal sealed class HasherContador : IPasswordHasher<ApplicationUser>
 
 // SQLite en memoria: se eliminan las restricciones CHECK con sintaxis PostgreSQL (regex, btrim).
 // Los índices únicos filtrados se conservan y sí se aplican.
-internal sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options) : ApplicationDbContext(options)
+internal static class SeguridadPrueba { public static readonly ProteccionPersistencia Proteccion = ProteccionPersistencia.Efimera(); }
+internal sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options, Microsoft.AspNetCore.Http.IHttpContextAccessor? http = null, TimeProvider? reloj = null) : ApplicationDbContext(options, SeguridadPrueba.Proteccion, http, reloj)
 {
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -89,7 +90,8 @@ internal static class HostPrueba
         builder.Services.AddAuthorization();
         builder.Services.AddZuniLimitesAcceso(builder.Configuration);
         // Un contexto por petición, como en producción (evita entidades obsoletas entre peticiones).
-        builder.Services.AddScoped<ApplicationDbContext>(_ => new OfflineDb(opciones));
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<ApplicationDbContext>(s => new OfflineDb(opciones,s.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>(),reloj));
         builder.Services.AddSingleton<IPasswordHasher<ApplicationUser>>(hasher);
         builder.Services.AddSingleton<TimeProvider>(reloj);
         builder.Services.AddScoped<IAutorizacionClinicaService, AutorizacionClinicaService>();

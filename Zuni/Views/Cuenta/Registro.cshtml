@@ -37,6 +37,7 @@
     </div>
     @{ var privacidad = await Zuni.Services.Privacidad.PrivacidadService.VigenteAsync(DbInstitucion, CancellationToken.None); }
     <input type="hidden" name="PoliticaPrivacidadId" value="@privacidad?.Id" />
+<partial name="_AvisoEvidenciaConsentimiento" />
     <div class="mb-3"><label><input asp-for="AceptaPrivacidad" required /> @Idioma.Texto("Leí y acepto el tratamiento de mis datos para las finalidades de la") <a asp-controller="Privacidad" asp-action="Politica" target="_blank" rel="noopener">@Idioma.Texto("política de privacidad vigente")</a>.</label></div>
     <p class="small">@Idioma.Texto("Último bloque del carné: de 2 a 6 dígitos. Ejemplos: 1590-18-25 y 7490-26-125678.")</p>
     <button class="btn btn-zuni w-100 btn-lg" type="submit">@Idioma.Texto("Crear mi cuenta")</button>

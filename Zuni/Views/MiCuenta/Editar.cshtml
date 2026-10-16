@@ -19,7 +19,7 @@
     {
         <div class="row g-3 mb-4">
             <div class="col-md-6"><label asp-for="Correo" zuni-required="true" class="form-label">@Idioma.Texto("Correo electrónico")</label><input asp-for="Correo" class="form-control" type="email" required maxlength="254" autocomplete="email" /><span asp-validation-for="Correo" class="text-danger small"></span></div>
-            <div class="col-md-6"><label asp-for="Telefono" class="form-label">@Idioma.Texto("Teléfono (opcional)")</label><input asp-for="Telefono" class="form-control" type="tel" pattern="[0-9]{8}" maxlength="8" autocomplete="tel" inputmode="numeric" /><span asp-validation-for="Telefono" class="text-danger small"></span></div>
+            @if(!Model.PuedeEditarEstudiante){<div class="col-md-6"><label asp-for="Telefono" class="form-label">@Idioma.Texto("Teléfono (opcional)")</label><input asp-for="Telefono" class="form-control" type="tel" pattern="[0-9]{8}" maxlength="8" autocomplete="tel" inputmode="numeric" /><span asp-validation-for="Telefono" class="text-danger small"></span></div>}
         </div>
     }
     @if (Model.PuedeEditarEstudiante)

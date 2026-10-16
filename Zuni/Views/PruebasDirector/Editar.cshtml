@@ -1,6 +1,6 @@
 @model Zuni.Models.Pruebas.EditarPruebaViewModel
-@{ ViewData["Title"] = Model.Id.HasValue ? "Editar prueba" : "Crear prueba"; }
-<header class="dash-welcome"><div><a asp-action="Index">@Idioma.Texto("← Catálogo")</a><h1>@ViewData["Title"]</h1><p>@Idioma.Texto("Guarda un borrador y revisa su contenido antes de activarlo.")</p></div></header>
+@{ ViewData["Title"] = Model.Id.HasValue ? "Editar cuestionario" : "Crear cuestionario"; }
+<header class="dash-welcome"><div><a asp-action="Index">@Idioma.Texto("← Catálogo")</a><h1>@Idioma.Texto(ViewData["Title"]?.ToString())</h1><p>@Idioma.Texto("Guarda un borrador y revisa su contenido antes de activarlo.")</p></div></header>
 <form asp-action="Guardar" method="post" id="prueba-editor">
     <input asp-for="Id" type="hidden" /><input asp-for="Revision" type="hidden" />
     <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>

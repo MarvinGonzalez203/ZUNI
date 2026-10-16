@@ -18,6 +18,15 @@ internal static class IdiomaChecks
         Check(change.StatusCode==HttpStatusCode.Redirect&&change.Headers.Location!.OriginalString=="/Home/Guia?tema=privacidad","conserva ruta y filtros");
         var cookie=string.Join(";",change.Headers.GetValues("Set-Cookie"));
         Check(cookie.Contains("max-age=31536000")&&cookie.Contains("httponly",StringComparison.OrdinalIgnoreCase)&&cookie.Contains("samesite=lax",StringComparison.OrdinalIgnoreCase),"preferencia persistente protegida");
+        using(var ajax=HostPrueba.Cliente(app)){
+            ajax.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+            var response=await Switch(ajax,"en","/Home/Guia?tema=privacidad");
+            using var json=System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Check(response.StatusCode==HttpStatusCode.OK&&json.RootElement.GetProperty("volver").GetString()=="/Home/Guia?tema=privacidad","selector asíncrono confirma idioma sin redirigir");
+            Check((await ajax.GetStringAsync("/")).Contains("lang=\"en\""),"la petición posterior usa la nueva cookie");
+            var unsafeReturn=await Switch(ajax,"es","https://otro.example/");using var safe=System.Text.Json.JsonDocument.Parse(await unsafeReturn.Content.ReadAsStringAsync());
+            Check(safe.RootElement.GetProperty("volver").GetString()=="/","modo asíncrono tampoco permite retorno externo");
+        }
         var english=await anon.GetStringAsync("/");Check(english.Contains("lang=\"en\"")&&english.Contains("Welcome to")&&english.Contains("Sign in"),"home y acceso en inglés");
         var guide=Decode(await anon.GetStringAsync("/Home/Guia?tema=privacidad"));
         Check(guide.Contains("Decide how your information is used")&&guide.Contains("What is shared and what stays private"),"guías completas y tarjetas traducidas");
@@ -35,7 +44,7 @@ internal static class IdiomaChecks
             Check(Decode(html).Contains(title),"guía adicional traducida "+topic);
             if(!string.IsNullOrEmpty(path))await File.WriteAllTextAsync(Path.Combine(path,"guia-"+topic+"-en.html"),html);
         }
-        foreach(var (email,route,name,expected) in new[]{("admin@miumg.edu.gt","/Administrador","admin","Add user"),("director@miumg.edu.gt","/Director","director","Test management"),("psi3@miumg.edu.gt","/Psicologo/Agenda","psicologo","My availability"),("est2@miumg.edu.gt","/Estudiante","estudiante","My account")})
+        foreach(var (email,route,name,expected) in new[]{("admin@miumg.edu.gt","/Administrador","admin","Add user"),("director@miumg.edu.gt","/Director","director","Questionnaire management"),("psi3@miumg.edu.gt","/Psicologo/Agenda","psicologo","My availability"),("est2@miumg.edu.gt","/Estudiante","estudiante","My account")})
         {
             using var c=HostPrueba.Cliente(app);await Switch(c,"en");await HostPrueba.Login(c,email,clave);
             var page=Decode(await c.GetStringAsync(route));Check(page.Contains("lang=\"en\"")&&page.Contains(expected),"panel traducido "+name);

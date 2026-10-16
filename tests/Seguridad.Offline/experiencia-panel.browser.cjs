@@ -13,7 +13,7 @@ const dir=process.argv[2],root=path.resolve(__dirname,'../../Zuni/wwwroot');let 
  await page.reload();check(await page.locator('html').getAttribute('data-theme')==='dark','tema personal conservado al recargar');
  check(await page.evaluate(s=>localStorage.getItem('zuni-theme:'+s)==='dark',scope),'clave incluye cuenta y rol');
  const circles=await page.locator('.dash-bottom-controls .dash-round-control').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,title:e.getAttribute('aria-label')};}));
- check(circles.length===3&&circles.every(r=>r.w===48&&r.h===48),'tres círculos iguales');check(circles.every(r=>r.x===circles[0].x)&&circles[1].y>circles[0].y&&circles[2].y>circles[1].y,'círculos verticales');check(circles.every(r=>r.title),'controles accesibles');
+ check(circles.length===3&&circles.every(r=>r.w===48&&r.h===48),'tres círculos iguales');check(circles.every(r=>r.x===circles[0].x)&&circles[1].y>circles[0].y&&circles[2].y>circles[1].y,'círculos verticales');check((await page.locator('.dash-bottom-controls .dash-bottom-action').allTextContents()).every(t=>t.trim().length>0),'controles con textos visibles');
  check(await page.locator('.dash-logo-glass').count()===2,'dos círculos de cristal del logo');
  check(await page.locator('.dash-bottom-controls a').nth(1).getAttribute('href')==='/','control home público');
  check(await page.locator('.dash-bottom-controls form').getAttribute('method')==='post','logout conserva POST');

@@ -1,6 +1,6 @@
 (() => {
     let controller;
-    const en = document.documentElement.lang.startsWith('en');
+    const en = () => document.documentElement.lang.startsWith('en');
     async function navigate(url, restoreY, historyNavigation = false) {
         controller?.abort(); controller = new AbortController();
         const signal = controller.signal;
@@ -18,14 +18,14 @@
                 history.replaceState({...history.state,zuniGuide:true,y:window.scrollY},'',location.href);
                 history.pushState({zuniGuide:true,y},'',url);
             }
-            page.replaceWith(replacement); document.title = html.title;
+            page.replaceWith(replacement); document.title = html.title; document.dispatchEvent(new Event('zuni:viewloaded'));
             replacement.querySelector('[aria-current="page"]')?.focus({preventScroll:true});
             requestAnimationFrame(() => window.scrollTo({top:y,left:0,behavior:'instant'}));
         } catch (error) {
             if (signal.aborted) return;
             let message = page.querySelector('.guide-status');
             if (!message) { message = document.createElement('p'); message.className = 'guide-status'; message.setAttribute('role','alert'); page.querySelector('.guide-tabs').after(message); }
-            message.textContent = en ? 'The guide could not be loaded. Select the topic again to retry.' : 'No se pudo cargar la guía. Selecciona el tema otra vez para reintentar.';
+            message.textContent = en() ? 'The guide could not be loaded. Select the topic again to retry.' : 'No se pudo cargar la guía. Selecciona el tema otra vez para reintentar.';
         } finally { if (!signal.aborted) page.removeAttribute('aria-busy'); }
     }
     document.addEventListener('click', event => {

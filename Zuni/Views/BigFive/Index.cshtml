@@ -48,6 +48,7 @@ else if (!Model.TieneSolicitudActiva)
 }
 else
 {
+<partial name="_AvisoEvidenciaConsentimiento" />
     <section class="dash-card"><h2>@Idioma.Texto("Antes de comenzar")</h2><p>@ConsentimientoBigFive.Texto</p><p>@Idioma.Texto("Consentimiento:") @ConsentimientoBigFive.Version</p>
         <form asp-action="Aceptar" method="post" class="bf-consent-form">
             <label><input type="checkbox" name="MayorDeEdad" value="true" required /> @Idioma.Texto("Confirmo que tengo 18 años o más.")</label>

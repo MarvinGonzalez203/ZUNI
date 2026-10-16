@@ -9,6 +9,18 @@ using Zuni.Seguridad;
 using Zuni.Localizacion;
 
 var builder = WebApplication.CreateBuilder(args);
+var rutasSeguridad = RutasSeguridad.Obtener(builder.Configuration,builder.Environment);
+if(args.Contains("--inicializar-seguridad"))
+{
+    ProteccionPersistencia.Inicializar(rutasSeguridad.Claves);
+    Console.WriteLine("Claves creadas fuera de la aplicación. Respalda este archivo con acceso restringido; no se puede regenerar para recuperar datos.");
+    return;
+}
+builder.Services.AddSingleton(rutasSeguridad);
+builder.Services.AddSingleton(ProteccionPersistencia.Cargar(rutasSeguridad.Claves,AislamientoInstalacion.Nombre(builder.Configuration)));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<BitacoraExterna>();
+builder.Services.AddHostedService<ExportadorSeguridad>();
 
 // La cadena de conexión NUNCA se escribe en el repositorio: User Secrets en Development y
 // variable de entorno ConnectionStrings__DefaultConnection en Production.
@@ -85,6 +97,27 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider
         .GetRequiredService<ApplicationDbContext>();
 
+    if(args.Contains("--exportar-seguridad"))
+    {
+        var bitacora=scope.ServiceProvider.GetRequiredService<BitacoraExterna>();
+        while(await dbContext.RegistrosSeguridad.AnyAsync(r=>!dbContext.Set<ExportacionSeguridad>().Any(a=>a.EventoId==r.EventoId)))
+        { if(await bitacora.Exportar(dbContext)==0)throw new InvalidOperationException("Hay otro exportador activo. Repite la orden cuando termine.");dbContext.ChangeTracker.Clear(); }
+        Console.WriteLine("Copia externa de auditoría actualizada.");return;
+    }
+    if(args.Contains("--migrar-seguridad"))
+    {
+        await MigradorSeguridad.Ejecutar(dbContext);
+        Console.WriteLine("Conversión verificada y completada. La evidencia histórica se identifica como tal.");
+        return;
+    }
+    if(args.Contains("--verificar-seguridad"))
+    {
+        await scope.ServiceProvider.GetRequiredService<BitacoraExterna>().VerificarContraBase(dbContext);
+        Console.WriteLine("Integridad verificada: firmas, copia externa y registros de auditoría coinciden.");
+        return;
+    }
+    await MigradorSeguridad.ExigirConversion(dbContext);
+    if(!app.Environment.IsDevelopment())await PermisosPersistencia.ValidarProduccion(dbContext);
     await DbInitializer.SeedRolesAsync(dbContext);
     if (SuperAdministrador.Solicitado(args))
     {

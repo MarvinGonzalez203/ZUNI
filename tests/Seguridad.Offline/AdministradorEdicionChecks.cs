@@ -34,7 +34,7 @@ internal static class AdministradorEdicionChecks
         Check((await Edit("obsoleto@miumg.edu.gt","87654321",oldRevision)).StatusCode==HttpStatusCode.Redirect,"edición obsoleta rechazada");
         await using (var db = new OfflineDb(options)) Check((await db.Users.FindAsync("admin-edicion"))!.Email=="edicion@miumg.edu.gt","edición obsoleta no modifica correo");
         var studentHtml = await estudiante.GetStringAsync("/MiCuenta/Editar");
-        Check(!studentHtml.Contains("name=\"Correo\""),"otro rol no recibe edición de correo");
+        Check(studentHtml.Contains("name=\"Correo\""),"estudiante puede editar su propio correo con validación");
         var ficha = await admin.GetStringAsync("/Administrador/Gestionar/est2"); var revisionNombre = Hidden(ficha,"Revision");
         var reject = await estudiante.PostAsync("/Administrador/EditarNombre",new FormUrlEncodedContent(new Dictionary<string,string> { ["__RequestVerificationToken"]=HostPrueba.Token(studentHtml),["UsuarioId"]="est2",["Revision"]=revisionNombre,["NombreCompleto"]="No autorizado" }));
         Check(reject.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Redirect,"estudiante no edita nombres administrativamente");

@@ -1,6 +1,7 @@
 @model Zuni.Models.Pruebas.EscalaPreguntaViewModel
-<fieldset class="dash-card mb-3 test-question" data-question>
-    <legend class="h5"><span class="dash-eyebrow d-block mb-2">@Idioma.Texto("Pregunta") @Model.Numero @Idioma.Texto("de") @Model.Total</span>@TextoPrueba.Texto(Model.Pregunta.PruebaId,Model.Pregunta.Texto)</legend>
+<fieldset class="dash-card mb-3 test-question" data-question aria-labelledby="pregunta-@Model.Pregunta.Id">
+    <legend class="visually-hidden">@Idioma.Texto("Pregunta") @Model.Numero</legend>
+    <div class="test-question-heading"><span class="dash-eyebrow d-block mb-2">@Idioma.Texto("Pregunta") @Model.Numero @Idioma.Texto("de") @Model.Total</span><h2 id="pregunta-@Model.Pregunta.Id">@TextoPrueba.Texto(Model.Pregunta.PruebaId,Model.Pregunta.Texto)</h2></div>
     <p class="small text-secondary">@Idioma.Texto("Grado de identificación")</p>
     <div class="likert-scroll"><div class="likert-bar">
     @foreach(var opcion in Model.Pregunta.Opciones.OrderBy(o=>o.Valor))

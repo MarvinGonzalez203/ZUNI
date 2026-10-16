@@ -212,7 +212,7 @@ Check(typeof(ReservaCitaInput).GetProperties().All(x => x.Name != "PsicologoUsua
 
 // Solo metadatos y traducción SQL con Npgsql: nunca abrir conexión.
 await using var pg = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>()
-    .UseNpgsql("Host=127.0.0.1;Port=1;Database=OfflineNeverConnect;Username=offline").Options);
+    .UseNpgsql("Host=127.0.0.1;Port=1;Database=OfflineNeverConnect;Username=offline").Options, SeguridadPrueba.Proteccion);
 var assembly = pg.GetService<IMigrationsAssembly>();
 var migration = assembly.CreateMigration(assembly.Migrations.Single(m => m.Key.EndsWith("_AddAgendaYCitas")).Value, pg.Database.ProviderName!);
 var allowed = new[] { "DisponibilidadesPsicologo", "Citas" };
@@ -274,7 +274,7 @@ sealed class Transacciones : DbTransactionInterceptor
     public override ValueTask<DbTransaction> TransactionStartedAsync(DbConnection connection, TransactionEndEventData data, DbTransaction result, CancellationToken cancellationToken = default)
     { Aislamientos.Add(result.IsolationLevel); return ValueTask.FromResult(result); }
 }
-sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options) : ApplicationDbContext(options)
+sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options) : ApplicationDbContext(options, SeguridadPrueba.Proteccion)
 {
     public bool FallarDespuesDeGuardarAtencion { get; set; }
     public bool FallarAuditoria { get; set; }
@@ -295,3 +295,5 @@ sealed class OfflineDb(DbContextOptions<ApplicationDbContext> options) : Applica
                 entity.RemoveCheckConstraint(constraint.Name!);
     }
 }
+
+static class SeguridadPrueba { public static readonly Zuni.Seguridad.ProteccionPersistencia Proteccion = Zuni.Seguridad.ProteccionPersistencia.Efimera(); }

@@ -15,6 +15,8 @@ using Zuni.Seguridad;
 using Zuni.Services;
 using Zuni.Services.Administracion;
 
+if(args.Contains("--postgres-proteccion")){await ProteccionPostgresChecks.Run(args.Contains("--sembrar-legado"));return;}
+
 // Comprobaciones offline del endurecimiento previo al despliegue.
 // SQLite en memoria + host HTTP efímero en 127.0.0.1. No abre ni modifica PostgreSQL.
 var checks = 0;
@@ -418,7 +420,8 @@ using (var sesionAnterior = HostPrueba.Cliente(app))
         Check(await db.PasswordResetTokens.AllAsync(t => t.UserId != "est" || t.UsedAtUtc != null), "Tokens pendientes invalidados");
         var eventos = await db.AuditoriaUsuarios.AsNoTracking().Where(a => a.Accion == AccionesAuditoria.ContrasenaTemporalAsignada).ToListAsync();
         Check(eventos.Count == 1 && eventos[0].UsuarioAfectadoId == "est" && eventos[0].AdministradorId == "admin", "Auditoría de contraseña temporal");
-        var todo = string.Join("|", await db.AuditoriaUsuarios.AsNoTracking().Select(a => a.DatosAnteriores + a.DatosNuevos + a.Motivo).ToListAsync());
+        var textosAuditoria = await db.AuditoriaUsuarios.AsNoTracking().Select(a => new { a.DatosAnteriores, a.DatosNuevos, a.Motivo }).ToListAsync();
+        var todo = string.Join("|", textosAuditoria.Select(a => a.DatosAnteriores + a.DatosNuevos + a.Motivo));
         Check(!todo.Contains(temporal) && !todo.Contains(actual.PasswordHash!), "La contraseña temporal no queda en la auditoría");
     }
     var anterior = await sesionAnterior.GetAsync("/MiCuenta");
@@ -566,6 +569,8 @@ await SuperAdminCatalogoChecks.Run(app, opciones, clave);
 await TarifasAislamientoChecks.Run(app, opciones, clave,reloj);
 await ProveedorNavegacionChecks.Run(app, opciones, clave);
 await ExperienciaPanelChecks.Run(app, opciones, clave);
+await ContinuidadChecks.Run(app,opciones,clave);
+await ProteccionClinicaChecks.Run(opciones);
 
 using (var c = HostPrueba.Cliente(app))
 {

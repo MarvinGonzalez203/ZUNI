@@ -5,7 +5,7 @@ using Zuni.Models.Atencion;
 
 namespace Zuni.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Zuni.Models.Institucion.PreferenciaVista> PreferenciasVista => Set<Zuni.Models.Institucion.PreferenciaVista>();
         public DbSet<Zuni.Models.Institucion.ConfiguracionTarifas> ConfiguracionTarifas => Set<Zuni.Models.Institucion.ConfiguracionTarifas>();
@@ -44,9 +44,11 @@ namespace Zuni.Data
         public DbSet<AuditoriaUsuario> AuditoriaUsuarios =>
             Set<AuditoriaUsuario>();
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, Zuni.Seguridad.ProteccionPersistencia proteccion,
+            IHttpContextAccessor? peticion = null, TimeProvider? reloj = null)
             : base(options)
         {
+            Proteccion = proteccion; Peticion = peticion; RelojSeguridad = reloj ?? TimeProvider.System;
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -139,7 +141,7 @@ namespace Zuni.Data
                 e.ToTable("ContactosEmergenciaExpediente", t =>
                 {
                     t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_Orden", "\"Orden\" BETWEEN 1 AND 3");
-                    t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_Telefono", "\"Telefono\" ~ '^[0-9]{8}$'");
+                    t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_Telefono", "\"Telefono\" ~ '^[0-9]{8}$' OR \"Telefono\" LIKE 'zenc1:%'");
                     t.HasCheckConstraint("CK_ContactosEmergenciaExpediente_NombreRelacion", "length(btrim(\"Nombre\")) > 0 AND length(btrim(\"Relacion\")) > 0");
                 });
                 e.HasKey(x => x.Id);
@@ -284,6 +286,7 @@ namespace Zuni.Data
                         perfil => perfil.UsuarioId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+            CifradoClinico.Configurar(builder, Proteccion);
         }
     }
 }

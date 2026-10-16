@@ -82,10 +82,13 @@ internal static class AtencionChecks
         profesional = await db.Users.SingleAsync(u => u.Id == "otro-psi", ct);
         profesional.IsActive = true; await db.SaveChangesAsync(ct); db.ChangeTracker.Clear();
         var consentimiento = await db.ConsentimientosAtencion.SingleAsync(c => c.SolicitudAtencionId == registro.SolicitudAtencionId, ct);
-        consentimiento.Aceptado = false; await db.SaveChangesAsync(ct); db.ChangeTracker.Clear();
+        consentimiento.Aceptado = false;
+        await Denegado<InvalidOperationException>(()=>db.SaveChangesAsync(ct),"La aceptación histórica no se puede sobrescribir");
+        db.ChangeTracker.Clear();
+        // Solo la fixture SQLite simula corrupción externa; en PostgreSQL el trigger también la impide.
+        await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE ConsentimientosAtencion SET Aceptado=0 WHERE Id={consentimiento.Id}",ct);
         await Denegado<AgendaAccesoException>(() => service.ConsultarAtencion(psicologo, id, ct), "Detalle exige consentimiento real");
-        consentimiento = await db.ConsentimientosAtencion.SingleAsync(c => c.Id == consentimiento.Id, ct);
-        consentimiento.Aceptado = true; await db.SaveChangesAsync(ct); db.ChangeTracker.Clear();
+        await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE ConsentimientosAtencion SET Aceptado=1 WHERE Id={consentimiento.Id}",ct);db.ChangeTracker.Clear();
         var auditoria = await db.EventosAccesoClinico.AsNoTracking().Where(a => a.SolicitudAtencionId == registro.SolicitudAtencionId).ToListAsync(ct);
         Check(auditoria.Any(a => a.TipoAcceso == "ATENCION_REGISTRADA") && auditoria.Any(a => a.TipoAcceso == "ATENCION_CONSULTADA"), "Auditorías de cierre/consulta");
         Check(!JsonSerializer.Serialize(auditoria).Contains("PRIVADO") && !JsonSerializer.Serialize(auditoria).Contains("Resumen compartido"), "Auditoría sin texto clínico");
