@@ -15,6 +15,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.2" />
   </ItemGroup>
   <ItemGroup><EmbeddedResource Include="Resources/Fonts/*.ttf" /></ItemGroup>
   <ItemGroup><EmbeddedResource Include="Localizacion/en.json" LogicalName="Zuni.Localizacion.en.json" /></ItemGroup>
