@@ -619,6 +619,7 @@ await ProveedorNavegacionChecks.Run(app, opciones, clave);
 await ExperienciaPanelChecks.Run(app, opciones, clave);
 await ContinuidadChecks.Run(app,opciones,clave);
 await PrivacidadDirectorChecks.Run(app, opciones, clave, reloj);
+await PropuestasDirectorChecks.Run(app, opciones, clave, reloj);
 await ProteccionClinicaChecks.Run(opciones);
 
 using (var c = HostPrueba.Cliente(app))

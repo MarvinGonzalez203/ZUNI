@@ -1,0 +1,31 @@
+@model Zuni.Models.Agenda.PropuestaDirectorDetalle
+@{ ViewData["Title"] = "Propuesta de cita"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("COORDINACIÓN INSTITUCIONAL")</span><h1>@Idioma.Texto("Propuesta de cita")</h1>
+<p>@Idioma.Texto("Estado administrativo de tu propuesta. La información psicológica del estudiante es confidencial y no se muestra a Dirección.")</p></div></header>
+<section class="dash-card mb-4" id="detalle-propuesta">
+    <dl class="row mb-0">
+        <dt class="col-sm-4">@Idioma.Texto("Estudiante")</dt><dd class="col-sm-8">@Model.Estudiante · @Zuni.Helpers.CarneHelper.Formatear(Model.Carne)</dd>
+        <dt class="col-sm-4">@Idioma.Texto("Carrera o grado")</dt><dd class="col-sm-8">@(Model.Carrera ?? Idioma.Texto("Sin registrar"))</dd>
+        <dt class="col-sm-4">@Idioma.Texto("Psicólogo")</dt><dd class="col-sm-8">@Model.Psicologo</dd>
+        <dt class="col-sm-4">@(Model.FechaDefinitiva ? Idioma.Texto("Fecha y hora definitivas") : Idioma.Texto("Fecha y hora actuales"))</dt>
+        <dd class="col-sm-8" data-fecha-propuesta>@Zuni.Services.Agenda.AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @Zuni.Services.Agenda.AgendaReglas.Local(Model.FinUtc).ToString("HH:mm") (@Idioma.Texto("Guatemala"))</dd>
+        <dt class="col-sm-4">@Idioma.Texto("Modalidad")</dt><dd class="col-sm-8">@Idioma.Texto(Convert.ToString(Model.Modalidad))</dd>
+        <dt class="col-sm-4">@Idioma.Texto("Estado")</dt><dd class="col-sm-8" data-estado-propuesta>@Idioma.Texto(Model.EstadoAdministrativo)</dd>
+        @if (Model.MotivoAdministrativo is not null) { <dt class="col-sm-4">@Idioma.Texto("Motivo administrativo")</dt><dd class="col-sm-8" data-motivo-propuesta>@Idioma.Texto(Model.MotivoAdministrativo)</dd> }
+    </dl>
+</section>
+<section class="dash-card" aria-labelledby="historial-propuesta">
+    <h2 id="historial-propuesta" class="h5">@Idioma.Texto("Historial administrativo")</h2>
+    @if (Model.Historial.Count == 0) { <p>@Idioma.Texto("Sin avisos registrados.")</p> }
+    else
+    {
+        <ol class="mb-0" data-historial-propuesta>
+        @foreach (var a in Model.Historial)
+        {
+            <li><strong>@Idioma.Texto(a.Tipo)</strong> · @Zuni.Services.Agenda.AgendaReglas.Local(a.FechaUtc).ToString("dd/MM/yyyy HH:mm")<p class="mb-2">@a.Texto</p></li>
+        }
+        </ol>
+    }
+    <p class="small mt-3 mb-0">@Idioma.Texto("Dirección no consulta la ficha de acompañamiento, el motivo de atención, notas, resultados, registros de atención ni asistencia.")</p>
+    <div class="zuni-action-row mt-3"><a asp-action="Propuestas" class="btn btn-outline-secondary">@Idioma.Texto("Volver a mis propuestas")</a></div>
+</section>

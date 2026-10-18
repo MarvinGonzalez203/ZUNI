@@ -9,6 +9,6 @@
 <div class="notification-actions">
 @if(User.IsInRole("Estudiante")){<a asp-controller="Estudiante" asp-action="Citas" asp-route-fecha="@Zuni.Services.Agenda.AgendaReglas.Hoy(n.InicioUtc).ToString("yyyy-MM-dd")" class="dash-button">@Idioma.Texto("Consultar mis citas")</a>}
 else if(User.IsInRole("Psicologo")){<a asp-controller="Psicologo" asp-action="Agenda" asp-route-citaId="@n.CitaId" class="dash-button">@Idioma.Texto("Consultar propuesta en su día")</a>}
-else if(User.IsInRole("Director")){<a asp-controller="CitasProgramadas" asp-action="Index" asp-route-citaId="@n.CitaId" class="dash-button">@Idioma.Texto("Consultar cita en el calendario")</a>}
+else if(User.IsInRole("Director")){<a asp-controller="Director" asp-action="Propuestas" class="dash-button">@Idioma.Texto("Ver mis propuestas")</a>}
 @if(!n.Leida){<form asp-action="Leida" method="post"><input type="hidden" name="id" value="@n.Id"/><button class="btn btn-outline-secondary">@Idioma.Texto("Marcar como leída")</button></form>}
 </div></article>}

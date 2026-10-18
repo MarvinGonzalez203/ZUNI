@@ -1,0 +1,8 @@
+@model string
+@* Rechazo de una propuesta de Dirección: lista cerrada de motivos administrativos (Dirección los ve). *@
+<label for="@Model">@Idioma.Texto("Motivo administrativo para Dirección (obligatorio al rechazar)")</label>
+<select id="@Model" name="MotivoCancelacion" class="form-select" data-motivos-propuesta-director>
+    <option value="">@Idioma.Texto("Selecciona un motivo si vas a rechazar")</option>
+    @foreach (var motivo in Zuni.Models.Agenda.MotivosPropuestaDirector.Todos) { <option value="@motivo">@Idioma.Texto(motivo)</option> }
+</select>
+<small class="d-block">@Idioma.Texto("Dirección y el estudiante verán este motivo. No incluyas información clínica.")</small>

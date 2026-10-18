@@ -1,0 +1,2 @@
+@model int
+<a asp-controller="Director" asp-action="Propuestas" class="dash-text-link dash-notification" id="aviso-propuestas-director" aria-label="@Idioma.Texto("Avisos de mis propuestas, {0} pendientes", Model)"><partial name="_DashboardIcon" model='@("calendar")' /><span class="notification-label">@Idioma.Texto("Mis propuestas")</span>@if(Model>0){<strong>(@Model)</strong>}</a>

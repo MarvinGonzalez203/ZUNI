@@ -52,9 +52,11 @@
                 <form asp-action="GestionarCita" method="post" class="agenda-actions">
                     <input type="hidden" name="CitaId" value="@cita.Id" />
                     <input type="hidden" name="Revision" value="@cita.Revision" />
-                    @if(cita.ProgramadorRol == "Director") { <span class="dash-badge">@Idioma.Texto("Propuesta del Director")</span><label for="rechazo-@cita.Id">@Idioma.Texto("Motivo si no puedes atender (sin información clínica)")</label><input id="rechazo-@cita.Id" name="MotivoCancelacion" maxlength="300" class="form-control" placeholder="@Idioma.Texto("Ej.: conflicto de horario")" /> }
-                    @if(cita.Modalidad==ModalidadCita.Presencial){<label for="lugar-lista-@cita.Id">@Idioma.Texto("Dirección o lugar de atención presencial")</label><textarea id="lugar-lista-@cita.Id" name="DireccionAtencion" maxlength="500" class="form-control">@cita.DireccionAtencion</textarea>}
-                    @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime && cita.Modalidad == ModalidadCita.Presencial) { <button type="submit" name="Estado" value="Confirmada" class="dash-button">@Idioma.Texto("Aceptar")</button> }
+                    @{ var propuestaSinAsignacion = cita.ProgramadorRol == "Director" && !cita.AsignadoAlProfesional; }
+                    @if(cita.ProgramadorRol == "Director") { <span class="dash-badge">@Idioma.Texto("Propuesta de Dirección")</span><partial name="_MotivoPropuestaDirector" model='@("rechazo-" + cita.Id)' /> }
+                    @if(propuestaSinAsignacion) { <p class="small mb-1" data-propuesta-sin-asignacion>@Idioma.Texto("Para aceptarla, el estudiante debe tener una solicitud de atención asignada a ti. Puedes reprogramarla después de la asignación o rechazarla con un motivo de la lista.")</p> }
+                    @if(cita.Modalidad==ModalidadCita.Presencial && !propuestaSinAsignacion){<label for="lugar-lista-@cita.Id">@Idioma.Texto("Dirección o lugar de atención presencial")</label><textarea id="lugar-lista-@cita.Id" name="DireccionAtencion" maxlength="500" class="form-control">@cita.DireccionAtencion</textarea>}
+                    @if (cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime && cita.Modalidad == ModalidadCita.Presencial && !propuestaSinAsignacion) { <button type="submit" name="Estado" value="Confirmada" class="dash-button">@Idioma.Texto("Aceptar")</button> }
                     <button type="submit" name="Estado" value="Rechazada" class="btn btn-outline-secondary">@Idioma.Texto("Rechazar")</button>
                 </form>
             }

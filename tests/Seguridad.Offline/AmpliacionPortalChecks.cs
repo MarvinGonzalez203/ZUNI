@@ -34,20 +34,23 @@ internal static class AmpliacionPortalChecks
         Check((await director.GetAsync("/Director/Calendario?psicologoId=admin")).StatusCode==HttpStatusCode.Redirect,"calendario no acepta un administrador como profesional");
         Check((await estudiante.GetAsync("/Director/Calendario")).StatusCode==HttpStatusCode.Redirect,"calendario institucional restringido");
         Check((await estudiante.GetStringAsync("/Estudiante/Citas?fecha="+hoy.AddMonths(-1).ToString("yyyy-MM-dd"))).Contains("agenda-grid"),"histórico del estudiante accesible");
-        Check((await HostPrueba.Post(director,"/Director","/CitasProgramadas/Guardar",("OperacionId",Guid.NewGuid().ToString()),("PerfilEstudianteId",perfil.ToString()),("Fecha",hoy.AddDays(32).ToString("yyyy-MM-dd")),("HoraInicio","11:00"),("DuracionMinutos","50"),("Modalidad","Presencial"))).StatusCode==HttpStatusCode.Redirect,"Director ya no crea propuestas individuales");
+        Check((await HostPrueba.Post(director,"/Director","/CitasProgramadas/Guardar",("OperacionId",Guid.NewGuid().ToString()),("PerfilEstudianteId",perfil.ToString()),("Fecha",hoy.AddDays(32).ToString("yyyy-MM-dd")),("HoraInicio","11:00"),("DuracionMinutos","50"),("Modalidad","Presencial"))).StatusCode==HttpStatusCode.Redirect,"Director no usa la programación individual del psicólogo");
         // Propuestas históricas del Director: el psicólogo aún las responde y el estudiante recibe la respuesta.
         var cita=await LegadoDirector.CrearAsync(options,perfil,"psi3",AgendaReglas.Utc(hoy.AddDays(32),new(11,0)),reloj.Ahora.UtcDateTime);
         Guid version;await using(var db=new OfflineDb(options))version=await db.Citas.Where(c=>c.Id==cita).Select(c=>c.Revision).SingleAsync();
         Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",Guid.NewGuid().ToString()),("DireccionAtencion","Consultorio de prueba, edificio A"),("Estado","Confirmada"))).StatusCode==HttpStatusCode.Conflict,"no acepta una propuesta con versión obsoleta");
         Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",version.ToString()),("Estado","Rechazada"))).StatusCode==HttpStatusCode.Conflict,"rechazo institucional exige motivo");
-        Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",version.ToString()),("Estado","Rechazada"),("MotivoCancelacion","Conflicto de horario"))).StatusCode==HttpStatusCode.Redirect,"rechazo con motivo guardado");
+        Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",version.ToString()),("Estado","Rechazada"),("MotivoCancelacion","Conflicto de horario"))).StatusCode==HttpStatusCode.Conflict,"propuesta de Dirección no acepta motivo libre");
+        Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",cita.ToString()),("Revision",version.ToString()),("Estado","Rechazada"),("MotivoCancelacion",MotivosPropuestaDirector.HorarioNoDisponible))).StatusCode==HttpStatusCode.Redirect,"rechazo con motivo de la lista guardado");
         Check((await director.GetAsync("/CitasProgramadas/Notificaciones")).StatusCode==HttpStatusCode.Redirect,"Director no consulta notificaciones que identifican estudiantes");
-        Check((await estudiante.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("Conflicto de horario"),"estudiante recibe respuesta");
+        Check((await estudiante.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains(MotivosPropuestaDirector.HorarioNoDisponible),"estudiante recibe respuesta");
         var aceptada=await LegadoDirector.CrearAsync(options,perfil,"psi3",AgendaReglas.Utc(hoy.AddDays(33),new(11,0)),reloj.Ahora.UtcDateTime);
         await using(var db=new OfflineDb(options))version=await db.Citas.Where(c=>c.Id==aceptada).Select(c=>c.Revision).SingleAsync();
         Check((await HostPrueba.Post(psy,"/Psicologo/Agenda","/Psicologo/GestionarCita",("CitaId",aceptada.ToString()),("Revision",version.ToString()),("DireccionAtencion","Consultorio de prueba, edificio A"),("Estado","Confirmada"))).StatusCode==HttpStatusCode.Redirect,"profesional acepta propuesta institucional histórica");
         Check(WebUtility.HtmlDecode(await estudiante.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("aceptó la cita propuesta"),"estudiante recibe aceptación");
-        await using(var db=new OfflineDb(options))Check(!await db.NotificacionesCita.AnyAsync(n=>n.UsuarioId=="director"&&(n.CitaId==cita||n.CitaId==aceptada)),"el Director ya no recibe avisos de citas individuales");
+        // Dirección recibe solo avisos administrativos de sus propuestas (sin texto libre ni datos clínicos).
+        await using(var db=new OfflineDb(options)){var avisos=await db.NotificacionesCita.AsNoTracking().Where(n=>n.UsuarioId=="director"&&(n.CitaId==cita||n.CitaId==aceptada)).ToListAsync();
+            Check(avisos.Count==2&&avisos.All(n=>AgendaCitasService.AvisosDirector.Todos.Contains(n.Tipo))&&!avisos.Any(n=>n.Texto.Contains("Conflicto de horario")||n.Texto.Contains("MOTIVO-CLINICO-PRIVADO")),"el Director recibe solo avisos administrativos");}
         Guid prueba;
         await using(var db=new OfflineDb(options)) {
             var niveles=await db.PruebasDirector.Include(p=>p.Preguntas).ThenInclude(q=>q.Opciones).Where(p=>p.Nivel!=null).OrderBy(p=>p.Nivel).ToListAsync();

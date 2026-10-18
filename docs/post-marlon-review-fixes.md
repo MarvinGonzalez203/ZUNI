@@ -5,6 +5,8 @@ Sin migraciones, sin cambios de esquema, sin cambios de paquetes y sin tocar Pos
 
 ## 1. Privacidad del Director
 
+> **Actualización 18/10/2026:** la decisión final fue conservar las **propuestas** de cita del Director, rediseñadas para proteger la privacidad. Ver [propuestas-director-privacidad.md](propuestas-director-privacidad.md). Lo siguiente sigue vigente: el calendario anonimizado, las estadísticas agregadas y que el Director no programe, reprograme, confirme ni consulte la bandeja general de notificaciones. Ahora recibe avisos administrativos solo de sus propias propuestas.
+
 **Antes:** el calendario del Director proyectaba el nombre del estudiante de cada cita, el Id de la cita, la modalidad y el lugar. La programación del Director listaba a todos los estudiantes con psicólogo asignado y todas las citas activas con nombre. El Director recibía notificaciones con el nombre y carné del estudiante y podía crear, reprogramar y consultar citas individuales.
 
 **Ahora:**

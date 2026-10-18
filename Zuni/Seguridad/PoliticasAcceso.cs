@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Zuni.Seguridad;
 
 // Rate limiting nativo de ASP.NET Core (.NET 8), sin paquetes externos.
-// Se aplica solo a los POST de Cuenta mediante [EnableRateLimiting]; los GET no se limitan.
+// Se aplica a los POST de Cuenta mediante [EnableRateLimiting]. Además, la búsqueda en el directorio
+// y el envío de propuestas de Dirección usan su propia política para evitar consultas masivas.
 // Particiones por dirección IP y política. Detrás de un proxy inverso, habilitar
 // Zuni:ProxyInverso para que RemoteIpAddress sea la IP real (ver docs/deployment.md).
 //
@@ -16,10 +17,12 @@ public static class PoliticasAcceso
     public const string Login = "cuenta-login";
     public const string Registro = "cuenta-registro";
     public const string Recuperacion = "cuenta-recuperacion";
+    public const string PropuestasDirector = "director-propuestas";
 
     public const int LoginPorMinutoPredeterminado = 30;
     public const int RegistroPorDiezMinutosPredeterminado = 20;
     public const int RecuperacionPorDiezMinutosPredeterminado = 10;
+    public const int PropuestasDirectorPorDiezMinutosPredeterminado = 60;
 
     public const string MensajeLimite =
         "Demasiados intentos desde esta conexión. Espera un momento y vuelve a intentarlo.";
@@ -30,6 +33,7 @@ public static class PoliticasAcceso
         var login = Positivo(seccion.GetValue<int?>("LoginPorMinuto"), LoginPorMinutoPredeterminado);
         var registro = Positivo(seccion.GetValue<int?>("RegistroPorDiezMinutos"), RegistroPorDiezMinutosPredeterminado);
         var recuperacion = Positivo(seccion.GetValue<int?>("RecuperacionPorDiezMinutos"), RecuperacionPorDiezMinutosPredeterminado);
+        var propuestas = Positivo(seccion.GetValue<int?>("PropuestasDirectorPorDiezMinutos"), PropuestasDirectorPorDiezMinutosPredeterminado);
 
         services.AddRateLimiter(options =>
         {
@@ -37,6 +41,7 @@ public static class PoliticasAcceso
             options.AddPolicy(Login, http => Particion(http, Login, login, TimeSpan.FromMinutes(1)));
             options.AddPolicy(Registro, http => Particion(http, Registro, registro, TimeSpan.FromMinutes(10)));
             options.AddPolicy(Recuperacion, http => Particion(http, Recuperacion, recuperacion, TimeSpan.FromMinutes(10)));
+            options.AddPolicy(PropuestasDirector, http => Particion(http, PropuestasDirector, propuestas, TimeSpan.FromMinutes(10)));
             options.OnRejected = async (context, cancellationToken) =>
             {
                 var response = context.HttpContext.Response;

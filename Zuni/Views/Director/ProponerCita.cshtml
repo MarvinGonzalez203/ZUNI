@@ -1,0 +1,55 @@
+@model Zuni.Models.Agenda.ProponerCitaViewModel
+@{ ViewData["Title"] = "Proponer cita"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("COORDINACIÓN INSTITUCIONAL")</span><h1>@Idioma.Texto("Proponer cita")</h1>
+<p>@Idioma.Texto("Propón una cita de orientación psicológica para un estudiante. El psicólogo la revisa y decide si la acepta, la reprograma o la rechaza; Dirección no puede confirmarla.")</p></div></header>
+
+<section class="dash-card mb-4" id="directorio-estudiantes" aria-labelledby="directorio-titulo">
+    <h2 id="directorio-titulo" class="h5">@Idioma.Texto("1. Buscar estudiante en el directorio institucional")</h2>
+    <p class="small">@Idioma.Texto("Busca por nombre o carné (mínimo 3 caracteres). Solo se muestran datos académicos mínimos; el directorio no indica si un estudiante recibe atención psicológica.")</p>
+    <form method="get" asp-action="ProponerCita" class="row g-2 align-items-end" role="search">
+        <div class="col-md-8"><label for="q" class="form-label">@Idioma.Texto("Nombre o carné")</label><input id="q" name="q" value="@Model.Busqueda" maxlength="80" minlength="3" class="form-control" autocomplete="off" /></div>
+        <div class="col-md-4"><button class="btn btn-outline-primary">@Idioma.Texto("Buscar")</button></div>
+    </form>
+    @if (Model.BusquedaCorta) { <p class="text-danger mt-2" role="alert">@Idioma.Texto("Escribe al menos 3 caracteres para buscar.")</p> }
+    @if (Model.Busqueda.Length >= 3)
+    {
+        @if (Model.Resultados.Count == 0) { <p class="mt-3">@Idioma.Texto("No se encontraron estudiantes con esos datos.")</p> }
+        else
+        {
+            <div class="table-responsive mt-3"><table data-directorio-resultados><thead><tr><th>@Idioma.Texto("Estudiante")</th><th>@Idioma.Texto("Carné")</th><th>@Idioma.Texto("Carrera o grado")</th><th><span class="visually-hidden">@Idioma.Texto("Acción")</span></th></tr></thead><tbody>
+            @foreach (var e in Model.Resultados)
+            {
+                <tr><td>@e.Nombre</td><td>@Zuni.Helpers.CarneHelper.Formatear(e.Carne)</td><td>@(e.Carrera ?? Idioma.Texto("Sin registrar"))</td>
+                <td><a asp-action="ProponerCita" asp-route-q="@Model.Busqueda" asp-route-perfilId="@e.PerfilId" class="btn btn-outline-secondary btn-sm">@Idioma.Texto("Seleccionar")</a></td></tr>
+            }
+            </tbody></table></div>
+            @if (Model.HayMasResultados) { <p class="small">@Idioma.Texto("Hay más coincidencias. Precisa la búsqueda con el nombre completo o el carné.")</p> }
+        }
+    }
+</section>
+
+<section class="dash-card" id="formulario-propuesta" aria-labelledby="propuesta-titulo">
+    <h2 id="propuesta-titulo" class="h5">@Idioma.Texto("2. Datos de la propuesta")</h2>
+    @if (Model.Seleccionado is null)
+    {
+        <p>@Idioma.Texto("Selecciona primero un estudiante del directorio.")</p>
+    }
+    else
+    {
+        <p id="estudiante-seleccionado"><strong>@Idioma.Texto("Estudiante:")</strong> @Model.Seleccionado.Nombre · @Zuni.Helpers.CarneHelper.Formatear(Model.Seleccionado.Carne)@(Model.Seleccionado.Carrera is null ? "" : " · " + Model.Seleccionado.Carrera)</p>
+        <form asp-action="ProponerCita" method="post" class="row g-3">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <input type="hidden" name="Input.OperacionId" value="@Model.Input.OperacionId" />
+            <input type="hidden" name="Input.PerfilEstudianteId" value="@Model.Seleccionado.PerfilId" />
+            <div class="col-md-6"><label asp-for="Input.PsicologoId" class="form-label" zuni-required="true"></label>
+                <select asp-for="Input.PsicologoId" asp-items="Model.Psicologos" class="form-select" required><option value="">@Idioma.Texto("Selecciona un psicólogo")</option></select>
+                <small><a asp-action="Calendario">@Idioma.Texto("Consultar la carga de psicólogos")</a></small></div>
+            <div class="col-md-3"><label asp-for="Input.Fecha" class="form-label" zuni-required="true"></label><input asp-for="Input.Fecha" type="date" min="@Model.FechaMinima.ToString("yyyy-MM-dd")" class="form-control" required /></div>
+            <div class="col-md-3"><label asp-for="Input.HoraInicio" class="form-label" zuni-required="true"></label><input asp-for="Input.HoraInicio" type="time" min="08:00" max="18:00" step="300" class="form-control" required /></div>
+            <div class="col-md-6"><label asp-for="Input.DuracionMinutos" class="form-label" zuni-required="true"></label><select asp-for="Input.DuracionMinutos" class="form-select">@foreach (var m in new[] { 15, 30, 45, 50, 60, 90, 120 }) { <option value="@m">@m @Idioma.Texto("minutos")</option> }</select></div>
+            <div class="col-md-6"><label asp-for="Input.Modalidad" class="form-label" zuni-required="true"></label><select asp-for="Input.Modalidad" class="form-select"><option value="Presencial">@Idioma.Texto("Presencial")</option><option value="Virtual">@Idioma.Texto("Virtual")</option></select></div>
+            <p class="small">@Idioma.Texto("Hora de Guatemala, entre 08:00 y 18:00. El lugar o el enlace los define el psicólogo al aceptar. Si el horario no es posible, se mostrará un mensaje general sin datos del estudiante.")</p>
+            <div class="zuni-action-row"><button class="dash-button" id="enviar-propuesta">@Idioma.Texto("Enviar propuesta")</button> <a asp-action="Propuestas" class="btn btn-outline-secondary">@Idioma.Texto("Ver mis propuestas")</a></div>
+        </form>
+    }
+</section>

@@ -68,7 +68,7 @@ public sealed partial class AgendaCitasService
                 Consultable = dia <= hoy.AddMonths(12),
                 Citas = citasConsulta.Where(c => c.InicioUtc >= desde && c.InicioUtc < hasta).Select(c=>new CitaCalendarioResumen { DireccionAtencion=c.DireccionAtencion,
                     Id=c.Id,Revision=c.Revision,ProgramadorRol=c.ProgramadorRol,Nombre=c.Nombre,InicioUtc=c.InicioUtc,FinUtc=c.FinUtc,Estado=c.Estado,Modalidad=c.Modalidad,
-                    EsImprevista=c.EsImprevista,FinAproximado=c.FinAproximado,TieneRegistroAtencion=c.TieneRegistroAtencion }).ToArray(),
+                    EsImprevista=c.EsImprevista,FinAproximado=c.FinAproximado,TieneRegistroAtencion=c.TieneRegistroAtencion,AsignadoAlProfesional=c.AsignadoAlProfesional }).ToArray(),
                 Bloqueado = config?.Bloqueado == true, UsaBaseSemanal = baseSemanal,
                 TieneCitasActivas = citasDia.Any(c => c.Profesional),
                 CitaPropiaActiva = citasDia.Any(c => c.Propia),

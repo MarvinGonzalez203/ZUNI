@@ -137,6 +137,7 @@ Configurables por variables de entorno (valores por defecto entre paréntesis):
 - `Zuni__LimitesAcceso__LoginPorMinuto` (30 POST de inicio de sesión por IP y minuto).
 - `Zuni__LimitesAcceso__RegistroPorDiezMinutos` (20 registros por IP cada 10 minutos).
 - `Zuni__LimitesAcceso__RecuperacionPorDiezMinutos` (10 por IP cada 10 minutos).
+- `Zuni__LimitesAcceso__PropuestasDirectorPorDiezMinutos` (60 búsquedas o envíos de propuestas de Dirección por IP cada 10 minutos).
 
 Al excederse se responde HTTP 429 sin detalles internos. Además, cada cuenta se bloquea 15 minutos tras 5 intentos fallidos consecutivos.
 

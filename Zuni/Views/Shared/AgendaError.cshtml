@@ -5,4 +5,5 @@
     <p role="alert">@Idioma.Texto(Model)</p>
     @if (User.IsInRole("Estudiante")) { <a asp-controller="Estudiante" asp-action="Citas">@Idioma.Texto("Volver a mis citas")</a> }
     @if (User.IsInRole("Psicologo")) { <a asp-controller="Psicologo" asp-action="Agenda">@Idioma.Texto("Volver a mi agenda")</a> }
+    @if (User.IsInRole("Director")) { <a asp-controller="Director" asp-action="ProponerCita">@Idioma.Texto("Volver a Proponer cita")</a> <a asp-controller="Director" asp-action="Propuestas">@Idioma.Texto("Ver mis propuestas")</a> }
 </section>

@@ -45,7 +45,9 @@ internal static class PrivacidadDirectorChecks
         var prohibidos = new[] { nombre, correo, carne, "8888-26-7777", perfil.Id.ToString(), cita.Id.ToString(), "carga-est", "DIRECCION-CITA-PRIVADA", "MOTIVO-CANCELACION-PRIVADO", "Carrera privada" };
         Check(prohibidos.All(p => !carga.Contains(p, StringComparison.OrdinalIgnoreCase)), "calendario sin nombre, carné, correo, carrera, lugar ni identificadores");
         Check(carga.Contains("data-director-bloques") && Regex.IsMatch(carga, "15:00–15:50</strong> · Ocupado"), "el bloque ocupado sigue visible con hora y estado");
-        Check(!carga.Contains("/CitasProgramadas/Editar") && !carga.Contains("Proponer cita") && !carga.Contains("Reprogramar cita"), "sin programación individual desde el calendario");
+        // El menú incluye «Proponer cita» (propuestas administrativas); el calendario no ofrece programar ni reprogramar.
+        Check(!carga.Contains("/CitasProgramadas/Editar") && !carga.Contains("Proponer cita a un estudiante vinculado") && !carga.Contains("Reprogramar cita") && !carga.Contains("citaId="),
+            "sin programación individual desde el calendario");
         Check(carga.Contains("id=\"metricas-carga-director\"") && Regex.IsMatch(carga, "data-metrica=\"ocupados\">[1-9]") && Regex.IsMatch(carga, "data-metrica=\"canceladas\">[1-9]"),
             "métricas agregadas del mes disponibles");
         Check((await director.GetAsync("/Director/Calendario?psicologoId=carga-est")).StatusCode == HttpStatusCode.Redirect, "un estudiante no puede usarse como profesional en la URL");

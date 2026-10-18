@@ -51,6 +51,8 @@ public sealed class CitaResumen
     public EstadoCita Estado { get; init; }
     public string? MotivoCancelacion { get; init; }
     public bool TieneRegistroAtencion { get; init; }
+    // Solo en la agenda del psicólogo: el estudiante tiene asignación vigente con él (requisito para aceptar).
+    public bool AsignadoAlProfesional { get; init; }
 }
 
 public sealed class AgendaPsicologoViewModel
@@ -126,6 +128,7 @@ public sealed class CitaCalendarioResumen
     public bool EsImprevista { get; init; }
     public bool FinAproximado { get; init; }
     public bool TieneRegistroAtencion { get; init; }
+    public bool AsignadoAlProfesional { get; init; }
 }
 public sealed class CalendarioAgendaViewModel
 {

@@ -1,0 +1,31 @@
+@model Zuni.Models.Agenda.PropuestasDirectorViewModel
+@{ ViewData["Title"] = "Mis propuestas"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("COORDINACIÓN INSTITUCIONAL")</span><h1>@Idioma.Texto("Mis propuestas")</h1>
+<p>@Idioma.Texto("Solo aparecen las propuestas de cita que tú enviaste, con su estado administrativo. No es un listado de estudiantes en atención.")</p></div>
+<a asp-action="ProponerCita" class="dash-button">@Idioma.Texto("Proponer cita")</a></header>
+<section class="dash-card" id="mis-propuestas">
+@if (Model.Propuestas.Count == 0)
+{
+    <p>@Idioma.Texto("Todavía no has enviado propuestas de cita.")</p>
+}
+else
+{
+    <div class="table-responsive"><table data-mis-propuestas><thead><tr><th>@Idioma.Texto("Estudiante")</th><th>@Idioma.Texto("Psicólogo")</th><th>@Idioma.Texto("Fecha")</th><th>@Idioma.Texto("Estado")</th><th>@Idioma.Texto("Acción")</th></tr></thead><tbody>
+    @foreach (var p in Model.Propuestas)
+    {
+        <tr data-propuesta="@p.Id"><td>@p.Estudiante<small class="d-block">@Zuni.Helpers.CarneHelper.Formatear(p.Carne)</small></td><td>@p.Psicologo</td>
+        <td>@Zuni.Services.Agenda.AgendaReglas.Local(p.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @Zuni.Services.Agenda.AgendaReglas.Local(p.FinUtc).ToString("HH:mm")</td>
+        <td><span class="agenda-status" data-estado-propuesta>@Idioma.Texto(p.EstadoAdministrativo)</span>@if (p.Novedad) { <span class="dash-badge ms-1">@Idioma.Texto("Novedad")</span> }</td>
+        <td><a asp-action="Propuesta" asp-route-id="@p.Id" class="btn btn-outline-secondary btn-sm">@Idioma.Texto("Ver")</a></td></tr>
+    }
+    </tbody></table></div>
+    @if (Model.Paginas > 1)
+    {
+        <nav class="mt-3" aria-label="@Idioma.Texto("Páginas de propuestas")">
+            @if (Model.Pagina > 1) { <a asp-action="Propuestas" asp-route-pagina="@(Model.Pagina - 1)">@Idioma.Texto("Anterior")</a> }
+            <span>@Idioma.Texto("Página {0} de {1}", Model.Pagina, Model.Paginas)</span>
+            @if (Model.Pagina < Model.Paginas) { <a asp-action="Propuestas" asp-route-pagina="@(Model.Pagina + 1)">@Idioma.Texto("Siguiente")</a> }
+        </nav>
+    }
+}
+</section>

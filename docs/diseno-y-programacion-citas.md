@@ -1,6 +1,8 @@
 # Guías visuales, reporte compartido y programación de citas
 
 > **Actualización 17/10/2026:** el Director ya no programa, reprograma ni consulta citas individuales ni sus notificaciones; solo ve la carga anónima en «Carga de psicólogos». Ver [post-marlon-review-fixes.md](post-marlon-review-fixes.md).
+>
+> **Actualización 18/10/2026:** Dirección vuelve a **proponer** citas (Agenda y citas → Proponer cita / Mis propuestas). El psicólogo acepta, reprograma o rechaza la propuesta; Dirección no la confirma. La carga de psicólogos sigue anonimizada. Ver [propuestas-director-privacidad.md](propuestas-director-privacidad.md).
 
 Entrega en `feature/director-V2`, 14 de octubre de 2026.
 

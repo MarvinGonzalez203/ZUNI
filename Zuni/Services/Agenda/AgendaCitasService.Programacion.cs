@@ -86,18 +86,24 @@ public sealed partial class AgendaCitasService
             var psy=await ProfesionalProgramacion(a,input.PerfilEstudianteId.Value,ct);var inicio=AgendaReglas.Utc(input.Fecha.Value,input.HoraInicio.Value);
             var fin=input.HoraFin is {}h?AgendaReglas.Utc(input.Fecha.Value,h):inicio.AddMinutes(input.DuracionMinutos);
             if(inicio.Ticks%(5*TimeSpan.TicksPerMinute)!=0||fin.Ticks%(5*TimeSpan.TicksPerMinute)!=0)throw new AgendaOperacionException("Usa horas en múltiplos de cinco minutos.");
-            Cita c;
-            if(input.CitaId is {}id){c=await db.Citas.SingleOrDefaultAsync(c=>c.Id==id&&(a.Rol=="Director"||c.PsicologoUsuarioId==a.Id),ct)??throw new AgendaAccesoException();if(c.PerfilEstudianteId!=input.PerfilEstudianteId||c.PsicologoUsuarioId!=psy)throw new AgendaAccesoException();if(c.EsImprevista||!AgendaReglas.Activa(c.Estado)||c.FechaHoraInicioUtc<=Ahora||c.Revision!=input.Revision)throw new AgendaOperacionException("La cita cambió o ya no se puede reprogramar. Abre su versión actual.");}
+            Cita c;string? origenDirector=null;DateTime inicioAnterior=default;
+            if(input.CitaId is {}id){c=await db.Citas.SingleOrDefaultAsync(c=>c.Id==id&&(a.Rol=="Director"||c.PsicologoUsuarioId==a.Id),ct)??throw new AgendaAccesoException();if(c.PerfilEstudianteId!=input.PerfilEstudianteId||c.PsicologoUsuarioId!=psy)throw new AgendaAccesoException();if(c.EsImprevista||!AgendaReglas.Activa(c.Estado)||c.FechaHoraInicioUtc<=Ahora||c.Revision!=input.Revision)throw new AgendaOperacionException("La cita cambió o ya no se puede reprogramar. Abre su versión actual.");
+                // Una propuesta de Dirección reprogramada por el psicólogo conserva su origen: Dirección sigue viendo
+                // su propuesta (con la nueva fecha) y queda la traza de la fecha anterior.
+                if(c.ProgramadorRol=="Director"&&c.ProgramadorUsuarioId is not null){origenDirector=c.ProgramadorUsuarioId;inicioAnterior=c.FechaHoraInicioUtc;}}
             else{if(input.OperacionId==Guid.Empty||await db.Citas.AnyAsync(c=>c.Id==input.OperacionId,ct))throw new AgendaOperacionException("Esta programación ya se guardó. Consulta tu agenda.");c=new(){Id=input.OperacionId,PerfilEstudianteId=input.PerfilEstudianteId.Value,PsicologoUsuarioId=psy,FechaCreacionUtc=Ahora};db.Citas.Add(c);}
             await ValidarFranjaProgramada(c.PerfilEstudianteId,psy,inicio,fin,input.CitaId,ct);
             if(a.Rol=="Psicologo"&&input.Modalidad==ModalidadCita.Presencial)c.DireccionAtencion=DireccionValida(input.DireccionAtencion??c.DireccionAtencion);
             if(input.Modalidad==ModalidadCita.Virtual)c.DireccionAtencion=null;
-            c.FechaHoraInicioUtc=inicio;c.FechaHoraFinUtc=fin;c.FinAproximado=true;c.Modalidad=input.Modalidad;c.ProgramadaDirectamente=true;c.ProgramadorUsuarioId=a.Id;c.ProgramadorRol=a.Rol;c.DisponibilidadPsicologoId=null;c.Estado=await EstadoProgramacion(a,c.PerfilEstudianteId,c.Modalidad,ct,c.DireccionAtencion);c.Revision=Guid.NewGuid();c.EnlaceReunion=null;c.FechaEnlaceUtc=null;
-            await NotificarProgramacion(c,a,input.CitaId is not null,ct);resultado=c.Id;
+            c.FechaHoraInicioUtc=inicio;c.FechaHoraFinUtc=fin;c.FinAproximado=true;c.Modalidad=input.Modalidad;c.ProgramadaDirectamente=true;c.ProgramadorUsuarioId=origenDirector??a.Id;c.ProgramadorRol=origenDirector is null?a.Rol:"Director";c.DisponibilidadPsicologoId=null;c.Estado=await EstadoProgramacion(a,c.PerfilEstudianteId,c.Modalidad,ct,c.DireccionAtencion);c.Revision=Guid.NewGuid();c.EnlaceReunion=null;c.FechaEnlaceUtc=null;
+            await NotificarProgramacion(c,a,input.CitaId is not null,ct);
+            if(origenDirector is not null)await NotificarReprogramacionDirector(c,inicioAnterior,a.Id,ct);
+            resultado=c.Id;
         },ct);return resultado;
     }
     // Las notificaciones de cita identifican al estudiante. Una cuenta institucional sin rol de atención
-    // (Director sin rol Psicólogo/Estudiante) no las consulta, aunque existan avisos históricos.
+    // (Director sin rol Psicólogo/Estudiante) no usa esta bandeja general: recibe solo avisos
+    // administrativos de sus propias propuestas en Director/Propuestas.
     public static bool SinAccesoANotificaciones(ClaimsPrincipal actor) =>
         actor.IsInRole("Director") && !actor.IsInRole("Psicologo") && !actor.IsInRole("Estudiante");
     public async Task<IReadOnlyList<NotificacionResumen>> Notificaciones(ClaimsPrincipal actor,CancellationToken ct)

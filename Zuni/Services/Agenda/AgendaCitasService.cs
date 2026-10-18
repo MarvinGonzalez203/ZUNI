@@ -142,7 +142,10 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
             EnlacePreparado = c.EnlaceReunion != null,
             FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
             MotivoCancelacion = c.Estado == EstadoCita.Cancelada ? c.MotivoCancelacion : null,
-            TieneRegistroAtencion = db.RegistrosAtencionCita.Any(r => r.CitaId == c.Id) };
+            TieneRegistroAtencion = db.RegistrosAtencionCita.Any(r => r.CitaId == c.Id),
+            // Solo para la vista del propio psicólogo: indica si puede aceptar una propuesta de Dirección.
+            AsignadoAlProfesional = db.AsignacionesEstudiantePsicologo.Any(a => a.PerfilEstudianteId == c.PerfilEstudianteId &&
+                a.PsicologoUsuarioId == id && a.FechaFinalizacionUtc == null) };
 
     public async Task<CitasEstudianteViewModel> LeerCitas(ClaimsPrincipal sesion, DateOnly? fecha, int pagina, CancellationToken ct)
     {
@@ -160,7 +163,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
                       join u in db.Users.AsNoTracking() on c.PsicologoUsuarioId equals u.Id
                       where c.PerfilEstudianteId == perfil.Id
                       select new CitaResumen { DireccionAtencion=c.DireccionAtencion, Id = c.Id, Nombre = u.FullName, InicioUtc = c.FechaHoraInicioUtc,
-                          EnlacePreparado = c.EnlaceReunion != null,
+                          EnlacePreparado = c.EnlaceReunion != null, ProgramadorRol = c.ProgramadorRol,
                           FinUtc = c.FechaHoraFinUtc, Modalidad = c.Modalidad, Estado = c.Estado,
                           MotivoCancelacion = c.Estado == EstadoCita.Cancelada ? c.MotivoCancelacion : null };
         var paginas = Math.Max(1, (await propias.CountAsync(ct) + TamanoPagina - 1) / TamanoPagina);
@@ -227,7 +230,11 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         if ((cita.ProgramadorRol == "Director" && input.Revision == Guid.Empty) ||
             (input.Revision != Guid.Empty && input.Revision != cita.Revision))
             throw new AgendaOperacionException("La propuesta cambió. Recarga la agenda y revisa su fecha actual antes de responder.");
-        if (input.Estado is EstadoCita.Confirmada or EstadoCita.Rechazada)
+        // Una propuesta de Dirección puede llegar para un estudiante que todavía no está asignado a este
+        // psicólogo (crearla no exige asignación, para no revelar quién recibe atención). El psicólogo
+        // destinatario siempre puede rechazarla; aceptarla sigue exigiendo la asignación vigente.
+        var rechazoPropuestaDireccion = input.Estado == EstadoCita.Rechazada && cita.ProgramadorRol == "Director";
+        if ((input.Estado is EstadoCita.Confirmada or EstadoCita.Rechazada) && !rechazoPropuestaDireccion)
         {
             if (await Asignado(cita.PerfilEstudianteId, ct) != id ||
                 !await db.PerfilesEstudiante.AnyAsync(p => p.Id == cita.PerfilEstudianteId && p.Activo &&
@@ -255,6 +262,8 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
             ?? throw new AgendaAccesoException();
         // Puede cancelar una cita propia futura aunque posteriormente cambie su asignación.
         AplicarCambio(cita, EstadoCita.Cancelada, motivoCancelacion);
+        // Si era una propuesta de Dirección, Dirección recibe solo "cancelada" (nunca el motivo del estudiante).
+        await NotificarRespuestaDirector(cita, ct, perfil.UsuarioId, "Estudiante");
     }, ct);
 
     private void AplicarCambio(Cita cita, EstadoCita estado, string? motivo)
@@ -266,6 +275,9 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
                 throw new AgendaOperacionException(estado == EstadoCita.Cancelada ? "Debes indicar un motivo de cancelación." : "Indica un motivo administrativo para rechazar la propuesta, sin datos clínicos.");
             if (motivo.Length > 300)
                 throw new AgendaOperacionException("El motivo de cancelación no puede superar los 300 caracteres.");
+            // Dirección recibe el motivo de rechazo: solo se admiten motivos administrativos de una lista cerrada.
+            if (estado == EstadoCita.Rechazada && cita.ProgramadorRol == "Director" && !MotivosPropuestaDirector.Valido(motivo))
+                throw new AgendaOperacionException("Selecciona uno de los motivos administrativos de la lista para rechazar la propuesta de Dirección.");
         }
         cita.Estado = estado;
         cita.Revision = Guid.NewGuid();
