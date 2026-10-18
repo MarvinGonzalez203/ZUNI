@@ -28,7 +28,7 @@ internal static class CamposObligatoriosChecks
         Check(Marca(login, "Email") && Marca(login, "Password"), "correo y contraseña marcados");
         Check(!Marca(login, "RememberMe"), "recordar sesión sigue opcional");
         var registro = await Read(anonimo, "/Cuenta/Registro", "registro");
-        Check(Marca(registro, "FullName") && Marca(registro, "Telefono") && WebUtility.HtmlDecode(registro).Contains("Carné<span class=\"required-marker\""), "datos obligatorios y carné agrupado");
+        Check(Marca(registro, "FullName") && Marca(registro, "Telefono") && Marca(registro, "FechaNacimiento") && WebUtility.HtmlDecode(registro).Contains("Carné<span class=\"required-marker\""), "datos obligatorios y carné agrupado");
         Check(!registro.Contains("zuni-required="), "atributo de servidor no se filtra al HTML");
         using var admin = HostPrueba.Cliente(app);
         await HostPrueba.Login(admin, "admin@miumg.edu.gt", clave);

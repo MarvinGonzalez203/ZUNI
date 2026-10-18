@@ -52,6 +52,13 @@ public sealed class RegisterViewModel
     [Display(Name = "Teléfono")]
     public string Telefono { get; set; } = string.Empty;
 
+    // Declaración de mayoría de edad en el registro. Solo se usa para calcular la edad declarada:
+    // la fecha no se guarda. La verificación documental sigue siendo del Administrador.
+    [Required(ErrorMessage = "Indica tu fecha de nacimiento.")]
+    [DataType(DataType.Date)]
+    [Display(Name = "Fecha de nacimiento")]
+    public DateOnly? FechaNacimiento { get; set; }
+
     [Required(ErrorMessage = "Crea una contraseña.")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Usa al menos 8 caracteres.")]
     [DataType(DataType.Password)]

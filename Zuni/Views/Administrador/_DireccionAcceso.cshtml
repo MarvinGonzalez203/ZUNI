@@ -1,0 +1,12 @@
+@* Dirección pública de inicio de sesión, derivada de la petición actual (esquema y host ya validados por
+   AllowedHosts y, detrás de Nginx, por ForwardedHeaders). No se guarda, no se envía por correo y no
+   contiene tokens ni contraseñas. *@
+@{ var direccion = Url.Action("IniciarSesion", "Cuenta", null, Context.Request.Scheme); }
+@if (!string.IsNullOrEmpty(direccion))
+{
+    <div class="alert alert-light border" id="direccion-acceso" role="note">
+        <p class="mb-1"><strong>@Idioma.Texto("Dirección de acceso:")</strong></p>
+        <p class="mb-1"><code class="user-select-all text-break">@direccion</code></p>
+        <p class="small mb-0">@Idioma.Texto("Entrégala al usuario por un canal seguro. No incluye la contraseña: compártela por separado.")</p>
+    </div>
+}

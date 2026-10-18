@@ -1,6 +1,7 @@
 @model Zuni.Models.Pruebas.CuestionarioAplicado
 @{ViewData["Title"]="Responder cuestionario";var terminada=Model.Asignacion.FinalizadaUtc is not null;var qs=Model.Prueba.Preguntas.OrderBy(q=>q.Orden).ToList();}
 <header class="dash-profile-heading"><div><h1>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Nombre)</h1><small>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Subtitulo)</small><p>@qs.Count @Idioma.Texto("preguntas · Escala del 1 al 10")</p></div></header>
+<partial name="_AvisoPrivacidadActividad" />
 <section class="dash-card mb-4"><h2>@Idioma.Texto("Antes de responder")</h2><p>@TextoPrueba.Texto(Model.Prueba.Id,Model.Prueba.Instrucciones)</p><p>@Idioma.Texto("Responde con calma, según tu experiencia habitual. El resultado describe tus respuestas y será revisado por tu psicólogo; no entrega un diagnóstico automático.")</p></section>
 @section Styles { <link rel="stylesheet" href="~/css/cuestionario.css" asp-append-version="true" /> }
 @section Scripts { <script src="~/js/cuestionario.js" asp-append-version="true"></script> }

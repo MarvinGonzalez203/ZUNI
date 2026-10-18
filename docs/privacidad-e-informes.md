@@ -1,5 +1,7 @@
 # Privacidad e informes educativos (R04 y R05)
 
+> **Actualización 17/10/2026:** el editor incluye «Factores educativos observados o reportados» como ayuda de redacción sin columnas nuevas. Ver [post-marlon-review-fixes.md](post-marlon-review-fixes.md).
+
 ## Preparación institucional
 
 El Administrador abre **Política de privacidad**, introduce responsable y correo de contacto, finalidades, datos necesarios y accesos, reglas/plazos de conservación y eliminación, procedimiento para derechos e incidentes. Confirma la aprobación institucional y publica. Cada publicación conserva una versión independiente; una versión anterior no se edita ni se sobrescribe. No se publica un texto legal ficticio automáticamente.

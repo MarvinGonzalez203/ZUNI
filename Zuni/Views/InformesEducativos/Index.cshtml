@@ -3,7 +3,7 @@
 <header class="dash-profile-heading"><div><h1>@Idioma.Texto("Informes educativos")</h1><p>@Idioma.Texto("Recomendaciones para el apoyo educativo con autorización por versión y destinatario.")</p></div></header>
 @if (TempData["Error"] is string m) { <p class="dash-notice" role="alert">@Idioma.Texto(m)</p> }
 <section class="dash-card p-4">
-@if (ViewData["PuedeCrear"] is true) { <p>@Idioma.Texto("Para preparar un informe, abre el expediente de un estudiante asignado y selecciona Crear informe educativo.")</p><a asp-controller="Psicologo" asp-action="Estudiantes">@Idioma.Texto("Ver estudiantes asignados")</a> }
+@if (ViewData["PuedeCrear"] is true) { <p>@Idioma.Texto("Para preparar un informe, abre la ficha de acompañamiento de un estudiante asignado y selecciona Crear informe educativo.")</p><a asp-controller="Psicologo" asp-action="Estudiantes">@Idioma.Texto("Ver estudiantes asignados")</a> }
 @if (Model.Count == 0) { <p>@Idioma.Texto("No hay informes disponibles para tu cuenta.")</p> }
 <div class="table-responsive"><table class="table"><thead><tr><th>@Idioma.Texto("Estudiante")</th><th>@Idioma.Texto("Versión")</th><th>@Idioma.Texto("Estado")</th><th>@Idioma.Texto("Acción")</th></tr></thead><tbody>
 @foreach (var v in Model) { <tr><td>@v.Estudiante</td><td>@v.Numero</td><td>@Idioma.Texto(Convert.ToString(v.Estado))</td><td><a asp-action="Detalle" asp-route-id="@v.Id">@Idioma.Texto("Ver informe")</a></td></tr> }

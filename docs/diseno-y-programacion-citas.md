@@ -1,5 +1,7 @@
 # Guías visuales, reporte compartido y programación de citas
 
+> **Actualización 17/10/2026:** el Director ya no programa, reprograma ni consulta citas individuales ni sus notificaciones; solo ve la carga anónima en «Carga de psicólogos». Ver [post-marlon-review-fixes.md](post-marlon-review-fixes.md).
+
 Entrega en `feature/director-V2`, 14 de octubre de 2026.
 
 ## Inicio y guías

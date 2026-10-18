@@ -20,14 +20,14 @@
     else if(Model.Director && Model.Profesionales.Count==1){<p class="agenda-hint">@Idioma.Texto("Psicólogo:") <strong>@Model.Profesionales[0].Text</strong></p>}
     <p class="agenda-legend"><span class="is-free">@Idioma.Texto("Disponible")</span><span class="is-busy">@Idioma.Texto("Ocupado")</span><span class="is-pending">@Idioma.Texto("Pendiente de revisar")</span><span>@Idioma.Texto("Sin horarios")</span></p>
     @if(Model.Almuerzo is {}almuerzo){<p class="agenda-hint">@Idioma.Texto("Almuerzo:") @almuerzo.Inicio.ToString("HH:mm")–@almuerzo.Fin.ToString("HH:mm"). @Idioma.Texto("No se pueden asignar citas en ese intervalo.")</p>}
-    <p class="agenda-hint">@(Model.Editor ? Idioma.Texto("Selecciona un día para consultar o configurar sus horarios.") : Model.Director ? Idioma.Texto("Selecciona un día para consultar la disponibilidad del profesional y proponer una cita.") : Idioma.Texto("Selecciona un día para consultar tus citas y las franjas de tu psicólogo asignado.")) @Idioma.Texto("Hora de Guatemala (UTC−6).")</p>
+    <p class="agenda-hint">@(Model.Editor ? Idioma.Texto("Selecciona un día para consultar o configurar sus horarios.") : Model.Director ? Idioma.Texto("Selecciona un día para consultar la carga del profesional, sin datos de estudiantes.") : Idioma.Texto("Selecciona un día para consultar tus citas y las franjas de tu psicólogo asignado.")) @Idioma.Texto("Hora de Guatemala (UTC−6).")</p>
     <div class="agenda-grid">
         @foreach (var nombre in new[] { "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom" }) { <span class="agenda-weekday">@Idioma.Texto(nombre)</span> }
         @for (var i = 0; i < offset; i++) { <span aria-hidden="true"></span> }
         @foreach (var dia in Model.Dias)
         {
             var estado = dia.Estado == "Disponible" ? "is-free" : dia.Estado == "Ocupado" ? "is-busy" : dia.Estado == "Pendiente de revisar" ? "is-pending" : "";
-            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @Idioma.Texto(dia.Estado)"><strong>@dia.Fecha.Day</strong><span>@Idioma.Texto(Convert.ToString(dia.Estado))</span>@if (dia.Citas.Count > 0) { <small>@dia.Citas.Count @Idioma.Texto("cita(s)")</small> }</button>
+            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @Idioma.Texto(dia.Estado)"><strong>@dia.Fecha.Day</strong><span>@Idioma.Texto(Convert.ToString(dia.Estado))</span>@if (Model.Director && dia.Bloques.Count > 0) { <small>@dia.Bloques.Count @Idioma.Texto("bloque(s)")</small> } else if (dia.Citas.Count > 0) { <small>@dia.Citas.Count @Idioma.Texto("cita(s)")</small> }</button>
         }
     </div>
 </section>
@@ -42,17 +42,28 @@
                 @if (dia.Bloqueado) { <p class="agenda-notice">@Idioma.Texto("Día bloqueado. La configuración se conserva y no admite solicitudes.")</p> }
                 @if(dia.PendientesPorRevisar>0){<p class="agenda-pending-review">@dia.PendientesPorRevisar @Idioma.Texto("cita(s) pendiente(s) de revisar para esta fecha.")</p>}
                 @if(Model.Almuerzo is {}a){<p class="agenda-hint">@Idioma.Texto("Almuerzo bloqueado:") @a.Inicio.ToString("HH:mm")–@a.Fin.ToString("HH:mm").</p>}
-                @if (!Model.Editor) {
-                    <h3 class="h5">@(Model.Director ? Idioma.Texto("Programaciones de este día") : Idioma.Texto("Mis citas de este día"))</h3>
+                @if (!Model.Editor && Model.Director) {
+                    @* Privacidad: el Director solo ve bloques de tiempo y su estado; nunca nombre, carné ni identificadores. *@
+                    <h3 class="h5">@Idioma.Texto("Carga de este día")</h3>
+                    @if (dia.Bloques.Count == 0) { <p>@Idioma.Texto("No hay bloques ocupados en esta fecha.")</p> }
+                    else {
+                        <ul class="list-unstyled" data-director-bloques>
+                        @foreach (var b in dia.Bloques) {
+                            <li class="agenda-slot @(b.Estado == "Ocupado" ? "is-busy" : "")"><strong>@AgendaReglas.Local(b.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(b.FinUtc).ToString("HH:mm")</strong> · @Idioma.Texto(b.Estado)</li>
+                        }
+                        </ul>
+                    }
+                    <p class="agenda-hint">@Idioma.Texto("Por privacidad, la carga del profesional se muestra sin datos de los estudiantes. La programación de cada cita corresponde al psicólogo asignado.")</p>
+                }
+                @if (!Model.Editor && !Model.Director) {
+                    <h3 class="h5">@Idioma.Texto("Mis citas de este día")</h3>
                     @if (dia.Citas.Count == 0) { <p>@Idioma.Texto("No hay citas registradas para esta fecha.")</p> }
                     @foreach (var c in dia.Citas) {
                         <article class="agenda-slot" id="cita-agenda-@c.Id"><strong>@c.Nombre</strong><p>@AgendaReglas.Local(c.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(c.FinUtc).ToString("HH:mm") · @Idioma.Texto(Convert.ToString(c.Modalidad)) · @Idioma.Texto(Convert.ToString(c.Estado))</p>
-                        @if(c.Modalidad==ModalidadCita.Presencial){<p class="text-break">@(c.DireccionAtencion??Idioma.Texto("Lugar pendiente de indicar por el psicólogo"))</p>}else if(!Model.Director){<a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@c.Id">@Idioma.Texto("Consejos y acceso a tu cita virtual")</a>}
-                        @if(Model.Director && AgendaReglas.Activa(c.Estado) && c.InicioUtc > Model.AhoraUtc && !c.EsImprevista) { <a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@c.Id">@Idioma.Texto("Reprogramar cita")</a> }
+                        @if(c.Modalidad==ModalidadCita.Presencial){<p class="text-break">@(c.DireccionAtencion??Idioma.Texto("Lugar pendiente de indicar por el psicólogo"))</p>}else{<a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@c.Id">@Idioma.Texto("Consejos y acceso a tu cita virtual")</a>}
                         </article>
                     }
-                    @if(Model.Director && dia.Editable && !dia.Bloqueado) { <a class="dash-button mb-3" asp-controller="CitasProgramadas" asp-action="Editar" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" asp-route-psicologoId="@Model.PsicologoId">@Idioma.Texto("Proponer cita a un estudiante vinculado")</a> }
-                    @if(!Model.Director && !Model.PuedeReservar) { <p class="agenda-hint">@Idioma.Texto("Puedes consultar tus citas. Para reservar, completa el perfil, la verificación de edad y la asignación de psicólogo.")</p> }
+                    @if(!Model.PuedeReservar) { <p class="agenda-hint">@Idioma.Texto("Puedes consultar tus citas. Para reservar, completa el perfil, la verificación de edad y la asignación de psicólogo.")</p> }
                 }
                 @if (Model.Editor) {
                     <h3 class="h5">@Idioma.Texto("Citas y actividades de este día")</h3>

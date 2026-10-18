@@ -8,7 +8,7 @@
     <div class="dash-welcome-copy">
         <span class="dash-eyebrow">@Idioma.Texto("TU ESPACIO DE ACOMPAÑAMIENTO")</span>
         <h1>@Idioma.Texto("Hola,") @nombre<span class="dash-greeting-dot">.</span></h1>
-        <p>@Idioma.Texto("Consulta tus estudiantes asignados y sus expedientes iniciales autorizados.")</p>
+        <p>@Idioma.Texto("Consulta tus estudiantes asignados y sus fichas de acompañamiento autorizadas.")</p>
         <a class="dash-button" asp-action="Estudiantes">@Idioma.Texto("Ver estudiantes") <partial name="_DashboardIcon" model='@("arrow")' /></a>
     </div>
     <div class="dash-welcome-art" aria-hidden="true"><div class="dash-glass-orbit"></div><div class="dash-glass-orbit orbit-small"></div><img src="~/images/zuni-logo-transparent.png" alt="" /><span>@Idioma.Texto("Acompañar y conectar.")</span></div>
@@ -21,7 +21,7 @@
         <p>@(Model.EstudiantesAsignados == 1 ? Idioma.Texto("Estudiante asignado actualmente") : Idioma.Texto("Estudiantes asignados actualmente"))</p><span class="dash-text-link">@Idioma.Texto("Ver estudiantes")</span>
     </a>
     <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes"><h2>@Idioma.Texto("Solicitudes asignadas")</h2><strong class="fs-2">@Model.SolicitudesAsignadas</strong><p>@Idioma.Texto("De estudiantes con asignación vigente a tu cuenta.")</p><span class="dash-text-link">@Idioma.Texto("Ver quién realizó la solicitud")</span></a>
-    <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes" asp-route-expedientes="true"><h2>@Idioma.Texto("Expedientes disponibles")</h2><strong class="fs-2">@Model.ExpedientesDisponibles</strong><p>@Idioma.Texto("Con consentimiento aceptado y asignación vigente.")</p><span class="dash-text-link">@Idioma.Texto("Consultar expedientes")</span></a>
+    <a class="dash-card dash-summary dash-card-link" asp-action="Solicitudes" asp-route-expedientes="true"><h2>@Idioma.Texto("Fichas de acompañamiento")</h2><strong class="fs-2">@Model.ExpedientesDisponibles</strong><p>@Idioma.Texto("Con consentimiento aceptado y asignación vigente.")</p><span class="dash-text-link">@Idioma.Texto("Consultar fichas")</span></a>
 </section>
 <div class="dash-section-heading"><h2>@Idioma.Texto("Herramientas de atención")</h2></div>
 <section class="dash-summary-grid" aria-label="@Idioma.Texto("Módulos de atención")">

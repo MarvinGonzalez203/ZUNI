@@ -49,6 +49,8 @@ public sealed class GestionarUsuarioViewModel
     public string? Carrera { get; init; }
     public int AsignacionesVigentes { get; init; }
     public bool EsUnoMismo { get; init; }
+    public Guid? PerfilEstudianteId { get; init; }
+    public Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad? MayoriaEdad { get; init; }
 
     // Vista por rol a la que vuelve el enlace "Volver" (primer rol en el orden del menú).
     public string AccionVolver => Roles.Contains("Administrador") ? "Administradores"

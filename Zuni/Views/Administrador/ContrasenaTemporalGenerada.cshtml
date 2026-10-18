@@ -23,6 +23,7 @@
             <p class="small">@Idioma.Texto("La cuenta sigue") <strong>@Idioma.Texto("inactiva")</strong>@Idioma.Texto(": el usuario no podrá iniciar sesión hasta que la actives.")</p>
         }
         <p class="small">@Idioma.Texto("Al iniciar sesión, el usuario deberá cambiarla por una contraseña personal.")</p>
+        <partial name="_DireccionAcceso" />
         <a asp-controller="Administrador" asp-action="Gestionar" asp-route-id="@Model.UsuarioId" class="dash-button px-4">@Idioma.Texto("Volver al usuario")</a>
     </div>
 </section>

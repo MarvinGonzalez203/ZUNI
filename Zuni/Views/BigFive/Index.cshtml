@@ -6,6 +6,7 @@
 <div class="bf-module">
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("PARTICIPACIÓN VOLUNTARIA")</span><h1>@Idioma.Texto("Big Five")</h1><p>@Idioma.Texto("Herramienta opcional de apoyo · 50 afirmaciones ·") @Ipip50.Version</p></div></header>
 <partial name="_Limitaciones" />
+<partial name="_AvisoPrivacidadActividad" />
 @if (TempData["BigFiveError"] is string error) { <p class="dash-notice" role="alert">@Idioma.Texto(error)</p> }
 @if (TempData["BigFiveSuccess"] is string success) { <p class="dash-notice" role="status">@Idioma.Texto(success)</p> }
 @if (Model.Id is Guid id)

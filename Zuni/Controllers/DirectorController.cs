@@ -44,11 +44,13 @@ public sealed class DirectorController(ApplicationDbContext db) : Controller
         return View();
     }
 
+    // Indicadores institucionales agregados. No existe un listado que identifique a quién se atiende.
     [HttpGet]
-    public async Task<IActionResult> Estadisticas()
+    public async Task<IActionResult> Estadisticas([FromServices] TimeProvider reloj, CancellationToken ct)
     {
+        if (!await Zuni.Services.MayoriaEdad.MayoriaEdadService.ActorAsync(db, User, "Director", ct)) return Forbid();
         await PrepararDashboardAsync();
-        return View();
+        return View(await Zuni.Services.Reportes.EstadisticasDirector.CalcularAsync(db, reloj, ct));
     }
 
     private async Task PrepararDashboardAsync()

@@ -5,6 +5,7 @@
 <div class="bf-module">
 <header class="dash-profile-heading"><div><h1>@Idioma.Texto("Cuestionario Big Five")</h1><p>@Ipip50.Version @Idioma.Texto("· Responde según cómo eres habitualmente.")</p></div></header>
 <partial name="_Limitaciones" />
+<partial name="_AvisoPrivacidadActividad" />
 @if (TempData["BigFiveSuccess"] is string success) { <p class="dash-notice" role="status">@Idioma.Texto(success)</p> }
 <p>1 = nada, 2 = poco, 3 = en parte, 4 = bastante, 5 = mucho.</p>
 <form asp-action="Guardar" method="post" id="bigfive-form">

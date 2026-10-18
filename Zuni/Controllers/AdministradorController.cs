@@ -241,8 +241,11 @@ public sealed class AdministradorController : Controller
                            select r.Name!).ToListAsync(cancellationToken);
         var perfil = await _db.PerfilesEstudiante.AsNoTracking()
             .Where(p => p.UsuarioId == usuario.Id)
-            .Select(p => new { p.Carne, p.Carrera })
+            .Select(p => new { p.Id, p.Carne, p.Carrera })
             .SingleOrDefaultAsync(cancellationToken);
+        // Estado de mayoría de edad en la misma ficha: edad y resultado, nunca fecha de nacimiento ni documento.
+        var mayoriaEdad = perfil is null ? null : await _db.VerificacionesMayoriaEdad.AsNoTracking()
+            .SingleOrDefaultAsync(v => v.PerfilEstudianteId == perfil.Id, cancellationToken);
 
         return View(new GestionarUsuarioViewModel
         {
@@ -259,6 +262,8 @@ public sealed class AdministradorController : Controller
             Roles = roles,
             Carne = perfil?.Carne,
             Carrera = perfil?.Carrera,
+            PerfilEstudianteId = perfil?.Id,
+            MayoriaEdad = mayoriaEdad,
             AsignacionesVigentes = roles.Contains("Psicologo")
                 ? await _db.AsignacionesEstudiantePsicologo.AsNoTracking()
                     .CountAsync(a => a.PsicologoUsuarioId == usuario.Id && a.FechaFinalizacionUtc == null, cancellationToken)
@@ -858,6 +863,8 @@ public sealed class AdministradorController : Controller
             await _db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             TempData["Success"] = "El usuario fue creado correctamente.";
+            // Solo una marca: la ficha muestra la dirección de acceso calculada de la petición, sin guardarla.
+            TempData["CuentaCreada"] = "1";
             return RedirectToAction(nameof(Gestionar), new { id = usuario.Id });
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException

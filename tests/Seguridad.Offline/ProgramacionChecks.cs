@@ -16,7 +16,8 @@ internal static class ProgramacionChecks
         async Task<HttpResponseMessage> Save(HttpClient client,DateOnly dia,Guid? cita=null,Guid? revision=null,Guid? profile=null,Guid? op=null,string modalidad="Presencial")=>await HostPrueba.Post(client,Edit(cita),"/CitasProgramadas/Guardar",("CitaId",cita?.ToString()??""),("Revision",(revision??Guid.Empty).ToString()),("OperacionId",(op??id).ToString()),("PerfilEstudianteId",(profile??perfil).ToString()),("Fecha",dia.ToString("yyyy-MM-dd")),("HoraInicio","10:00"),("DuracionMinutos","50"),("Modalidad",modalidad),("DireccionAtencion","Consultorio de prueba, edificio A"));
         async Task<Cita> Leer(){await using var db=new OfflineDb(options);return await db.Citas.AsNoTracking().SingleAsync(c=>c.Id==id);}
         foreach(var c in new[]{student,admin,anon})Check((await c.GetAsync(Edit())).StatusCode==HttpStatusCode.Redirect,"roles ajenos no programan");
-        Check((await psy.GetAsync(Edit())).StatusCode==HttpStatusCode.OK&&(await director.GetAsync(Edit())).StatusCode==HttpStatusCode.OK,"pantallas profesional y Director");
+        Check((await psy.GetAsync(Edit())).StatusCode==HttpStatusCode.OK,"pantalla de programación del profesional");
+        Check((await director.GetAsync(Edit())).StatusCode==HttpStatusCode.Redirect&&(await director.GetAsync("/CitasProgramadas")).StatusCode==HttpStatusCode.Redirect,"Director no abre la programación individual");
         Check((await psy.PostAsync("/CitasProgramadas/Guardar",new FormUrlEncodedContent([]))).StatusCode==HttpStatusCode.BadRequest,"antiforgery");
         Check((await Save(psy,fecha,profile:Guid.NewGuid())).StatusCode==HttpStatusCode.Conflict,"sin vínculo no programa");
         Check((await Save(psy,fecha)).StatusCode==HttpStatusCode.Redirect,"programación directa");
@@ -28,9 +29,12 @@ internal static class ProgramacionChecks
         await using(var db=new OfflineDb(options))Check(!(await db.NotificacionesCita.SingleAsync(n=>n.Id==notificacion)).Leida,"IDOR no modifica estado");
         Check((await HostPrueba.Post(student,"/CitasProgramadas/Notificaciones","/CitasProgramadas/Leida",("id",notificacion.ToString()))).StatusCode==HttpStatusCode.Redirect,"marca propia leída");
         Check((await otherPsy.GetAsync(Edit(id))).StatusCode==HttpStatusCode.Redirect,"otro psicólogo no reprograma");
-        Check((await Save(director,fecha.AddDays(1),id,cita.Revision)).StatusCode==HttpStatusCode.Redirect,"Director reprograma sin expediente");
-        var moved=await Leer();Check(moved.Id==id&&moved.FechaHoraInicioUtc==AgendaReglas.Utc(fecha.AddDays(1),new(10,0))&&moved.Revision!=cita.Revision&&moved.ProgramadorRol=="Director"&&moved.Estado==EstadoCita.Solicitada,"misma cita y revisión nueva; Director deja pendiente confirmación");
-        Check((await psy.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("Cita reprogramada por Director"),"profesional informado del cambio institucional");
+        Check((await HostPrueba.Post(director,"/Director","/CitasProgramadas/Guardar",("CitaId",id.ToString()),("Revision",cita.Revision.ToString()),("OperacionId",id.ToString()),("PerfilEstudianteId",perfil.ToString()),("Fecha",fecha.AddDays(1).ToString("yyyy-MM-dd")),("HoraInicio","10:00"),("DuracionMinutos","50"),("Modalidad","Presencial"))).StatusCode==HttpStatusCode.Redirect,"Director no reprograma citas individuales");
+        await using(var db=new OfflineDb(options))Check((await db.Citas.AsNoTracking().SingleAsync(c=>c.Id==id)).Revision==cita.Revision,"el intento del Director no modifica la cita");
+        Check((await director.GetAsync("/CitasProgramadas/Notificaciones")).StatusCode==HttpStatusCode.Redirect,"Director no consulta notificaciones de citas");
+        // Estado equivalente a una reprogramación institucional anterior al retiro de esa función (dato histórico).
+        await using(var db=new OfflineDb(options)){var c=await db.Citas.SingleAsync(c=>c.Id==id);c.FechaHoraInicioUtc=AgendaReglas.Utc(fecha.AddDays(1),new(10,0));c.FechaHoraFinUtc=c.FechaHoraInicioUtc.AddMinutes(50);c.ProgramadorUsuarioId="director";c.ProgramadorRol="Director";c.Estado=EstadoCita.Solicitada;c.Revision=Guid.NewGuid();await db.SaveChangesAsync();}
+        var moved=await Leer();Check(moved.Id==id&&moved.FechaHoraInicioUtc==AgendaReglas.Utc(fecha.AddDays(1),new(10,0))&&moved.Revision!=cita.Revision&&moved.ProgramadorRol=="Director"&&moved.Estado==EstadoCita.Solicitada,"cita histórica del Director queda pendiente de confirmación");
         Check((await Save(psy,fecha.AddDays(2),id,cita.Revision)).StatusCode==HttpStatusCode.Conflict,"edición obsoleta rechazada");
         Check((await Save(psy,fecha.AddDays(1),op:Guid.NewGuid())).StatusCode==HttpStatusCode.Conflict,"no duplica citas del mismo día");
         Check((await Save(psy,fecha)).StatusCode==HttpStatusCode.Conflict,"operación ya guardada no duplica");

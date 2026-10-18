@@ -1,7 +1,7 @@
 @model Zuni.Models.Atencion.ExpedienteConsultaViewModel
 @using Zuni.Models.Atencion
 @{ ViewData["Title"] = "Expediente inicial"; Layout = "_DashboardLayout"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("CONTENIDO CONFIDENCIAL · SOLO LECTURA")</span><h1>@Idioma.Texto("Expediente inicial")</h1><p>@Idioma.Texto("Esta consulta queda registrada. No compartas el contenido fuera de la atención autorizada.")</p></div></header>
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("CONTENIDO CONFIDENCIAL · SOLO LECTURA")</span><h1>@Idioma.Texto("Ficha inicial de acompañamiento")</h1><p>@Idioma.Texto("Esta consulta queda registrada. No compartas el contenido fuera de la atención autorizada.")</p></div></header>
 <section class="dash-card" data-contenido-privado>
     <a class="dash-button mb-3" asp-controller="InformesEducativos" asp-action="Crear" asp-route-solicitudId="@Model.SolicitudId">@Idioma.Texto("Crear informe educativo")</a>
     <h2 class="h4">@Idioma.Texto("Datos básicos")</h2>
@@ -16,7 +16,7 @@
         <dt class="col-sm-4">@Idioma.Texto("Idioma preferido")</dt><dd class="col-sm-8">@Model.IdiomaPreferido</dd>
         <dt class="col-sm-4">@Idioma.Texto("Tipo de ingreso")</dt><dd class="col-sm-8">@(Model.TipoIngreso == TipoIngresoAtencion.Referencia ? Idioma.Texto("Referencia") : Idioma.Texto("Iniciativa propia"))</dd>
     </dl>
-    <h2 class="h4">@Idioma.Texto("Motivo de consulta")</h2><p class="text-break" style="white-space: pre-line">@Model.MotivoConsulta</p>
+    <h2 class="h4">@Idioma.Texto("Motivo de atención")</h2><p class="text-break" style="white-space: pre-line">@Model.MotivoConsulta</p>
     @if (Model.TipoIngreso == TipoIngresoAtencion.Referencia)
     {
         <h2 class="h4">@Idioma.Texto("Referencia")</h2><p class="text-break">@Model.NombreReferente</p><p class="text-break" style="white-space: pre-line">@Model.MotivoReferencia</p>

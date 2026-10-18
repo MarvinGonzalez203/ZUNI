@@ -307,6 +307,13 @@ public sealed class CuentaController(
         if (privacidad is null) { Response.StatusCode = StatusCodes.Status403Forbidden; ViewData["PrivacidadPendiente"] = true; return View("RegistroNoDisponible", configuracion); }
         if (!model.AceptaPrivacidad || model.PoliticaPrivacidadId != privacidad.Id) ModelState.AddModelError("", "Lee y acepta la política de privacidad vigente antes de crear tu cuenta.");
 
+        // Declaración de mayoría de edad en el mismo registro: evita un paso posterior. Solo se conserva
+        // la edad calculada, en estado Pendiente; nunca la fecha, el CUI ni el documento.
+        var hoyRegistro = Zuni.Services.MayoriaEdad.MayoriaEdadService.Hoy(reloj);
+        if (model.FechaNacimiento.HasValue &&
+            Zuni.Services.MayoriaEdad.MayoriaEdadService.ValidarNacimiento(model.FechaNacimiento, hoyRegistro) is { } errorEdad)
+            ModelState.AddModelError(nameof(model.FechaNacimiento), errorEdad);
+
         if (!CarneHelper.TryConstruir(
             model.CarneParte1,
             model.CarneParte2,
@@ -428,6 +435,21 @@ public sealed class CuentaController(
             });
 
         db.PerfilesEstudiante.Add(perfil);
+
+        db.VerificacionesMayoriaEdad.Add(new Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad
+        {
+            PerfilEstudianteId = perfil.Id,
+            EdadDeclarada = Zuni.Services.MayoriaEdad.MayoriaEdadService.Edad(model.FechaNacimiento!.Value, hoyRegistro),
+            FechaDeclaracionUtc = reloj.GetUtcNow().UtcDateTime,
+            Estado = Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Pendiente
+        });
+        db.AuditoriaUsuarios.Add(new AuditoriaUsuario
+        {
+            UsuarioAfectadoId = user.Id,
+            AdministradorId = user.Id,
+            Accion = "MAYORIA_EDAD_DECLARADA",
+            FechaUtc = reloj.GetUtcNow().UtcDateTime
+        });
 
         // Marca el estado "pendiente de activación" sin columnas nuevas. El actor es el propio
         // usuario; no se guarda contraseña ni dato sensible.

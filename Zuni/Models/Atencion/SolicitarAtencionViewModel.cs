@@ -10,7 +10,7 @@ public sealed class SolicitarAtencionViewModel : IValidatableObject
     public string? Sexo { get; set; }
     [Required, StringLength(300), Display(Name = "Dirección")] public string Direccion { get; set; } = string.Empty;
     [Required, StringLength(80), Display(Name = "Idioma preferido")] public string IdiomaPreferido { get; set; } = string.Empty;
-    [Required, StringLength(2000), Display(Name = "Motivo de consulta")] public string MotivoConsulta { get; set; } = string.Empty;
+    [Required, StringLength(2000), Display(Name = "Motivo de atención")] public string MotivoConsulta { get; set; } = string.Empty;
     [EnumDataType(typeof(TipoIngresoAtencion)), Display(Name = "Tipo de ingreso")] public TipoIngresoAtencion TipoIngreso { get; set; }
     [StringLength(150), Display(Name = "Quién refiere")] public string? NombreReferente { get; set; }
     [StringLength(1000), Display(Name = "Motivo de referencia")] public string? MotivoReferencia { get; set; }

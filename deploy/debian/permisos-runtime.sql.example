@@ -1,0 +1,20 @@
+-- Permisos mínimos del usuario de EJECUCIÓN de ZUNI. Ejemplo para revisar, no se ejecuta solo.
+-- Ejecutar con el usuario de MIGRACIÓN (propietario) DESPUÉS de cada script de migraciones,
+-- porque las tablas nuevas no heredan estos permisos. Reemplazar zuni_institucion_a_app.
+\set ON_ERROR_STOP on
+BEGIN;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO zuni_institucion_a_app;
+-- Sin CREATE: el usuario de ejecución no crea ni altera objetos.
+REVOKE CREATE ON SCHEMA public FROM zuni_institucion_a_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO zuni_institucion_a_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO zuni_institucion_a_app;
+-- Evidencias inmutables: solo lectura e inserción (ZUNI rechaza arrancar si puede modificarlas).
+REVOKE UPDATE, DELETE, TRUNCATE, TRIGGER ON
+    "AuditoriaUsuarios", "EventosAccesoClinico", "RegistrosSeguridad", "ExportacionesSeguridad",
+    "ConsentimientosAtencion", "AceptacionesPrivacidad"
+    FROM zuni_institucion_a_app;
+-- Marca de conversión clínica: solo lectura. La escribe --migrar-seguridad con el usuario de migración.
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, TRIGGER ON "EstadoProteccion" FROM zuni_institucion_a_app;
+GRANT SELECT ON "EstadoProteccion" TO zuni_institucion_a_app;
+COMMIT;

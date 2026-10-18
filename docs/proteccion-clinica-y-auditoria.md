@@ -15,12 +15,12 @@ El administrador de PostgreSQL no obtiene las claves al copiar la base. Quien co
 Variables de producción obligatorias, con rutas absolutas fuera de la publicación:
 
 ```text
-SeguridadClinica__ClavesPath=/var/lib/zuni-private/claves.json
-SeguridadClinica__BitacoraPath=/var/lib/zuni-audit/bitacora.jsonl
+SeguridadClinica__ClavesPath=/var/lib/zuni/<instalacion>/seguridad/claves.json
+SeguridadClinica__BitacoraPath=/var/lib/zuni/<instalacion>/auditoria/bitacora.jsonl
 Zuni__InstallationId=<identificador-unico-de-institucion>
 ```
 
-En Development, los archivos se sitúan bajo los datos locales del usuario, `ZUNI/seguridad/<instalación>/`. No se guardan en Git, en `wwwroot`, en PostgreSQL ni en el directorio de publicación. Las carpetas se restringen a la cuenta ejecutora (0700) y los archivos a lectura/escritura de esa cuenta (0600); en Windows se aplica ACL sin herencia. Ejecutar la provisión como la cuenta de servicio o entregar después la propiedad a esa cuenta por un procedimiento controlado. No usar una carpeta compartida con archivos de otros servicios.
+En Debian, estas rutas quedan dentro de `/var/lib/zuni/<instalacion>/`, la única ruta escribible del servicio `zuni@.service`; ver [instalaciones-debian.md](instalaciones-debian.md#estructura-por-instalación). En Development, los archivos se sitúan bajo los datos locales del usuario, `ZUNI/seguridad/<instalación>/`. No se guardan en Git, en `wwwroot`, en PostgreSQL ni en el directorio de publicación. Las carpetas se restringen a la cuenta ejecutora (0700) y los archivos a lectura/escritura de esa cuenta (0600); en Windows se aplica ACL sin herencia. Ejecutar la provisión como la cuenta de servicio o entregar después la propiedad a esa cuenta por un procedimiento controlado. No usar una carpeta compartida con archivos de otros servicios.
 
 ```text
 dotnet Zuni.dll --inicializar-seguridad

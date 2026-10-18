@@ -1,5 +1,18 @@
 @model Zuni.Models.Agenda.CalendarioDirectorViewModel
-@{ ViewData["Title"]="Calendario de citas"; }
-<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("COORDINACIÓN INSTITUCIONAL")</span><h1>@Idioma.Texto("Calendario de citas")</h1><p>@Idioma.Texto("Consulta la disponibilidad por profesional y propone citas a sus estudiantes vinculados. El psicólogo confirma la atención.")</p></div></header>
+@{ ViewData["Title"]="Carga de psicólogos"; }
+<header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("COORDINACIÓN INSTITUCIONAL")</span><h1>@Idioma.Texto("Carga de psicólogos")</h1><p>@Idioma.Texto("Consulta la disponibilidad y la carga de cada profesional en bloques de tiempo. Por privacidad no se muestran nombres, carnés ni datos de los estudiantes atendidos.")</p></div></header>
+@if(Model.Psicologos.Count>0){
+<section class="dash-card mb-4" aria-labelledby="metricas-carga" id="metricas-carga-director">
+    <h2 id="metricas-carga" class="h5">@Idioma.Texto("Resumen del mes del profesional seleccionado")</h2>
+    <dl class="row mb-0">
+        <dt class="col-sm-6">@Idioma.Texto("Citas programadas o confirmadas")</dt><dd class="col-sm-6" data-metrica="ocupados">@Model.Metricas.Ocupados</dd>
+        <dt class="col-sm-6">@Idioma.Texto("Pendientes de revisar")</dt><dd class="col-sm-6" data-metrica="pendientes">@Model.Metricas.PendientesDeRevisar</dd>
+        <dt class="col-sm-6">@Idioma.Texto("Atenciones completadas")</dt><dd class="col-sm-6" data-metrica="completadas">@Model.Metricas.Completadas</dd>
+        <dt class="col-sm-6">@Idioma.Texto("Canceladas o rechazadas")</dt><dd class="col-sm-6" data-metrica="canceladas">@Model.Metricas.Canceladas</dd>
+        <dt class="col-sm-6">@Idioma.Texto("Inasistencias")</dt><dd class="col-sm-6" data-metrica="inasistencias">@Model.Metricas.NoAsistio</dd>
+    </dl>
+    <p class="small mt-2 mb-0">@Idioma.Texto("Conteos agregados. No identifican a ningún estudiante.")</p>
+</section>
+}
 <partial name="_CalendarioDirector" model="Model" />
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }

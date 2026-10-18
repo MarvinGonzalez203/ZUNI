@@ -16,6 +16,11 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
+# Única ruta escribible. Debe contener, propiedad de zuni-%i y con permisos 0700:
+#   /var/lib/zuni/%i/dataprotection   claves de Data Protection (DataProtection__KeysPath)
+#   /var/lib/zuni/%i/seguridad        claves del cifrado clínico (SeguridadClinica__ClavesPath)
+#   /var/lib/zuni/%i/auditoria        bitácora externa firmada (SeguridadClinica__BitacoraPath)
+# La publicación en /opt/zuni/%i/current queda de solo lectura y nunca contiene claves.
 ReadWritePaths=/var/lib/zuni/%i
 
 [Install]

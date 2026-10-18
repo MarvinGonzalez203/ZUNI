@@ -42,7 +42,7 @@
             <dt class="col-sm-4">@Idioma.Texto("Fecha de asignación")</dt><dd class="col-sm-8">@(s.FechaAsignacionUtc is { } f ? AgendaReglas.Local(f).ToString("dd/MM/yyyy HH:mm") : "—")</dd>
             <dt class="col-sm-4">@Idioma.Texto("Citas activas")</dt><dd class="col-sm-8">@Model.CitasActivas</dd>
         </dl>
-        <p class="small">@Idioma.Texto("Solo datos administrativos. El motivo de consulta, el expediente, los contactos de emergencia, Big Five y las notas profesionales no se muestran al Administrador.")</p>
+        <p class="small">@Idioma.Texto("Solo datos administrativos. El motivo de atención, la ficha de acompañamiento, los contactos de emergencia, Big Five y las notas profesionales no se muestran al Administrador.")</p>
 
         @if (bloqueadaPorCitas && s.Estado != EstadoSolicitudAtencion.Cerrada)
         {
@@ -101,7 +101,7 @@
             }
 
             <h2 class="h4 mt-4">@Idioma.Texto("Finalizar asignación")</h2>
-            <p class="small">@Idioma.Texto("Termina la asignación actual sin cerrar la solicitud. La solicitud vuelve a") <strong>@Idioma.Texto("Pendiente")</strong> @Idioma.Texto("para asignar a otro psicólogo. El psicólogo anterior deja de tener acceso clínico al expediente.")</p>
+            <p class="small">@Idioma.Texto("Termina la asignación actual sin cerrar la solicitud. La solicitud vuelve a") <strong>@Idioma.Texto("Pendiente")</strong> @Idioma.Texto("para asignar a otro psicólogo. El psicólogo anterior deja de tener acceso profesional a la ficha de acompañamiento.")</p>
             <form asp-action="FinalizarAsignacion" asp-route-id="@s.SolicitudId" method="post" class="mb-4">
                 <input type="hidden" name="SolicitudId" value="@s.SolicitudId" />
                 <label for="finalizar-motivo" class="form-label">@Idioma.Texto("Motivo (opcional)")</label>

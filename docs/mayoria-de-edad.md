@@ -1,5 +1,7 @@
 # Verificación de mayoría de edad (R03)
 
+> **Actualización 17/10/2026:** la declaración también se presenta en el registro (fecha de nacimiento obligatoria, no se guarda) y el Administrador la revisa desde la ficha del usuario antes de activar. Ver [post-marlon-review-fixes.md](post-marlon-review-fixes.md).
+
 ## Recorrido de usuario
 
 1. El estudiante inicia sesión y abre **Mayoría de edad** en su menú.

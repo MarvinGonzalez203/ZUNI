@@ -135,6 +135,8 @@ internal static class HostPrueba
         {
             var policy = Regex.Match(html, "name=\"PoliticaPrivacidadId\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
             datos.TryAdd("PoliticaPrivacidadId", policy); datos.TryAdd("AceptaPrivacidad", "true");
+            // El registro declara la mayoría de edad. Fecha ficticia de una persona adulta.
+            datos.TryAdd("FechaNacimiento", "2000-01-15");
         }
         datos["__RequestVerificationToken"] = Token(html);
         return await cliente.PostAsync(accion, new FormUrlEncodedContent(datos));

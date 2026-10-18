@@ -19,7 +19,7 @@
     <details class="dash-nav-group" open="@atencion"><summary><partial name="_DashboardIcon" model='@("clipboard")' /><span>@Idioma.Texto("Atención")</span></summary><div class="dash-nav-children">
         <a class="dash-nav-link @Act(Es("Psicologo","Estudiantes"))" asp-controller="Psicologo" asp-action="Estudiantes"><span>@Idioma.Texto("Estudiantes vinculados")</span></a>
         <a class="dash-nav-link @Act(Es("Psicologo","Atencion")||(Es("Psicologo","Solicitudes")&&!expedientes))" asp-controller="Psicologo" asp-action="Solicitudes"><span>@Idioma.Texto("Solicitudes asignadas")</span></a>
-        <a class="dash-nav-link @Act(Es("Psicologo","Expediente")||(Es("Psicologo","Solicitudes")&&expedientes))" asp-controller="Psicologo" asp-action="Solicitudes" asp-route-expedientes="true"><span>@Idioma.Texto("Expedientes disponibles")</span></a>
+        <a class="dash-nav-link @Act(Es("Psicologo","Expediente")||(Es("Psicologo","Solicitudes")&&expedientes))" asp-controller="Psicologo" asp-action="Solicitudes" asp-route-expedientes="true"><span>@Idioma.Texto("Fichas de acompañamiento")</span></a>
         <a class="dash-nav-link @Act(Es("InformesEducativos"))" asp-controller="InformesEducativos" asp-action="Index"><span>@Idioma.Texto("Informes educativos")</span></a>
         <a class="dash-nav-link @Act(Es("Psicologo","Historial","VerAtencion","RegistrarAtencion")||Es("Atenciones","Reporte"))" asp-controller="Psicologo" asp-action="Historial"><span>@Idioma.Texto("Historial y registros")</span></a>
     </div></details>

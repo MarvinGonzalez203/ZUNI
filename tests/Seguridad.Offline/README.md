@@ -15,6 +15,10 @@ El host reutiliza la configuración real de seguridad de Zuni (`SesionZuni`, `Po
 
 Cubre:
 
+- Privacidad del Director: carga anónima por bloques, métricas y estadísticas agregadas, rutas directas y programación
+  individual denegadas en el servidor, avisos antes de Big Five/cuestionarios y coherencia estática de `deploy/debian`
+  (`PrivacidadDirectorChecks.cs`). Citas históricas propuestas por un Director: `LegadoDirector.cs`.
+
 - Configuración institucional: nombre, soporte, tres políticas de correo, dominio exacto,
   registro pendiente, altas administrativas, cierre de registro, revisión concurrente, auditoría,
   antiforgery y conservación del acceso de cuentas existentes (`InstitucionChecks.cs`).

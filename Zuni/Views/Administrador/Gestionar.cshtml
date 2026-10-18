@@ -4,6 +4,14 @@
     ViewData["Title"] = "Gestionar usuario";
     string Visible(string rol) => rol switch { "Psicologo" => "Psicólogo", "Catedratico" => "Catedrático", _ => rol };
     var estado = Model.IsActive ? "Activo" : Model.PendienteActivacion ? "Pendiente de activación" : "Inactivo";
+    var edad = Model.MayoriaEdad;
+    var estadoEdad = edad is null ? "SinDeclaracion" : edad.Estado.ToString();
+    var textoEdad = edad is null ? Idioma.Texto("Sin declaración: el estudiante debe declarar su fecha de nacimiento.")
+        : edad.Estado == Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Pendiente ? Idioma.Texto("Pendiente de verificación (edad declarada: {0} años)", edad.EdadDeclarada)
+        : edad.Estado == Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada ? Idioma.Texto("Verificada ({0} años al revisar el documento)", edad.EdadVerificada ?? edad.EdadDeclarada)
+        : Idioma.Texto("No verificada: requiere una nueva declaración del estudiante.");
+    var puedeRevisarEdad = Model.Roles.Contains("Estudiante") && Model.PerfilEstudianteId is not null && edad is not null
+        && edad.Estado != Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada && (Model.IsActive || Model.PendienteActivacion);
 }
 
 <section class="container py-4 py-md-5" aria-labelledby="gestionar-title">
@@ -23,6 +31,10 @@
             {
                 <div class="alert @(tipo == "Error" ? "alert-danger" : "alert-light") border" role="status">@Idioma.Texto(mensaje)</div>
             }
+        }
+        @if (TempData["CuentaCreada"] is "1")
+        {
+            <partial name="_DireccionAcceso" />
         }
 
         <h2 class="h5">@Idioma.Texto("Datos del usuario")</h2>
@@ -47,6 +59,10 @@
             {
                 <dt class="col-sm-4">@Idioma.Texto("Carné")</dt><dd class="col-sm-8">@(CarneHelper.Formatear(Model.Carne) ?? "—")</dd>
                 <dt class="col-sm-4">@Idioma.Texto("Carrera")</dt><dd class="col-sm-8 text-break">@(Model.Carrera ?? "—")</dd>
+                <dt class="col-sm-4">@Idioma.Texto("Mayoría de edad")</dt>
+                <dd class="col-sm-8" id="mayoria-edad-estado" data-estado="@estadoEdad">
+                    @textoEdad
+                </dd>
             }
             @if (Model.Roles.Contains("Psicologo"))
             {
@@ -54,6 +70,18 @@
             }
         </dl>
         <p class="small">@Idioma.Texto("Solo datos administrativos. La información clínica no está disponible para el Administrador.")</p>
+
+        @if (Model.Roles.Contains("Estudiante") && Model.PendienteActivacion)
+        {
+            <div class="alert alert-light border" id="recorrido-activacion" role="note">
+                <p class="fw-semibold mb-1">@Idioma.Texto("Revisión del registro en una sola ficha")</p>
+                <ol class="mb-1">
+                    <li>@Idioma.Texto("Revisa el documento y registra la mayoría de edad.")</li>
+                    <li>@Idioma.Texto("Activa el registro.")</li>
+                </ol>
+                <p class="small mb-0">@Idioma.Texto("Verificar la edad no activa la cuenta y activar la cuenta no verifica la edad. El estudiante no podrá solicitar atención hasta completar ambas revisiones.")</p>
+            </div>
+        }
 
         <h2 class="h5 mt-4">@Idioma.Texto("Acciones")</h2>
         <div class="d-flex flex-wrap gap-2" role="group" aria-label="@Idioma.Texto("Acciones sobre el usuario")">
@@ -72,6 +100,10 @@
             @if (!Model.EsUnoMismo)
             {
                 <a asp-action="ContrasenaTemporal" asp-route-id="@Model.Id" class="btn btn-outline-dark">@Idioma.Texto("Asignar contraseña temporal")</a>
+            }
+            @if (puedeRevisarEdad)
+            {
+                <a asp-controller="MayoriaEdad" asp-action="Revisar" asp-route-id="@Model.PerfilEstudianteId" asp-route-origen="ficha" class="btn btn-outline-dark" id="revisar-edad-ficha">@Idioma.Texto("Revisar documento de mayoría de edad")</a>
             }
             <a asp-action="Historial" asp-route-id="@Model.Id" class="btn btn-outline-dark">@Idioma.Texto("Ver historial")</a>
         </div>

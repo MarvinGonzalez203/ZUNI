@@ -12,5 +12,7 @@ target="$2/zuni-$id-$(date -u +%Y%m%dT%H%M%S)-$$.dump"
 pg_dump --format=custom --file="$target"
 pg_restore --list "$target" >/dev/null
 echo "Respaldo verificado: $target"
-# Conservar además las claves de /var/lib/zuni/<id>/keys bajo acceso restringido.
+# Este respaldo NO incluye claves. Conservar aparte, cifradas y bajo custodia separada,
+# /var/lib/zuni/<id>/seguridad (cifrado clínico) y /var/lib/zuni/<id>/dataprotection.
+# Sin claves.json los textos clínicos del respaldo no se pueden leer.
 # Cifrar y enviar a almacenamiento independiente según política institucional.

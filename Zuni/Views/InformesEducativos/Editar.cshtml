@@ -1,7 +1,7 @@
 @model Zuni.Models.Informes.EditarInformeInput
 @{ ViewData["Title"] = "Preparar informe educativo"; }
-@section Scripts { <script src="~/js/informe-rendimiento.js" asp-append-version="true"></script> }
-<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Preparar informe educativo")</h1><p>@Idioma.Texto("Redacta recomendaciones útiles para la autoridad educativa, sin copiar las notas clínicas.")</p></div></header>
+@section Scripts { <script src="~/js/informe-rendimiento.js" asp-append-version="true"></script><script src="~/js/informe-factores.js" asp-append-version="true"></script> }
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Preparar informe educativo")</h1><p>@Idioma.Texto("Redacta recomendaciones útiles para la autoridad educativa, sin copiar las notas profesionales privadas.")</p></div></header>
 <form asp-action="Guardar" method="post" class="dash-card p-4">
     <input asp-for="Id" type="hidden" /><input asp-for="SolicitudAtencionId" type="hidden" /><input asp-for="Revision" type="hidden" />
     <div asp-validation-summary="All" class="text-danger" role="alert"></div>
@@ -9,7 +9,26 @@
     <label asp-for="Objetivo" class="form-label"></label><textarea asp-for="Objetivo" class="form-control mb-3" rows="3" maxlength="1000" required></textarea>
     <div class="row"><div class="col-md-6"><label asp-for="PeriodoInicio" class="form-label"></label><input asp-for="PeriodoInicio" type="date" class="form-control mb-3" required /></div><div class="col-md-6"><label asp-for="PeriodoFin" class="form-label"></label><input asp-for="PeriodoFin" type="date" class="form-control mb-3" required /></div></div>
     <label asp-for="Fuentes" class="form-label"></label><textarea asp-for="Fuentes" class="form-control mb-3" rows="3" maxlength="2000" required></textarea>
-    <label asp-for="Observaciones" class="form-label"></label><textarea asp-for="Observaciones" class="form-control mb-3" rows="5" maxlength="3000" required></textarea>
+    @{
+    var factores = new[] { "Dificultades de concentración", "Estrés académico", "Hábitos de estudio", "Organización del tiempo", "Carga académica", "Motivación",
+        "Adaptación al entorno universitario", "Dificultades emocionales generales", "Problemas de sueño o descanso reportados",
+        "Necesidad de acompañamiento académico", "Necesidad de seguimiento psicológico educativo", "Otro (especificar)" };
+}
+<fieldset class="border rounded p-3 my-3" id="factores-educativos" data-prefijo="@Idioma.Texto("Factores educativos observados o reportados (no constituyen un diagnóstico):")">
+    <legend class="h5">@Idioma.Texto("Factores educativos observados o reportados")</legend>
+    <p class="small">@Idioma.Texto("Ayuda opcional de redacción. Estos factores no son diagnósticos ni se guardan por separado: al pulsar un botón se agregan como texto editable en el campo elegido. Revisa y ajusta el texto antes de guardar.")</p>
+    <div class="row">
+    @for (var i = 0; i < factores.Length; i++)
+    {
+        <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="factor-@i" data-factor="@Idioma.Texto(factores[i])" /><label class="form-check-label" for="factor-@i">@Idioma.Texto(factores[i])</label></div></div>
+    }
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" data-agregar-factores="Observaciones">@Idioma.Texto("Agregar a barreras observadas")</button>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-agregar-factores="Necesidades">@Idioma.Texto("Agregar a necesidades de apoyo")</button>
+    </div>
+</fieldset>
+<label asp-for="Observaciones" class="form-label"></label><textarea asp-for="Observaciones" class="form-control mb-3" rows="5" maxlength="3000" required></textarea>
     <section class="border rounded p-3 my-3"><h2 class="h5">@Idioma.Texto("Rendimiento académico y valoración educativa")</h2><p>@Idioma.Texto("Incluye este análisis solo si es pertinente. Distingue el relato del estudiante de lo observado y contrastado por el psicólogo; expresa las limitaciones de la información, sin atribuir causas no verificadas ni revelar detalles íntimos.")</p>
     <label asp-for="IncluyeAnalisisRendimiento" class="form-label"></label><select asp-for="IncluyeAnalisisRendimiento" class="form-select mb-3"><option value="">@Idioma.Texto("Selecciona...")</option><option value="true">@Idioma.Texto("Sí, corresponde incluir una valoración")</option><option value="false">@Idioma.Texto("No corresponde en este informe")</option></select>
     <div id="rendimiento-campos"><label asp-for="RelatoRendimiento" class="form-label"></label><textarea asp-for="RelatoRendimiento" rows="3" maxlength="2000" class="form-control mb-3"></textarea><label asp-for="ValoracionRendimiento" class="form-label"></label><textarea asp-for="ValoracionRendimiento" rows="4" maxlength="2000" class="form-control mb-3"></textarea><label><input asp-for="ContrasteRendimientoConfirmado" /> @Idioma.Texto("Contrasté el relato del estudiante con la información disponible y revisé esta valoración educativa")</label></div></section>

@@ -39,6 +39,9 @@ public sealed class RevisarEdadViewModel
     public DateOnly? FechaNacimiento { get; set; }
     [Display(Name = "Revisé el documento y comprobé que corresponde al estudiante")]
     public bool DocumentoComprobado { get; set; }
+    // "ficha" cuando la revisión se abre desde Administrador → Gestionar. Solo decide el regreso.
+    public string? Origen { get; set; }
+    [BindNever] public string UsuarioId { get; set; } = "";
     [BindNever] public string Estudiante { get; set; } = "";
     [BindNever] public string Correo { get; set; } = "";
     [BindNever] public string Carne { get; set; } = "";

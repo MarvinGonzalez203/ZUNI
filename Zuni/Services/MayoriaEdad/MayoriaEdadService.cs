@@ -68,9 +68,12 @@ public static class MayoriaEdadService
     {
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         if (!await ActorAsync(db, actor, "Administrador", ct)) throw new UnauthorizedAccessException();
-        var perfil = await db.PerfilesEstudiante.SingleOrDefaultAsync(p => p.Id == input.PerfilEstudianteId && p.Activo && p.Usuario.IsActive
+        var perfil = await db.PerfilesEstudiante.Include(p => p.Usuario).SingleOrDefaultAsync(p => p.Id == input.PerfilEstudianteId && p.Activo
             && db.UserRoles.Any(ur => ur.UserId == p.UsuarioId && db.Roles.Any(r => r.Id == ur.RoleId && r.NormalizedName == "ESTUDIANTE")), ct)
             ?? throw new UnauthorizedAccessException();
+        // Permite revisar el documento de un autorregistro todavía pendiente de activación, en la misma
+        // ficha. Revisar no activa la cuenta. Las cuentas desactivadas siguen fuera de este flujo.
+        if (!await RevisableAsync(db, perfil.Usuario, ct)) throw new UnauthorizedAccessException();
         var registro = await db.VerificacionesMayoriaEdad.SingleOrDefaultAsync(v => v.PerfilEstudianteId == perfil.Id, ct)
             ?? throw new MayoriaEdadOperacionException("El estudiante debe presentar primero su declaración.");
         if (registro.Revision != input.Revision) throw new DbUpdateConcurrencyException();
@@ -92,6 +95,8 @@ public static class MayoriaEdadService
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
     }
+    public static async Task<bool> RevisableAsync(ApplicationDbContext db, ApplicationUser usuario, CancellationToken ct) =>
+        usuario.IsActive || await Zuni.Services.Administracion.EstadoCuenta.EsRegistroPendienteAsync(db, usuario.Id, ct);
     private static void Auditar(ApplicationDbContext db, string estudiante, string actor, string accion, TimeProvider reloj) =>
         db.AuditoriaUsuarios.Add(new AuditoriaUsuario { UsuarioAfectadoId = estudiante, AdministradorId = actor, Accion = accion, FechaUtc = reloj.GetUtcNow().UtcDateTime });
 }

@@ -77,6 +77,14 @@ internal static class PrivacidadInformesChecks
         Check((await psi.PostAsync("/InformesEducativos/Guardar", new FormUrlEncodedContent([]))).StatusCode == HttpStatusCode.BadRequest, "antiforgery de informes");
         var editorPreview=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");
         if(!string.IsNullOrEmpty(editorPreview))await File.WriteAllTextAsync(Path.Combine(editorPreview,"informe-editor-rendimiento.html"),await psi.GetStringAsync(crear));
+        // Factores educativos guiados: ayuda de redacción, sin columnas ni envío propio y sin presentarse como diagnóstico.
+        var editorHtml = WebUtility.HtmlDecode(await psi.GetStringAsync(crear));
+        Check(editorHtml.Contains("id=\"factores-educativos\"") && editorHtml.Contains("Estrés académico") && editorHtml.Contains("Necesidad de seguimiento psicológico educativo")
+            && editorHtml.Contains("no constituyen un diagnóstico") && editorHtml.Contains("no son diagnósticos"), "factores educativos guiados disponibles y no presentados como diagnóstico");
+        var casillasFactores = System.Text.RegularExpressions.Regex.Matches(editorHtml, "<input[^>]*data-factor[^>]*>");
+        Check(casillasFactores.Count == 12 && casillasFactores.All(m => !m.Value.Contains("name=")), "casillas de factores sin name: no se envían ni se guardan por separado");
+        Check(editorHtml.Contains("data-agregar-factores=\"Observaciones\"") && editorHtml.Contains("data-agregar-factores=\"Necesidades\""), "factores se integran en campos existentes y editables");
+        Check(!editorHtml.Contains("MOTIVO-CLINICO-PRIVADO") && !editorHtml.Contains("CONTACTO-PRIVADO") && !editorHtml.Contains("DIRECCION-PRIVADA"), "editor no precarga datos clínicos");
         var hoy = Zuni.Services.MayoriaEdad.MayoriaEdadService.Hoy(reloj);
         (string, string)[] Content(Guid? id = null, Guid? revision = null, bool request = false) => [ ("Id", id?.ToString() ?? ""), ("Revision", (revision ?? Guid.Empty).ToString()), ("SolicitudAtencionId", solicitud.ToString()),
             ("Objetivo", "Coordinar apoyo educativo <script>"), ("PeriodoInicio", hoy.AddDays(-10).ToString("yyyy-MM-dd")), ("PeriodoFin", hoy.ToString("yyyy-MM-dd")),
@@ -90,6 +98,12 @@ internal static class PrivacidadInformesChecks
         var editor = "/InformesEducativos/Editar/" + version;
         Check((await director.GetAsync(detalle)).StatusCode == HttpStatusCode.Redirect && (await student.GetAsync(detalle)).StatusCode == HttpStatusCode.Redirect, "borrador invisible al Director y estudiante");
         async Task<VersionInformeEducativo> Version(Guid id) { await using var db = Db(); return await db.VersionesInformesEducativos.AsNoTracking().SingleAsync(v => v.Id == id); }
+        var conFactores = "Dificultad observada para organizar las tareas académicas.\nFactores educativos observados o reportados (no constituyen un diagnóstico): Estrés académico; Organización del tiempo.";
+        var antesFactores = await Version(version);
+        await HostPrueba.Post(psi, editor, "/InformesEducativos/Guardar", Content(version, antesFactores.Revision).Select(x => x.Item1 == "Observaciones" ? ("Observaciones", conFactores) : x).ToArray());
+        var conFactoresGuardado = await Version(version);
+        Check(conFactoresGuardado.Estado == EstadoInforme.Borrador && conFactoresGuardado.Observaciones == conFactores && conFactoresGuardado.Necesidades == "Acompañamiento en la planificación.",
+            "texto de factores revisado por el psicólogo se guarda solo en el campo elegido, como borrador editable");
         var v1 = await Version(version);
         (string,string)[] Analisis(Guid id,Guid revision,bool confirmado=true)=>Content(id,revision,true).Where(x=>x.Item1!="IncluyeAnalisisRendimiento").Concat(new[]{("IncluyeAnalisisRendimiento","true"),("RelatoRendimiento","El estudiante refiere dificultad para organizar entregas."),("ValoracionRendimiento","Se contrastó el relato con observaciones educativas autorizadas; se propone apoyo en planificación, sin establecer causalidad clínica."),("ContrasteRendimientoConfirmado",confirmado.ToString())}).ToArray();
         var incompleto=await HostPrueba.Post(psi,editor,"/InformesEducativos/Guardar",Analisis(version,v1.Revision,false));

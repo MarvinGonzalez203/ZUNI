@@ -62,8 +62,9 @@ public sealed class MayoriaEdadController(ApplicationDbContext db, TimeProvider 
     private async Task<bool> Preparar(RevisarEdadViewModel input, CancellationToken ct)
     {
         if (!await MayoriaEdadService.ActorAsync(db, User, "Administrador", ct)) return false;
-        var perfil = await db.PerfilesEstudiante.AsNoTracking().Include(p => p.Usuario).SingleOrDefaultAsync(p => p.Id == input.PerfilEstudianteId && p.Activo && p.Usuario.IsActive, ct);
-        if (perfil is null) return false;
+        var perfil = await db.PerfilesEstudiante.AsNoTracking().Include(p => p.Usuario).SingleOrDefaultAsync(p => p.Id == input.PerfilEstudianteId && p.Activo, ct);
+        if (perfil is null || !await MayoriaEdadService.RevisableAsync(db, perfil.Usuario, ct)) return false;
+        input.UsuarioId = perfil.UsuarioId;
         input.Constancia = await db.VerificacionesMayoriaEdad.AsNoTracking().SingleOrDefaultAsync(v => v.PerfilEstudianteId == perfil.Id, ct);
         input.Estudiante = perfil.Usuario.FullName;
         input.Correo = perfil.Usuario.Email ?? "";
@@ -71,9 +72,9 @@ public sealed class MayoriaEdadController(ApplicationDbContext db, TimeProvider 
         return input.Constancia is not null;
     }
     [HttpGet, Authorize(Roles = "Administrador")]
-    public async Task<IActionResult> Revisar(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Revisar(Guid id, string? origen, CancellationToken ct)
     {
-        var input = new RevisarEdadViewModel { PerfilEstudianteId = id };
+        var input = new RevisarEdadViewModel { PerfilEstudianteId = id, Origen = origen == "ficha" ? "ficha" : null };
         if (!await Preparar(input, ct)) return Forbid();
         input.Revision = input.Constancia!.Revision;
         return View(input);
@@ -89,6 +90,9 @@ public sealed class MayoriaEdadController(ApplicationDbContext db, TimeProvider 
         catch (Exception ex) when (ex is DbUpdateException or NpgsqlException)
         { TempData["Error"] = "La revisión cambió o no se pudo guardar. Vuelve a abrirla y revisa el estado actual."; return RedirectToAction(nameof(Revisiones)); }
         TempData["Success"] = input.Aprobada == true ? "Mayoría de edad verificada." : "Mayoría de edad no verificada. El estudiante puede presentar otra declaración para revisión.";
+        // Desde la ficha del usuario se vuelve a ella para activar la cuenta en el mismo recorrido.
+        // Verificar la edad nunca activa la cuenta automáticamente.
+        if (input.Origen == "ficha") return RedirectToAction("Gestionar", "Administrador", new { id = input.UsuarioId });
         return RedirectToAction(nameof(Revisiones));
     }
 }

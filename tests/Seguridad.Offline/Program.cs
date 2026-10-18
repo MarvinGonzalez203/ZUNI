@@ -352,6 +352,38 @@ using (var c = HostPrueba.Cliente(app))
         "Vista Estudiantes filtra pendientes de activación");
     var fichaPendiente = await HostPrueba.Texto(await admin.GetAsync($"/Administrador/Gestionar/{nuevoId}"));
     Check(fichaPendiente.Contains("Pendiente de activación") && fichaPendiente.Contains("Activar registro"), "Gestionar identifica la cuenta pendiente");
+
+    // Mayoría de edad declarada en el registro y revisada en la misma ficha, antes de activar.
+    Guid perfilNuevo;
+    await using (var db = Nuevo())
+    {
+        perfilNuevo = await db.PerfilesEstudiante.Where(p => p.UsuarioId == nuevoId).Select(p => p.Id).SingleAsync();
+        var declaracion = await db.VerificacionesMayoriaEdad.AsNoTracking().SingleAsync(v => v.PerfilEstudianteId == perfilNuevo);
+        Check(declaracion.Estado == Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Pendiente && declaracion.EdadDeclarada >= 18
+              && declaracion.DocumentoRevisado is null && declaracion.EdadVerificada is null,
+            "El registro deja la mayoría de edad declarada y pendiente, sin documento");
+        Check(await db.AuditoriaUsuarios.AnyAsync(a => a.UsuarioAfectadoId == nuevoId && a.Accion == "MAYORIA_EDAD_DECLARADA"), "Declaración en el registro auditada");
+        Check(typeof(Zuni.Models.MayoriaEdad.VerificacionMayoriaEdad).GetProperties().All(p => p.Name is not ("FechaNacimiento" or "Dpi" or "Cui" or "NumeroDocumento")),
+            "La constancia no guarda fecha de nacimiento ni número de documento");
+    }
+    Check(fichaPendiente.Contains("id=\"mayoria-edad-estado\" data-estado=\"Pendiente\"") && fichaPendiente.Contains("Revisión del registro en una sola ficha")
+          && fichaPendiente.Contains($"/MayoriaEdad/Revisar/{perfilNuevo}?origen=ficha"), "Ficha pendiente muestra la edad y enlaza la revisión documental");
+    var revisarEdad = $"/MayoriaEdad/Revisar/{perfilNuevo}?origen=ficha";
+    Guid revisionEdad;
+    await using (var db = Nuevo()) revisionEdad = await db.VerificacionesMayoriaEdad.Where(v => v.PerfilEstudianteId == perfilNuevo).Select(v => v.Revision).SingleAsync();
+    var edadAprobada = await HostPrueba.Post(admin, revisarEdad, "/MayoriaEdad/Revisar",
+        ("PerfilEstudianteId", perfilNuevo.ToString()), ("Revision", revisionEdad.ToString()), ("Origen", "ficha"), ("Aprobada", "true"),
+        ("Documento", "0"), ("FechaNacimiento", "2000-01-15"), ("DocumentoComprobado", "true"));
+    Check(edadAprobada.StatusCode == HttpStatusCode.Redirect && edadAprobada.Headers.Location!.OriginalString.Contains($"/Administrador/Gestionar/{nuevoId}"),
+        "Revisar la edad desde la ficha vuelve a la ficha");
+    await using (var db = Nuevo())
+    {
+        Check((await db.VerificacionesMayoriaEdad.AsNoTracking().SingleAsync(v => v.PerfilEstudianteId == perfilNuevo)).Estado == Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada,
+            "Edad verificada antes de activar");
+        Check(!(await db.Users.AsNoTracking().SingleAsync(u => u.Id == nuevoId)).IsActive && await EstadoCuenta.EsRegistroPendienteAsync(db, nuevoId),
+            "Verificar la edad no activa la cuenta automáticamente");
+    }
+    Check((await HostPrueba.Texto(await admin.GetAsync($"/Administrador/Gestionar/{nuevoId}"))).Contains("data-estado=\"Verificada\""), "Ficha muestra la edad verificada");
     var tableroPendientes = await HostPrueba.Texto(await admin.GetAsync("/Administrador"));
     Check(tableroPendientes.Contains("Pendientes de activación") && tableroPendientes.Contains("/Administrador/Estudiantes?estado=Pendientes"),
         "Tablero resume pendientes de activación");
@@ -363,6 +395,22 @@ using (var c = HostPrueba.Cliente(app))
         Check(!await EstadoCuenta.EsRegistroPendienteAsync(db, nuevoId), "Ya no figura como pendiente");
     Check((await HostPrueba.Login(c, "nuevo@miumg.edu.gt", clave)).StatusCode == HttpStatusCode.Redirect, "Activación permite iniciar sesión");
 }
+
+// Registro de una persona menor de edad o sin fecha: se rechaza y no crea cuenta, perfil ni constancia.
+using (var c = HostPrueba.Cliente(app))
+{
+    var menor = MayoriaEdadHoy().AddYears(-17).ToString("yyyy-MM-dd");
+    foreach (var (correo, fecha, etiqueta) in new[] { ("menor@miumg.edu.gt", menor, "menor de 18"), ("sinfecha@miumg.edu.gt", "", "sin fecha") })
+    {
+        var rechazo = await HostPrueba.Post(c, "/Cuenta/Registro", "/Cuenta/Registro",
+            ("FullName", "Registro Rechazado"), ("Email", correo), ("CarneParte1", "2021"), ("CarneParte2", "01"),
+            ("CarneParte3", correo.StartsWith("menor") ? "0098" : "0097"), ("Telefono", "11223344"), ("Password", clave), ("ConfirmPassword", clave), ("FechaNacimiento", fecha));
+        Check(rechazo.StatusCode == HttpStatusCode.OK, "Registro rechazado: " + etiqueta);
+        await using var db = Nuevo();
+        Check(!await db.Users.AnyAsync(u => u.Email == correo), "Sin cuenta creada: " + etiqueta);
+    }
+}
+DateOnly MayoriaEdadHoy() => Zuni.Services.MayoriaEdad.MayoriaEdadService.Hoy(reloj);
 
 // Desactivada por un Administrador (no autorregistro): no se muestra como pendiente.
 await Usuario("desactivado", true, false, "Catedratico");
@@ -570,6 +618,7 @@ await TarifasAislamientoChecks.Run(app, opciones, clave,reloj);
 await ProveedorNavegacionChecks.Run(app, opciones, clave);
 await ExperienciaPanelChecks.Run(app, opciones, clave);
 await ContinuidadChecks.Run(app,opciones,clave);
+await PrivacidadDirectorChecks.Run(app, opciones, clave, reloj);
 await ProteccionClinicaChecks.Run(opciones);
 
 using (var c = HostPrueba.Cliente(app))

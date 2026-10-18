@@ -19,8 +19,15 @@ La aplicación lee `ConnectionStrings:DefaultConnection`. Si falta, se detiene a
 - Development: User Secrets (`dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<cadena>" --project Zuni`).
 - Production: variable de entorno
   `ConnectionStrings__DefaultConnection=Host=<host>;Port=5432;Database=<db>;Username=<usuario>;Password=<secreto>;SSL Mode=Require`
+- **Obligatorio en Production: dos usuarios PostgreSQL distintos.**
+  - Usuario de **migración** (propietario de la base y sus tablas): solo para aplicar migraciones, el script de
+    permisos y `--migrar-seguridad`, con el servicio detenido.
+  - Usuario de **ejecución** (el de `ConnectionStrings__DefaultConnection` del servicio): sin propiedad de tablas,
+    sin `CREATE` en el esquema y con solo `SELECT, INSERT` sobre auditorías, consentimientos y aceptaciones.
+    ZUNI no arranca en Production si este usuario puede alterar o borrar evidencias.
+    Ver [instalaciones-debian.md](instalaciones-debian.md#dos-usuarios-postgresql-por-instalación) y
+    `deploy/debian/permisos-runtime.sql.example`.
 - Recomendado:
-  - Usuario de base de datos propio de ZUNI con los permisos mínimos sobre su base (no `postgres`).
   - `SSL Mode=Require` (o `VerifyFull` con certificado) si la base no está en el mismo servidor.
   - Nunca escribir la cadena en `appsettings*.json`, scripts versionados ni documentación.
 
@@ -37,12 +44,24 @@ La aplicación lee `ConnectionStrings:DefaultConnection`. Si falta, se detiene a
 
 - Por defecto se guardan en `<contentRoot>/App_Data/keys`.
 - En producción usar una carpeta persistente fuera de la carpeta de publicación:
-  `DataProtection__KeysPath=<ruta-persistente>` (por ejemplo `D:\zuni-data\keys` o `/var/lib/zuni/keys`).
+  `DataProtection__KeysPath=<ruta-persistente>` (en Debian: `/var/lib/zuni/<instalación>/dataprotection`).
 - Permisos: solo la cuenta que ejecuta ZUNI debe poder leer y escribir esa carpeta.
 - Si la carpeta se pierde en cada despliegue, todos los usuarios quedan desconectados y los formularios abiertos fallan.
 - **Antes de producción, rotar:** no copiar las claves de tu PC al servidor. Deja que ZUNI genere claves
   nuevas en la carpeta persistente del servidor (se crean solas al primer arranque).
 - Las claves de desarrollo de tu PC (`Zuni/App_Data/keys/*.xml`) no deben compartirse ni subirse a Git o a ZIPs.
+
+### 4.1 Claves del cifrado clínico y bitácora (obligatorias en Production)
+
+ZUNI no arranca en Production sin estas variables (rutas absolutas fuera de la publicación):
+
+- `SeguridadClinica__ClavesPath` (en Debian: `/var/lib/zuni/<instalación>/seguridad/claves.json`).
+- `SeguridadClinica__BitacoraPath` (en Debian: `/var/lib/zuni/<instalación>/auditoria/bitacora.jsonl`).
+- `Zuni__InstallationId`: identificador fijo de la instalación. Cambiarlo impide leer los datos cifrados.
+
+El archivo de claves se crea una sola vez con `--inicializar-seguridad` y se respalda cifrado, aparte de la base.
+**Si se pierde, los textos clínicos cifrados no se pueden recuperar.** Detalles en
+[proteccion-clinica-y-auditoria.md](proteccion-clinica-y-auditoria.md).
 
 ## 5. Copias de seguridad
 
@@ -60,9 +79,23 @@ ZUNI **no** aplica migraciones automáticamente al iniciar.
    `ApplicationDbContextFactory` exige que `ConnectionStrings:DefaultConnection` exista para el entorno indicado,
    aunque generar el script no abre la conexión.
 2. Revisarlo y probarlo primero en una copia de la base de producción.
-3. Respaldar (sección 5) y aplicar el script en producción en una ventana de mantenimiento.
+3. Respaldar (sección 5) y aplicar el script en producción en una ventana de mantenimiento, **con el usuario de migración**.
+   Después, volver a aplicar `deploy/debian/permisos-runtime.sql.example` (también con el usuario de migración).
 4. Nunca ejecutar `Down`/`database update <anterior>` sobre datos reales sin revisión: algunas migraciones
    antiguas (`AddFlujoAtencionInicial`, `AddBigFiveApoyo`, `AddAgendaYCitas`) eliminan tablas en su `Down`.
+
+Orden real para una instalación nueva o una actualización (detalle en [instalaciones-debian.md](instalaciones-debian.md#instalación-nueva-paso-a-paso)):
+
+1. Respaldo previo de base y de `/var/lib/zuni/<instalación>/` (en una actualización).
+2. Migraciones EF (script idempotente) con el usuario de migración.
+3. Permisos del usuario de ejecución (`permisos-runtime.sql.example`).
+4. Inicialización de seguridad: `--inicializar-seguridad` (solo la primera vez; no reemplaza claves existentes).
+5. Copia segura de `claves.json`.
+6. Conversión de datos sensibles: `--migrar-seguridad` con el entorno de mantenimiento (usuario de migración).
+7. Verificación: `--exportar-seguridad` y `--verificar-seguridad` con el entorno de ejecución.
+8. Arranque normal del servicio con el usuario de ejecución.
+
+ZUNI no arranca si falta el paso 6. Estos comandos no se ejecutan automáticamente.
 
 La protección de textos clínicos y la auditoría firmada incorporan una migración y una conversión de datos en mantenimiento. Antes de publicar o actualizar, seguir [Protección clínica y auditoría](proteccion-clinica-y-auditoria.md), incluidas la custodia de claves, las copias externas y la separación del rol de migración y ejecución.
 
@@ -110,8 +143,11 @@ Al excederse se responde HTTP 429 sin detalles internos. Además, cada cuenta se
 ## 10. Lista de verificación final
 
 - [ ] `ASPNETCORE_ENVIRONMENT=Production`.
-- [ ] `ConnectionStrings__DefaultConnection` con usuario de permisos mínimos y SSL.
-- [ ] `DataProtection__KeysPath` apuntando a una carpeta persistente con permisos restringidos.
+- [ ] `ConnectionStrings__DefaultConnection` con el usuario de **ejecución** (no el de migración) y SSL si la base es remota.
+- [ ] `Zuni__InstallationId` propio y definitivo.
+- [ ] `DataProtection__KeysPath`, `SeguridadClinica__ClavesPath` y `SeguridadClinica__BitacoraPath` en `/var/lib/zuni/<instalación>/`, con permisos 700/600.
+- [ ] `claves.json` creado una sola vez y respaldado cifrado fuera del servidor.
+- [ ] `--migrar-seguridad` ejecutado y `--verificar-seguridad` correcto.
 - [ ] HTTPS activo; `Zuni__ProxyInverso=true` si hay proxy inverso.
 - [ ] Respaldo previo + script idempotente de migraciones aplicado y verificado.
 - [ ] Primer Administrador creado y contraseña cambiada.

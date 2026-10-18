@@ -104,7 +104,13 @@ public sealed class DiaAgendaViewModel
     public string Estado { get; init; } = "Sin horarios";
     public IReadOnlyList<IntervaloAgenda> Intervalos { get; init; } = [];
     public IReadOnlyList<FranjaAgenda> Franjas { get; init; } = [];
+    // Solo para el Director: bloques de tiempo sin identidad, estado clínico ni identificadores de cita.
+    public IReadOnlyList<BloqueCargaDirector> Bloques { get; set; } = [];
 }
+// Bloque anónimo de la carga de un psicólogo. No contiene nombre, carné, correo, solicitud ni Id de cita.
+public sealed record BloqueCargaDirector(DateTime InicioUtc, DateTime FinUtc, string Estado);
+// Conteos agregados del mes para un profesional. No permiten identificar a quién se atiende.
+public sealed record MetricasCargaDirector(int Ocupados, int PendientesDeRevisar, int Completadas, int Canceladas, int NoAsistio);
 // El calendario no admite motivo de cancelación, enlace de reunión o contenido clínico.
 public sealed class CitaCalendarioResumen
 {
@@ -138,7 +144,10 @@ public sealed class CalendarioAgendaViewModel
     public IReadOnlyList<DiaAgendaViewModel> Dias { get; init; } = [];
 }
 public sealed record AlmuerzoResumen(TimeOnly Inicio,TimeOnly Fin);
-public sealed record CalendarioDirectorViewModel(CalendarioAgendaViewModel Calendario, IReadOnlyList<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Psicologos);
+public sealed record CalendarioDirectorViewModel(CalendarioAgendaViewModel Calendario, IReadOnlyList<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Psicologos)
+{
+    public MetricasCargaDirector Metricas { get; init; } = new(0, 0, 0, 0, 0);
+}
 public sealed class HistorialCitasViewModel
 {
     public string Busqueda { get; init; } = string.Empty;
