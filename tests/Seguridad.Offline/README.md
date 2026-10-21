@@ -35,6 +35,7 @@ Cubre:
 - Autorregistro pendiente de activación, activación por el Administrador y cuentas creadas por el Administrador.
 - Sesión: sliding de 30 minutos, máximo absoluto de 8 horas, revalidación de SecurityStamp, cookie HttpOnly/SameSite/Secure.
 - Cabeceras de seguridad y rate limiting (HTTP 429).
+- Privacidad estadística (`EstadisticasPrivacidadChecks`): supresión primaria y complementaria, sin deducción por diferencia, filtros ignorados, corte al cierre del mes anterior, concluidas sin distinguir asistencia.
 - Propuestas de cita de Dirección (`PropuestasDirectorChecks`): directorio sin indicadores de atención, propuesta sin confirmación unilateral, aceptar/reprogramar/rechazar por el psicólogo, avisos administrativos, propuestas ajenas y rutas clínicas denegadas, POST manipulado, duplicados, cruces, mayoría de edad y auditoría sin contenido clínico.
 
 SQLite no reproduce la concurrencia SERIALIZABLE de PostgreSQL; la concurrencia real se valida aparte en una base descartable.

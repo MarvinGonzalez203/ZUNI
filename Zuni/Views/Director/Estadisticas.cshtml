@@ -1,48 +1,47 @@
 @model Zuni.Models.Reportes.EstadisticasDirectorViewModel
 @{
     ViewData["Title"] = "Estadísticas";
+    string Cifra(int? n) => n is { } v ? v.ToString() : Idioma.Texto("menos de 5");
+    var cierre = Model.Corte.AddDays(-1).ToString("dd/MM/yyyy");
 }
 <header class="dash-profile-heading">
     <div><span class="dash-eyebrow">@Idioma.Texto("PANEL INSTITUCIONAL")</span><h1>@Idioma.Texto("Estadísticas")</h1><p>@Idioma.Texto("Indicadores agregados del acompañamiento estudiantil. No muestran nombres, carnés ni listados de estudiantes atendidos.")</p></div>
 </header>
+<p class="small" data-corte-estadisticas="@Model.Corte.ToString("yyyy-MM-dd")">@Idioma.Texto("Los indicadores de personas usan datos hasta el cierre del mes anterior ({0}). Las cifras de 1 a 4 personas se muestran como «menos de 5» y, cuando una cifra oculta podría deducirse por diferencia, se agrupa con otras.", cierre)</p>
 <section class="dash-summary-grid" aria-label="@Idioma.Texto("Indicadores agregados")" id="estadisticas-director">
     <article class="dash-card dash-summary">
         <h2>@Idioma.Texto("Solicitudes de atención")</h2>
-        <p class="display-6 mb-1" data-indicador="solicitudes">@Model.SolicitudesTotal</p>
-        <p class="small mb-0">@Idioma.Texto("Pendientes:") @Model.SolicitudesPendientes · @Idioma.Texto("Asignadas:") @Model.SolicitudesAsignadas · @Idioma.Texto("Cerradas:") @Model.SolicitudesCerradas</p>
+        <p class="display-6 mb-1" data-indicador="solicitudes">@Cifra(Model.SolicitudesTotal)</p>
+        <partial name="_DesgloseProtegido" model='@(new Zuni.Models.Reportes.DesgloseVista("solicitudes-estado", Model.SolicitudesPorEstado, "Otros estados"))' />
     </article>
     <article class="dash-card dash-summary">
-        <h2>@Idioma.Texto("Estudiantes atendidos")</h2>
-        <p class="display-6 mb-1" data-indicador="atendidos">@Model.EstudiantesAtendidos</p>
-        <p class="small mb-0">@Idioma.Texto("Con al menos una atención completada.")</p>
+        <h2>@Idioma.Texto("Estudiantes con citas concluidas")</h2>
+        <p class="display-6 mb-1" data-indicador="atendidos">@Cifra(Model.EstudiantesConCitasConcluidas)</p>
+        <p class="small mb-0">@Idioma.Texto("Con al menos una cita concluida. No distingue asistencia de inasistencia.")</p>
     </article>
     <article class="dash-card dash-summary">
         <h2>@Idioma.Texto("Citas")</h2>
         <p class="small mb-0">@Idioma.Texto("Programadas o confirmadas:") <strong data-indicador="programadas">@Model.CitasProgramadas</strong></p>
         <p class="small mb-0">@Idioma.Texto("Pendientes de revisar:") <strong>@Model.CitasPendientes</strong></p>
-        <p class="small mb-0">@Idioma.Texto("Completadas:") <strong data-indicador="completadas">@Model.CitasCompletadas</strong></p>
+        <p class="small mb-0">@Idioma.Texto("Concluidas:") <strong data-indicador="concluidas">@Model.CitasConcluidas</strong></p>
         <p class="small mb-0">@Idioma.Texto("Canceladas o rechazadas:") <strong>@Model.CitasCanceladas</strong></p>
-        <p class="small mb-0">@Idioma.Texto("Inasistencias:") <strong>@Model.Inasistencias</strong></p>
     </article>
 </section>
 <section class="dash-card mt-4" aria-labelledby="carga-psicologos">
     <h2 id="carga-psicologos" class="h5">@Idioma.Texto("Carga por psicólogo")</h2>
     @if (Model.CargaPorPsicologo.Count == 0) { <p>@Idioma.Texto("Sin datos disponibles")</p> }
     else {
-        <div class="table-responsive"><table class="table"><thead><tr><th>@Idioma.Texto("Psicólogo")</th><th>@Idioma.Texto("Citas activas")</th><th>@Idioma.Texto("Atenciones completadas")</th></tr></thead><tbody>
-        @foreach (var c in Model.CargaPorPsicologo) { <tr><td>@c.Psicologo</td><td>@c.Activas</td><td>@c.Completadas</td></tr> }
+        <div class="table-responsive"><table class="table"><thead><tr><th>@Idioma.Texto("Psicólogo")</th><th>@Idioma.Texto("Citas activas")</th><th>@Idioma.Texto("Citas concluidas")</th></tr></thead><tbody>
+        @foreach (var c in Model.CargaPorPsicologo) { <tr><td>@c.Psicologo</td><td>@c.Activas</td><td>@c.Concluidas</td></tr> }
         </tbody></table></div>
     }
 </section>
 <section class="dash-card mt-4" aria-labelledby="tendencia-mensual">
-    <h2 id="tendencia-mensual" class="h5">@Idioma.Texto("Atenciones completadas por mes")</h2>
+    <h2 id="tendencia-mensual" class="h5">@Idioma.Texto("Citas concluidas por mes (meses cerrados)")</h2>
     <ul class="list-unstyled mb-0">@foreach (var m in Model.TendenciaMensual) { <li>@m.Etiqueta: <strong>@m.Cantidad</strong></li> }</ul>
 </section>
 <section class="dash-card mt-4" aria-labelledby="atendidos-carrera">
-    <h2 id="atendidos-carrera" class="h5">@Idioma.Texto("Estudiantes atendidos por carrera")</h2>
-    @if (Model.AtendidosPorCarrera.Count == 0) { <p>@Idioma.Texto("Sin datos disponibles")</p> }
-    else {
-        <ul class="list-unstyled mb-2">@foreach (var c in Model.AtendidosPorCarrera) { <li>@(c.Etiqueta == "Sin carrera registrada" ? Idioma.Texto("Sin carrera registrada") : c.Etiqueta): <strong>@(c.Cantidad is { } n ? n.ToString() : Idioma.Texto("menos de 5"))</strong></li> }</ul>
-    }
-    <p class="small mb-0">@Idioma.Texto("Para proteger la privacidad, las carreras con menos de 5 estudiantes atendidos no muestran la cifra exacta.")</p>
+    <h2 id="atendidos-carrera" class="h5">@Idioma.Texto("Estudiantes con citas concluidas por carrera")</h2>
+    <partial name="_DesgloseProtegido" model='@(new Zuni.Models.Reportes.DesgloseVista("carrera", Model.PorCarrera, "Otras carreras (agrupadas)"))' />
+    <p class="small mb-0">@Idioma.Texto("Para proteger la privacidad, ninguna carrera muestra menos de 5 estudiantes; las pequeñas se agrupan y, si no es posible protegerlas, solo se muestra el total.")</p>
 </section>

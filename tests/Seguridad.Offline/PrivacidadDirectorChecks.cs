@@ -81,7 +81,7 @@ internal static class PrivacidadDirectorChecks
 
         // --- Estadísticas agregadas: conteos, sin listados identificables.
         var estadisticas = WebUtility.HtmlDecode(await director.GetStringAsync("/Director/Estadisticas"));
-        Check(estadisticas.Contains("id=\"estadisticas-director\"") && Regex.IsMatch(estadisticas, "data-indicador=\"solicitudes\">\\d+") && estadisticas.Contains("Carga por psicólogo"),
+        Check(estadisticas.Contains("id=\"estadisticas-director\"") && Regex.IsMatch(estadisticas, "data-indicador=\"solicitudes\">(\\d+|menos de 5)<") && estadisticas.Contains("Carga por psicólogo"),
             "estadísticas agregadas disponibles");
         Check(prohibidos.All(p => !estadisticas.Contains(p, StringComparison.OrdinalIgnoreCase)) && !estadisticas.Contains("Persona est2"), "estadísticas sin nombres, carnés ni correos de estudiantes");
         Check(estadisticas.Contains("menos de 5") || !estadisticas.Contains("Carrera privada"), "carreras con pocos estudiantes no muestran cifras exactas");

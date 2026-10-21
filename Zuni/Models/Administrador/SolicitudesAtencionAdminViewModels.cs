@@ -34,6 +34,10 @@ public sealed record PsicologoElegible(string Id, string Nombre, string? Correo,
 
 public sealed record AsignacionHistorial(string Psicologo, DateTime FechaAsignacionUtc, DateTime? FechaFinalizacionUtc);
 
+// Propuesta de cita de Dirección pendiente para este estudiante: solo psicólogo y fecha propuestos, para
+// que Administración pueda asignar la solicitud al profesional indicado. Sin datos clínicos.
+public sealed record PropuestaInstitucionalPendiente(string Psicologo, DateTime InicioUtc);
+
 public sealed class DetalleSolicitudAdminViewModel
 {
     public SolicitudAdminFila Solicitud { get; init; } = new();
@@ -41,6 +45,7 @@ public sealed class DetalleSolicitudAdminViewModel
     public int CitasActivas { get; init; }
     public IReadOnlyList<AsignacionHistorial> Historial { get; init; } = [];
     public IReadOnlyList<PsicologoElegible> Elegibles { get; init; } = [];
+    public IReadOnlyList<PropuestaInstitucionalPendiente> PropuestasInstitucionalesPendientes { get; init; } = [];
 }
 
 public sealed class OperacionSolicitudInput

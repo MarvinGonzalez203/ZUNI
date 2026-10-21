@@ -40,8 +40,15 @@
             <dt class="col-sm-4">@Idioma.Texto("Estado")</dt><dd class="col-sm-8">@Idioma.Texto(estado)</dd>
             <dt class="col-sm-4">@Idioma.Texto("Psicólogo asignado")</dt><dd class="col-sm-8 text-break">@(s.Psicologo ?? "—")@(s.PsicologoActivo == false ? Idioma.Texto(" (cuenta inactiva: reasigna o finaliza)") : "")</dd>
             <dt class="col-sm-4">@Idioma.Texto("Fecha de asignación")</dt><dd class="col-sm-8">@(s.FechaAsignacionUtc is { } f ? AgendaReglas.Local(f).ToString("dd/MM/yyyy HH:mm") : "—")</dd>
-            <dt class="col-sm-4">@Idioma.Texto("Citas activas")</dt><dd class="col-sm-8">@Model.CitasActivas</dd>
+            <dt class="col-sm-4">@Idioma.Texto("Citas activas")</dt><dd class="col-sm-8" data-citas-activas>@Model.CitasActivas</dd>
         </dl>
+        @if (Model.PropuestasInstitucionalesPendientes.Count > 0 && s.Estado != EstadoSolicitudAtencion.Cerrada)
+        {
+            <div class="alert alert-info" role="status" id="propuestas-direccion-pendientes">
+                <p class="mb-1">@Idioma.Texto("Dirección propuso una cita para este estudiante. El psicólogo propuesto solo podrá aceptarla si la solicitud está asignada a él; las propuestas pendientes no bloquean asignar ni reasignar.")</p>
+                <ul class="mb-0">@foreach (var p in Model.PropuestasInstitucionalesPendientes) { <li data-propuesta-psicologo>@p.Psicologo · @AgendaReglas.Local(p.InicioUtc).ToString("dd/MM/yyyy HH:mm")</li> }</ul>
+            </div>
+        }
         <p class="small">@Idioma.Texto("Solo datos administrativos. El motivo de atención, la ficha de acompañamiento, los contactos de emergencia, Big Five y las notas profesionales no se muestran al Administrador.")</p>
 
         @if (bloqueadaPorCitas && s.Estado != EstadoSolicitudAtencion.Cerrada)

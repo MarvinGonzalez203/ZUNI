@@ -112,7 +112,8 @@ public sealed class DiaAgendaViewModel
 // Bloque anónimo de la carga de un psicólogo. No contiene nombre, carné, correo, solicitud ni Id de cita.
 public sealed record BloqueCargaDirector(DateTime InicioUtc, DateTime FinUtc, string Estado);
 // Conteos agregados del mes para un profesional. No permiten identificar a quién se atiende.
-public sealed record MetricasCargaDirector(int Ocupados, int PendientesDeRevisar, int Completadas, int Canceladas, int NoAsistio);
+// Concluidas = completadas + inasistencias: separarlas permitiría deducir la asistencia de una cita concreta.
+public sealed record MetricasCargaDirector(int Ocupados, int PendientesDeRevisar, int Concluidas, int Canceladas);
 // El calendario no admite motivo de cancelación, enlace de reunión o contenido clínico.
 public sealed class CitaCalendarioResumen
 {
@@ -149,7 +150,7 @@ public sealed class CalendarioAgendaViewModel
 public sealed record AlmuerzoResumen(TimeOnly Inicio,TimeOnly Fin);
 public sealed record CalendarioDirectorViewModel(CalendarioAgendaViewModel Calendario, IReadOnlyList<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Psicologos)
 {
-    public MetricasCargaDirector Metricas { get; init; } = new(0, 0, 0, 0, 0);
+    public MetricasCargaDirector Metricas { get; init; } = new(0, 0, 0, 0);
 }
 public sealed class HistorialCitasViewModel
 {

@@ -7,11 +7,10 @@
     <dl class="row mb-0">
         <dt class="col-sm-6">@Idioma.Texto("Citas programadas o confirmadas")</dt><dd class="col-sm-6" data-metrica="ocupados">@Model.Metricas.Ocupados</dd>
         <dt class="col-sm-6">@Idioma.Texto("Pendientes de revisar")</dt><dd class="col-sm-6" data-metrica="pendientes">@Model.Metricas.PendientesDeRevisar</dd>
-        <dt class="col-sm-6">@Idioma.Texto("Atenciones completadas")</dt><dd class="col-sm-6" data-metrica="completadas">@Model.Metricas.Completadas</dd>
+        <dt class="col-sm-6">@Idioma.Texto("Citas concluidas")</dt><dd class="col-sm-6" data-metrica="concluidas">@Model.Metricas.Concluidas</dd>
         <dt class="col-sm-6">@Idioma.Texto("Canceladas o rechazadas")</dt><dd class="col-sm-6" data-metrica="canceladas">@Model.Metricas.Canceladas</dd>
-        <dt class="col-sm-6">@Idioma.Texto("Inasistencias")</dt><dd class="col-sm-6" data-metrica="inasistencias">@Model.Metricas.NoAsistio</dd>
     </dl>
-    <p class="small mt-2 mb-0">@Idioma.Texto("Conteos agregados. No identifican a ningún estudiante.")</p>
+    <p class="small mt-2 mb-0">@Idioma.Texto("Conteos agregados. No identifican a ningún estudiante ni distinguen asistencia de inasistencia.")</p>
 </section>
 }
 <partial name="_CalendarioDirector" model="Model" />

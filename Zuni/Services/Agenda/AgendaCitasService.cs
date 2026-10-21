@@ -198,7 +198,10 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         var disponibles = await Intervalos(psicologo, dia, configuracion).AsNoTracking().ToListAsync(ct);
         var inicioDia = AgendaReglas.Utc(dia, TimeOnly.MinValue);
         var finDia = AgendaReglas.Utc(dia.AddDays(1), TimeOnly.MinValue);
+        // Una propuesta de Dirección pendiente no bloquea la reserva propia del estudiante (si luego se cruzan,
+        // el psicólogo no podrá aceptar la propuesta y la reprogramará o rechazará).
         if (await db.Citas.AnyAsync(c => c.PerfilEstudianteId == perfil.Id && EstadosActivos.Contains(c.Estado) &&
+            !(c.Estado == EstadoCita.Solicitada && c.ProgramadorRol == "Director") &&
             c.FechaHoraInicioUtc >= inicioDia && c.FechaHoraInicioUtc < finDia, ct))
             throw new AgendaOperacionException("Ya tienes una cita activa para esta fecha.");
         var horario = disponibles.FirstOrDefault(d => AgendaReglas.Encaja(d, inicio, input.DuracionMinutos) && AgendaReglas.Permite(d.Modalidad, input.Modalidad))
@@ -209,7 +212,8 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         var fin = AgendaReglas.FinCita(horario, inicio, input.DuracionMinutos);
         await ValidarAlmuerzo(psicologo,inicio,fin,ct);
         if (await db.Citas.AnyAsync(c => EstadosActivos.Contains(c.Estado) &&
-            (c.PsicologoUsuarioId == psicologo || c.PerfilEstudianteId == perfil.Id) &&
+            (c.PsicologoUsuarioId == psicologo ||
+             (c.PerfilEstudianteId == perfil.Id && !(c.Estado == EstadoCita.Solicitada && c.ProgramadorRol == "Director"))) &&
             c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio, ct))
             throw new AgendaOperacionException("Ya existe una cita que se superpone con ese horario.");
         db.Citas.Add(new Cita

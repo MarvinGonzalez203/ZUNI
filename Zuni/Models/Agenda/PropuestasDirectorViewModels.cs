@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -77,5 +78,14 @@ public static class MotivosPropuestaDirector
     public const string Duplicada = "Propuesta duplicada";
     public const string FueraDeAlcance = "No corresponde al servicio de orientación psicológica";
     public static readonly IReadOnlyList<string> Todos = [HorarioNoDisponible, OtraFecha, Requisitos, Duplicada, FueraDeAlcance];
-    public static bool Valido(string? motivo) => motivo is not null && Todos.Contains(motivo.Trim());
+    public const string NoConfirmable = "No es posible confirmarla por ahora";
+    public static bool Valido([NotNullWhen(true)] string? motivo) => motivo is not null && Todos.Contains(motivo.Trim());
+    // Texto que ve Dirección. "Requisitos administrativos" se generaliza: indicaría a Dirección que al
+    // estudiante le falta una solicitud o asignación. El estudiante y el psicólogo ven el motivo completo.
+    public static string? ParaDireccion(string? motivo)
+    {
+        if (!Valido(motivo)) return null;
+        var texto = motivo.Trim();
+        return texto == Requisitos ? NoConfirmable : texto;
+    }
 }

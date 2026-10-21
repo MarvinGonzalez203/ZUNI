@@ -34,10 +34,12 @@ internal static class PropuestasDirectorChecks
         const string psy = "prop-psy", psy2 = "prop-psy2", nombrePsy = "Psicóloga Propuestas Uno", clinico = "MOTIVO-PROPUESTA-PRIVADO";
         var hoy = AgendaReglas.Hoy(reloj.Ahora.UtcDateTime);
         var d1 = hoy.AddDays(40); var d2 = d1.AddDays(1); var d3 = d1.AddDays(2); var d4 = d1.AddDays(3); var d5 = d1.AddDays(4); var d6 = d1.AddDays(5);
+        var d7 = d1.AddDays(6); var d8 = d1.AddDays(7); var pasado = hoy.AddDays(-3);
+        const string nombreD = "Propuesta Delta Estudiante", carneD = "7777260004";
 
         // ------------------------------------------------------------ datos
         var hasher = new PasswordHasher<ApplicationUser>();
-        Guid perfilA, perfilB, perfilC, perfilM, solicitudA;
+        Guid perfilA, perfilB, perfilC, perfilM, perfilD, solicitudA, solicitudD, vencida;
         await using (var db = new OfflineDb(options))
         {
             void Usuario(string id, string nombre, bool conClave, params string[] roles)
@@ -72,6 +74,24 @@ internal static class PropuestasDirectorChecks
             perfilB = Perfil("prop-est-b", carneB, EstadoMayoriaEdad.Verificada);
             perfilC = Perfil("prop-est-c", carneC, EstadoMayoriaEdad.Verificada);
             perfilM = Perfil("prop-est-m", carneM, EstadoMayoriaEdad.Pendiente);
+            Usuario("prop-est-d", nombreD, true, "Estudiante");
+            perfilD = Perfil("prop-est-d", carneD, EstadoMayoriaEdad.Verificada);
+            // D registró su solicitud de atención (con consentimiento), pero Administración aún no la asigna.
+            var solicitudPendiente = new SolicitudAtencion { PerfilEstudianteId = perfilD, FechaSolicitudUtc = reloj.Ahora.UtcDateTime };
+            solicitudD = solicitudPendiente.Id;
+            db.SolicitudesAtencion.Add(solicitudPendiente);
+            db.ConsentimientosAtencion.Add(new ConsentimientoAtencion { SolicitudAtencionId = solicitudPendiente.Id, Aceptado = true, VersionConsentimiento = "v1" });
+            db.ExpedientesIniciales.Add(new ExpedienteInicial { SolicitudAtencionId = solicitudPendiente.Id, Edad = 22, EsMayorEdad = true, Direccion = "DIRECCION-D-PRIVADA",
+                IdiomaPreferido = "Español", MotivoConsulta = clinico });
+            // Propuesta de Dirección pendiente cuya fecha ya pasó (dato histórico).
+            vencida = Guid.NewGuid();
+            db.Citas.Add(new Cita { Id = vencida, PerfilEstudianteId = perfilD, PsicologoUsuarioId = psy, FechaHoraInicioUtc = AgendaReglas.Utc(pasado, new(10, 0)),
+                FechaHoraFinUtc = AgendaReglas.Utc(pasado, new(10, 50)), FinAproximado = true, Modalidad = ModalidadCita.Presencial, Estado = EstadoCita.Solicitada,
+                ProgramadaDirectamente = true, ProgramadorUsuarioId = "director", ProgramadorRol = "Director", FechaCreacionUtc = reloj.Ahora.UtcDateTime.AddDays(-5) });
+            // Horario semanal del psicólogo para comprobar la reserva normal del estudiante.
+            foreach (var dia in Enum.GetValues<DayOfWeek>())
+                db.DisponibilidadesPsicologo.Add(new DisponibilidadPsicologo { PsicologoUsuarioId = psy, DiaSemana = dia, HoraInicio = new(8, 0), HoraFin = new(18, 0),
+                    DuracionMinutos = 60, Modalidad = ModalidadDisponibilidad.Presencial });
             for (var i = 1; i <= 12; i++) { Usuario($"masivo-{i:00}", $"Directorio Masivo {i:00}", false, "Estudiante"); Perfil($"masivo-{i:00}", $"55552600{i:00}", EstadoMayoriaEdad.Verificada); }
             // A recibe atención (solicitud, consentimiento, ficha y asignación); B no. El directorio no debe distinguirlos.
             var solicitud = new SolicitudAtencion { PerfilEstudianteId = perfilA, FechaSolicitudUtc = reloj.Ahora.UtcDateTime };
@@ -180,6 +200,21 @@ internal static class PropuestasDirectorChecks
         await using (var db = new OfflineDb(options))
             Check(!await db.Citas.AnyAsync(c => c.PerfilEstudianteId == perfilM) && await db.Citas.CountAsync(c => c.PerfilEstudianteId == perfilC) == 1, "restricción de edad vigente: sin cita");
 
+        // Otra cita del estudiante ese mismo día ya no cambia la respuesta: se registra igual que para quien no
+        // tiene citas (no revela agenda ni atención) y la regla se valida cuando el psicólogo acepta.
+        var mismoDia = await Proponer(director, perfilC, psy, d2, "14:00");
+        Check(mismoDia.StatusCode == HttpStatusCode.Redirect && mismoDia.Headers.Location?.OriginalString.Contains("/Director/Propuesta/") == true,
+            "proponer no revela que el estudiante tiene otra cita ese día");
+        var pMismoDia = IdDesde(mismoDia);
+        await using (var db = new OfflineDb(options))
+        {
+            var existente = await db.Citas.AsNoTracking().SingleAsync(c => c.PerfilEstudianteId == perfilC && c.PsicologoUsuarioId == psy2);
+            Check(existente.Estado == EstadoCita.Confirmada && existente.FechaHoraInicioUtc == AgendaReglas.Utc(d2, new(10, 0)) && existente.DireccionAtencion == "Consultorio C",
+                "la cita existente del estudiante queda intacta");
+        }
+        Check((await Responder(pMismoDia, (await Leer(pMismoDia)).Revision, "Rechazada", MotivosPropuestaDirector.OtraFecha)).StatusCode == HttpStatusCode.Redirect,
+            "el psicólogo resuelve la propuesta que coincide con otra cita");
+
         // ------------------------------------------------------------ 3. el psicólogo recibe la propuesta
         var avisosPsy = await Html(psicologo, "/CitasProgramadas/Notificaciones");
         Check(avisosPsy.Contains("Nueva propuesta de Dirección") && avisosPsy.Contains(nombreA) && avisosPsy.Contains("Aceptar, Reprogramar o Rechazar"), "psicólogo recibe la propuesta");
@@ -226,6 +261,17 @@ internal static class PropuestasDirectorChecks
               && detalleA2.Contains("Fecha y hora definitivas"), "Dirección ve el nuevo horario y la traza de la fecha original");
         Check((await Html(estA, "/CitasProgramadas/Notificaciones")).Contains("Cita reprogramada"), "estudiante recibe la reprogramación");
 
+        // Al aceptar se aplican las reglas de agenda del estudiante (solo las ve el psicólogo asignado).
+        var mismoDiaA = await Proponer(director, perfilA, psy, d1, "14:00");
+        Check(mismoDiaA.StatusCode == HttpStatusCode.Redirect, "propuesta en un día en que el estudiante ya tiene cita");
+        var pA3 = IdDesde(mismoDiaA);
+        var aceptarCruce = await Responder(pA3, (await Leer(pA3)).Revision, "Confirmada", lugar: "Consultorio propuestas, edificio D");
+        Check(aceptarCruce.StatusCode == HttpStatusCode.Conflict && (await HostPrueba.Texto(aceptarCruce)).Contains("otra cita activa ese día"), "al aceptar se respeta una cita activa por día");
+        var original = await Leer(pA);
+        Check(original.Estado == EstadoCita.Confirmada && original.FechaHoraInicioUtc == AgendaReglas.Utc(d1, new(9, 0)), "la cita confirmada existente no se modifica");
+        Check((await Responder(pA3, (await Leer(pA3)).Revision, "Rechazada", MotivosPropuestaDirector.OtraFecha)).StatusCode == HttpStatusCode.Redirect,
+            "el psicólogo rechaza la propuesta que no puede aceptar");
+
         // ------------------------------------------------------------ 6. rechazar (estudiante sin asignación)
         var propuestaB = await Proponer(director, perfilB, psy, d5, "09:00");
         Check(propuestaB.StatusCode == HttpStatusCode.Redirect, "propuesta para estudiante sin asignación (no revela atención)");
@@ -239,9 +285,11 @@ internal static class PropuestasDirectorChecks
         Check((await Responder(pB, citaB.Revision, "Rechazada", MotivosPropuestaDirector.Duplicada)).StatusCode == HttpStatusCode.Conflict
               && (await Leer(pB)).MotivoCancelacion == MotivosPropuestaDirector.Requisitos, "respuesta tardía o duplicada no altera el estado");
         var detalleB = await Html(director, "/Director/Propuesta/" + pB);
-        Check(detalleB.Contains("data-estado-propuesta>Rechazada") && detalleB.Contains(MotivosPropuestaDirector.Requisitos) && !detalleB.Contains("MOTIVO-CLINICO-LIBRE"), "Dirección ve el rechazo y su motivo administrativo");
+        Check(detalleB.Contains("data-estado-propuesta>Rechazada") && detalleB.Contains(MotivosPropuestaDirector.NoConfirmable) && !detalleB.Contains(MotivosPropuestaDirector.Requisitos)
+              && !detalleB.Contains("MOTIVO-CLINICO-LIBRE"), "Dirección ve el rechazo con un motivo que no revela solicitud ni asignación");
         var avisosB = await Html(estB, "/CitasProgramadas/Notificaciones");
-        Check(avisosB.Contains("rechazó la cita propuesta") && avisosB.Contains(MotivosPropuestaDirector.Requisitos), "estudiante recibe el rechazo");
+        Check(avisosB.Contains("rechazó la cita propuesta") && avisosB.Contains(MotivosPropuestaDirector.Requisitos) && avisosB.Contains("Solicitar atención"),
+            "estudiante recibe el rechazo y cómo continuar");
 
         // ------------------------------------------------------------ 7. el estudiante cancela: Dirección ve "cancelada" sin motivo
         var propuestaC = await Proponer(director, perfilC, psy, d6, "09:00");
@@ -252,6 +300,44 @@ internal static class PropuestasDirectorChecks
             "estudiante conserva su flujo de cancelación");
         var detalleC = await Html(director, "/Director/Propuesta/" + pC);
         Check(detalleC.Contains("data-estado-propuesta>Cancelada") && !detalleC.Contains("MOTIVO-PERSONAL-PRIVADO"), "Dirección ve la cancelación sin el motivo del estudiante");
+
+        // ------------------------------------------------------------ propuesta sin asignación → Administración asigna → aceptar
+        using var admin = HostPrueba.Cliente(app); using var estD = HostPrueba.Cliente(app);
+        await HostPrueba.Login(admin, "admin@miumg.edu.gt", clave); await HostPrueba.Login(estD, "prop-est-d@miumg.edu.gt", clave);
+        var propuestaD = await Proponer(director, perfilD, psy, d7, "10:00");
+        Check(propuestaD.StatusCode == HttpStatusCode.Redirect, "propuesta para estudiante con solicitud aún sin asignar");
+        var pD = IdDesde(propuestaD);
+        Check((await Html(psicologo, "/Psicologo/Agenda?citaId=" + pD)).Contains("data-propuesta-sin-asignacion"), "el psicólogo ve la indicación administrativa");
+        Check(Denegado(await Responder(pD, (await Leer(pD)).Revision, "Confirmada", lugar: "Consultorio")), "sin asignación vigente no puede aceptar");
+        Check((await Html(estD, "/CitasProgramadas/Notificaciones")).Contains("necesitas una solicitud de atención vigente"), "el estudiante recibe cómo continuar");
+        var detalleSolicitud = await Html(admin, "/Administrador/SolicitudesAtencion/" + solicitudD);
+        Check(detalleSolicitud.Contains("id=\"propuestas-direccion-pendientes\"") && detalleSolicitud.Contains(nombrePsy) && detalleSolicitud.Contains("data-citas-activas>0<"),
+            "Administración ve el psicólogo propuesto y la propuesta pendiente no bloquea");
+        await HostPrueba.Post(admin, "/Administrador/SolicitudesAtencion/" + solicitudD, "/Administrador/SolicitudesAtencion/" + solicitudD + "/Asignar",
+            ("SolicitudId", solicitudD.ToString()), ("PsicologoUsuarioId", psy));
+        await using (var db = new OfflineDb(options))
+            Check(await db.AsignacionesEstudiantePsicologo.AnyAsync(a => a.PerfilEstudianteId == perfilD && a.PsicologoUsuarioId == psy && a.FechaFinalizacionUtc == null),
+                "Administración asigna con el módulo existente (Dirección no crea asignaciones)");
+        var agendaD = await Html(psicologo, "/Psicologo/Agenda?citaId=" + pD);
+        Check(!agendaD.Contains("data-propuesta-sin-asignacion") && agendaD.Contains("Aceptar cita"), "con asignación vigente se habilita Aceptar");
+        Check((await Responder(pD, (await Leer(pD)).Revision, "Confirmada", lugar: "Consultorio propuestas, edificio D")).StatusCode == HttpStatusCode.Redirect
+              && (await Leer(pD)).Estado == EstadoCita.Confirmada, "la propuesta continúa y el psicólogo la acepta");
+        var detalleD = await Html(director, "/Director/Propuesta/" + pD);
+        Check(detalleD.Contains("Aceptada · confirmada") && !detalleD.Contains(solicitudD.ToString()) && !detalleD.Contains("DIRECCION-D-PRIVADA") && !detalleD.Contains(clinico),
+            "Dirección ve la aceptación sin datos de la solicitud ni de la asignación");
+
+        // Propuesta pendiente con la fecha vencida: estado derivado y el psicólogo aún puede cerrarla.
+        Check(FilaPropuesta(await Html(director, "/Director/Propuestas"), vencida).Contains("Sin respuesta · fecha vencida"), "propuesta sin respuesta y fecha pasada se muestra vencida");
+        Check((await Responder(vencida, (await Leer(vencida)).Revision, "Rechazada", MotivosPropuestaDirector.OtraFecha)).StatusCode == HttpStatusCode.Redirect
+              && (await Leer(vencida)).Estado == EstadoCita.Rechazada, "una propuesta vencida no queda bloqueada");
+
+        // Una propuesta pendiente de Dirección no bloquea la reserva normal del estudiante.
+        Check((await Proponer(director, perfilA, psy2, d8, "10:00")).StatusCode == HttpStatusCode.Redirect, "propuesta pendiente con otro psicólogo");
+        var reserva = await HostPrueba.Post(estA, "/Estudiante/Citas", "/Estudiante/Citas/Reservar", ("Inicio", AgendaReglas.Utc(d8, new(15, 0)).ToString("O")),
+            ("Modalidad", "Presencial"), ("DuracionMinutos", ""));
+        await using (var db = new OfflineDb(options))
+            Check(reserva.StatusCode == HttpStatusCode.Redirect && await db.Citas.AnyAsync(c => c.PerfilEstudianteId == perfilA && c.FechaHoraInicioUtc == AgendaReglas.Utc(d8, new(15, 0))
+                  && c.ProgramadorRol == null && c.Estado == EstadoCita.Solicitada), "la reserva del estudiante no se bloquea por una propuesta pendiente");
 
         // ------------------------------------------------------------ 9. propuestas ajenas
         Check(Denegado(await director2.GetAsync("/Director/Propuesta/" + pA)), "otra cuenta de Dirección no consulta propuestas ajenas");

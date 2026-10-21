@@ -37,9 +37,8 @@ public sealed partial class AgendaCitasService
         var metricas = new MetricasCargaDirector(
             citas.Count(c => c.Estado is EstadoCita.Reservada or EstadoCita.Confirmada),
             citas.Count(c => c.Estado == EstadoCita.Solicitada),
-            citas.Count(c => c.Estado == EstadoCita.Completada),
-            citas.Count(c => c.Estado is EstadoCita.Cancelada or EstadoCita.Rechazada),
-            citas.Count(c => c.Estado == EstadoCita.NoAsistio));
+            citas.Count(c => c.Estado is EstadoCita.Completada or EstadoCita.NoAsistio),
+            citas.Count(c => c.Estado is EstadoCita.Cancelada or EstadoCita.Rechazada));
         return new(calendario, profesionales) { Metricas = metricas };
     }
     // La respuesta a propuestas de Dirección (avisos administrativos y auditoría) está en

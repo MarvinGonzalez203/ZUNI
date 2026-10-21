@@ -23,6 +23,9 @@ public sealed class GestionSolicitudesException(string mensaje) : Exception(mens
 // - No se reasigna, finaliza ni cierra mientras el estudiante tenga citas activas (Reservada,
 //   Solicitada o Confirmada): primero deben cancelarse o registrarse. Así ninguna cita queda
 //   en manos de un psicólogo que ya perdió el acceso clínico.
+// - Excepción: una propuesta de Dirección aún pendiente (Solicitada, ProgramadorRol = "Director") no es
+//   una cita comprometida y no bloquea: sin asignación vigente su psicólogo no puede aceptarla (solo
+//   rechazarla). Bloquearla impediría justamente asignar al psicólogo que Dirección propuso.
 public sealed class GestionSolicitudesService(ApplicationDbContext db, TimeProvider reloj)
 {
     public const int TamanoPagina = 25;
@@ -77,11 +80,18 @@ public sealed class GestionSolicitudesService(ApplicationDbContext db, TimeProvi
         var actual = await db.AsignacionesEstudiantePsicologo.AsNoTracking()
             .Where(a => a.PerfilEstudianteId == perfilId && a.FechaFinalizacionUtc == null)
             .Select(a => a.PsicologoUsuarioId).SingleOrDefaultAsync(ct);
+        var ahora = Ahora;
         return new DetalleSolicitudAdminViewModel
         {
             Solicitud = fila,
             PsicologoActualId = fila.Estado == EstadoSolicitudAtencion.Cerrada ? null : actual,
-            CitasActivas = await db.Citas.AsNoTracking().CountAsync(c => c.PerfilEstudianteId == perfilId && EstadosCitaActivos.Contains(c.Estado), ct),
+            CitasActivas = await CitasQueBloquean(perfilId).CountAsync(ct),
+            PropuestasInstitucionalesPendientes = await (from c in db.Citas.AsNoTracking()
+                                                         join u in db.Users.AsNoTracking() on c.PsicologoUsuarioId equals u.Id
+                                                         where c.PerfilEstudianteId == perfilId && c.Estado == EstadoCita.Solicitada &&
+                                                               c.ProgramadorRol == "Director" && c.FechaHoraInicioUtc > ahora
+                                                         orderby c.FechaHoraInicioUtc
+                                                         select new PropuestaInstitucionalPendiente(u.FullName, c.FechaHoraInicioUtc)).ToListAsync(ct),
             Historial = historial,
             Elegibles = await PsicologosElegibles().OrderBy(u => u.FullName).ThenBy(u => u.Id)
                 .Select(u => new PsicologoElegible(u.Id, u.FullName, u.Email, u.DebeCambiarContrasena)).ToListAsync(ct)
@@ -274,9 +284,12 @@ public sealed class GestionSolicitudesService(ApplicationDbContext db, TimeProvi
         return psicologoId;
     }
 
+    private IQueryable<Cita> CitasQueBloquean(Guid perfilId) => db.Citas.AsNoTracking().Where(c => c.PerfilEstudianteId == perfilId &&
+        EstadosCitaActivos.Contains(c.Estado) && !(c.Estado == EstadoCita.Solicitada && c.ProgramadorRol == "Director"));
+
     private async Task ValidarSinCitasActivas(Guid perfilId, string operacion, CancellationToken ct)
     {
-        if (await db.Citas.AnyAsync(c => c.PerfilEstudianteId == perfilId && EstadosCitaActivos.Contains(c.Estado), ct))
+        if (await CitasQueBloquean(perfilId).AnyAsync(ct))
             throw new GestionSolicitudesException($"El estudiante tiene citas activas (solicitadas o confirmadas). Deben cancelarse o registrarse su atención antes de {operacion}.");
     }
 

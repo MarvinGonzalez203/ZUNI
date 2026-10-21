@@ -1,0 +1,18 @@
+@model Zuni.Models.Reportes.DesgloseVista
+@* Presenta un desglose ya protegido en el servidor. No recalcula ni recibe cifras ocultas. *@
+@{ var d = Model.Desglose; }
+@if (!d.Disponible)
+{
+    <p class="small mb-0" data-desglose="@Model.Id" data-desglose-estado="no-disponible">@Idioma.Texto("Desglose no disponible: las cifras son demasiado pequeñas para publicarse sin riesgo de identificar a alguien.")</p>
+}
+else if (d.Visibles.Count == 0)
+{
+    <p class="small mb-0" data-desglose="@Model.Id" data-desglose-estado="vacio">@Idioma.Texto("Sin datos disponibles")</p>
+}
+else
+{
+    <ul class="list-unstyled small mb-2" data-desglose="@Model.Id" data-desglose-estado="disponible" data-total="@d.Total">
+        @foreach (var c in d.Visibles) { <li data-celda="@c.Etiqueta" data-cantidad="@c.Cantidad">@Idioma.Texto(c.Etiqueta): <strong>@c.Cantidad</strong></li> }
+        @if (d.Agrupado is { } agrupado) { <li data-celda-agrupada data-cantidad="@agrupado">@Idioma.Texto(Model.EtiquetaGrupo): <strong>@agrupado</strong></li> }
+    </ul>
+}

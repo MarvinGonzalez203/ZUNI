@@ -52,7 +52,8 @@ public sealed partial class AgendaCitasService
         var desde=AgendaReglas.Utc(fecha,TimeOnly.MinValue);var hasta=AgendaReglas.Utc(fecha.AddDays(1),TimeOnly.MinValue);
         if(inicio<=Ahora||fin<=inicio||AgendaReglas.Hoy(fin)!=fecha||TimeOnly.FromDateTime(AgendaReglas.Local(inicio))<new TimeOnly(8,0)||TimeOnly.FromDateTime(AgendaReglas.Local(fin))>new TimeOnly(18,0))throw new AgendaOperacionException("Usa una franja futura entre las 08:00 y 18:00 del mismo día.");
         if(await db.ConfiguracionesAgendaDia.AnyAsync(d=>d.PsicologoUsuarioId==psy&&d.Fecha==fecha&&d.Bloqueado,ct))throw new AgendaOperacionException("El psicólogo tiene ese día bloqueado.");
-        if(await db.Citas.AnyAsync(c=>c.Id!=except&&EstadosActivos.Contains(c.Estado)&&((c.PerfilEstudianteId==perfil&&c.FechaHoraInicioUtc>=desde&&c.FechaHoraInicioUtc<hasta)||((c.PsicologoUsuarioId==psy||c.PerfilEstudianteId==perfil)&&c.FechaHoraInicioUtc<fin&&c.FechaHoraFinUtc>inicio)),ct))throw new AgendaOperacionException("Hay una cita activa o superpuesta para el estudiante o profesional. Elige otra franja.");
+        if(await db.Citas.AnyAsync(c=>c.Id!=except&&c.PsicologoUsuarioId==psy&&EstadosActivos.Contains(c.Estado)&&c.FechaHoraInicioUtc<fin&&c.FechaHoraFinUtc>inicio,ct)
+            ||await OtraCitaDelEstudiante(perfil,inicio,fin,except,ct))throw new AgendaOperacionException("Hay una cita activa o superpuesta para el estudiante o profesional. Elige otra franja.");
     }
     private async Task NotificarProgramacion(Cita c,(string Id,string Rol) actor,bool cambio,CancellationToken ct)
     {
@@ -76,6 +77,19 @@ public sealed partial class AgendaCitasService
         if(c.ProgramadorUsuarioId is null)return;
         var p=await db.PerfilesEstudiante.AsNoTracking().SingleAsync(p=>p.Id==c.PerfilEstudianteId,ct);
         if(!p.EstaCompleto||!await MayoriaEdadService.VerificadaAsync(db,p.Id,ct))throw new AgendaOperacionException("La cita propuesta requiere que el estudiante complete su perfil y la institución verifique su mayoría de edad antes de confirmarla.");
+        // Propuesta de Dirección: al crearla no se consultó la agenda del estudiante (para no revelarla a
+        // Dirección). Aquí, ya con el psicólogo asignado, se aplican las reglas vigentes: una cita activa por
+        // día y sin cruces. Otras propuestas de Dirección aún pendientes no cuentan; quedan sin poder aceptarse.
+        if(c.ProgramadorRol=="Director"&&await OtraCitaDelEstudiante(c.PerfilEstudianteId,c.FechaHoraInicioUtc,c.FechaHoraFinUtc,c.Id,ct))
+            throw new AgendaOperacionException("El estudiante ya tiene otra cita activa ese día o en ese horario. Reprograma la propuesta o recházala.");
+    }
+    // Una propuesta de Dirección pendiente no es una cita comprometida: no bloquea las reservas ni la
+    // programación del estudiante (sí ocupa la franja del psicólogo destinatario).
+    private Task<bool> OtraCitaDelEstudiante(Guid perfil,DateTime inicio,DateTime fin,Guid? excepto,CancellationToken ct)
+    {
+        var fecha=AgendaReglas.Hoy(inicio);var desde=AgendaReglas.Utc(fecha,TimeOnly.MinValue);var hasta=AgendaReglas.Utc(fecha.AddDays(1),TimeOnly.MinValue);
+        return db.Citas.AnyAsync(c=>c.Id!=excepto&&c.PerfilEstudianteId==perfil&&EstadosActivos.Contains(c.Estado)&&!(c.Estado==EstadoCita.Solicitada&&c.ProgramadorRol=="Director")
+            &&((c.FechaHoraInicioUtc>=desde&&c.FechaHoraInicioUtc<hasta)||(c.FechaHoraInicioUtc<fin&&c.FechaHoraFinUtc>inicio)),ct);
     }
     public async Task<Guid> GuardarProgramacion(ClaimsPrincipal actor,ProgramarCitaInput input,CancellationToken ct)
     {
