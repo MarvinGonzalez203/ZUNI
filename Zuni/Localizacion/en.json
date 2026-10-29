@@ -2836,5 +2836,10 @@
   "Menú compacto con iconos propios y posición estable.": "Compact menu with dedicated icons and a stable position.",
   "Guías por perfil, pasos ampliados y filtros sin recargar la página.": "Role-specific guides, expanded steps and filters without a page reload.",
   "Contraste nocturno, avisos por rol y propuestas del Director revisados.": "Dark-mode contrast, role-specific notices and Director proposals reviewed.",
-  "Control comercial de centros, periodos y vigencias.": "Commercial management of institutions, periods and terms."
+  "Control comercial de centros, periodos y vigencias.": "Commercial management of institutions, periods and terms.",
+  "Historial de actualizaciones": "Update history",
+  "Botones con forma, altura y tipografía consistentes en los paneles.": "Consistent button shapes, heights and typography across dashboards.",
+  "Submenús con sangría y conectores, conservando la alineación de los iconos al comprimir.": "Indented submenus with connecting lines, keeping icons aligned when collapsed.",
+  "La campana conserva las últimas tres versiones y sus cambios.": "The bell keeps the latest three versions and their changes.",
+  "Actualizaciones": "Updates"
 }

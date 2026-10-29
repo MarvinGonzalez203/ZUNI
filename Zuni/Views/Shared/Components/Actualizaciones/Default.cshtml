@@ -4,7 +4,12 @@
         <svg class="dash-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
         @if(Model){<span class="release-dot" aria-hidden="true"></span><span class="visually-hidden release-unread">@Idioma.Texto("Actualización sin leer")</span>}
     </summary>
-    <div class="release-content"><strong>ZUNI @Zuni.Resources.VersionSistema.Actual</strong><ul>@foreach(var texto in Zuni.Resources.VersionSistema.Novedades){<li>@Idioma.Texto(texto)</li>}</ul>
+    <div class="release-content"><strong>@Idioma.Texto("Actualizaciones") · v@(Zuni.Resources.VersionSistema.Actual)</strong>
+        <div class="release-history" tabindex="0" aria-label="@Idioma.Texto("Historial de actualizaciones")">
+        @foreach(var version in Zuni.Resources.VersionSistema.Historial.Take(3)){
+            <section class="release-entry" data-release-version="@version.Numero"><h3>ZUNI @version.Numero</h3><ul>@foreach(var texto in version.Cambios){<li>@Idioma.Texto(texto)</li>}</ul></section>
+        }
+        </div>
         @if(Model){<form asp-controller="Actualizaciones" asp-action="Leida" method="post" data-release-read><button class="btn btn-sm btn-outline-secondary" type="submit">@Idioma.Texto("Marcar actualización como leída")</button><span role="status" class="release-status"></span></form>}
     </div>
 </details>

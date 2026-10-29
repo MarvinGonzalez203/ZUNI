@@ -21,6 +21,9 @@ internal static class ActualizacionV1Checks
         Check(home.Contains("release-dot"),"una versión nueva aparece pendiente aunque la anterior esté leída");
         Check(home.Contains("commercial-grid")&&home.Contains("/SuperAdmin/Centros")&&home.Contains("Colegio Huellitas"),"tablero comercial y ejemplo visible");
         Check(home.Contains("system-version\">ZUNI · v"+VersionSistema.Actual)&&home.Contains("release-control"),"versión y campana disponibles");
+        var versiones=Regex.Matches(home,"data-release-version=\"([^\"]+)\"").Select(m=>m.Groups[1].Value).ToArray();
+        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.1.0","1.0.0"}),"campana muestra las tres versiones reales en orden");
+        Check(VersionSistema.Historial.Count==3&&VersionSistema.Historial[0].Numero==VersionSistema.Actual,"metadatos del historial y versión actual coinciden");
         await using(var db=new OfflineDb(options))Check(!await db.CentrosComerciales.AnyAsync(),"GET no registra el ejemplo automáticamente");
         var example=await super.GetStringAsync("/SuperAdmin/EditarCentro?ejemplo=true");
         Check(example.Contains("2026-10-28")&&example.Contains("2027-10-27"),"ejemplo con fechas acordadas");
@@ -55,7 +58,9 @@ internal static class ActualizacionV1Checks
             Check(await db.LecturasVersion.CountAsync(x=>x.UsuarioId==id&&x.Version==VersionSistema.Actual)==1&&!await db.LecturasVersion.AnyAsync(x=>x.UsuarioId=="admin"),"lectura pertenece al usuario de sesión, no al ID enviado");
             db.SolicitudesDerechosDatos.Add(new SolicitudDerechoDatos{UsuarioId="admin",Tipo=TipoDerechoDatos.Correccion,Detalle="Solicitud ficticia para comprobar el aviso.",FechaSolicitudUtc=reloj.Ahora.UtcDateTime});await db.SaveChangesAsync();
         }
-        Check(!(await super.GetStringAsync("/MiCuenta")).Contains("class=\"release-dot\""),"indicador leído desaparece");
+        var leido=await super.GetStringAsync("/MiCuenta");
+        Check(!leido.Contains("class=\"release-dot\""),"indicador leído desaparece");
+        Check(Regex.Matches(leido,"data-release-version=").Count==3,"marcar como leída no borra el historial");
         Check((await admin.GetStringAsync("/MiCuenta")).Contains("/Privacidad/Solicitudes"),"Administrador recibe enlace a peticiones pendientes");
         foreach(var tema in new[]{"seguridad","apariencia","avisos"})Check((await anon.GetAsync("/Home/Guia?tema="+tema)).StatusCode==HttpStatusCode.OK,"guía pública extra: "+tema);
         var search=await super.GetStringAsync("/SuperAdmin/Guias?q=renovar&rol=SuperAdmin");Check(search.Contains("Ampliar o renovar un contrato")&&!search.Contains("<h2>Responder un cuestionario indicado</h2>"),"búsqueda por tema y rol");
@@ -82,6 +87,7 @@ internal static class ActualizacionV1Checks
         Check(filtered.Contains("data-guide-role=\"Estudiante\"")&&!filtered.Contains("data-guide-role=\"SuperAdmin\""),"filtro de SuperAdmin reduce contenido en servidor");
         var preview=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");
         if(!string.IsNullOrEmpty(preview)){
+            await File.WriteAllTextAsync(Path.Combine(preview,"v1-super-unread-es.html"),home);
             async Task SavePage(HttpClient c,string url,string name)=>await File.WriteAllTextAsync(Path.Combine(preview,name+".html"),await c.GetStringAsync(url));
             foreach(var lang in new[]{"es","en"}){
                 await HostPrueba.Post(anon,"/Cuenta/IniciarSesion","/Idioma/Cambiar",("idioma",lang),("volver","/"));
