@@ -30,3 +30,7 @@ secrets.json
 # Carpetas de comprobación locales (cualquier variante .*-check y .verification-*)
 .*-check/
 .verification-*/
+
+# Entregables y previsualizaciones locales; se regeneran con las herramientas del proyecto.
+/output/pdf/
+/tmp/pdfs/

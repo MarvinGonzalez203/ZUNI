@@ -10,7 +10,8 @@ namespace Zuni.Services.Informes;
 public static class InformePdf
 {
     static InformePdf() { GlobalFontSettings.FontResolver = new FuenteInforme(); }
-    public static byte[] Crear(VersionInformeEducativo v)
+    internal static void PrepararFuentes() { }
+    public static byte[] Crear(VersionInformeEducativo v,bool demostracion=false)
     {
         var doc = new Document();
         doc.Info.Title = Idioma.Texto("Informe de apoyo educativo"); doc.Info.Author = v.Psicologo;
@@ -21,11 +22,10 @@ public static class InformePdf
         h.Font.Color = Color.FromRgb(72, 46, 108); h.ParagraphFormat.SpaceBefore = Unit.FromPoint(10); h.ParagraphFormat.SpaceAfter = Unit.FromPoint(6);
         h.ParagraphFormat.KeepWithNext = true;
         var s = doc.AddSection(); s.PageSetup.PageFormat = PageFormat.Letter;
-        s.PageSetup.TopMargin = Unit.FromCentimeter(2.0); s.PageSetup.BottomMargin = Unit.FromCentimeter(2.0);
+        s.PageSetup.TopMargin = Unit.FromCentimeter(3.0); s.PageSetup.BottomMargin = Unit.FromCentimeter(2.2);
         s.PageSetup.LeftMargin = Unit.FromCentimeter(2.2); s.PageSetup.RightMargin = Unit.FromCentimeter(2.2);
-        var header = s.Headers.Primary.AddParagraph(v.Institucion + " | ZUNI"); header.Format.Font.Size = 8; header.Format.Font.Color = Colors.Gray;
-        var footer = s.Footers.Primary.AddParagraph(Idioma.Texto("Confidencial - uso exclusivo del destinatario autorizado | "));
-        footer.Format.Font.Size = 8; footer.AddPageField(); footer.AddText(" / "); footer.AddNumPagesField();
+        MembretePdf.Aplicar(s,v.Institucion,Idioma.Texto("Confidencial - uso exclusivo del destinatario autorizado"));
+        if(demostracion){var demo=s.AddParagraph(Idioma.Texto("DEMOSTRACIÓN - PERSONAS Y AUTORIZACIÓN SIMULADAS"));demo.Format.Font.Bold=true;demo.Format.Font.Size=9;demo.Format.Shading.Color=Color.FromRgb(237,232,208);}
         var title = s.AddParagraph(Idioma.Texto("Informe de apoyo educativo")); title.Format.Font.Bold = true; title.Format.Font.Size = 20;
         title.Format.SpaceAfter = Unit.FromPoint(14);
         s.AddParagraph(Idioma.Texto("Identificador: {0} | Versión {1}",v.InformeId.ToString("D"),v.Numero));
@@ -46,7 +46,8 @@ public static class InformePdf
         Apartado("4. Necesidades de apoyo educativo", v.Necesidades);
         Apartado("5. Recomendaciones", v.Recomendaciones);
         Apartado("6. Responsables y seguimiento", v.ResponsablesAcciones + "\n"+Idioma.Texto("Seguimiento propuesto: {0}.",v.FechaSeguimiento.ToString("dd/MM/yyyy")));
-        Apartado("7. Aprobación y uso del informe", Idioma.Texto("Contenido revisado y emitido por {0}, con autorización específica del estudiante para esta versión y destinatario. El nombre presentado no constituye una firma electrónica certificada.\nUtilizar exclusivamente para coordinar el apoyo educativo descrito. No distribuir a terceros ni utilizar como diagnóstico clínico.",v.Psicologo));
+        Apartado("7. Aprobación y uso del informe", demostracion?Idioma.Texto("Ejemplo ficticio de contenido que el psicólogo puede revisar para un destinatario autorizado. No documenta una atención, firma ni autorización real. Una entrega real requiere la revisión profesional y la autorización correspondiente a esa versión y persona destinataria."):Idioma.Texto("Contenido revisado y emitido por {0}, con autorización específica del estudiante para esta versión y destinatario. El nombre presentado no constituye una firma electrónica certificada.\nUtilizar exclusivamente para coordinar el apoyo educativo descrito. No distribuir a terceros ni utilizar como diagnóstico clínico.",v.Psicologo));
+        var apoyo=s.AddParagraph(Idioma.Texto("ZUNI es una herramienta de apoyo a la psicología educativa. No sustituye al psicólogo ni realiza diagnósticos automáticos."));apoyo.Format.Font.Size=8;apoyo.Format.Font.Color=Colors.Gray;
         var renderer = new PdfDocumentRenderer { Document = doc }; renderer.RenderDocument();
         using var stream = new MemoryStream(); renderer.PdfDocument.Save(stream, false); return stream.ToArray();
     }

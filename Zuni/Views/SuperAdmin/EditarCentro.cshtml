@@ -1,6 +1,7 @@
 @model Zuni.Models.Comercial.EditarCentroInput
 @{ViewData["Title"]="Contrato del centro educativo";}
 <header class="dash-profile-heading"><div><h1>@Idioma.Texto("Contrato del centro educativo")</h1><p>@Idioma.Texto("Actualiza la vigencia, el plan o el estado. Los cambios quedan registrados en la auditoría comercial.")</p></div></header>
+@if(Model.Id is {} centroId){<p><a class="btn btn-outline-secondary" asp-action="PdfCentro" asp-route-id="@centroId">@Idioma.Texto("Descargar contrato PDF")</a></p>}
 <form method="post" class="dash-card commercial-form">
 <input asp-for="Id" type="hidden"/><input asp-for="Revision" type="hidden"/>
 <div asp-validation-summary="All" class="text-danger" role="alert"></div>

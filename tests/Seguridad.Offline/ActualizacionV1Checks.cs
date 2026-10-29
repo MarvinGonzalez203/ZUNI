@@ -22,8 +22,8 @@ internal static class ActualizacionV1Checks
         Check(home.Contains("commercial-grid")&&home.Contains("/SuperAdmin/Centros")&&home.Contains("Colegio Huellitas"),"tablero comercial y ejemplo visible");
         Check(home.Contains("system-version\">ZUNI · v"+VersionSistema.Actual)&&home.Contains("release-control"),"versión y campana disponibles");
         var versiones=Regex.Matches(home,"data-release-version=\"([^\"]+)\"").Select(m=>m.Groups[1].Value).ToArray();
-        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.1.0","1.0.0"}),"campana muestra las tres versiones reales en orden");
-        Check(VersionSistema.Historial.Count==3&&VersionSistema.Historial[0].Numero==VersionSistema.Actual,"metadatos del historial y versión actual coinciden");
+        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.1.1","1.1.0"}),"campana muestra las tres versiones reales en orden");
+        Check(VersionSistema.Historial.Count>=3&&VersionSistema.Historial[0].Numero==VersionSistema.Actual,"metadatos del historial y versión actual coinciden");
         await using(var db=new OfflineDb(options))Check(!await db.CentrosComerciales.AnyAsync(),"GET no registra el ejemplo automáticamente");
         var example=await super.GetStringAsync("/SuperAdmin/EditarCentro?ejemplo=true");
         Check(example.Contains("2026-10-28")&&example.Contains("2027-10-27"),"ejemplo con fechas acordadas");
@@ -47,6 +47,11 @@ internal static class ActualizacionV1Checks
             Check(current.Estado==EstadoContrato.Cancelado&&current.Fin==new DateOnly(2028,10,27),"cancelación conserva el registro y la nueva fecha");
             Check(await db.AuditoriaUsuarios.CountAsync(a=>a.Accion.StartsWith("CENTRO_COMERCIAL_"))==3,"cambios comerciales auditados");
         }
+        var contratoPdf=await super.GetAsync("/SuperAdmin/PdfCentro?id="+saved.Id);var pdfBytes=await contratoPdf.Content.ReadAsByteArrayAsync();
+        Check(contratoPdf.StatusCode==HttpStatusCode.OK&&contratoPdf.Content.Headers.ContentType?.MediaType=="application/pdf"&&System.Text.Encoding.ASCII.GetString(pdfBytes,0,5)=="%PDF-","contrato PDF con membrete generado");
+        Check((await super.GetAsync("/SuperAdmin/PdfCentro?id="+Guid.NewGuid())).StatusCode==HttpStatusCode.NotFound,"contrato inexistente no se imprime");
+        Check((await admin.GetAsync("/SuperAdmin/PdfCentro?id="+saved.Id)).Headers.Location?.OriginalString.Contains("AccesoDenegado")==true,"Administrador institucional no imprime contratos del proveedor");
+        await using(var db=new OfflineDb(options))Check(await db.AuditoriaUsuarios.CountAsync(a=>a.Accion=="CENTRO_COMERCIAL_PDF_GENERADO")==1,"generación PDF comercial auditada");
         var privacy=await super.GetStringAsync("/Privacidad");
         Check(privacy.Contains("transparencia-titulo")&&!privacy.Contains("name=\"Nueva.Detalle\"")&&!privacy.Contains("/Privacidad/Solicitar"),"proveedor ve transparencia sin petición institucional");
         Check((await HostPrueba.Post(super,"/MiCuenta","/Privacidad/Solicitar",("Nueva.Tipo","0"),("Nueva.Detalle","Dato ficticio"))).StatusCode==HttpStatusCode.Forbidden,"proveedor no crea solicitudes institucionales por POST");
@@ -80,6 +85,11 @@ internal static class ActualizacionV1Checks
             Check(guideHtml.Contains("data-guide-role=\""+role+"\""),"guías propias: "+role);
             Check(!guideHtml.Contains("data-guide-role=\"SuperAdmin\""),"parámetro no amplía audiencia: "+role);
             Check(!guideHtml.Contains("name=\"rol\""),"sin selector de otros roles: "+role);
+            if(role=="Director"){
+                var carga=await audience.GetStringAsync("/Director/Calendario");
+                Check(carga.Contains("id=\"profesional-calendario\"")&&carga.Contains("name=\"psicologoId\""),"selector de profesionales visible incluso con uno solo");
+                Check(!Regex.IsMatch(guideHtml,"<a[^>]*href=\"/Director/ProponerCita\""),"menú de propuestas reunido en una entrada");
+            }
             Check(guideHtml.Contains("sidebar-collapse")&&guideHtml.Contains("sidebar-scroll-cue")&&guideHtml.Contains("sidebar-guides"),"navegación y ayuda comunes: "+role);
             var fixture=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");if(!string.IsNullOrEmpty(fixture))await File.WriteAllTextAsync(Path.Combine(fixture,"guias-"+role+".html"),guideHtml);
         }

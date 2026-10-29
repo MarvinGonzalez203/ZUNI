@@ -25,6 +25,17 @@
     });
     cue?.addEventListener('click',()=>region.scrollBy({top:Math.max(140,region.clientHeight*.65),behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'}));
     region.addEventListener('scroll',update,{passive:true});
+    sidebar.addEventListener('wheel',event=>{
+        if(event.ctrlKey||!event.deltaY)return;
+        const end=Math.max(0,region.scrollHeight-region.clientHeight);
+        if(!region.contains(event.target)){
+            // The fixed menu hint is a sibling of the scroll region: route its wheel
+            // events into the menu rather than allowing the page behind to move.
+            event.preventDefault();
+            const unit=event.deltaMode===1?16:event.deltaMode===2?region.clientHeight:1;
+            region.scrollTop+=event.deltaY*unit;
+        }else if(event.deltaY<0&&region.scrollTop<=0||event.deltaY>0&&region.scrollTop>=end-1){event.preventDefault();}
+    },{passive:false});
     window.addEventListener('resize',update);
     document.addEventListener('zuni:languagechange',update);
     sidebar.addEventListener('toggle',()=>requestAnimationFrame(update),true);

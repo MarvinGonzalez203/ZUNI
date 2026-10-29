@@ -19,6 +19,21 @@ public sealed class SuperAdminController(ApplicationDbContext db):Controller
         try{return View(await Zuni.Services.Institucion.CentrosComercialesService.Listar(db,await Zuni.Services.Privacidad.PrivacidadService.UsuarioAsync(db,User,ct),pagina,HttpContext.RequestServices.GetRequiredService<TimeProvider>(),ct));}
         catch(UnauthorizedAccessException){return Forbid();}
     }
+    [HttpGet]
+    public async Task<IActionResult> PdfCentro(Guid id,CancellationToken ct)
+    {
+        string actor;
+        try{actor=await Zuni.Services.Privacidad.PrivacidadService.UsuarioAsync(db,User,ct);}
+        catch(UnauthorizedAccessException){return Forbid();}
+        if(!await Zuni.Services.Institucion.TarifasService.EsSuperAdmin(db,actor,ct))return Forbid();
+        var centro=await db.CentrosComerciales.AsNoTracking().SingleOrDefaultAsync(c=>c.Id==id,ct);
+        if(centro is null)return NotFound();
+        var ahora=HttpContext.RequestServices.GetRequiredService<TimeProvider>().GetUtcNow().UtcDateTime;
+        var pdf=Zuni.Services.Institucion.ContratoCentroPdf.Crear(centro,ahora);
+        db.AuditoriaUsuarios.Add(new Zuni.Models.AuditoriaUsuario{UsuarioAfectadoId=actor,AdministradorId=actor,Accion="CENTRO_COMERCIAL_PDF_GENERADO",FechaUtc=ahora,DatosNuevos=System.Text.Json.JsonSerializer.Serialize(new{CentroId=centro.Id,centro.Revision})});
+        await db.SaveChangesAsync(ct);
+        return File(pdf,"application/pdf",$"zuni-contrato-{centro.Id:N}.pdf");
+    }
     [HttpGet] public async Task<IActionResult> EditarCentro(Guid? id,bool ejemplo=false,string? nombreInicial=null,DateOnly? inicioInicial=null,int mesesInicial=12,CancellationToken ct=default)
     {
         if(!await Zuni.Services.Institucion.TarifasService.EsSuperAdmin(db,User.FindFirstValue(ClaimTypes.NameIdentifier),ct))return Forbid();

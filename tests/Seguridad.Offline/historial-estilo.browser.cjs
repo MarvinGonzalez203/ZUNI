@@ -10,7 +10,7 @@ const current=fs.readFileSync(path.join(root,'../Zuni.csproj'),'utf8').match(/<V
 for(const width of [1366,390,320])for(const theme of ['light','dark']){
  await page.setViewportSize({width,height:844});await page.goto('http://zuni.test/SuperAdmin');await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
  await page.locator('.release-control>summary').click();const versions=await page.locator('.release-entry').evaluateAll(es=>es.map(e=>e.dataset.releaseVersion));
- check(JSON.stringify(versions)===JSON.stringify([current,'1.1.0','1.0.0']),'tres versiones reales '+width+' '+theme);
+ check(JSON.stringify(versions)===JSON.stringify([current,'1.1.1','1.1.0']),'tres versiones reales '+width+' '+theme);
  check(await page.locator('.release-entry').evaluateAll(es=>es.every(e=>e.querySelector('h3')?.textContent.includes(e.dataset.releaseVersion)&&e.querySelectorAll('li').length>0)),'títulos y cambios por versión '+width+' '+theme);
  const box=await page.locator('.release-content').boundingBox();check(box.x>=0&&box.x+box.width<=width+1&&box.y>=0&&box.y+box.height<=844,'historial dentro de pantalla '+width+' '+theme);
  await page.locator('.release-history').evaluate(e=>e.scrollTop=e.scrollHeight);const last=await page.locator('.release-entry').last().boundingBox();check(last.y+last.height<=box.y+box.height,'versión anterior accesible por desplazamiento '+width+' '+theme);

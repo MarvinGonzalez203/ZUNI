@@ -10,6 +10,7 @@ for(const role of ['Administrador','Director','Psicologo','Estudiante']){
 await page.goto('http://zuni.test/Guias?perfil='+role);await page.evaluate(()=>{document.documentElement.dataset.theme='dark';document.querySelectorAll('.dash-nav-group').forEach(e=>e.open=true);});
 check(await page.locator('.sidebar-guides').isVisible(),'ayuda accesible '+role);
 const roles=await page.locator('article[data-guide-role]').evaluateAll(es=>es.map(e=>e.dataset.guideRole));check(roles.every(r=>r===role||r==='General'),'guías limitadas '+role);
+check(await page.locator('.dash-nav-children').first().evaluate(e=>['none','normal'].includes(getComputedStyle(e,'::before').content)),'sin líneas de submenú '+role);
 check(await page.locator('.dash-nav-group').first().evaluate(g=>{const a=g.querySelector('.dash-nav-children .dash-nav-link>span'),parent=g.querySelector('summary>span');return a.getBoundingClientRect().x>parent.getBoundingClientRect().x+8;}),'sangría distingue submenú '+role);
 const geometry=await page.locator('.guide-search .dash-button,.guide-search .btn-outline-secondary').evaluateAll(es=>es.map(e=>{const s=getComputedStyle(e);return {radius:s.borderRadius,height:e.getBoundingClientRect().height,size:s.fontSize,weight:s.fontWeight,family:s.fontFamily};}));check(geometry.length===2&&geometry[0].radius===geometry[1].radius&&Math.abs(geometry[0].height-geometry[1].height)<1&&geometry[0].size===geometry[1].size&&geometry[0].weight===geometry[1].weight&&geometry[0].family===geometry[1].family,'botones con geometría consistente '+role);
 const region=page.locator('[data-sidebar-scroll]');await region.evaluate(e=>e.scrollTop=0);await page.locator('.sidebar-scroll-cue').waitFor({state:'visible'});check(true,'V del menú visible '+role);
@@ -19,13 +20,27 @@ check(await page.locator('.sidebar-collapse').evaluate(e=>!document.getElementBy
 const headerCenters=await page.locator('.dash-header-brand,.sidebar-collapse,.dash-top-title').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return r.y+r.height/2;}));check(Math.max(...headerCenters)-Math.min(...headerCenters)<2,'cabecera alineada '+role);
 const x=await page.locator('.dash-logo-mark,.dash-nav-group summary svg,.dash-bottom-action .dash-round-control').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return r.left+r.width/2;}));
 await page.locator('.sidebar-collapse').click();check(await page.locator('body').evaluate(e=>e.classList.contains('sidebar-compact')),'compresión '+role);
+await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
 const y=await page.locator('.dash-logo-mark,.dash-nav-group summary svg,.dash-bottom-action .dash-round-control').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return r.left+r.width/2;}));check(x.every((v,i)=>Math.abs(v-y[i])<1),'iconos mantienen eje '+role);
-const zs=await page.locator('.dash-nav-group summary svg,.dash-bottom-action .dash-round-control').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().y));check(ys.every((v,i)=>Math.abs(v-zs[i])<1),'iconos mantienen altura '+role);check(Math.abs(await region.evaluate(e=>e.scrollTop)-beforeTop)<1,'compresión conserva desplazamiento '+role);
+const zs=await page.locator('.dash-nav-group summary svg,.dash-bottom-action .dash-round-control').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().y));check(ys.every((v,i)=>Math.abs(v-zs[i])<1),'iconos mantienen altura '+role+' '+JSON.stringify({antes:ys,despues:zs}));check(Math.abs(await region.evaluate(e=>e.scrollTop)-beforeTop)<1,'compresión conserva desplazamiento '+role);
 check(await page.locator('.dash-nav-children .dash-nav-link').evaluateAll(es=>es.every(e=>e.querySelector('svg'))),'submenús con iconos propios '+role);
 check(await page.locator('body').evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde compacto '+role);
 await page.reload();check(await page.locator('body').evaluate(e=>e.classList.contains('sidebar-compact')),'preferencia conservada '+role);await page.locator('.sidebar-collapse').click();
 await region.evaluate(e=>e.scrollTop=0);await page.locator('.sidebar-scroll-cue').click();await page.waitForFunction(()=>document.querySelector('[data-sidebar-scroll]').scrollTop>20);check(true,'V desplaza menú '+role);
 }
+await page.goto('http://zuni.test/Guias?perfil=Director');
+await page.evaluate(()=>{document.querySelectorAll('.dash-nav-group').forEach(e=>e.open=true);scrollTo({top:220,behavior:'instant'});const r=document.querySelector('[data-sidebar-scroll]');r.scrollTop=r.scrollHeight;});
+const menuPoint=await page.locator('.dashboard-sidebar').boundingBox(),pageY=await page.evaluate(()=>scrollY);
+await page.mouse.move(menuPoint.x+60,menuPoint.y+200);await page.mouse.wheel(0,700);await page.waitForTimeout(100);
+check(Math.abs(await page.evaluate(()=>scrollY)-pageY)<1,'límite inferior del menú no arrastra la página');
+await page.locator('[data-sidebar-scroll]').evaluate(e=>e.scrollTop=0);await page.mouse.wheel(0,-700);await page.waitForTimeout(100);
+check(Math.abs(await page.evaluate(()=>scrollY)-pageY)<1,'límite superior del menú no arrastra la página');
+check(await page.locator('.dashboard-topbar').evaluate(e=>Math.abs(e.getBoundingClientRect().top)<1),'cabecera fija sin desprendimiento');
+await page.locator('[data-sidebar-scroll]').evaluate(e=>e.scrollTop=0);await page.locator('.sidebar-scroll-cue').hover();await page.mouse.wheel(0,250);await page.waitForTimeout(100);check(Math.abs(await page.evaluate(()=>scrollY)-pageY)<1&&await page.locator('[data-sidebar-scroll]').evaluate(e=>e.scrollTop>20),'rueda sobre el indicador desplaza solo el menú');
+const indent=await page.locator('.dash-nav-group').first().evaluate(e=>e.querySelector('.dash-nav-children svg').getBoundingClientRect().x-e.querySelector('summary svg').getBoundingClientRect().x);
+check(indent>14&&indent<18,'iconos de submenú tabulados en vista ancha');
+await page.locator('.sidebar-collapse').click();
+check(await page.locator('.dash-nav-group').first().evaluate(e=>Math.abs(e.querySelector('.dash-nav-children svg').getBoundingClientRect().x-e.querySelector('summary svg').getBoundingClientRect().x)<1),'iconos de submenú alineados en vista compacta');
 await page.goto('http://zuni.test/SuperAdmin');await page.evaluate(()=>document.documentElement.dataset.theme='dark');
 const buttonY=await page.locator('.commercial-grid').first().locator('article').evaluateAll(es=>es.slice(0,3).map(e=>e.querySelector('.dash-button').getBoundingClientRect().bottom));check(Math.max(...buttonY)-Math.min(...buttonY)<2,'acciones comerciales alineadas');
 await page.screenshot({path:path.join(dir,'ajustes-superadmin-oscuro.png'),fullPage:false});

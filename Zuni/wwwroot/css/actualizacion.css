@@ -44,12 +44,9 @@ html[data-theme=dark] :is(.bg-light,.bg-white){background-color:#352d3e!importan
 .guide-status:empty{display:none}.guide-status{flex-basis:100%;margin:0}
 @media(min-width:992px){html .dashboard-app.sidebar-compact .dash-nav-link.is-active,html[data-theme=dark] .dashboard-app.sidebar-compact .dash-nav-link.is-active{background:transparent;border-color:transparent;box-shadow:none;backdrop-filter:none}}
 
-/* Submenu labels and connectors convey hierarchy without moving the fixed icon rail. */
-.sidebar-scroll-region .dash-nav-children::before{content:'';position:absolute;left:11px;top:0;bottom:8px;width:1px;background:color-mix(in srgb,var(--institucion-color,#cea2fd) 45%,transparent);pointer-events:none}
+/* Indented child rows; no decorative connector lines. */
 .sidebar-scroll-region .dash-nav-children .dash-nav-link{position:relative;font-size:12px;font-weight:500}
-.sidebar-scroll-region .dash-nav-children .dash-nav-link>span{margin-left:12px}
-.sidebar-scroll-region .dash-nav-children .dash-nav-link::before{content:'';position:absolute;left:11px;top:50%;width:7px;height:1px;background:color-mix(in srgb,var(--institucion-color,#cea2fd) 45%,transparent);pointer-events:none}
-@media(min-width:992px){.sidebar-compact .dash-nav-children::before,.sidebar-compact .dash-nav-children .dash-nav-link::before{visibility:hidden}}
+.sidebar-scroll-region .dash-nav-children .dash-nav-link>span{margin-left:0}
 /* Shared ZUNI action geometry. Semantic action colors and personal palettes remain separate. */
 .dashboard-app :is(.dash-button,.btn:not(.btn-link)){display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 18px;border-radius:9px;font-family:inherit;font-size:12px;font-weight:650;line-height:1.55;text-decoration:none;vertical-align:middle}
 .dashboard-app .btn.btn-sm{min-height:34px;padding:6px 12px;font-size:11px}
@@ -59,3 +56,7 @@ html[data-theme=dark] :is(.bg-light,.bg-white){background-color:#352d3e!importan
 .release-history{overflow-y:auto;min-height:0;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#9b78b9 transparent;padding-right:5px}.release-history:focus-visible{outline-offset:-2px}
 .release-entry+.release-entry{border-top:1px solid var(--dash-line,#d4c4e3);padding-top:14px;margin-top:14px}.release-entry h3{font-size:.9rem;margin:0 0 8px;font-weight:700}.release-entry ul{margin:0;padding-left:18px;color:var(--dash-muted,#69636d)}.release-entry li+li{margin-top:5px}
 @media(max-width:575.98px){.release-content{top:calc(var(--zuni-topbar-height,110px) + 8px);margin-top:0}}
+
+.sidebar-scroll-region .dash-nav-children .dash-nav-link{padding-left:34.5px}
+@media(min-width:992px){.sidebar-compact .dash-nav-children .dash-nav-link>.dash-icon{transform:translateX(-16px)}}
+html:has(body.dashboard-app){overscroll-behavior-y:none}.dashboard-app{padding-top:var(--zuni-topbar-height,78px);overscroll-behavior-y:none}.dashboard-app>.dashboard-topbar{position:fixed;inset:0 0 auto;width:100%}.sidebar-scroll-region{overscroll-behavior:contain;scroll-behavior:auto;overflow-anchor:none}.dashboard-sidebar.offcanvas{overscroll-behavior:contain}
