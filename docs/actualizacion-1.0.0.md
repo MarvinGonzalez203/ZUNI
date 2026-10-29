@@ -1,5 +1,7 @@
 # Actualización 1.0.0 — Director V2
 
+Nota histórica: este documento describe la preparación inicial. El estado posterior está en `actualizacion-1.1.0.md`; la migración comercial ya se aplicó a localhost, mientras que la publicación en zuni.lat sigue pendiente.
+
 Estado: cambios locales en `feature/director-V2`. No publicados en zuni.lat; no se ha aplicado la nueva migración a PostgreSQL.
 
 ## Funciones
