@@ -1,5 +1,6 @@
 @model Zuni.Models.Privacidad.PoliticaPrivacidad
 @{ Layout = "_Layout"; ViewData["Title"] = "Política de privacidad"; }
 <h1>@Idioma.Texto("Política de privacidad")</h1>
+<partial name="_TransparenciaDatos" />
 @if (Model is null) { <p>@Idioma.Texto("La institución aún no ha publicado su política. Coordina con su Administrador antes de presentar información para atención.")</p> }
 else { <partial name="_Politica" model="Model" /> }

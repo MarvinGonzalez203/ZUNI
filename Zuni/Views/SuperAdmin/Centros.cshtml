@@ -1,0 +1,6 @@
+@model Zuni.Models.Comercial.CentrosComercialesViewModel
+@{ViewData["Title"]="Centros educativos";}
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Centros educativos")</h1><p>@Idioma.Texto("Control comercial de planes y vigencias. No conecta ni consulta las bases de estudiantes de los centros.")</p></div><a class="dash-button" asp-action="EditarCentro">@Idioma.Texto("Registrar centro")</a></header>
+<partial name="_Centros" model="Model" />
+@if(Model.Paginas>1){<nav class="zuni-action-row" aria-label="@Idioma.Texto("Páginas de centros")">@if(Model.Pagina>1){<a class="btn btn-outline-secondary" asp-route-pagina="@(Model.Pagina-1)">@Idioma.Texto("Anterior")</a>}<span>@Model.Pagina / @Model.Paginas</span>@if(Model.Pagina<Model.Paginas){<a class="btn btn-outline-secondary" asp-route-pagina="@(Model.Pagina+1)">@Idioma.Texto("Siguiente")</a>}</nav>}
+<p class="small">@Idioma.Texto("El registro de un contrato no activa, bloquea ni cobra automáticamente otra instalación de ZUNI.")</p>

@@ -6,6 +6,11 @@
 <nav class="dash-nav" aria-label="@Idioma.Texto("Navegación de SuperAdmin")">
 <span class="dash-nav-label">@Idioma.Texto("ADMINISTRACIÓN DE ZUNI")</span>
 <a class="dash-nav-link @Act(Es("SuperAdmin","Index"))" asp-controller="SuperAdmin" asp-action="Index" aria-current="@Actual(Es("SuperAdmin","Index"))"><partial name="_DashboardIcon" model='@("grid")'/><span>@Idioma.Texto("Tablero")</span></a>
+<details class="dash-nav-group" open="@(c=="SuperAdmin"&&a is "Centros" or "EditarCentro")"><summary><partial name="_DashboardIcon" model='@("home")'/><span>@Idioma.Texto("Centros educativos")</span></summary><div class="dash-nav-children">
+<a class="dash-nav-link @Act(Es("SuperAdmin","Centros"))" asp-controller="SuperAdmin" asp-action="Centros" aria-current="@Actual(Es("SuperAdmin","Centros"))"><span>@Idioma.Texto("Contratos y vigencias")</span></a>
+<a class="dash-nav-link @Act(Es("SuperAdmin","EditarCentro"))" asp-controller="SuperAdmin" asp-action="EditarCentro" aria-current="@Actual(Es("SuperAdmin","EditarCentro"))"><span>@Idioma.Texto("Registrar o editar centro")</span></a>
+</div></details>
+<a class="dash-nav-link @Act(Es("SuperAdmin","Guias"))" asp-controller="SuperAdmin" asp-action="Guias" aria-current="@Actual(Es("SuperAdmin","Guias"))"><partial name="_DashboardIcon" model='@("book")'/><span>@Idioma.Texto("Guías y funciones")</span></a>
 <details class="dash-nav-group" open="@(c=="Tarifas")"><summary><partial name="_DashboardIcon" model='@("clipboard")'/><span>@Idioma.Texto("Tarifas y periodos")</span></summary><div class="dash-nav-children">
 <a class="dash-nav-link @Act(Es("Tarifas","Index"))" asp-controller="Tarifas" asp-action="Index" aria-current="@Actual(Es("Tarifas","Index"))"><span>@Idioma.Texto("Ver tarifas")</span></a>
 <a class="dash-nav-link @Act(Es("Tarifas","Editar"))" asp-controller="Tarifas" asp-action="Editar" aria-current="@Actual(Es("Tarifas","Editar"))"><span>@Idioma.Texto("Editar precios")</span></a>

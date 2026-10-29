@@ -10,9 +10,9 @@ public sealed class AislamientoSuperAdminMiddleware(RequestDelegate next)
         if(context.User.Identity?.IsAuthenticated==true&&context.User.IsInRole("SuperAdmin")){
             var a=context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
             var mezclado=context.User.Claims.Any(c=>c.Type==ClaimTypes.Role&&c.Value!="SuperAdmin");
-            var propia=a?.ControllerName is "SuperAdmin" or "Tarifas" or "MiCuenta" or "Preferencias" or "Idioma" or "Home" ||
+            var propia=a?.ControllerName is "SuperAdmin" or "Tarifas" or "MiCuenta" or "Preferencias" or "Idioma" or "Home" or "Actualizaciones" ||
                 a?.ControllerName=="Cuenta"&&a.ActionName is "IniciarSesion" or "AccesoDenegado" or "CambiarContrasenaObligatoria" or "MantenerSesion" or "CerrarSesion" ||
-                a?.ControllerName=="Privacidad"&&a.ActionName is "Index" or "Solicitar" or "Aceptar" or "Politica";
+                a?.ControllerName=="Privacidad"&&a.ActionName is "Index" or "Politica";
             if(a is not null&&(!propia||mezclado&&a.ControllerName is not ("Cuenta" or "Idioma" or "Home"))){context.Response.StatusCode=StatusCodes.Status403Forbidden;return;}
         }
         await next(context);

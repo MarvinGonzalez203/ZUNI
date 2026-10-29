@@ -54,6 +54,7 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            ConfigurarComercial(builder);
             builder.Entity<Zuni.Models.Institucion.PreferenciaVista>(e=>{
                 e.HasKey(p=>new{p.UsuarioId,p.Rol});
                 e.HasOne<ApplicationUser>().WithMany().HasForeignKey(p=>p.UsuarioId).OnDelete(DeleteBehavior.Cascade);

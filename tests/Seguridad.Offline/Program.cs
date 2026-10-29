@@ -16,6 +16,7 @@ using Zuni.Services;
 using Zuni.Services.Administracion;
 
 if(args.Contains("--postgres-proteccion")){await ProteccionPostgresChecks.Run(args.Contains("--sembrar-legado"));return;}
+if(args.Contains("--actualizacion-v1")){await ActualizacionV1Solo.Run();return;}
 
 // Comprobaciones offline del endurecimiento previo al despliegue.
 // SQLite en memoria + host HTTP efímero en 127.0.0.1. No abre ni modifica PostgreSQL.
@@ -622,6 +623,7 @@ await PrivacidadDirectorChecks.Run(app, opciones, clave, reloj);
 await PropuestasDirectorChecks.Run(app, opciones, clave, reloj);
 await EstadisticasPrivacidadChecks.Run(app, opciones, clave, reloj);
 await ProteccionClinicaChecks.Run(opciones);
+await ActualizacionV1Checks.Run(app,opciones,clave,reloj);
 
 using (var c = HostPrueba.Cliente(app))
 {

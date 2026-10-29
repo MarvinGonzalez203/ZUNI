@@ -13,6 +13,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <partial name="_IconosSitio" />
     <title>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString())) - ZUNI</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -24,6 +25,7 @@
     <partial name="_IdentidadInstitucion" model="configuracionInstitucion" />
     <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
     <partial name="_TemaHead" />
+    <link rel="stylesheet" href="~/css/actualizacion.css" asp-append-version="true" />
 </head>
 <body class="public-shell @ViewData["BodyClass"]">
     <header>
@@ -89,5 +91,6 @@
     <script src="~/js/modales.js" asp-append-version="true"></script>
     <script src="~/js/campos-obligatorios.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <partial name="_ControlesDesplazamiento" />
 </body>
 </html>

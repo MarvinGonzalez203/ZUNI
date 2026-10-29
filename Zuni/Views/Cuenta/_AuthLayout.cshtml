@@ -3,7 +3,7 @@
     ViewData["BodyClass"] = "auth-page";
 }
 <div class="auth-shell row g-0 overflow-hidden">
-    <aside class="col-lg-5 auth-brand d-none d-lg-flex flex-column justify-content-center p-5 text-white">
+    <aside class="col-lg-5 auth-brand d-flex flex-column justify-content-center p-5 text-white">
         <span class="auth-liquid auth-liquid-one" aria-hidden="true"></span>
         <span class="auth-liquid auth-liquid-two" aria-hidden="true"></span>
         <div class="auth-network" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
@@ -17,7 +17,6 @@
     </aside>
     <div class="col-lg-7 auth-panel p-4 p-md-5 d-flex align-items-center">
         <div class="auth-form mx-auto w-100">
-            <a asp-controller="Home" asp-action="Index" class="auth-mobile-logo d-lg-none"><img src="~/images/zuni-logo-transparent.png" alt="" />@Idioma.Texto("ZUNI")</a>
             @RenderBody()
         </div>
     </div>

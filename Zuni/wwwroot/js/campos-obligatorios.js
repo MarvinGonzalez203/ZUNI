@@ -47,4 +47,8 @@
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
     else start();
+    document.addEventListener('zuni:languagechange',()=>{
+        document.querySelectorAll('.required-description').forEach(e=>e.textContent=window.ZuniI18n.t(' (Campo obligatorio)'));
+        document.querySelectorAll('.required-fields-help').forEach(e=>[...e.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).forEach(n=>n.nodeValue=' '+window.ZuniI18n.t('Campo obligatorio')));
+    });
 })();

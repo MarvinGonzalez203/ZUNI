@@ -2,6 +2,7 @@
 @using Zuni.Models.Privacidad
 @{ ViewData["Title"] = "Privacidad y mis derechos"; }
 <header class="dash-profile-heading"><div><h1>@Idioma.Texto("Privacidad y mis derechos")</h1><p>@Idioma.Texto("Conoce el uso de tus datos y registra una solicitud ante tu institución.")</p></div></header>
+<partial name="_TransparenciaDatos" />
 @foreach (var tipo in new[] { "Success", "Error" }) { if (TempData[tipo] is string m) { <p class="dash-notice" role="status">@Idioma.Texto(m)</p> } }
 @if (Model.Politica is null) { <section class="dash-card p-4"><p>@Idioma.Texto("La institución todavía debe publicar su política. Puedes ejercer tus derechos mediante el formulario siguiente.")</p></section> }
 else

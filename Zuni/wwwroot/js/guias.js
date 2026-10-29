@@ -12,13 +12,13 @@
             if (!response.ok) throw new Error('Guide unavailable');
             const html = new DOMParser().parseFromString(await response.text(), 'text/html');
             const replacement = html.querySelector('.guide-page');
-            if (!replacement || signal.aborted) return;
+            if (!replacement || signal.aborted || html.documentElement.lang !== document.documentElement.lang || window.ZuniLanguageChanging) return;
             const y = restoreY ?? window.scrollY;
             if (!historyNavigation) {
                 history.replaceState({...history.state,zuniGuide:true,y:window.scrollY},'',location.href);
                 history.pushState({zuniGuide:true,y},'',url);
             }
-            page.replaceWith(replacement); document.title = html.title; document.dispatchEvent(new Event('zuni:viewloaded'));
+            page.replaceWith(replacement); document.title = html.title; document.dispatchEvent(new CustomEvent('zuni:viewloaded',{detail:{document:html}}));
             replacement.querySelector('[aria-current="page"]')?.focus({preventScroll:true});
             requestAnimationFrame(() => window.scrollTo({top:y,left:0,behavior:'instant'}));
         } catch (error) {
@@ -34,8 +34,10 @@
         const url = new URL(link.href);
         if (url.origin !== location.origin) return;
         event.preventDefault();
+        if (window.ZuniLanguageChanging) return;
         if (url.href !== location.href) navigate(url.href);
     });
+    document.addEventListener('zuni:languagechanging',()=>controller?.abort());
     window.addEventListener('popstate', event => {
         if (event.state?.zuniGuide) navigate(location.href,event.state.y ?? 0,true);
     });

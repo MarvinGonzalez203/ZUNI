@@ -1,0 +1,11 @@
+@model Zuni.Models.Comercial.CentrosComercialesViewModel
+@using Zuni.Models.Comercial
+@inject TimeProvider RelojComercial
+@{var hoy=Zuni.Services.Agenda.AgendaReglas.Hoy(RelojComercial.GetUtcNow().UtcDateTime);}
+<div class="commercial-grid my-3">
+@foreach(var c in Model.Centros){
+    var estado=c.Estado!=EstadoContrato.Activo?c.Estado.ToString():c.Fin<hoy?"Vencido":c.Inicio>hoy?"Programado":"Activo";
+    <article class="dash-card commercial-card"><partial name="_DashboardIcon" model='@("home")'/><h3 data-language-preserve>@c.Nombre</h3><span class="commercial-badge">@Idioma.Texto(estado) @if(c.EsDemostracion){<span>· @Idioma.Texto("Demostración")</span>}</span><dl><dt>@Idioma.Texto("Plan")</dt><dd>@Idioma.Texto("{0} meses",c.MesesPlan)</dd><dt>@Idioma.Texto("Inicio")</dt><dd>@c.Inicio.ToString("dd/MM/yyyy")</dd><dt>@Idioma.Texto("Finalización")</dt><dd>@c.Fin.ToString("dd/MM/yyyy")</dd><dt>@Idioma.Texto("Importe del periodo")</dt><dd>@c.ImporteGtq.ToString("N2") GTQ</dd></dl><a class="dash-button" asp-action="EditarCentro" asp-route-id="@c.Id">@Idioma.Texto("Editar, ampliar o cancelar")</a></article>
+}
+@if(Model.Total==0){<article class="dash-card commercial-card"><partial name="_DashboardIcon" model='@("home")'/><span class="commercial-badge">@Idioma.Texto("Ejemplo sin guardar")</span><h3>Colegio Huellitas</h3><p>@Idioma.Texto("Plan anual · del 28/10/2026 al 27/10/2027")</p><p>@Idioma.Texto("Este ejemplo no representa una suscripción real ni genera cobros.")</p><a class="dash-button" asp-action="EditarCentro" asp-route-ejemplo="true">@Idioma.Texto("Preparar ejemplo editable")</a></article>}
+</div>

@@ -43,6 +43,7 @@
         return instance;
     }
     document.addEventListener('shown.bs.modal', event => initialize(event.target).update());
+    document.addEventListener('zuni:languagechange',()=>document.querySelectorAll('.modal-scroll-cue').forEach(cue=>cue.setAttribute('aria-label',en()?'Scroll down for more information':'Desplazarse para ver más información')));
     document.querySelectorAll('.modal.show').forEach(modal => initialize(modal).update());
     // Agenda pages can replace dialogs dynamically; release detached observers/listeners.
     new MutationObserver(records => {

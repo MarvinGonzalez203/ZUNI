@@ -31,20 +31,20 @@ function check(value,message){assert.ok(value,message);checks++;}
             check(box.y+box.height<=height,'rectángulo completo '+language+' '+width+'x'+height+' bottom='+(box.y+box.height));
             check(await page.locator('.quick-panel').evaluate(e=>e.getBoundingClientRect().bottom<=e.closest('.landing-hero').getBoundingClientRect().bottom),'barra dentro del rectángulo');
             check(await page.locator('.hero-symbol .hero-glass-orbit').count()===2,'dos círculos del logo');
-            check(await page.locator('.home-scroll-cue').isVisible(),'indicador disponible al inicio');
+            check(await page.locator('.page-scroll-down').isVisible(),'indicador disponible al inicio');
         }
         await page.setViewportSize({width:1366,height:768});await page.goto('http://zuni.test/home');
         await theme(true);
-        check(await page.locator('.home-scroll-cue').evaluate(e=>getComputedStyle(e).borderTopWidth==='0px'),'flecha sin borde');
-        check(await page.locator('.home-scroll-cue svg').evaluate(e=>getComputedStyle(e).animationName==='none'),'respeta movimiento reducido');
+        check(await page.locator('.page-scroll-down').evaluate(e=>getComputedStyle(e).borderTopWidth==='0px'),'flecha sin borde');
+        check(await page.locator('.page-scroll-down svg').evaluate(e=>getComputedStyle(e).animationName==='none'),'respeta movimiento reducido');
         await page.screenshot({path:path.join(fixtures,'home-compacto-oscuro.png')});
-        await page.locator('.home-scroll-cue').click();
-        await page.waitForFunction(()=>scrollY>24&&document.querySelector('.home-scroll-cue').hidden);
-        check(await page.locator('#zuni-proposito').evaluate(e=>document.activeElement===e),'flecha lleva a misión y visión y mueve el foco');
-        await page.evaluate(()=>scrollTo(0,0));await page.locator('.home-scroll-cue').waitFor({state:'visible'});
+        await page.locator('.page-scroll-down').click();
+        await page.waitForFunction(()=>scrollY>24);
+        check(await page.locator('.page-scroll-top').isVisible(),'volver al principio aparece al avanzar');
+        await page.evaluate(()=>scrollTo(0,0));await page.locator('.page-scroll-down').waitFor({state:'visible'});
         check(true,'indicador reaparece al volver al inicio');
         await page.emulateMedia({reducedMotion:'no-preference'});
-        check(await page.locator('.home-scroll-cue svg').evaluate(e=>getComputedStyle(e).animationName==='home-scroll-hint'),'animación disponible');
+        check(await page.locator('.page-scroll-down svg').evaluate(e=>getComputedStyle(e).animationName==='zuni-down'),'animación disponible');
         for(const width of [390,320]){
             await page.setViewportSize({width,height:844});await page.goto('http://zuni.test/home');
             check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'home móvil sin desborde '+width);

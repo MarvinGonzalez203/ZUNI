@@ -23,7 +23,13 @@ public sealed class PrivacidadController(ApplicationDbContext db, TimeProvider r
     }
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken ct)
-    { try { return View(await Modelo(null, ct)); } catch (UnauthorizedAccessException) { return Forbid(); } }
+    { try {
+        if(User.IsInRole("SuperAdmin")){
+            await PrivacidadService.UsuarioAsync(db,User,ct);
+            return View("Proveedor");
+        }
+        return View(await Modelo(null, ct));
+    } catch (UnauthorizedAccessException) { return Forbid(); } }
 
     private async Task<IActionResult> Operar(Func<Task> accion, string destino = "Index")
     {

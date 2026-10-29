@@ -1,0 +1,2 @@
+@model int
+<a class="dash-text-link dash-notification" asp-controller="Privacidad" asp-action="Solicitudes" aria-label="@Idioma.Texto("Solicitudes sobre datos: {0} pendientes",Model)"><partial name="_DashboardIcon" model='@("shield")'/><span class="notification-label">@Idioma.Texto("Solicitudes sobre datos")</span><strong>(@Model)</strong></a>

@@ -25,12 +25,12 @@ const dir=process.argv[2],root=path.resolve(__dirname,'../../Zuni/wwwroot');let 
  check(await page.locator('[data-question]:visible').count()===3,'tres preguntas por página');
  for(const width of [1400,390]){
   await page.setViewportSize({width,height:900});await page.evaluate(()=>scrollTo(0,0));
-  await page.waitForFunction(()=>!document.querySelector('.dashboard-scroll-cue').hidden);
-  check(await page.locator('.dashboard-scroll-cue').isVisible(),'V disponible '+width);
+  await page.waitForFunction(()=>!document.querySelector('.page-scroll-down').hidden);
+  check(await page.locator('.page-scroll-down').isVisible(),'V disponible '+width);
   if(width===390)await page.screenshot({path:path.join(dir,'panel-v-ingles.png'),fullPage:false});
-  await page.locator('.dashboard-scroll-cue').click();await page.waitForFunction(()=>scrollY>100);
+  await page.locator('.page-scroll-down').click();await page.waitForFunction(()=>scrollY>100);
   check(await page.locator('.dashboard-topbar').evaluate(e=>Math.abs(e.getBoundingClientRect().top)<1),'barra superior fija '+width);
-  await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await page.waitForFunction(()=>document.querySelector('.dashboard-scroll-cue').hidden);check(true,'V se oculta al final '+width);
+  await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await page.waitForFunction(()=>document.querySelector('.page-scroll-down').hidden);check(true,'V se oculta al final '+width);
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde en test '+width);
  }
  for(let block=0;block<5;block++){

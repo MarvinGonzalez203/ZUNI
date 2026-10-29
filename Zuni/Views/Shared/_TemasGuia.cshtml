@@ -1,0 +1,2 @@
+@model string
+<nav class="guide-tabs" aria-label="@Idioma.Texto("Guías de ZUNI")">@foreach(var link in Zuni.Resources.GuiasUso.TemasPublicos){<a asp-controller="Home" asp-action="Guia" asp-route-tema="@link.Tema" aria-current="@(Model==link.Tema?"page":null)">@Idioma.Texto(link.Titulo)</a>}</nav>
