@@ -66,7 +66,7 @@ const check=(ok,label)=>{assert.ok(ok,label);checks++;};
  await page.screenshot({path:path.join(dir,'contrato-movil-ingles.png'),fullPage:true});
  lang='es';await page.goto('http://zuni.test/SuperAdmin');
  check(await page.locator('.commercial-card').count()>=4,'tablero tiene tarjetas de funciones');
- check(await page.locator('.system-version').textContent()==='ZUNI · v1.0.0','versión en menú lateral móvil cerrado');
+ check(await page.locator('.system-version').textContent()==='ZUNI · v'+fs.readFileSync(path.join(root,'../Zuni.csproj'),'utf8').match(/<Version>([^<]+)/)[1],'versión en menú lateral móvil cerrado');
  check(await page.locator('.release-control').count()===1,'campana de versiones dentro del sistema');
  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'tablero móvil sin desborde');
  await page.screenshot({path:path.join(dir,'superadmin-movil.png'),fullPage:true});

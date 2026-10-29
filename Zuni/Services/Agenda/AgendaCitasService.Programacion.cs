@@ -120,11 +120,20 @@ public sealed partial class AgendaCitasService
     // administrativos de sus propias propuestas en Director/Propuestas.
     public static bool SinAccesoANotificaciones(ClaimsPrincipal actor) =>
         actor.IsInRole("Director") && !actor.IsInRole("Psicologo") && !actor.IsInRole("Estudiante");
+    // Recipient ownership is necessary but not sufficient: a stale notification must also
+    // belong to a case accessible through the current professional/student role.
+    public static IQueryable<NotificacionCita> NotificacionesVisibles(Zuni.Data.ApplicationDbContext db, ClaimsPrincipal actor, string? id)
+    {
+        var rol=Zuni.Services.Institucion.PreferenciasVistaService.Rol(actor);
+        var profesional=rol=="Psicologo";var estudiante=rol=="Estudiante";
+        return db.NotificacionesCita.Where(n=>n.UsuarioId==id&&db.Citas.Any(c=>c.Id==n.CitaId&&
+            (profesional&&c.PsicologoUsuarioId==id||estudiante&&db.PerfilesEstudiante.Any(p=>p.Id==c.PerfilEstudianteId&&p.UsuarioId==id))));
+    }
     public async Task<IReadOnlyList<NotificacionResumen>> Notificaciones(ClaimsPrincipal actor,CancellationToken ct)
     {
         if(SinAccesoANotificaciones(actor))throw new AgendaAccesoException();
         var id=await PrivacidadService.UsuarioAsync(db,actor,ct);
-        return await (from n in db.NotificacionesCita.AsNoTracking() join c in db.Citas.AsNoTracking() on n.CitaId equals c.Id
+        return await (from n in NotificacionesVisibles(db,actor,id).AsNoTracking() join c in db.Citas.AsNoTracking() on n.CitaId equals c.Id
             join p in db.PerfilesEstudiante on c.PerfilEstudianteId equals p.Id join psy in db.Users on c.PsicologoUsuarioId equals psy.Id
             where n.UsuarioId==id orderby n.FechaUtc descending
             select new NotificacionResumen(n.Id,n.Texto,n.FechaUtc,n.Leida,n.CitaId,c.FechaHoraInicioUtc){Estudiante=p.Usuario.FullName,Carne=p.Carne,Psicologo=psy.FullName,PsicologoId=psy.Id,
@@ -132,5 +141,5 @@ public sealed partial class AgendaCitasService
                 AutorOriginal=n.AutorUsuarioId!=null,Tipo=n.Tipo??"Aviso",EstadoActual=c.Estado,Modalidad=c.Modalidad}).Take(100).ToListAsync(ct);
     }
     public async Task LeerNotificacion(ClaimsPrincipal actor,Guid id,CancellationToken ct)
-    {if(SinAccesoANotificaciones(actor))throw new AgendaAccesoException();var user=await PrivacidadService.UsuarioAsync(db,actor,ct);var n=await db.NotificacionesCita.SingleOrDefaultAsync(n=>n.Id==id&&n.UsuarioId==user,ct)??throw new AgendaAccesoException();n.Leida=true;await db.SaveChangesAsync(ct);}
+    {if(SinAccesoANotificaciones(actor))throw new AgendaAccesoException();var user=await PrivacidadService.UsuarioAsync(db,actor,ct);var n=await NotificacionesVisibles(db,actor,user).SingleOrDefaultAsync(n=>n.Id==id,ct)??throw new AgendaAccesoException();n.Leida=true;await db.SaveChangesAsync(ct);}
 }

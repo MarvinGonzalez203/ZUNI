@@ -16,12 +16,17 @@ internal static class ActualizacionV1Checks
         await HostPrueba.Login(super,"proveedor-ficticio@example.com",clave);await HostPrueba.Login(admin,"admin@miumg.edu.gt",clave);
         Check((await anon.GetAsync("/SuperAdmin/Centros")).StatusCode==HttpStatusCode.Redirect,"contratos requieren sesión");
         foreach(var url in new[]{"/SuperAdmin/Centros","/SuperAdmin/EditarCentro","/SuperAdmin/Guias"})Check((await admin.GetAsync(url)).Headers.Location?.OriginalString.Contains("AccesoDenegado")==true,"Administrador no obtiene control comercial: "+url);
+        await using(var db=new OfflineDb(options)){var actor=await db.Users.Where(u=>u.Email=="proveedor-ficticio@example.com").Select(u=>u.Id).SingleAsync();db.LecturasVersion.Add(new(){UsuarioId=actor,Version="1.0.0",FechaUtc=reloj.Ahora.UtcDateTime});await db.SaveChangesAsync();}
         var home=await super.GetStringAsync("/SuperAdmin");
+        Check(home.Contains("release-dot"),"una versión nueva aparece pendiente aunque la anterior esté leída");
         Check(home.Contains("commercial-grid")&&home.Contains("/SuperAdmin/Centros")&&home.Contains("Colegio Huellitas"),"tablero comercial y ejemplo visible");
-        Check(home.Contains("system-version\">ZUNI · v1.0.0")&&home.Contains("release-control"),"versión y campana disponibles");
+        Check(home.Contains("system-version\">ZUNI · v"+VersionSistema.Actual)&&home.Contains("release-control"),"versión y campana disponibles");
         await using(var db=new OfflineDb(options))Check(!await db.CentrosComerciales.AnyAsync(),"GET no registra el ejemplo automáticamente");
         var example=await super.GetStringAsync("/SuperAdmin/EditarCentro?ejemplo=true");
         Check(example.Contains("2026-10-28")&&example.Contains("2027-10-27"),"ejemplo con fechas acordadas");
+        var umg=await super.GetStringAsync("/SuperAdmin/EditarCentro?nombreInicial=UMG&inicioInicial=2026-10-01&mesesInicial=12");
+        Check(umg.Contains("value=\"UMG\"")&&umg.Contains("2027-09-30"),"formulario UMG preparado con vigencia anual, sin guardar");
+        Check((await super.GetAsync("/SuperAdmin/EditarCentro?inicioInicial=9999-12-31")).StatusCode==HttpStatusCode.BadRequest,"prefill rechaza fechas no válidas antes de sumar meses");
         Check((await super.PostAsync("/SuperAdmin/EditarCentro",new FormUrlEncodedContent([]))).StatusCode==HttpStatusCode.BadRequest,"guardar exige antiforgery");
         Task<HttpResponseMessage> Save(Guid? id,Guid revision,string inicio="2026-10-28",string fin="2027-10-27",string estado="Activo",string importe="2030",string nombre="Colegio Huellitas")=>HostPrueba.Post(super,"/SuperAdmin/EditarCentro?ejemplo=true","/SuperAdmin/EditarCentro",("Id",id?.ToString()??""),("Revision",revision.ToString()),("Nombre",nombre),("MesesPlan","12"),("Inicio",inicio),("Fin",fin),("Estado",estado),("ImporteGtq",importe),("EsDemostracion","true"));
         Check((await Save(null,Guid.Empty,fin:"2026-10-01")).StatusCode==HttpStatusCode.OK,"fecha inversa se rechaza");
@@ -57,6 +62,24 @@ internal static class ActualizacionV1Checks
         var login=await anon.GetStringAsync("/Cuenta/IniciarSesion");Check(!login.Contains("auth-mobile-logo")&&login.Contains("auth-brand d-flex"),"entrada móvil conserva título y elimina logo repetido");
         Check(login.Contains("favicon-96.png")&&login.Contains("page-scroll-top"),"favicon y desplazamiento compartidos");
         Check(VersionSistema.Actual==typeof(VersionSistema).Assembly.GetName().Version!.ToString(3),"versión visual y ensamblado coinciden");
+        // Each guide endpoint computes its audience from the authenticated role, never the query string.
+        foreach(var role in new[]{"Administrador","Director","Psicologo","Estudiante"}){
+            var uid="guias-aisladas-"+role;var mail=uid+"@example.com";
+            await using(var db=new OfflineDb(options)){
+                var u=new Zuni.Models.ApplicationUser{Id=uid,FullName="Persona ficticia de guías",Email=mail,NormalizedEmail=mail.ToUpperInvariant(),UserName=mail,NormalizedUserName=mail.ToUpperInvariant(),IsActive=true,SecurityStamp=Guid.NewGuid().ToString()};
+                u.PasswordHash=new Microsoft.AspNetCore.Identity.PasswordHasher<Zuni.Models.ApplicationUser>().HashPassword(u,clave);db.Users.Add(u);
+                db.UserRoles.Add(new(){UserId=uid,RoleId=await db.Roles.Where(r=>r.NormalizedName==role.ToUpperInvariant()).Select(r=>r.Id).SingleAsync()});await db.SaveChangesAsync();
+            }
+            using var audience=HostPrueba.Cliente(app);await HostPrueba.Login(audience,mail,clave);
+            var guideHtml=await audience.GetStringAsync("/Guias?rol=SuperAdmin");
+            Check(guideHtml.Contains("data-guide-role=\""+role+"\""),"guías propias: "+role);
+            Check(!guideHtml.Contains("data-guide-role=\"SuperAdmin\""),"parámetro no amplía audiencia: "+role);
+            Check(!guideHtml.Contains("name=\"rol\""),"sin selector de otros roles: "+role);
+            Check(guideHtml.Contains("sidebar-collapse")&&guideHtml.Contains("sidebar-scroll-cue")&&guideHtml.Contains("sidebar-guides"),"navegación y ayuda comunes: "+role);
+            var fixture=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");if(!string.IsNullOrEmpty(fixture))await File.WriteAllTextAsync(Path.Combine(fixture,"guias-"+role+".html"),guideHtml);
+        }
+        var filtered=await super.GetStringAsync("/SuperAdmin/Guias?rol=Estudiante");
+        Check(filtered.Contains("data-guide-role=\"Estudiante\"")&&!filtered.Contains("data-guide-role=\"SuperAdmin\""),"filtro de SuperAdmin reduce contenido en servidor");
         var preview=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");
         if(!string.IsNullOrEmpty(preview)){
             async Task SavePage(HttpClient c,string url,string name)=>await File.WriteAllTextAsync(Path.Combine(preview,name+".html"),await c.GetStringAsync(url));
@@ -66,6 +89,7 @@ internal static class ActualizacionV1Checks
                 await SavePage(anon,"/Cuenta/IniciarSesion","v1-login-"+lang);await SavePage(anon,"/Home/Guia?tema=privacidad","v1-guia-"+lang);
                 await SavePage(anon,"/Home/Guia?tema=cita","v1-cita-"+lang);await SavePage(anon,"/","v1-home-"+lang);
                 await SavePage(super,"/SuperAdmin","v1-super-"+lang);await SavePage(super,"/SuperAdmin/Guias","v1-guias-"+lang);
+                foreach(var filtro in new[]{"General","SuperAdmin","Administrador","Director","Psicologo","Estudiante"})await SavePage(super,"/SuperAdmin/Guias?rol="+filtro,"guias-filtro-"+filtro+"-"+lang);
                 await SavePage(super,"/SuperAdmin/EditarCentro?ejemplo=true","v1-contrato-"+lang);await SavePage(super,"/Privacidad","v1-proteccion-"+lang);
             }
         }

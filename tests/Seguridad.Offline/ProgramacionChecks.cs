@@ -24,6 +24,11 @@ internal static class ProgramacionChecks
         var cita=await Leer();Check(cita.ProgramadaDirectamente&&cita.DisponibilidadPsicologoId is null&&cita.ProgramadorRol=="Psicologo"&&cita.Estado==EstadoCita.Confirmada,"fecha vinculada y confirmada para perfil preparado");
         Check((await student.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("Cita programada por Psicologo"),"estudiante notificado con autor");
         Check(!(await other.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("Cita programada por Psicologo"),"notificaciones no visibles a otro estudiante");
+        // Even an incorrectly addressed legacy record cannot expose another case.
+        var forged=Guid.NewGuid();await using(var db=new OfflineDb(options)){var recipient=await db.Users.Where(u=>u.Email=="est@miumg.edu.gt").Select(u=>u.Id).SingleAsync();db.NotificacionesCita.Add(new(){Id=forged,UsuarioId=recipient,CitaId=id,FechaUtc=reloj.Ahora.UtcDateTime,Texto="NO-DEBE-VERSE-OTRO-CASO"});await db.SaveChangesAsync();}
+        Check(!(await other.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("NO-DEBE-VERSE-OTRO-CASO"),"aviso mal dirigido de otro caso no se expone");
+        await HostPrueba.Post(other,"/CitasProgramadas/Notificaciones","/CitasProgramadas/Leida",("id",forged.ToString()));
+        await using(var db=new OfflineDb(options))Check(!(await db.NotificacionesCita.SingleAsync(n=>n.Id==forged)).Leida,"aviso de otro caso no puede marcarse leído");
         Guid notificacion;await using(var db=new OfflineDb(options)){notificacion=(await db.NotificacionesCita.FirstAsync(n=>n.CitaId==id)).Id;}
         Check((await HostPrueba.Post(other,"/CitasProgramadas/Notificaciones","/CitasProgramadas/Leida",("id",notificacion.ToString()))).StatusCode==HttpStatusCode.Redirect,"lectura de notificación ajena denegada");
         await using(var db=new OfflineDb(options))Check(!(await db.NotificacionesCita.SingleAsync(n=>n.Id==notificacion)).Leida,"IDOR no modifica estado");

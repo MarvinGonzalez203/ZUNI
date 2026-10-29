@@ -13,3 +13,8 @@ html[data-theme=dark] .modal-scroll-cue{color:#ead5ff;filter:drop-shadow(0 1px 3
     .dashboard-sidebar, .dashboard-topbar, .dash-button, .btn { display: none !important; }
     .dashboard-workspace { margin: 0 !important; }
 }
+
+/* Reserve a separate row in dialogs; the hint never covers body text or footer actions. */
+.modal-footer.has-modal-scroll-cue{position:relative;padding-bottom:48px}
+.modal-footer>.modal-scroll-cue{position:absolute;left:50%;top:auto;bottom:3px;margin:0;z-index:2}
+.modal-body{padding-bottom:24px}

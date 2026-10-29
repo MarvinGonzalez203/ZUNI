@@ -1,6 +1,7 @@
 (() => {
     const sidebar = document.getElementById('dashboard-sidebar');
     if (sidebar) {
+        const scrollRegion=sidebar.querySelector('[data-sidebar-scroll]')||sidebar;
         const key = 'zuni:sidebar:' + (document.documentElement.dataset.viewScope||'publico') + ':' + (sidebar.dataset.navKey || sidebar.querySelector('nav')?.getAttribute('aria-label') || 'cuenta');
         try {
             const saved = JSON.parse(sessionStorage.getItem(key) || 'null');
@@ -10,11 +11,11 @@
                 if (!group.open && saved?.groups?.[label]) group.open = true;
             });
             const remember = () => sessionStorage.setItem(key, JSON.stringify({
-                top: sidebar.scrollTop,
+                top: scrollRegion.scrollTop,
                 groups: Object.fromEntries(groups.map(g => [g.querySelector('a')?.getAttribute('href'), g.open]))
             }));
-            if (Number.isFinite(saved?.top)) requestAnimationFrame(() => requestAnimationFrame(() => { sidebar.scrollTop = saved.top; }));
-            sidebar.addEventListener('scroll', remember, {passive:true});
+            if (Number.isFinite(saved?.top)) requestAnimationFrame(() => requestAnimationFrame(() => { scrollRegion.scrollTop = saved.top; }));
+            scrollRegion.addEventListener('scroll', remember, {passive:true});
             groups.forEach(g => g.addEventListener('toggle', remember));
             window.addEventListener('pagehide', remember);
         } catch { /* El menú sigue funcionando si el almacenamiento está deshabilitado. */ }

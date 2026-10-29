@@ -19,12 +19,18 @@ public sealed class SuperAdminController(ApplicationDbContext db):Controller
         try{return View(await Zuni.Services.Institucion.CentrosComercialesService.Listar(db,await Zuni.Services.Privacidad.PrivacidadService.UsuarioAsync(db,User,ct),pagina,HttpContext.RequestServices.GetRequiredService<TimeProvider>(),ct));}
         catch(UnauthorizedAccessException){return Forbid();}
     }
-    [HttpGet] public async Task<IActionResult> EditarCentro(Guid? id,bool ejemplo=false,CancellationToken ct=default)
+    [HttpGet] public async Task<IActionResult> EditarCentro(Guid? id,bool ejemplo=false,string? nombreInicial=null,DateOnly? inicioInicial=null,int mesesInicial=12,CancellationToken ct=default)
     {
         if(!await Zuni.Services.Institucion.TarifasService.EsSuperAdmin(db,User.FindFirstValue(ClaimTypes.NameIdentifier),ct))return Forbid();
         if(id is null){
             var hoy=Zuni.Services.Agenda.AgendaReglas.Hoy(HttpContext.RequestServices.GetRequiredService<TimeProvider>().GetUtcNow().UtcDateTime);
-            return View(new Zuni.Models.Comercial.EditarCentroInput{Nombre=ejemplo?"Colegio Huellitas":"",EsDemostracion=ejemplo,Inicio=ejemplo?new DateOnly(2026,10,28):hoy,Fin=ejemplo?new DateOnly(2027,10,27):hoy.AddYears(1).AddDays(-1),ImporteGtq=(await Zuni.Services.Institucion.TarifasService.Obtener(db,ct)).Anual});
+            if(!ModelState.IsValid||nombreInicial?.Length>150||mesesInicial is not (1 or 3 or 6 or 12)||inicioInicial is {} fecha&&(fecha.Year<2000||fecha.Year>2198))return BadRequest();
+            var inicio=ejemplo?new DateOnly(2026,10,28):inicioInicial??hoy;
+            var meses=ejemplo?12:mesesInicial;
+            var tarifas=await Zuni.Services.Institucion.TarifasService.Obtener(db,ct);
+            var importe=meses switch{1=>tarifas.Mensual,3=>tarifas.Trimestral,6=>tarifas.Semestral,_=>tarifas.Anual};
+            // Optional presets only prepare the form. GET never creates or changes a contract.
+            return View(new Zuni.Models.Comercial.EditarCentroInput{Nombre=ejemplo?"Colegio Huellitas":nombreInicial?.Trim()??"",EsDemostracion=ejemplo,MesesPlan=meses,Inicio=inicio,Fin=inicio.AddMonths(meses).AddDays(-1),ImporteGtq=importe});
         }
         var c=await db.CentrosComerciales.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==id,ct);if(c is null)return NotFound();
         return View(new Zuni.Models.Comercial.EditarCentroInput{Id=c.Id,Revision=c.Revision,Nombre=c.Nombre,CorreoContacto=c.CorreoContacto,MesesPlan=c.MesesPlan,Inicio=c.Inicio,Fin=c.Fin,Estado=c.Estado,ImporteGtq=c.ImporteGtq,EsDemostracion=c.EsDemostracion,NotaComercial=c.NotaComercial});

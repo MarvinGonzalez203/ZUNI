@@ -38,9 +38,16 @@
 </head>
 <body class="dashboard-app">
     <a href="#dashboard-main" class="dash-skip">@Idioma.Texto("Saltar al contenido")</a>
+        <header class="dashboard-topbar">
+            <div class="dash-header-brand d-none d-lg-flex"><a class="dash-brand" asp-controller="@inicio" asp-action="Index" aria-label="ZUNI"><span class="dash-logo-mark" aria-hidden="true"><i class="dash-logo-glass"></i><i class="dash-logo-glass dash-logo-glass-second"></i><img src="~/images/zuni-logo-transparent.png" alt="" /></span><span class="dash-brand-name">@Idioma.Texto("ZUNI")<span>.</span></span></a></div>
+            <button type="button" class="sidebar-collapse d-none d-lg-grid" aria-expanded="true" aria-label="@Idioma.Texto("Comprimir menú")" title="@Idioma.Texto("Comprimir menú")"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m14 6-6 6 6 6"/></svg></button>
+            <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="@Idioma.Texto("Abrir menú")"><partial name="_DashboardIcon" model='@("menu")' /></button><span><a class="dash-space-link" asp-controller="@panel" asp-action="Index">@Idioma.Texto("Mi espacio")</a> <span class="dash-slash">/</span> <strong>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString()))</strong></span></div>
+            <div class="dash-top-account">@if(!esProveedor){@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoDerechos")@await Component.InvokeAsync("AvisoCitas")}<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />@Idioma.Texto("Sesión activa")</span><a class="dash-top-profile" asp-controller="MiCuenta" asp-action="Index" aria-label="@Idioma.Texto("Ver mi cuenta: {0}", corto)"><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></a><partial name="_ControlesVista" /></div>
+        </header>
     <aside class="dashboard-sidebar offcanvas offcanvas-start" tabindex="-1" id="dashboard-sidebar" aria-labelledby="sidebar-title" data-nav-key="@navegacion">
-        <div class="dash-brand-row">
-            <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><span class="dash-logo-mark" aria-hidden="true"><i class="dash-logo-glass"></i><i class="dash-logo-glass dash-logo-glass-second"></i><img src="~/images/zuni-logo-transparent.png" alt="" /></span> @Idioma.Texto("ZUNI")<span>.</span></a>
+        <div class="sidebar-scroll-region" data-sidebar-scroll>
+        <div class="dash-brand-row d-lg-none">
+            <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><span class="dash-logo-mark" aria-hidden="true"><i class="dash-logo-glass"></i><i class="dash-logo-glass dash-logo-glass-second"></i><img src="~/images/zuni-logo-transparent.png" alt="" /></span><span class="dash-brand-name">@Idioma.Texto("ZUNI")<span>.</span></span></a>
             <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" aria-label="@Idioma.Texto("Cerrar menú")"></button>
         </div>
         <p class="dash-sidebar-caption">@(esProveedor?"ZUNI":identidadInstitucion.Nombre)<br />@(esProveedor?Idioma.Texto("Servicios para instituciones educativas"):identidadInstitucion.Lema)</p>
@@ -50,6 +57,7 @@
             @await Html.PartialAsync(navegacion)
         }
         <div class="dash-sidebar-bottom">
+            <a class="dash-nav-link sidebar-guides @(ViewContext.RouteData.Values["controller"]?.ToString()=="Guias" || ViewContext.RouteData.Values["action"]?.ToString()=="Guias" ? "is-active":"")" href="@(esProveedor?Url.Action("Guias","SuperAdmin"):Url.Action("Index","Guias"))" title="@Idioma.Texto("Guías y funciones")"><partial name="_DashboardIcon" model='@("search")'/><span>@Idioma.Texto("Guías y funciones")</span></a>
             <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>@Idioma.Texto("Tu bienestar también")<br />@Idioma.Texto("forma parte del camino.")</p></div>
             <div class="dash-bottom-controls">
             @if(ViewData["DashboardAccountUnavailable"] is not true){
@@ -67,12 +75,11 @@
             </div>
             <span class="system-version">ZUNI · v@(Zuni.Resources.VersionSistema.Actual)</span>
         </div>
+        </div>
+        <button type="button" class="sidebar-scroll-cue" hidden aria-label="@Idioma.Texto("Desplazarse para ver más opciones")"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m5 9 7 7 7-7"/></svg></button>
     </aside>
     <div class="dashboard-workspace">
-        <header class="dashboard-topbar">
-            <div class="dash-top-title"><button type="button" class="dash-menu d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar" aria-controls="dashboard-sidebar" aria-label="@Idioma.Texto("Abrir menú")"><partial name="_DashboardIcon" model='@("menu")' /></button><span><a class="dash-space-link" asp-controller="@panel" asp-action="Index">@Idioma.Texto("Mi espacio")</a> <span class="dash-slash">/</span> <strong>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString()))</strong></span></div>
-            <div class="dash-top-account">@if(!esProveedor){@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoDerechos")@await Component.InvokeAsync("AvisoCitas")}<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />@Idioma.Texto("Sesión activa")</span><a class="dash-top-profile" asp-controller="MiCuenta" asp-action="Index" aria-label="@Idioma.Texto("Ver mi cuenta: {0}", corto)"><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></a><partial name="_ControlesVista" /></div>
-        </header>
+
         <main id="dashboard-main" class="dashboard-main" tabindex="-1">
             @if (TempData["Success"] is string mensaje)
             {
@@ -88,6 +95,8 @@
     <script src="~/js/campos-obligatorios.js" asp-append-version="true"></script>
     <script src="~/js/actualizaciones.js" asp-append-version="true"></script>
     <partial name="_ControlesDesplazamiento" />
+    <script src="~/js/catalogo-guias.js" asp-append-version="true"></script>
+    <script src="~/js/barra-lateral.js" asp-append-version="true"></script>
     <script src="~/js/agenda-contexto.js" asp-append-version="true"></script>
     <script>
         window.addEventListener('resize', () => {

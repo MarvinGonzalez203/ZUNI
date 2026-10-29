@@ -47,6 +47,8 @@
         event.preventDefault(); if (changing) return;
         const button = form.querySelector('button[name="idioma"]'), data = new FormData(form);
         data.set('idioma', button.value);
+        // Filters and guide navigation can change the URL without replacing the toolbar.
+        data.set('volver', location.pathname + location.search + location.hash);
         const expected = new URL(data.get('volver'), location.href), currentPage = location.pathname + location.search;
         const oldLanguage = document.documentElement.lang.startsWith('en') ? 'en' : 'es';
         const focused = document.activeElement;
@@ -67,7 +69,7 @@
             const x = scrollX, y = scrollY, root = document.documentElement;
             const previousAnchor = root.style.overflowAnchor, previousBehavior = root.style.scrollBehavior;
             root.style.overflowAnchor = 'none'; root.style.scrollBehavior = 'auto';
-            const scrollers = [...document.querySelectorAll('.dashboard-sidebar,.modal-body,[data-modal-scroll]')].map(e => [e,e.scrollTop]);
+            const scrollers = [...document.querySelectorAll('.dashboard-sidebar,[data-sidebar-scroll],.modal-body,[data-modal-scroll]')].map(e => [e,e.scrollTop]);
             translate(document.body, original.querySelector('body'), html.body);
             document.title = html.title; root.lang = payload.language;
             window.ZuniI18n.language = payload.language; window.ZuniI18n.messages = payload.messages;

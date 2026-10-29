@@ -8,6 +8,9 @@
         cue.setAttribute('aria-label', en() ? 'Scroll down for more information' : 'Desplazarse para ver más información');
         cue.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 9 7 7 7-7"/></svg>';
         modal.append(cue);
+        let footer=modal.querySelector('.modal-footer');
+        if(!footer&&modal.querySelector('.modal-content')){footer=document.createElement('div');footer.className='modal-footer';modal.querySelector('.modal-content').append(footer);}
+        if(footer){footer.classList.add('has-modal-scroll-cue');footer.append(cue);}
         let scroller;
         let scheduled = false;
         const update = () => {
@@ -21,6 +24,7 @@
             const rect = region.getBoundingClientRect();
             const top = Math.max(0, rect.top), bottom = Math.min(innerHeight, rect.bottom);
             if (bottom - top < 64) { cue.hidden = true; return; }
+            if(footer){cue.style.left='';cue.style.top='';return;}
             cue.style.left = `${Math.max(24, Math.min(innerWidth - 24, rect.left + rect.width / 2))}px`;
             cue.style.top = `${bottom - 46}px`;
         };

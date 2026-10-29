@@ -1,0 +1,14 @@
+@model IReadOnlyList<Zuni.Resources.GuiaUso>
+@{var propietario=User.IsInRole("SuperAdmin");var rolActual=ViewData["RolGuias"] as string;var sugerencias=Zuni.Resources.GuiasUso.Todas.Where(g=>propietario||g.Rol==rolActual||g.Rol=="General");}
+<header class="dash-profile-heading"><div><h1>@Idioma.Texto("Guías y funciones")</h1><p>@Idioma.Texto("Busca las funciones disponibles para tu perfil y consulta dónde pulsar.")</p></div></header>
+<form method="get" class="dash-card guide-search mb-4" role="search" data-guide-search>
+<label>@Idioma.Texto("Buscar funciones o pasos")<span class="guide-input"><partial name="_DashboardIcon" model='@("search")'/><input type="search" name="q" value="@ViewData["Busqueda"]" class="form-control" list="guia-sugerencias" maxlength="80" placeholder="@Idioma.Texto("Escribe una función o tema")"/></span></label>
+@if(propietario){<label>@Idioma.Texto("Rol")<select name="rol" class="form-select" data-guide-role><option value="">@Idioma.Texto("Todos los roles")</option>@foreach(var r in new[]{"General","SuperAdmin","Administrador","Director","Psicologo","Estudiante"}){<option value="@r" selected="@(ViewData["FiltroRol"] as string==r)">@Idioma.Texto(r)</option>}</select></label>}
+else{<span class="commercial-badge">@Idioma.Texto(rolActual)</span>}
+<button class="dash-button" type="submit">@Idioma.Texto("Buscar")</button><a data-guide-reset href="@(propietario?Url.Action("Guias","SuperAdmin"):Url.Action("Index","Guias"))" class="btn btn-outline-secondary">@Idioma.Texto("Mostrar todos")</a>
+<datalist id="guia-sugerencias">@foreach(var g in sugerencias){<option value="@Idioma.Texto(g.Titulo)"></option>}</datalist><p class="guide-status" role="status" aria-live="polite"></p></form>
+<section data-guide-results>
+@if(Model.Count==0){<p class="dash-notice">@Idioma.Texto("No encontramos ese tema. Prueba con otra palabra.")</p>}
+<div class="commercial-grid guide-grid">@foreach(var guia in Model){<article class="dash-card commercial-card commercial-help" data-guide-role="@guia.Rol"><header class="guide-card-heading"><partial name="_DashboardIcon" model="guia.Icono"/><span class="commercial-badge">@Idioma.Texto(guia.Rol)</span></header><h2>@Idioma.Texto(guia.Titulo)</h2><p>@Idioma.Texto(guia.Resumen)</p><ol>@foreach(var paso in guia.Pasos){<li>@Idioma.Texto(paso)</li>}</ol><div class="guide-place"><strong>@Idioma.Texto("DÓNDE PULSAR")</strong><p>@Idioma.Texto(guia.Donde)</p></div></article>}</div>
+
+</section>

@@ -12,7 +12,8 @@ public sealed class AvisoCitasViewComponent(ApplicationDbContext db):ViewCompone
         // administrativos de sus propias propuestas y enlaza a Mis propuestas.
         if(Zuni.Services.Agenda.AgendaCitasService.SinAccesoANotificaciones(HttpContext.User))
             return string.IsNullOrEmpty(id)?Content(string.Empty):View("Director",await Zuni.Services.Agenda.AgendaCitasService.AvisosPendientesDirector(db,id,HttpContext.RequestAborted));
-        var count=await db.NotificacionesCita.AsNoTracking().CountAsync(n=>n.UsuarioId==id&&!n.Leida);
+        if(!HttpContext.User.IsInRole("Psicologo")&&!HttpContext.User.IsInRole("Estudiante"))return Content(string.Empty);
+        var count=await Zuni.Services.Agenda.AgendaCitasService.NotificacionesVisibles(db,HttpContext.User,id).AsNoTracking().CountAsync(n=>!n.Leida);
         return View(count);
     }
 }

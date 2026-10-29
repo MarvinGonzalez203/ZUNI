@@ -7,10 +7,10 @@
     string Act(bool valor)=>valor?"is-active":"";
 }
 <details class="dash-nav-group" open="@(c=="MiCuenta"||privacidad||colores||c=="MayoriaEdad"&&rolCuenta=="Estudiante")"><summary><partial name="_DashboardIcon" model='@("user")'/><span>@Idioma.Texto("Mi cuenta")</span></summary><div class="dash-nav-children">
-<a class="dash-nav-link @Act(Activa("Index"))" asp-controller="MiCuenta" asp-action="Index"><span>@Idioma.Texto("Resumen")</span></a>
-<a class="dash-nav-link @Act(Activa("Editar"))" asp-controller="MiCuenta" asp-action="Editar"><span>@Idioma.Texto("Editar datos")</span></a>
-<a class="dash-nav-link @Act(Activa("CambiarContrasena"))" asp-controller="MiCuenta" asp-action="CambiarContrasena"><span>@Idioma.Texto("Cambiar contraseña")</span></a>
-<a class="dash-nav-link @Act(colores)" asp-controller="Preferencias" asp-action="Colores" asp-route-rol="@rolCuenta"><span>@Idioma.Texto("Mis colores")</span></a>
-@if(rolCuenta=="Estudiante"){<a class="dash-nav-link @Act(c=="MayoriaEdad")" asp-controller="MayoriaEdad" asp-action="Index"><span>@Idioma.Texto("Mayoría de edad")</span></a>}
-<a class="dash-nav-link @Act(privacidad)" asp-controller="Privacidad" asp-action="Index"><span>@Idioma.Texto("Privacidad y mis derechos")</span></a>
+<a class="dash-nav-link @Act(Activa("Index"))" asp-controller="MiCuenta" asp-action="Index"><partial name="_DashboardIcon" model='@("user")'/><span>@Idioma.Texto("Resumen")</span></a>
+<a class="dash-nav-link @Act(Activa("Editar"))" asp-controller="MiCuenta" asp-action="Editar"><partial name="_DashboardIcon" model='@("edit")'/><span>@Idioma.Texto("Editar datos")</span></a>
+<a class="dash-nav-link @Act(Activa("CambiarContrasena"))" asp-controller="MiCuenta" asp-action="CambiarContrasena"><partial name="_DashboardIcon" model='@("key")'/><span>@Idioma.Texto("Cambiar contraseña")</span></a>
+<a class="dash-nav-link @Act(colores)" asp-controller="Preferencias" asp-action="Colores" asp-route-rol="@rolCuenta"><partial name="_DashboardIcon" model='@("palette")'/><span>@Idioma.Texto("Mis colores")</span></a>
+@if(rolCuenta=="Estudiante"){<a class="dash-nav-link @Act(c=="MayoriaEdad")" asp-controller="MayoriaEdad" asp-action="Index"><partial name="_DashboardIcon" model='@("check")'/><span>@Idioma.Texto("Mayoría de edad")</span></a>}
+<a class="dash-nav-link @Act(privacidad)" asp-controller="Privacidad" asp-action="Index"><partial name="_DashboardIcon" model='@("shield")'/><span>@Idioma.Texto("Privacidad y mis derechos")</span></a>
 </div></details>
