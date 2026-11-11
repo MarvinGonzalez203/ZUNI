@@ -12,9 +12,10 @@
     </div>
     <div class="mb-3">
         <label asp-for="NuevaContrasena" class="form-label"></label>
-        <input asp-for="NuevaContrasena" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="100" required aria-describedby="nueva-ayuda nueva-error" />
+        <input asp-for="NuevaContrasena" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="100" required aria-describedby="nueva-ayuda nueva-error NuevaContrasena-requisitos" />
         <p id="nueva-ayuda" class="small text-secondary mt-1">@Idioma.Texto("Usa entre 8 y 100 caracteres y una contraseña diferente de la actual.")</p>
         <span asp-validation-for="NuevaContrasena" id="nueva-error" class="text-danger small"></span>
+        <partial name="_RequisitosContrasena" model='@("NuevaContrasena")' />
     </div>
     <div class="mb-4">
         <label asp-for="ConfirmarNuevaContrasena" class="form-label"></label>

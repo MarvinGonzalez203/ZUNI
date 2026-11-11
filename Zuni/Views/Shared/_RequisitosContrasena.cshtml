@@ -1,0 +1,10 @@
+@model string
+<div class="password-requirements my-3" data-password-requirements data-password-for="@Model" id="@Model-requisitos">
+    <p class="small fw-semibold mb-2">@Idioma.Texto("Tu contraseña debe cumplir:")</p>
+    <ul class="list-unstyled small mb-0" aria-live="polite" aria-atomic="false">
+        @foreach (var regla in new[] { ("number", "Mínimo 1 número"), ("upper", "Mínimo 1 letra mayúscula"), ("lower", "Mínimo 1 letra minúscula"), ("symbol", "Mínimo 1 símbolo"), ("length", "Mínimo 8 caracteres") })
+        {
+            <li data-password-rule="@regla.Item1" class="mb-1"><span data-rule-icon aria-hidden="true">○</span> <span>@Idioma.Texto(regla.Item2)</span><span data-rule-state class="visually-hidden">: @Idioma.Texto("Pendiente")</span></li>
+        }
+    </ul>
+</div>

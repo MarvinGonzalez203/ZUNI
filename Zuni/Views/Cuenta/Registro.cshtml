@@ -37,6 +37,7 @@
         <div class="col-md-6"><div class="form-floating password-field"><input asp-for="Password" class="form-control" placeholder="@Idioma.Texto("Contraseña")" autocomplete="new-password" /><label asp-for="Password"></label><button type="button" class="password-toggle" data-password-toggle aria-label="@Idioma.Texto("Mostrar contraseña")" aria-pressed="false"><span aria-hidden="true">◉</span></button></div><span asp-validation-for="Password" class="text-danger small validation-message"></span></div>
         <div class="col-md-6"><div class="form-floating password-field"><input asp-for="ConfirmPassword" class="form-control" placeholder="@Idioma.Texto("Confirmar")" autocomplete="new-password" /><label asp-for="ConfirmPassword"></label><button type="button" class="password-toggle" data-password-toggle aria-label="@Idioma.Texto("Mostrar contraseña")" aria-pressed="false"><span aria-hidden="true">◉</span></button></div><span asp-validation-for="ConfirmPassword" class="text-danger small validation-message"></span></div>
     </div>
+    <partial name="_RequisitosContrasena" model='@("Password")' />
     @{ var privacidad = await Zuni.Services.Privacidad.PrivacidadService.VigenteAsync(DbInstitucion, CancellationToken.None); }
     <input type="hidden" name="PoliticaPrivacidadId" value="@privacidad?.Id" />
 <partial name="_AvisoEvidenciaConsentimiento" />

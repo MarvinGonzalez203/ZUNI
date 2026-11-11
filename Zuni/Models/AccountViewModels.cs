@@ -61,6 +61,7 @@ public sealed class RegisterViewModel
 
     [Required(ErrorMessage = "Crea una contraseña.")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Usa al menos 8 caracteres.")]
+    [RequisitosContrasena]
     [DataType(DataType.Password)]
     [Display(Name = "Contraseña")]
     public string Password { get; set; } = string.Empty;
@@ -87,6 +88,7 @@ public sealed class ResetPasswordViewModel
 
     [Required(ErrorMessage = "Ingresa una contraseña nueva.")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Usa al menos 8 caracteres.")]
+    [RequisitosContrasena]
     [DataType(DataType.Password)]
     [Display(Name = "Nueva contraseña")]
     public string Password { get; set; } = string.Empty;

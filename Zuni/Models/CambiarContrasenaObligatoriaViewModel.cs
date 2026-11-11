@@ -11,6 +11,7 @@ public sealed class CambiarContrasenaObligatoriaViewModel
 
     [Required(ErrorMessage = "Ingresa una contraseña nueva.")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Usa entre 8 y 100 caracteres.")]
+    [Zuni.Helpers.RequisitosContrasena]
     [DataType(DataType.Password)]
     [Display(Name = "Nueva contraseña")]
     public string Password { get; set; } = string.Empty;
