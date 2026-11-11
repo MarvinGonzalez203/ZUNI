@@ -47,6 +47,10 @@ html[data-theme=dark] .landing-hero::before{opacity:.25}
 html[data-theme=dark] .quick-actions{background:transparent}
 html[data-theme=dark] .btn-crystal{background:#cea2fd20;border-color:#79638c;color:#eeeaf2}
 html[data-theme=dark] .dashboard-app .btn-outline-primary{color:#ead5ff}
+/* Filled actions keep the foreground calculated for the chosen personal color. */
+html[data-theme=dark] .dashboard-app :is(.dash-button,.btn-primary,.btn-zuni):is(:hover,:focus-visible,:active),
+html[data-theme=dark] .dashboard-app .btn-outline-primary:is(:hover,:focus-visible,:active){color:var(--institucion-texto,#111);background:var(--institucion-color,#cea2fd);border-color:var(--institucion-color,#cea2fd)}
+html[data-theme=dark] .btn-warning:is(:hover,:focus-visible,:active){color:#111}
 html[data-theme=dark] .dash-notification{color:#e3c4ff}
 html[data-theme=dark] :is(.auth-options a,.auth-panel a:not(.btn),.dash-text-link,.text-primary){color:#dbb6ff!important}
 html[data-theme=dark] :is(.text-danger,.required-marker,.field-validation-error){color:#ff9ba8!important}

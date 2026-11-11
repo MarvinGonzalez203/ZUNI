@@ -27,6 +27,12 @@ internal static class DocumentosDemo
             ResponsablesAcciones="Estudiante: revisar el calendario y comunicar dificultades de cumplimiento. Referente académico: aclarar prioridades y fechas. Dirección: facilitar la coordinación de los apoyos acordados. Psicólogo: revisar el avance educativo y decidir los ajustes profesionales que correspondan."
         };
         File.WriteAllBytes(Path.Combine(carpeta,"informe-educativo-demostracion.pdf"),InformePdf.Crear(informe,demostracion:true));
-        Console.WriteLine("Dos PDF ficticios generados sin consultar ni modificar una base de datos.");
+        var reporte=new Zuni.Models.Agenda.ReporteCompartido(Guid.NewGuid(),informe.Estudiante,informe.Carne,informe.Psicologo,fecha,fecha.AddMinutes(50),false,
+            "Se revisó el calendario de actividades del ejemplo y se identificaron tres prioridades para la semana.",informe.Recomendaciones,true,"Revisar el avance de los acuerdos en la próxima atención.");
+        File.WriteAllBytes(Path.Combine(carpeta,"reporte-compartido-demostracion.pdf"),InformePdf.CrearCompartido(reporte));
+        File.WriteAllBytes(Path.Combine(carpeta,"reporte-compartido-extenso.pdf"),InformePdf.CrearCompartido(reporte with{Recomendaciones=string.Join("\n\n",Enumerable.Range(1,24).Select(i=>$"{i}. {informe.Recomendaciones}"))}));
+        centro.NotaComercial=string.Join("\n\n",Enumerable.Repeat(centro.NotaComercial,24));
+        File.WriteAllBytes(Path.Combine(carpeta,"contrato-extenso-demostracion.pdf"),ContratoCentroPdf.Crear(centro,fecha));
+        Console.WriteLine("Cinco PDF ficticios generados sin consultar ni modificar una base de datos.");
     }
 }

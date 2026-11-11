@@ -10,7 +10,7 @@ const current=fs.readFileSync(path.join(root,'../Zuni.csproj'),'utf8').match(/<V
 for(const width of [1366,390,320])for(const theme of ['light','dark']){
  await page.setViewportSize({width,height:844});await page.goto('http://zuni.test/SuperAdmin');await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
  await page.locator('.release-control>summary').click();const versions=await page.locator('.release-entry').evaluateAll(es=>es.map(e=>e.dataset.releaseVersion));
- check(JSON.stringify(versions)===JSON.stringify([current,'1.3.1','1.3.0']),'tres versiones locales '+width+' '+theme);
+ check(JSON.stringify(versions)===JSON.stringify([current,'1.3.2','1.3.1']),'tres versiones locales '+width+' '+theme);
  check(await page.locator('.release-entry').evaluateAll(es=>es.every(e=>e.querySelector('h3')?.textContent.includes(e.dataset.releaseVersion)&&e.querySelectorAll('li').length>0)),'títulos y cambios por versión '+width+' '+theme);
  const box=await page.locator('.release-content').boundingBox();check(box.x>=0&&box.x+box.width<=width+1&&box.y>=0&&box.y+box.height<=844,'historial dentro de pantalla '+width+' '+theme);
  await page.locator('.release-history').evaluate(e=>e.scrollTop=e.scrollHeight);const last=await page.locator('.release-entry').last().boundingBox();check(last.y+last.height<=box.y+box.height,'versión anterior accesible por desplazamiento '+width+' '+theme);
@@ -21,6 +21,6 @@ for(const width of [1366,390,320])for(const theme of ['light','dark']){
  check(docs===count,'lectura no recarga documento '+width+' '+theme);
  await page.keyboard.press('Escape');check((await page.locator('.release-control').getAttribute('open'))===null,'escape cierra historial '+width+' '+theme);
 }
-await page.goto('http://zuni.test/SuperAdmin?lang=en');await page.locator('.release-control>summary').click();check(await page.locator('.release-content').innerText().then(t=>t.includes('Updates')&&t.includes('Consistent button')&&!t.includes('Botones con forma')),'historial traducido al inglés');
+await page.goto('http://zuni.test/SuperAdmin?lang=en');await page.locator('.release-control>summary').click();check(await page.locator('.release-content').innerText().then(t=>t.includes('Updates')&&t.includes('Readable buttons')&&!t.includes('Botones legibles')),'historial traducido al inglés');
 check(reads===6,'lecturas individuales enviadas por POST');check(errors.length===0,'sin errores JavaScript: '+errors.join(';'));console.log('OK: '+checks+' comprobaciones de historial, tamaños, temas, lectura y traducción.');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

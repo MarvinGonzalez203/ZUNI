@@ -26,7 +26,8 @@
         @foreach (var dia in Model.Dias)
         {
             var estado = dia.Estado == "Disponible" ? "is-free" : dia.Estado == "Ocupado" ? "is-busy" : dia.Estado == "Pendiente de revisar" ? "is-pending" : "";
-            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @Idioma.Texto(dia.Estado)"><strong>@dia.Fecha.Day</strong><span>@Idioma.Texto(Convert.ToString(dia.Estado))</span>@if (Model.Director && dia.Bloques.Count > 0) { <small>@dia.Bloques.Count @Idioma.Texto("bloque(s)")</small> } else if (dia.Citas.Count > 0) { <small>@dia.Citas.Count @Idioma.Texto("cita(s)")</small> }</button>
+            var descripcion = Idioma.Texto(dia.Estado) + (Model.Director && dia.Bloques.Count > 0 ? $" · {dia.Bloques.Count} " + Idioma.Texto("bloque(s)") : dia.Citas.Count > 0 ? $" · {dia.Citas.Count} " + Idioma.Texto("cita(s)") : "");
+            <button type="button" class="agenda-day @estado" disabled="@(!dia.Consultable)" data-bs-toggle="modal" data-bs-target="#dia-@dia.Fecha.ToString("yyyy-MM-dd")" title="@descripcion" aria-label="@dia.Fecha.ToString("dd MMMM yyyy", cultura): @descripcion"><strong>@dia.Fecha.Day</strong><span class="agenda-day-description">@descripcion</span></button>
         }
     </div>
 </section>
@@ -75,9 +76,13 @@
                         else if (cita.TieneRegistroAtencion) { <a asp-controller="Psicologo" asp-action="VerAtencion" asp-route-citaId="@cita.Id">@Idioma.Texto("Consultar registro")</a> }
                         else if (cita.FinUtc <= Model.AhoraUtc && cita.Estado is EstadoCita.Confirmada or EstadoCita.Reservada) { <a asp-controller="Psicologo" asp-action="RegistrarAtencion" asp-route-citaId="@cita.Id" class="dash-button">@Idioma.Texto("Completar registro de atención")</a> }
                         </article>
-                        @if(AgendaReglas.Activa(cita.Estado)&&cita.InicioUtc>Model.AhoraUtc&&!cita.EsImprevista){<a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@cita.Id" class="btn btn-outline-primary mb-2">@Idioma.Texto("Reprogramar cita")</a>}
                     }
-                    @if (dia.Fecha <= Model.Hoy) { <a asp-controller="Atenciones" asp-action="Imprevista" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" class="dash-button mb-3">@Idioma.Texto("Registrar atención imprevista")</a> }
+                    <div class="agenda-day-actions">
+                        @foreach(var cita in dia.Citas.Where(c=>AgendaReglas.Activa(c.Estado)&&c.InicioUtc>Model.AhoraUtc&&!c.EsImprevista)){
+                            <a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@cita.Id" class="btn btn-outline-primary" aria-label="@Idioma.Texto("Reprogramar cita") · @cita.Nombre · @AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")">@Idioma.Texto("Reprogramar cita") · @AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")</a>
+                        }
+                        @if (dia.Fecha <= Model.Hoy) { <a asp-controller="Atenciones" asp-action="Imprevista" asp-route-fecha="@dia.Fecha.ToString("yyyy-MM-dd")" class="dash-button">@Idioma.Texto("Registrar atención imprevista")</a> }
+                    </div>
                 }
                 @if (Model.Editor && dia.Editable)
                 {

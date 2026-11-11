@@ -13,6 +13,11 @@
 .agenda-day { min-height: 88px; display: flex; flex-direction: column; gap: .4rem; border: 1px solid #dedce1; border-radius: .65rem; padding: .65rem; background: #f3f5f7; color: #111111; text-align: left; width: 100%; transition: border-color .18s, box-shadow .18s; }
 .agenda-day span { font-size: .78rem; overflow-wrap: anywhere; }
 .agenda-day small { max-width: 100%; overflow-wrap: anywhere; }
+.agenda-day { height: 106px; min-height: 0; overflow: hidden; }
+.agenda-day .agenda-day-description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.3; height: 2.6em; font-size: .75rem; flex-shrink: 0; }
+.agenda-day-description small { font-size: inherit; }
+.agenda-day-actions { display: flex; flex-wrap: wrap; align-items: stretch; gap: .6rem; margin: .25rem 0 1rem; }
+.agenda-day-actions > :is(.btn,.dash-button) { margin: 0; flex: 1 1 180px; text-align: center; }
 .agenda-day.is-free, .agenda-legend .is-free { background: #e3f4ea; border-color: #a5cab1; }
 .agenda-day.is-busy, .agenda-legend .is-busy, .agenda-slot.is-busy { background: #fce6e6; border-color: #ddb1b1; }
 .agenda-day:not(:disabled):hover { border-color: #9865bd; box-shadow: 0 0 0 2px #cea2fd55; }
@@ -32,11 +37,13 @@
 .agenda-modal button:disabled { opacity: .6; cursor: not-allowed; }
 @media (max-width: 600px) {
     .agenda-grid { gap: .2rem; }
-    .agenda-day { min-height: 72px; padding: .35rem .2rem; }
-    .agenda-day span { font-size: .62rem; }
-    .agenda-month { gap: .5rem; }
-    .agenda-month h2 { font-size: 1.05rem; }
-    .agenda-month .dash-button { font-size: .8rem; padding: .5rem; }
+    .agenda-day { height: 78px; padding: .35rem .2rem; gap: .3rem; }
+    .agenda-day .agenda-day-description { font-size: .58rem; }
+    .agenda-day-actions > :is(.btn,.dash-button) { flex: 1 1 0; min-width: 0; padding: 8px; font-size: 11px; }
+    .agenda-month { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr); gap: .4rem; }
+    .agenda-month h2 { min-width: 0; font-size: .85rem; text-align: center; overflow-wrap: anywhere; }
+    .dashboard-app .agenda-month .dash-button { font-size: .68rem; padding: .4rem; white-space: nowrap; }
+    .agenda-month > :last-child { justify-self: end; }
     .agenda-modal .modal-body { padding: 1rem; }
     .agenda-form label { flex-basis: 100%; }
 }

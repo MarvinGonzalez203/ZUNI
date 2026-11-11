@@ -1,4 +1,9 @@
 {
+  "Botones legibles al pasar el cursor en modo noche con colores personalizados.": "Readable buttons on hover in night mode with custom colors.",
+  "Calendario móvil con días de altura uniforme, dos líneas de texto y acciones alineadas.": "Mobile calendar with equal-height days, two text lines and aligned actions.",
+  "Desplegables con chevrones en V en lugar de triángulos.": "Dropdowns with V-shaped chevrons instead of triangles.",
+  "PDF de atención y contrato con encabezado y pie unificados, tarjetas redondeadas y logo con círculos de cristal.": "Care and contract PDFs with a shared header and footer, rounded cards and a logo with glass circles.",
+  "Sobre este documento conserva su posición sobre el pie, incluso en documentos extensos.": "About this document stays above the footer, including in long documents.",
   "Atención imprevista registrada. Abre la actividad para completar el registro profesional; no hace falta una solicitud posterior del estudiante.": "Unplanned care registered. Open the activity to complete the professional record; a subsequent student request is not required.",
   "Esta atención la registra el psicólogo y no requiere una solicitud posterior del estudiante. Si la cuenta tiene pendiente cambiar su contraseña temporal, se mostrará el aviso correspondiente. No se marcará ningún consentimiento automáticamente.": "The psychologist registers this care without requiring a subsequent student request. A notice appears if the account still needs to change its temporary password. No consent is marked automatically.",
   "El psicólogo puede programar la próxima cita desde Agenda → Programar o reprogramar. Escribir esta recomendación no crea una cita automáticamente.": "The psychologist can schedule the next appointment from Agenda → Schedule or reschedule. Writing this recommendation does not automatically create an appointment.",

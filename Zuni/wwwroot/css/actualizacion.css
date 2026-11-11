@@ -5,6 +5,15 @@
 .page-scroll-down svg,.page-scroll-top svg{width:26px;height:26px}.page-scroll-down svg{animation:zuni-down 1.8s ease-in-out infinite}.page-scroll-down[hidden],.page-scroll-top[hidden]{display:none}
 .page-scroll-down:focus-visible,.page-scroll-top:focus-visible{outline:2px solid var(--zuni-primary,#cea2fd);outline-offset:3px;border-radius:12px}
 .system-version{display:block;margin:18px 0 0;text-align:center;color:inherit;opacity:.75;font-size:.75rem;letter-spacing:.04em}
+/* Disclosure controls share the open V used by the page scroll controls. */
+details:not(.dash-nav-group):not(.release-control)>summary{list-style:none;position:relative;padding-right:1.8rem;cursor:pointer}
+details:not(.dash-nav-group):not(.release-control)>summary::-webkit-details-marker{display:none}
+details:not(.dash-nav-group):not(.release-control)>summary::after{content:"";position:absolute;right:.5rem;top:50%;width:8px;height:8px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-70%) rotate(45deg)}
+details[open]:not(.dash-nav-group):not(.release-control)>summary::after{transform:translateY(-30%) rotate(225deg)}
+.dropdown-toggle::after{width:8px;height:8px;border:0;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);vertical-align:middle}
+.dropdown-toggle[aria-expanded=true]::after{transform:translateY(2px) rotate(225deg)}
+select:not([multiple]):not([size]){appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%235e456f' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center;background-size:16px;padding-right:2rem}
+html[data-theme=dark] select:not([multiple]):not([size]){background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23ead5ff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 .release-control{position:relative}.release-control>summary{list-style:none;position:relative;cursor:pointer}.release-control>summary::-webkit-details-marker{display:none}.release-control .dash-icon{width:22px;height:22px}
 .release-dot{position:absolute;right:6px;top:6px;width:8px;height:8px;background:#cea2fd;border:2px solid var(--zuni-beige,#f6f2e6);border-radius:50%}
 .release-content{position:absolute;right:0;top:calc(100% + 10px);width:min(310px,calc(100vw - 28px));padding:18px;border-radius:20px;border:1px solid #d4c4e3;background:#fffdf8;box-shadow:0 16px 40px #20112c24;z-index:1050;font-size:.85rem;line-height:1.5}.release-content ul{padding-left:18px}.release-content button{font:inherit}.release-content p{margin-bottom:8px}
