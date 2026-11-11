@@ -73,7 +73,9 @@ public sealed partial class AgendaCitasService
                 TieneCitasActivas = citasDia.Any(c => c.Profesional),
                 CitaPropiaActiva = citasDia.Any(c => c.Propia),
                 PendientesPorRevisar=pendientes.Count(p=>p>=desde&&p<hasta),
-                Estado = pendientes.Any(p=>p>=desde&&p<hasta)?"Pendiente de revisar":dia < hoy ? "Pasado" : dia > hoy.AddMonths(12) ? "Fuera de plazo" :
+                Estado = dia < hoy ? "Pasado" : dia > hoy.AddMonths(12) ? "Fuera de plazo" :
+                    !editor && config?.Bloqueado != true && franjas.Any(f => !f.Ocupada) ? "Disponible" :
+                    pendientes.Any(p=>p>=desde&&p<hasta)?"Pendiente de revisar":
                     config?.Bloqueado == true ? "Ocupado" : franjas.Any(f => !f.Ocupada) ? "Disponible" :
                     rangos.Length > 0 ? "Ocupado" : "Sin horarios",
                 Franjas = franjas,

@@ -45,6 +45,11 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         return roles.Contains("PSICOLOGO") && !roles.Any(r => r is "ADMINISTRADOR" or "DIRECTOR" or "CATEDRATICO") ? id : null;
     }
 
+    private Task<bool> SolicitudConsentida(Guid perfilId, CancellationToken ct) =>
+        db.SolicitudesAtencion.AsNoTracking().AnyAsync(s => s.PerfilEstudianteId == perfilId &&
+            s.Estado != Zuni.Models.Atencion.EstadoSolicitudAtencion.Cerrada &&
+            db.ConsentimientosAtencion.Any(c => c.SolicitudAtencionId == s.Id && c.Aceptado), ct);
+
     // Todas las escrituras validan identidad y reglas dentro de SERIALIZABLE.
     // Los predicados de solapamiento incluyen al estudiante y al psicólogo; PostgreSQL
     // aborta una de dos reservas concurrentes incompatibles (40001). No se reintenta a ciegas.
@@ -154,8 +159,9 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         var edadVerificada = await Zuni.Services.MayoriaEdad.MayoriaEdadService.VerificadaAsync(db, perfil.Id, ct);
         var dia = fecha ?? AgendaReglas.Hoy(ahora);
         var psicologo = await Asignado(perfil.Id, ct);
+        var solicitudConsentida = await SolicitudConsentida(perfil.Id, ct);
         var calendario = await LeerCalendario(psicologo, fecha, false, perfil.Id, ct);
-        calendario.PuedeReservar = psicologo is not null && perfil.EstaCompleto && edadVerificada;
+        calendario.PuedeReservar = psicologo is not null && perfil.EstaCompleto && edadVerificada && solicitudConsentida;
         var horarios = calendario.Dias.Where(d => d.Fecha == dia && !d.Bloqueado)
             .SelectMany(d => d.Franjas).Where(f => !f.Ocupada)
             .Select(f => new HorarioDisponible(f.InicioUtc, f.FinUtc, f.Modalidad)).ToArray();
@@ -170,7 +176,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         pagina = Math.Clamp(pagina, 1, paginas);
         return new CitasEstudianteViewModel
         {
-            Fecha = calendario.Mes, Calendario = calendario, PuedeReservar = psicologo is not null && perfil.EstaCompleto && edadVerificada,
+            Fecha = calendario.Mes, Calendario = calendario, PuedeReservar = calendario.PuedeReservar,
             MayoriaEdadVerificada = edadVerificada,
             Psicologo = psicologo is null ? null : await db.Users.Where(u => u.Id == psicologo).Select(u => u.FullName).SingleAsync(ct),
             Horarios = horarios, Pagina = pagina, Paginas = paginas,
@@ -182,6 +188,8 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
     public Task Reservar(ClaimsPrincipal sesion, ReservaCitaInput input, CancellationToken ct) => Escribir(async () =>
     {
         var perfil = await Estudiante(sesion, ct);
+        if (!await SolicitudConsentida(perfil.Id, ct))
+            throw new AgendaOperacionException("Envía tu solicitud de atención y acepta el consentimiento antes de reservar. La asignación de psicólogo no sustituye este paso.");
         if (!await Zuni.Services.MayoriaEdad.MayoriaEdadService.VerificadaAsync(db, perfil.Id, ct))
             throw new AgendaOperacionException("La institución debe verificar tu mayoría de edad antes de reservar. Ve a Mayoría de edad.");
         if (!perfil.EstaCompleto) throw new AgendaOperacionException("Completa tus datos en Mi cuenta antes de reservar.");
@@ -250,6 +258,8 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
             if (!roles.Contains("ESTUDIANTE") || roles.Any(r => r is "ADMINISTRADOR" or "DIRECTOR" or "CATEDRATICO"))
                 throw new AgendaAccesoException();
         }
+        if (input.Estado == EstadoCita.Confirmada && !await SolicitudConsentida(cita.PerfilEstudianteId, ct))
+            throw new AgendaOperacionException("El estudiante debe enviar su solicitud de atención y aceptar el consentimiento antes de confirmar una cita.");
         if (input.Estado == EstadoCita.Confirmada && cita.Modalidad == ModalidadCita.Virtual)
             await FijarEnlace(cita, input.EnlaceReunion, input.AccesoRestringidoRevisado, ct);
         if(input.Estado==EstadoCita.Confirmada && cita.Modalidad==ModalidadCita.Presencial){cita.DireccionAtencion=DireccionValida(input.DireccionAtencion??cita.DireccionAtencion);await NotificarLugar(cita,id,ct);}

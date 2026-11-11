@@ -26,7 +26,7 @@ public sealed class GestionSolicitudesException(string mensaje) : Exception(mens
 // - Excepción: una propuesta de Dirección aún pendiente (Solicitada, ProgramadorRol = "Director") no es
 //   una cita comprometida y no bloquea: sin asignación vigente su psicólogo no puede aceptarla (solo
 //   rechazarla). Bloquearla impediría justamente asignar al psicólogo que Dirección propuso.
-public sealed class GestionSolicitudesService(ApplicationDbContext db, TimeProvider reloj)
+public sealed partial class GestionSolicitudesService(ApplicationDbContext db, TimeProvider reloj)
 {
     public const int TamanoPagina = 25;
     private static readonly EstadoCita[] EstadosCitaActivos = [EstadoCita.Reservada, EstadoCita.Solicitada, EstadoCita.Confirmada];

@@ -20,6 +20,9 @@ internal static class AlmuerzoRevisionChecks
             }
             db.PerfilesEstudiante.Add(perfil);db.VerificacionesMayoriaEdad.Add(new(){PerfilEstudianteId=perfil.Id,Estado=Zuni.Models.MayoriaEdad.EstadoMayoriaEdad.Verificada,EdadDeclarada=21,EdadVerificada=21,ResponsableUsuarioId="admin",DocumentoRevisado=Zuni.Models.MayoriaEdad.DocumentoEdad.Dpi,FechaDeclaracionUtc=reloj.Ahora.UtcDateTime});
             db.AsignacionesEstudiantePsicologo.Add(new(){PerfilEstudianteId=perfil.Id,PsicologoUsuarioId="meal-psy"});
+            var solicitudConsentida = new Zuni.Models.Atencion.SolicitudAtencion { PerfilEstudianteId = perfil.Id, Estado = Zuni.Models.Atencion.EstadoSolicitudAtencion.Asignada };
+            db.SolicitudesAtencion.Add(solicitudConsentida);
+            db.ConsentimientosAtencion.Add(new() { SolicitudAtencionId = solicitudConsentida.Id, Aceptado = true, VersionConsentimiento = "prueba-almuerzo" });
             foreach(DayOfWeek d in Enum.GetValues<DayOfWeek>())db.DisponibilidadesPsicologo.Add(new(){PsicologoUsuarioId="meal-psy",DiaSemana=d,HoraInicio=new(8,0),HoraFin=new(18,0),DuracionMinutos=30,Modalidad=ModalidadDisponibilidad.Presencial});
             await db.SaveChangesAsync();
         }
@@ -56,7 +59,7 @@ internal static class AlmuerzoRevisionChecks
         var foco=await psy.GetStringAsync("/Psicologo/Agenda?citaId="+propuesta);Check(foco.Contains("is-pending")&&foco.Contains("data-cita-seleccionada=\""+propuesta)&&foco.Contains("Aceptar cita")&&foco.Contains("Rechazar propuesta")&&foco.Contains("data-motivos-propuesta-director"),"día pendiente y respuesta en ventana contextual");
         Check((await other.GetAsync("/Psicologo/Agenda?citaId="+propuesta)).StatusCode==HttpStatusCode.Redirect,"cita ajena no abre ventana contextual");
         Check((await dir.GetAsync("/CitasProgramadas?citaId="+propuesta)).StatusCode==HttpStatusCode.Redirect,"Director no abre citas individuales ni su contexto");
-        var solicitud=await est.GetStringAsync("/Estudiante/EstadoSolicitud");Check(WebUtility.HtmlDecode(solicitud).Contains("Aún no tienes una solicitud registrada"),"sin solicitud muestra explicación funcional");
+        var solicitud=await est.GetStringAsync("/Estudiante/EstadoSolicitud");Check(WebUtility.HtmlDecode(solicitud).Contains("Asignada"),"solicitud consentida conserva su estado administrativo");
         var asignadas=await existingPsy.GetStringAsync("/Psicologo/Solicitudes");var expedientes=await existingPsy.GetStringAsync("/Psicologo/Solicitudes?expedientes=true");Check(asignadas.Contains("Solicitudes asignadas")&&WebUtility.HtmlDecode(expedientes).Contains("Fichas de acompañamiento")&&!expedientes.Contains("MOTIVO-CLINICO-PRIVADO"),"accesos del tablero conducen a listados autorizados");
         Check((await est.GetAsync("/Psicologo/Solicitudes")).StatusCode==HttpStatusCode.Redirect,"estudiante no consulta solicitudes profesionales");
         foreach(var html in new[]{notificaciones,foco,solicitud,asignadas,expedientes})Check(Regex.Matches(html,"class=\"dash-nav-link is-active\"").Count==1,"un solo submenú activo por pantalla");

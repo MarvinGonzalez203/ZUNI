@@ -70,7 +70,7 @@ public sealed partial class AgendaCitasService
     {
         // Propuesta administrativa no sustituye la verificación clínica del estudiante.
         var p=await db.PerfilesEstudiante.Include(p=>p.Usuario).SingleAsync(p=>p.Id==perfil,ct);
-        return actor.Rol=="Psicologo"&&modalidad==ModalidadCita.Presencial&&!string.IsNullOrWhiteSpace(direccion)&&!p.Usuario.DebeCambiarContrasena&&p.EstaCompleto&&await MayoriaEdadService.VerificadaAsync(db,perfil,ct)?EstadoCita.Confirmada:EstadoCita.Solicitada;
+        return actor.Rol=="Psicologo"&&modalidad==ModalidadCita.Presencial&&!string.IsNullOrWhiteSpace(direccion)&&!p.Usuario.DebeCambiarContrasena&&p.EstaCompleto&&await MayoriaEdadService.VerificadaAsync(db,perfil,ct)&&await SolicitudConsentida(perfil,ct)?EstadoCita.Confirmada:EstadoCita.Solicitada;
     }
     private async Task ValidarConfirmacionProgramada(Cita c,CancellationToken ct)
     {

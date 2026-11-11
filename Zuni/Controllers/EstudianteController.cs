@@ -14,7 +14,7 @@ namespace Zuni.Controllers;
 [Authorize(Roles = "Estudiante")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("Estudiante")]
-public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsicologoService asignacion) : Controller
+public sealed class EstudianteController(ApplicationDbContext db) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -71,6 +71,7 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
     public async Task<IActionResult> SolicitarAtencion(SolicitarAtencionViewModel model, CancellationToken ct)
     {
         Guid perfilId;
+        bool asignacionVigente;
         await using (var tx = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct))
         {
             var perfil = await PerfilSolicitanteAsync(ct);
@@ -92,9 +93,13 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
                 return View(model);
             }
             var now = DateTime.UtcNow;
+            // Una asignación administrativa previa se conserva; nunca elegir ni crear un profesional aquí.
+            asignacionVigente = await db.AsignacionesEstudiantePsicologo.AsNoTracking()
+                .AnyAsync(a => a.PerfilEstudianteId == perfilId && a.FechaFinalizacionUtc == null, ct);
             var solicitud = new SolicitudAtencion
             {
                 PerfilEstudianteId = perfilId, FechaSolicitudUtc = now,
+                Estado = asignacionVigente ? EstadoSolicitudAtencion.Asignada : EstadoSolicitudAtencion.Pendiente,
                 TipoIngreso = model.TipoIngreso,
                 // El formulario captura referencia declarada, no identifica cuentas ajenas.
                 UsuarioReferenteId = null
@@ -137,18 +142,8 @@ public sealed class EstudianteController(ApplicationDbContext db, IAsignacionPsi
             }
         }
 
-        try
-        {
-            var resultado = await asignacion.IntentarAsignarAsync(perfilId, ct);
-            TempData["Success"] = resultado is ResultadoAsignacion.Asignado or ResultadoAsignacion.YaAsignado
-                ? "Tu solicitud fue guardada y está asignada."
-                : "Tu solicitud fue guardada y está pendiente de asignación o revisión.";
-        }
-        catch (Exception ex) when (ex is DbUpdateException or Npgsql.NpgsqlException)
-        {
-            // La solicitud ya está confirmada: nunca se borra por un fallo de asignación.
-            TempData["Success"] = "Tu solicitud fue guardada. La asignación está pendiente de revisión.";
-        }
+        TempData["Success"] = asignacionVigente ? "Tu solicitud fue guardada con el psicólogo que te asignó el Administrador."
+            : "Tu solicitud fue guardada. Un administrador debe asignarte un psicólogo; la asignación no es automática.";
         return RedirectToAction(nameof(Index));
     }
 

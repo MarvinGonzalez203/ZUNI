@@ -1,0 +1,45 @@
+@model Zuni.Models.Administrador.AsignacionesFichaViewModel
+@{ ViewData["Title"] = Model.DesdePsicologo ? "Asignar estudiantes" : "Asignar psicólogo"; }
+<section class="dash-card">
+    <h1>@Idioma.Texto(ViewData["Title"]?.ToString())</h1>
+    <p class="fw-semibold">@Model.Nombre</p>
+    <p>@Idioma.Texto("Solo el Administrador gestiona estas asignaciones. Puedes vincular la cuenta antes de que el estudiante envíe su solicitud; los consentimientos y la verificación de edad siguen siendo necesarios para recibir atención.")</p>
+    <a class="btn btn-outline-secondary mb-3" asp-controller="Administrador" asp-action="Gestionar" asp-route-id="@Model.UsuarioId">@Idioma.Texto("Volver a la ficha")</a>
+    @if (TempData["Error"] is string error) { <p class="alert alert-danger" role="alert">@Idioma.Texto(error)</p> }
+    @if (Model.DesdePsicologo) {
+        <form method="get" class="d-flex flex-wrap gap-2 mb-4"><label>@Idioma.Texto("Buscar estudiante por nombre o carné")<input name="buscar" value="@Model.Buscar" maxlength="80" class="form-control" /></label><button class="dash-button" type="submit">@Idioma.Texto("Buscar")</button></form>
+    }
+    @if (Model.Estudiantes.Count == 0) { <p>@Idioma.Texto("No hay estudiantes activos para mostrar con este filtro.")</p> }
+    @foreach (var alumno in Model.Estudiantes) {
+        <article class="dash-card mb-3" data-asignacion-estudiante="@alumno.PerfilId">
+            <h2 class="h5">@alumno.Nombre</h2><p>@Zuni.Helpers.CarneHelper.Formatear(alumno.Carne)</p>
+            <p>@Idioma.Texto("Psicólogo asignado:") <strong>@(alumno.Psicologo ?? Idioma.Texto("Sin asignar"))</strong></p>
+            @if (Model.DesdePsicologo && alumno.PsicologoId == Model.UsuarioId) { <p>@Idioma.Texto("Ya está asignado a este psicólogo.")</p> }
+            else {
+                <form asp-action="Guardar" asp-route-id="@Model.UsuarioId" method="post" class="d-flex flex-column gap-2">
+                    <input type="hidden" name="UsuarioId" value="@Model.UsuarioId" />
+                    <input type="hidden" name="PerfilEstudianteId" value="@alumno.PerfilId" />
+                    <input type="hidden" name="AsignacionActualId" value="@alumno.AsignacionId" />
+                    <input type="hidden" name="buscar" value="@Model.Buscar" /><input type="hidden" name="pagina" value="@Model.Pagina" />
+                    @if (Model.DesdePsicologo) { <input type="hidden" name="PsicologoUsuarioId" value="@Model.UsuarioId" /> }
+                    else { <label>@Idioma.Texto("Psicólogo")<select name="PsicologoUsuarioId" class="form-select" required><option value="">@Idioma.Texto("Selecciona un psicólogo")</option>@foreach(var p in Model.Psicologos.Where(p => p.Value != alumno.PsicologoId)){<option value="@p.Value">@p.Text</option>}</select></label> }
+                    @if (alumno.AsignacionId is not null) { <label>@Idioma.Texto("Motivo administrativo de reasignación")<textarea name="Motivo" maxlength="500" rows="2" class="form-control" required></textarea></label> }
+                    <button type="submit" class="dash-button align-self-start">@Idioma.Texto(alumno.AsignacionId is null ? (Model.DesdePsicologo ? "Asignar estudiante" : "Asignar psicólogo") : "Reasignar psicólogo")</button>
+                </form>
+            }
+            @if (alumno.AsignacionId is not null && (!Model.DesdePsicologo || alumno.PsicologoId == Model.UsuarioId)) {
+                <details class="mt-3"><summary>@Idioma.Texto("Finalizar asignación")</summary>
+                    <form asp-action="Finalizar" asp-route-id="@Model.UsuarioId" method="post" class="mt-2">
+                        <input type="hidden" name="UsuarioId" value="@Model.UsuarioId" /><input type="hidden" name="PerfilEstudianteId" value="@alumno.PerfilId" />
+                        <input type="hidden" name="AsignacionActualId" value="@alumno.AsignacionId" /><input type="hidden" name="PsicologoUsuarioId" value="@alumno.PsicologoId" />
+                        <input type="hidden" name="buscar" value="@Model.Buscar" /><input type="hidden" name="pagina" value="@Model.Pagina" />
+                        <label>@Idioma.Texto("Motivo administrativo para finalizar")<textarea name="Motivo" class="form-control" rows="2" maxlength="500" required></textarea></label>
+                        <p>@Idioma.Texto("Al confirmar se quitará el vínculo vigente y se conservará el historial. Las citas activas deben resolverse antes.")</p>
+                        <button type="submit" class="btn btn-outline-danger">@Idioma.Texto("Confirmar finalización")</button>
+                    </form>
+                </details>
+            }
+        </article>
+    }
+    @if (Model.Paginas > 1) { <nav class="d-flex gap-3" aria-label="@Idioma.Texto("Paginación")">@if(Model.Pagina>1){<a asp-route-id="@Model.UsuarioId" asp-route-buscar="@Model.Buscar" asp-route-pagina="@(Model.Pagina-1)">@Idioma.Texto("Anterior")</a>}<span>@Model.Pagina / @Model.Paginas</span>@if(Model.Pagina<Model.Paginas){<a asp-route-id="@Model.UsuarioId" asp-route-buscar="@Model.Buscar" asp-route-pagina="@(Model.Pagina+1)">@Idioma.Texto("Siguiente")</a>}</nav> }
+</section>

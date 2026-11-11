@@ -1,6 +1,21 @@
 @model IReadOnlyList<Zuni.Resources.GuiaUso>
 @{var propietario=User.IsInRole("SuperAdmin");var rolActual=ViewData["RolGuias"] as string;var sugerencias=Zuni.Resources.GuiasUso.Todas.Where(g=>propietario||g.Rol==rolActual||g.Rol=="General");}
 <header class="dash-profile-heading"><div><h1>@Idioma.Texto("Guías y funciones")</h1><p>@Idioma.Texto("Busca las funciones disponibles para tu perfil y consulta dónde pulsar.")</p></div></header>
+<section class="dash-card mb-4" aria-labelledby="guide-help-title">
+    <h2 id="guide-help-title">@Idioma.Texto("¿Para qué sirven estas guías?")</h2>
+    <p>@Idioma.Texto("Aquí encontrarás instrucciones para usar las funciones de tu perfil. Escribe una función o una pregunta, o selecciona un ejemplo para ver los pasos y un enlace directo a la función.")</p>
+    <h3 class="h5">@Idioma.Texto("Ejemplos de preguntas")</h3>
+    @foreach (var pregunta in Zuni.Resources.GuiasUso.Preguntas.Where(p => p.Rol == "General" || p.Rol == rolActual || (propietario && p.Rol == "SuperAdmin")))
+    {
+        var respuesta = Zuni.Resources.GuiasUso.Todas.Single(g => g.Titulo == pregunta.Titulo);
+        <details class="guide-question mb-2" data-guide-question>
+            <summary>@Idioma.Texto(pregunta.Pregunta)</summary>
+            <p class="mt-2">@Idioma.Texto(respuesta.Resumen)</p>
+            <ol>@foreach (var paso in respuesta.Pasos) { <li>@Idioma.Texto(paso)</li> }</ol>
+            <a class="btn btn-outline-primary mb-2" href="@pregunta.Enlace">@Idioma.Texto("Ir a la función")</a>
+        </details>
+    }
+</section>
 <form method="get" class="dash-card guide-search mb-4" role="search" data-guide-search>
 <label>@Idioma.Texto("Buscar funciones o pasos")<span class="guide-input"><partial name="_DashboardIcon" model='@("search")'/><input type="search" name="q" value="@ViewData["Busqueda"]" class="form-control" list="guia-sugerencias" maxlength="80" placeholder="@Idioma.Texto("Escribe una función o tema")"/></span></label>
 @if(propietario){<label>@Idioma.Texto("Rol")<select name="rol" class="form-select" data-guide-role><option value="">@Idioma.Texto("Todos los roles")</option>@foreach(var r in new[]{"General","SuperAdmin","Administrador","Director","Psicologo","Estudiante"}){<option value="@r" selected="@(ViewData["FiltroRol"] as string==r)">@Idioma.Texto(r)</option>}</select></label>}
@@ -9,6 +24,6 @@ else{<span class="commercial-badge">@Idioma.Texto(rolActual)</span>}
 <datalist id="guia-sugerencias">@foreach(var g in sugerencias){<option value="@Idioma.Texto(g.Titulo)"></option>}</datalist><p class="guide-status" role="status" aria-live="polite"></p></form>
 <section data-guide-results>
 @if(Model.Count==0){<p class="dash-notice">@Idioma.Texto("No encontramos ese tema. Prueba con otra palabra.")</p>}
-<div class="commercial-grid guide-grid">@foreach(var guia in Model){<article class="dash-card commercial-card commercial-help" data-guide-role="@guia.Rol"><header class="guide-card-heading"><partial name="_DashboardIcon" model="guia.Icono"/><span class="commercial-badge">@Idioma.Texto(guia.Rol)</span></header><h2>@Idioma.Texto(guia.Titulo)</h2><p>@Idioma.Texto(guia.Resumen)</p><ol>@foreach(var paso in guia.Pasos){<li>@Idioma.Texto(paso)</li>}</ol><div class="guide-place"><strong>@Idioma.Texto("DÓNDE PULSAR")</strong><p>@Idioma.Texto(guia.Donde)</p></div></article>}</div>
+<div class="commercial-grid guide-grid">@foreach(var guia in Model){<article class="dash-card commercial-card commercial-help" data-guide-role="@guia.Rol"><header class="guide-card-heading"><partial name="_DashboardIcon" model="guia.Icono"/><span class="commercial-badge">@Idioma.Texto(guia.Rol)</span></header><h2>@Idioma.Texto(guia.Titulo)</h2><p>@Idioma.Texto(guia.Resumen)</p><ol>@foreach(var paso in guia.Pasos){<li>@Idioma.Texto(paso)</li>}</ol><div class="guide-place"><strong>@Idioma.Texto("DÓNDE PULSAR")</strong><p>@Idioma.Texto(guia.Donde)</p>@if(Zuni.Resources.GuiasUso.Preguntas.FirstOrDefault(p=>p.Titulo==guia.Titulo) is {} acceso && (guia.Rol=="General" || guia.Rol==rolActual || (propietario && guia.Rol=="SuperAdmin"))){<a class="btn btn-outline-primary" href="@acceso.Enlace">@Idioma.Texto("Ir a la función")</a>}</div></article>}</div>
 
 </section>

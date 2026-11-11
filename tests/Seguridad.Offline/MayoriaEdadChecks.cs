@@ -89,11 +89,26 @@ internal static class MayoriaEdadChecks
         var sinTelefono = await student.GetAsync("/Estudiante/SolicitarAtencion");
         Check(sinTelefono.StatusCode == HttpStatusCode.Redirect && sinTelefono.Headers.Location!.OriginalString.Contains("MiCuenta"), "solicitud exige teléfono personal válido");
         await using (var db = new OfflineDb(options)) { var p = await db.PerfilesEstudiante.SingleAsync(p => p.Id == perfil.Id); p.Telefono = "12345678"; await db.SaveChangesAsync(); }
+        // Reproduce el caso peligroso: un único psicólogo activo al enviar la solicitud.
+        List<string> psicologosActivos;
+        await using (var db = new OfflineDb(options))
+        {
+            psicologosActivos = await db.Users.Where(u => u.IsActive && db.UserRoles.Any(ur => ur.UserId == u.Id &&
+                db.Roles.Any(r => r.Id == ur.RoleId && r.NormalizedName == "PSICOLOGO"))).Select(u => u.Id).ToListAsync();
+            Check(psicologosActivos.Count > 0, "hay psicólogo para probar la asignación manual");
+            await db.Users.Where(u => psicologosActivos.Skip(1).Contains(u.Id)).ExecuteUpdateAsync(s => s.SetProperty(u => u.IsActive, false));
+        }
         var nueva = await HostPrueba.Post(student, "/Estudiante/SolicitarAtencion", "/Estudiante/SolicitarAtencion",
             ("Edad", "99"), ("EsMayorEdad", "true"), ("AceptaConsentimiento", "true"), ("Sexo", "Prefiero no responder"),
             ("Direccion", "Zona 1"), ("IdiomaPreferido", "Español"), ("MotivoConsulta", "Consulta"), ("TipoIngreso", "0"),
             ("Contactos[0].Nombre", "Contacto"), ("Contactos[0].Relacion", "Familiar"), ("Contactos[0].Telefono", "12345678"));
         Check(nueva.StatusCode == HttpStatusCode.Redirect, "solicitud completa después de verificar");
+        await using (var db = new OfflineDb(options))
+        {
+            Check(await db.SolicitudesAtencion.AnyAsync(s => s.PerfilEstudianteId == perfil.Id && s.Estado == Zuni.Models.Atencion.EstadoSolicitudAtencion.Pendiente), "con un solo psicólogo la solicitud queda pendiente");
+            Check(!await db.AsignacionesEstudiantePsicologo.AnyAsync(a => a.PerfilEstudianteId == perfil.Id), "el envío no crea una asignación automática");
+            await db.Users.Where(u => psicologosActivos.Contains(u.Id)).ExecuteUpdateAsync(s => s.SetProperty(u => u.IsActive, true));
+        }
         await using (var db = new OfflineDb(options)) Check(await db.ExpedientesIniciales.AnyAsync(e => e.Edad == 18 && db.SolicitudesAtencion.Any(s => s.Id == e.SolicitudAtencionId && s.PerfilEstudianteId == perfil.Id)), "edad enviada por el cliente no reemplaza la documentada");
         await HostPrueba.Post(admin, review, "/MayoriaEdad/Revisar", ("PerfilEstudianteId", perfil.Id.ToString()), ("Revision", revision.ToString()), ("Aprobada", "false"));
         await using (var db = new OfflineDb(options)) Check(await MayoriaEdadService.VerificadaAsync(db, perfil.Id, default), "revisión obsoleta no sobrescribe aprobación");

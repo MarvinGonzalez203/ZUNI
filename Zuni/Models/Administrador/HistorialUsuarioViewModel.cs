@@ -31,6 +31,8 @@ public sealed class EventoAuditoriaUsuarioViewModel
         "SOLICITUD_ASIGNADA" => "Solicitud de atención asignada",
         "SOLICITUD_REASIGNADA" => "Solicitud de atención reasignada",
         "ASIGNACION_FINALIZADA" => "Asignación finalizada",
+        "ASIGNACION_DESDE_FICHA" => "Psicólogo asignado desde ficha",
+        "REASIGNACION_DESDE_FICHA" => "Psicólogo reasignado desde ficha",
         "SOLICITUD_CERRADA" => "Solicitud de atención cerrada",
         _ => "Acción no disponible"
     };

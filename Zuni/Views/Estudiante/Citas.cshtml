@@ -12,7 +12,7 @@
     }
     else if (!Model.PuedeReservar)
     {
-        <div class="agenda-empty"><h3>@Idioma.Texto("Aún no puedes reservar")</h3><p>@Idioma.Texto("Necesitas tu perfil completo y una asignación vigente a un psicólogo disponible.")</p><a asp-action="EstadoSolicitud">@Idioma.Texto("Consultar mi solicitud")</a> · <a href="/MiCuenta">@Idioma.Texto("Revisar mi cuenta")</a></div>
+        <div class="agenda-empty"><h3>@Idioma.Texto("Aún no puedes reservar")</h3><p>@Idioma.Texto("Necesitas tu perfil completo, una solicitud de atención con consentimiento y una asignación vigente a un psicólogo disponible.")</p><a asp-action="EstadoSolicitud">@Idioma.Texto("Consultar mi solicitud")</a> · <a href="/MiCuenta">@Idioma.Texto("Revisar mi cuenta")</a></div>
     }
     else
     {
@@ -20,7 +20,10 @@
 
     }
 </section>
-<partial name="_AgendaCalendario" model="Model.Calendario" />
+<div data-calendario-estudiante>
+    <p class="agenda-hint" data-calendario-status role="status" aria-live="polite">@Idioma.Texto("Los horarios se actualizan automáticamente mientras consultas el calendario.")</p>
+    <partial name="_AgendaCalendario" model="Model.Calendario" />
+</div>
 <section class="dash-card agenda-card" aria-labelledby="citas-title">
     <h2 id="citas-title">@Idioma.Texto("Mis citas")</h2>
     <p>@Idioma.Texto("Horarios de Guatemala (UTC−6). Puedes cancelar una cita antes de su hora de inicio.")</p>
@@ -59,3 +62,4 @@
     <partial name="_CancelarCitaModal" model="cita" />
 }
 @section Styles { <link rel="stylesheet" href="~/css/agenda-citas.css" asp-append-version="true" /> }
+@section Scripts { <script src="~/js/calendario-estudiante.js" asp-append-version="true"></script> }

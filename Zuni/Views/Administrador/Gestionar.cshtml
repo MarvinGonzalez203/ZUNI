@@ -85,6 +85,11 @@
 
         <h2 class="h5 mt-4">@Idioma.Texto("Acciones")</h2>
         <div class="d-flex flex-wrap gap-2" role="group" aria-label="@Idioma.Texto("Acciones sobre el usuario")">
+            @if (Model.Roles.Contains("Estudiante") || Model.Roles.Contains("Psicologo"))
+            {
+                @if (Model.IsActive) { <a asp-controller="AdministradorAsignaciones" asp-action="Index" asp-route-id="@Model.Id" class="dash-button" id="gestionar-asignaciones">@Idioma.Texto(Model.Roles.Contains("Psicologo") ? "Asignar estudiantes" : "Asignar psicólogo")</a> }
+                else { <button type="button" class="dash-button" disabled title="@Idioma.Texto("Requiere un usuario activo")">@Idioma.Texto(Model.Roles.Contains("Psicologo") ? "Asignar estudiantes" : "Asignar psicólogo")</button> }
+            }
             @if (Model.IsActive)
             {
                 <a asp-action="CambiarRol" asp-route-id="@Model.Id" class="btn btn-outline-dark">@Idioma.Texto("Cambiar rol")</a>

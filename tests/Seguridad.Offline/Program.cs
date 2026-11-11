@@ -17,6 +17,7 @@ using Zuni.Services.Administracion;
 
 if(args.Contains("--postgres-proteccion")){await ProteccionPostgresChecks.Run(args.Contains("--sembrar-legado"));return;}
 if(args.Contains("--actualizacion-v1")){await ActualizacionV1Solo.Run();return;}
+if(args.Contains("--asignaciones-ficha")){await ActualizacionV1Solo.Run(fichas: true);return;}
 if(args.Contains("--pdf-demo")){var i=Array.IndexOf(args,"--salida");if(i<0||i+1>=args.Length)throw new ArgumentException("Indica --salida para los PDF ficticios.");DocumentosDemo.Crear(args[i+1]);return;}
 
 // Comprobaciones offline del endurecimiento previo al despliegue.
@@ -118,12 +119,6 @@ var solicitud = await Solicitud(perfil);
 var solicitud2 = await Solicitud(perfil2);
 
 // ================================================================== A1: asignaciones
-await using (var db = Nuevo())
-{
-    // Con más de un psicólogo elegible la asignación automática no decide.
-    var automatico = await new AsignacionPsicologoService(db).IntentarAsignarAsync(perfil, ct);
-    Check(automatico == ResultadoAsignacion.PendienteMultiplesPsicologos, "Con >1 psicólogo la automática deja la solicitud pendiente");
-}
 Check((await Estado(solicitud)).Estado == EstadoSolicitudAtencion.Pendiente, "Solicitud sigue Pendiente");
 
 GestionSolicitudesService Gestion(ApplicationDbContext db) => new(db, reloj);
@@ -487,6 +482,18 @@ using (var c = HostPrueba.Cliente(app))
     Check(login.StatusCode == HttpStatusCode.Redirect && login.Headers.Location!.OriginalString.Contains("CambiarContrasenaObligatoria"), "Temporal exige cambio obligatorio");
     var bloqueada = await c.GetAsync("/MiCuenta");
     Check(bloqueada.StatusCode == HttpStatusCode.Redirect && bloqueada.Headers.Location!.OriginalString.Contains("CambiarContrasenaObligatoria"), "Cambio obligatorio sigue funcionando");
+    var pantallaCambio = await c.GetStringAsync("/Cuenta/CambiarContrasenaObligatoria");
+    Check(System.Text.RegularExpressions.Regex.Matches(pantallaCambio, "data-password-rule=").Count == 5 && pantallaCambio.Contains("requisitos-contrasena.js"), "Primer ingreso muestra cinco reglas dinámicas");
+    var antesCambio = await Leer("est");
+    foreach (var incompleta in new[] { "Abcdefg!", "abcd123!", "ABCD123!", "Abcdef12", "Aa1!" })
+    {
+        var rechazada = await HostPrueba.Post(c, "/Cuenta/CambiarContrasenaObligatoria", "/Cuenta/CambiarContrasenaObligatoria",
+            ("PasswordActual", temporal), ("Password", incompleta), ("ConfirmPassword", incompleta));
+        Check(rechazada.StatusCode == HttpStatusCode.OK, "Servidor rechaza contraseña que incumple una regla");
+        var despues = await Leer("est");
+        Check(despues.PasswordHash == antesCambio.PasswordHash && despues.SecurityStamp == antesCambio.SecurityStamp && despues.DebeCambiarContrasena,
+            "Rechazar contraseña débil conserva credenciales y cambio obligatorio");
+    }
     var cambio = await HostPrueba.Post(c, "/Cuenta/CambiarContrasenaObligatoria", "/Cuenta/CambiarContrasenaObligatoria",
         ("PasswordActual", temporal), ("Password", clave), ("ConfirmPassword", clave));
     // La contraseña nueva no puede ser igual a la temporal, pero sí a la original (no hay historial).
@@ -625,6 +632,7 @@ await PropuestasDirectorChecks.Run(app, opciones, clave, reloj);
 await EstadisticasPrivacidadChecks.Run(app, opciones, clave, reloj);
 await ProteccionClinicaChecks.Run(opciones);
 await ActualizacionV1Checks.Run(app,opciones,clave,reloj);
+await AsignacionesFichaChecks.Run(app,opciones,clave,reloj);
 
 using (var c = HostPrueba.Cliente(app))
 {

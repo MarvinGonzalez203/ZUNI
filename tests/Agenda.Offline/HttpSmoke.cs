@@ -41,7 +41,6 @@ internal static class HttpSmoke
         builder.Services.AddSingleton(db);
         builder.Services.AddSingleton(reloj);
         builder.Services.AddScoped<IAutorizacionClinicaService, AutorizacionClinicaService>();
-        builder.Services.AddScoped<IAsignacionPsicologoService, AsignacionPsicologoService>();
         builder.Services.AddScoped<AgendaCitasService>();
         await using var app = builder.Build();
         app.Urls.Add("http://127.0.0.1:0");

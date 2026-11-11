@@ -95,7 +95,6 @@ internal static class HostPrueba
         builder.Services.AddSingleton<IPasswordHasher<ApplicationUser>>(hasher);
         builder.Services.AddSingleton<TimeProvider>(reloj);
         builder.Services.AddScoped<IAutorizacionClinicaService, AutorizacionClinicaService>();
-        builder.Services.AddScoped<IAsignacionPsicologoService, AsignacionPsicologoService>();
         builder.Services.AddScoped<AgendaCitasService>();
         builder.Services.AddScoped<Zuni.Services.BigFive.BigFiveService>();
         builder.Services.AddScoped<GestionSolicitudesService>();

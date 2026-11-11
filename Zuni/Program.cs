@@ -9,6 +9,12 @@ using Zuni.Seguridad;
 using Zuni.Localizacion;
 
 var builder = WebApplication.CreateBuilder(args);
+// Configuración privada de esta copia de desarrollo, compartida por CLI y Visual Studio.
+// Permite resolver rutas locales sin depender del almacén User Secrets del proceso lanzador.
+// .local-security está fuera del contenido de Zuni, excluida de Git y de la publicación.
+if (builder.Environment.IsDevelopment())
+    builder.Configuration.AddJsonFile(Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath,
+        "..", ".local-security", "desarrollo.json")), optional: true, reloadOnChange: false);
 var rutasSeguridad = RutasSeguridad.Obtener(builder.Configuration,builder.Environment);
 if(args.Contains("--inicializar-seguridad"))
 {
@@ -40,7 +46,6 @@ builder.Services.AddScoped<
 // Add services to the container.
 builder.Services.AddZuniIdiomas(builder.Configuration);
 builder.Services.AddScoped<Zuni.Services.BigFive.BigFiveService>();
-builder.Services.AddScoped<Zuni.Services.IAsignacionPsicologoService, Zuni.Services.AsignacionPsicologoService>();
 builder.Services.AddScoped<Zuni.Services.IAutorizacionClinicaService, Zuni.Services.AutorizacionClinicaService>();
 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddScoped<Zuni.Services.Agenda.AgendaCitasService>();
