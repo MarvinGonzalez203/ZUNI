@@ -4,8 +4,9 @@
         const control = label.htmlFor && document.getElementById(label.htmlFor);
         return control ? [control] : [...label.querySelectorAll('input, select, textarea')];
     };
-    const refresh = () => {
-        document.querySelectorAll('form label, form legend[data-required-label]').forEach(label => {
+    const refresh = (root = document) => {
+        const forms = root.matches?.('form') ? [root] : [...root.querySelectorAll('form')];
+        forms.flatMap(form => [...form.querySelectorAll('label, legend[data-required-label]')]).forEach(label => {
             const controls = controlsFor(label).filter(control => control.type !== 'hidden');
             const conditional = label.hasAttribute('data-required-conditional');
             const required = controls.some(control => !control.matches(':disabled') && control.required)
@@ -31,7 +32,7 @@
                 if (control.getAttribute('aria-required') !== value) control.setAttribute('aria-required', value);
             });
         });
-        document.querySelectorAll('form').forEach(form => {
+        forms.forEach(form => {
             if (!form.querySelector('.required-marker:not([hidden])') || form.querySelector('.required-fields-help')) return;
             const help = document.createElement('p');
             help.className = 'required-fields-help';
@@ -41,7 +42,36 @@
     };
     const start = () => {
         refresh();
-        new MutationObserver(refresh).observe(document.body, {
+        const pending = new Set();
+        let scheduled = false;
+        new MutationObserver(records => {
+            for (const record of records) {
+                if (record.type === 'attributes') {
+                    const form = record.target.closest('form');
+                    if (form) pending.add(form);
+                    continue;
+                }
+                for (const node of [...record.addedNodes, ...record.removedNodes]) {
+                    // Text, checklist ticks and our own markers do not change required fields.
+                    if (!(node instanceof Element) || node.matches('.required-marker,.required-description,.required-fields-help')) continue;
+                    if (!node.matches('form,label,legend,input,select,textarea') && !node.querySelector('form,label,legend,input,select,textarea')) continue;
+                    const form = record.target.closest?.('form');
+                    if (form) pending.add(form);
+                    if (node.isConnected) {
+                        if (node.matches('form')) pending.add(node);
+                        node.querySelectorAll('form').forEach(f => pending.add(f));
+                    }
+                }
+            }
+            if (pending.size && !scheduled) {
+                scheduled = true;
+                requestAnimationFrame(() => {
+                    scheduled = false;
+                    const forms = [...pending]; pending.clear();
+                    forms.filter(form => form.isConnected).forEach(refresh);
+                });
+            }
+        }).observe(document.body, {
             subtree: true, childList: true, attributes: true, attributeFilter: ['required', 'disabled']
         });
     };

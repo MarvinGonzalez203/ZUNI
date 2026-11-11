@@ -22,7 +22,7 @@ internal static class ActualizacionV1Checks
         Check(home.Contains("commercial-grid")&&home.Contains("/SuperAdmin/Centros")&&home.Contains("Colegio Huellitas"),"tablero comercial y ejemplo visible");
         Check(home.Contains("system-version\">ZUNI · v"+VersionSistema.Actual)&&home.Contains("release-control"),"versión y campana disponibles");
         var versiones=Regex.Matches(home,"data-release-version=\"([^\"]+)\"").Select(m=>m.Groups[1].Value).ToArray();
-        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.1.1","1.1.0"}),"campana muestra las tres versiones reales en orden");
+        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.2.3","1.2.2"}),"campana muestra las tres versiones locales más recientes en orden");
         Check(VersionSistema.Historial.Count>=3&&VersionSistema.Historial[0].Numero==VersionSistema.Actual,"metadatos del historial y versión actual coinciden");
         await using(var db=new OfflineDb(options))Check(!await db.CentrosComerciales.AnyAsync(),"GET no registra el ejemplo automáticamente");
         var example=await super.GetStringAsync("/SuperAdmin/EditarCentro?ejemplo=true");
@@ -85,6 +85,13 @@ internal static class ActualizacionV1Checks
             Check(guideHtml.Contains("data-guide-role=\""+role+"\""),"guías propias: "+role);
             Check(!guideHtml.Contains("data-guide-role=\"SuperAdmin\""),"parámetro no amplía audiencia: "+role);
             Check(!guideHtml.Contains("name=\"rol\""),"sin selector de otros roles: "+role);
+            Check(guideHtml.Contains("data-guide-question") && guideHtml.Contains("guide-help-title"), "explicación y preguntas dentro de las guías: " + role);
+            if(role=="Administrador"){
+                var asignar=await audience.GetStringAsync("/Guias?q=asignar");
+                Check(asignar.Contains("<h2>Asignar un psic") && asignar.Contains("href=\"/Administrador/Estudiantes\""), "buscar asignar muestra guía y acceso directo");
+                var pregunta=await audience.GetStringAsync("/Guias?q="+Uri.EscapeDataString("¿Cómo asignar un psicólogo a un estudiante?"));
+                Check(!pregunta.Contains("No encontramos ese tema"), "búsqueda acepta la pregunta de ejemplo completa");
+            } else Check(!guideHtml.Contains("href=\"/Administrador/SolicitudesAtencion"), "ejemplos no ofrecen accesos administrativos a " + role);
             if(role=="Director"){
                 var carga=await audience.GetStringAsync("/Director/Calendario");
                 Check(carga.Contains("id=\"profesional-calendario\"")&&carga.Contains("name=\"psicologoId\""),"selector de profesionales visible incluso con uno solo");
