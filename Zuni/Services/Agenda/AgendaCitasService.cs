@@ -258,7 +258,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
             if (!roles.Contains("ESTUDIANTE") || roles.Any(r => r is "ADMINISTRADOR" or "DIRECTOR" or "CATEDRATICO"))
                 throw new AgendaAccesoException();
         }
-        if (input.Estado == EstadoCita.Confirmada && !await SolicitudConsentida(cita.PerfilEstudianteId, ct))
+        if (input.Estado == EstadoCita.Confirmada && cita.ProgramadorRol != "Psicologo" && !cita.EsImprevista && !await SolicitudConsentida(cita.PerfilEstudianteId, ct))
             throw new AgendaOperacionException("El estudiante debe enviar su solicitud de atención y aceptar el consentimiento antes de confirmar una cita.");
         if (input.Estado == EstadoCita.Confirmada && cita.Modalidad == ModalidadCita.Virtual)
             await FijarEnlace(cita, input.EnlaceReunion, input.AccesoRestringidoRevisado, ct);

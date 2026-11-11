@@ -40,7 +40,7 @@
             <label zuni-required="@(Model.Asistio == true && Model.RecomiendaOtraCita)" data-required-conditional asp-for="IndicacionesProximaCita" class="form-label">@Idioma.Texto("Indicaciones para la próxima cita")</label>
             <textarea asp-for="IndicacionesProximaCita" class="form-control" rows="3" maxlength="2000"></textarea>
             <span asp-validation-for="IndicacionesProximaCita" class="text-danger"></span>
-            <p class="small">@Idioma.Texto("Esta recomendación no reserva una nueva cita. El estudiante decidirá solicitarla desde su agenda.")</p>
+            <p class="small">@Idioma.Texto("El psicólogo puede programar la próxima cita desde Agenda → Programar o reprogramar. Escribir esta recomendación no crea una cita automáticamente.")</p>
         </div>
         <div class="agenda-actions"><button type="submit" class="dash-button">@Idioma.Texto("Guardar y cerrar atención")</button><a asp-action="Agenda">@Idioma.Texto("Volver a mi agenda")</a></div>
     </form>

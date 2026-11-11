@@ -34,10 +34,11 @@ public sealed class PruebasAplicadasService(ApplicationDbContext db,IAutorizacio
         var perfil=await db.PerfilesEstudiante.Include(p=>p.Usuario).SingleAsync(p=>p.Id==input.PerfilEstudianteId,ct);
         if(!perfil.Activo||!perfil.Usuario.IsActive||perfil.Usuario.DebeCambiarContrasena||!perfil.EstaCompleto||!await MayoriaEdadService.VerificadaAsync(db,perfil.Id,ct))throw new AgendaOperacionException("El estudiante debe preparar su perfil, cuenta y verificación de edad.");
         if(!await db.UserRoles.AnyAsync(ur=>ur.UserId==perfil.UsuarioId&&db.Roles.Any(r=>r.Id==ur.RoleId&&r.NormalizedName=="ESTUDIANTE"),ct)||await db.UserRoles.AnyAsync(ur=>ur.UserId==perfil.UsuarioId&&db.Roles.Any(r=>r.Id==ur.RoleId&&(r.NormalizedName=="ADMINISTRADOR"||r.NormalizedName=="DIRECTOR"||r.NormalizedName=="CATEDRATICO")),ct))throw new AgendaAccesoException();
-        var cita=await db.Citas.Where(c=>c.PerfilEstudianteId==perfil.Id&&c.PsicologoUsuarioId==psy&&c.Estado==EstadoCita.Completada&&c.FechaHoraFinUtc<=reloj.GetUtcNow().UtcDateTime&&db.RegistrosAtencionCita.Any(r=>r.CitaId==c.Id&&r.Asistio)).OrderBy(c=>c.FechaHoraInicioUtc).FirstOrDefaultAsync(ct)
+        var cita=await db.Citas.Where(c=>c.PerfilEstudianteId==perfil.Id&&c.PsicologoUsuarioId==psy&&c.Estado==EstadoCita.Completada&&c.FechaHoraFinUtc<=reloj.GetUtcNow().UtcDateTime&&db.RegistrosAtencionCita.Any(r=>r.CitaId==c.Id&&r.Asistio&&r.SolicitudAtencionId!=null)).OrderBy(c=>c.FechaHoraInicioUtc).FirstOrDefaultAsync(ct)
             ??throw new AgendaOperacionException("Se necesita al menos una cita atendida y registrada con este psicólogo antes de habilitar la prueba.");
         var registro=await db.RegistrosAtencionCita.SingleAsync(r=>r.CitaId==cita.Id,ct);
-        if(!await autorizacion.PuedeConsultarExpedienteAsync(actor,registro.SolicitudAtencionId,ct))throw new AgendaAccesoException();
+        if(registro.SolicitudAtencionId is not {} solicitudInduccion)throw new AgendaOperacionException("La atención profesional está registrada. Para habilitar este cuestionario debe formalizarse por separado la autorización de participación del estudiante.");
+        if(!await autorizacion.PuedeConsultarExpedienteAsync(actor,solicitudInduccion,ct))throw new AgendaAccesoException();
         var prueba=await Instrumento(input.PruebaId,ct);if(!prueba.Activa||!Likert(prueba))throw new AgendaOperacionException("Activa una prueba con escala completa del 1 al 10 en todas sus preguntas.");
         var a=await db.AsignacionesPrueba.SingleOrDefaultAsync(a=>a.PruebaId==prueba.Id&&a.PerfilEstudianteId==perfil.Id,ct);
         if(a is null){a=new(){PruebaId=prueba.Id,PerfilEstudianteId=perfil.Id,DirectorUsuarioId=psy};db.AsignacionesPrueba.Add(a);}
@@ -96,7 +97,7 @@ public sealed class PruebasAplicadasService(ApplicationDbContext db,IAutorizacio
     {
         var psy=await Psicologo(actor,ct);var a=await Vigentes(psy).AsNoTracking().SingleOrDefaultAsync(a=>a.Id==id&&a.FinalizadaUtc!=null,ct)??throw new AgendaAccesoException();
         var solicitud=await db.RegistrosAtencionCita.Where(r=>r.CitaId==a.CitaInduccionId).Select(r=>r.SolicitudAtencionId).SingleAsync(ct);
-        if(!await autorizacion.PuedeConsultarExpedienteAsync(actor,solicitud,ct))throw new AgendaAccesoException();
+        if(solicitud is not {} solicitudResumen || !await autorizacion.PuedeConsultarExpedienteAsync(actor,solicitudResumen,ct))throw new AgendaAccesoException();
         var prueba=await Instrumento(a.PruebaId,ct);var respuestas=await db.Set<RespuestaPrueba>().AsNoTracking().Where(r=>r.AsignacionPruebaId==id).ToListAsync(ct);
         var valores=respuestas.ToDictionary(r=>r.PreguntaPruebaId,r=>prueba.Preguntas.Single(q=>q.Id==r.PreguntaPruebaId).Opciones.Single(o=>o.Id==r.OpcionPruebaId).Valor);
         var dimensiones=prueba.Dimensiones.Select(d=>{var preguntas=prueba.Preguntas.Where(q=>q.DimensionId==d.Id).ToList();var v=preguntas.Where(q=>valores.ContainsKey(q.Id)).Select(q=>valores[q.Id]).ToArray();return new DimensionResumen(d.Nombre,v.Length,preguntas.Count,v.Length==0?null:Math.Round(v.Average(),2));}).ToList();

@@ -450,7 +450,7 @@ namespace Zuni.Migrations
                     b.Property<string>("ResultadoProfesionalPrivado")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("SolicitudAtencionId")
+                    b.Property<Guid?>("SolicitudAtencionId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -11409,8 +11409,7 @@ namespace Zuni.Migrations
                     b.HasOne("Zuni.Models.Atencion.SolicitudAtencion", null)
                         .WithMany()
                         .HasForeignKey("SolicitudAtencionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Zuni.Models.Atencion.AsignacionEstudiantePsicologo", b =>

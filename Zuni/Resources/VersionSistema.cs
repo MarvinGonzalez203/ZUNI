@@ -2,10 +2,11 @@ namespace Zuni.Resources;
 public sealed record NovedadVersion(string Numero, IReadOnlyList<string> Cambios);
 public static class VersionSistema
 {
-    public const string Actual="1.3.1";
+    public const string Actual="1.3.2";
     // Historial de entregas locales; la versión de zuni.lat cambia solo al desplegar.
     public static readonly IReadOnlyList<NovedadVersion> Historial=[
-        new(Actual,["Aviso específico cuando el estudiante aún debe cambiar su contraseña temporal.","Confirmación del horario guardado y apertura del día y actividad registrados.","Avisos claros cuando falta solicitud o consentimiento para completar el registro profesional.","Los errores de requisitos y horario conservan los datos escritos en el formulario."]),
+        new(Actual,["Registro completo de atención imprevista sin exigir una solicitud posterior del estudiante.","Notas privadas, resultado compartido y auditoría vinculados a la atención del profesional.","El psicólogo puede programar la próxima cita sin una solicitud del estudiante.","No se generan solicitudes ni consentimientos ficticios."]),
+        new("1.3.1",["Aviso específico cuando el estudiante aún debe cambiar su contraseña temporal.","Confirmación del horario guardado y apertura del día y actividad registrados.","Avisos claros cuando falta solicitud o consentimiento para completar el registro profesional.","Los errores de requisitos y horario conservan los datos escritos en el formulario."]),
         new("1.3.0",["Asignar psicólogo desde Acciones en la ficha del estudiante.","Asignar estudiantes desde Acciones en la ficha del psicólogo, con búsqueda y paginación.","Asignaciones exclusivas del Administrador, con historial y protección frente a cambios simultáneos.","Interacción más fluida: revisión de formularios y desplazamiento del menú sin trabajo repetido.","Guías con preguntas de ejemplo, pasos y enlaces a las funciones."]),
         new("1.2.3",["Inicio local desde Visual Studio con configuración privada de desarrollo.","Rutas de claves y bitácora locales conservadas fuera de la carpeta pública."]),
         new("1.2.2",["Cinco requisitos de contraseña visibles y actualizados mientras escribes.","Validación de contraseña al primer ingreso, registro, recuperación y cambio desde Mi cuenta."]),

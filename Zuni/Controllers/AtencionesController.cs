@@ -23,7 +23,7 @@ public sealed class AtencionesController(AgendaCitasService agenda) : Controller
             Response.StatusCode = StatusCodes.Status409Conflict;
             return View(input);
         }
-        TempData["Success"] = "Atención imprevista registrada. El horario quedó guardado; completa el registro profesional cuando el estudiante tenga su solicitud y consentimiento listos.";
+        TempData["Success"] = "Atención imprevista registrada. Abre la actividad para completar el registro profesional; no hace falta una solicitud posterior del estudiante.";
         return RedirectToAction("Agenda", "Psicologo", new { fecha = input.Fecha?.ToString("yyyy-MM-dd"), citaId });
     }
     [HttpGet]

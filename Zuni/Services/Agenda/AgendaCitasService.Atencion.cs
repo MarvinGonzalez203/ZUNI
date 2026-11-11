@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Zuni.Models.Agenda;
 using Zuni.Models.Atencion;
+using Zuni.Services.Privacidad;
 
 namespace Zuni.Services.Agenda;
 
@@ -16,23 +17,43 @@ public sealed partial class AgendaCitasService
             ?? throw new AgendaAccesoException();
     }
 
-    private async Task<Guid> SolicitudClinica(ClaimsPrincipal sesion, Cita cita, CancellationToken ct)
+    private async Task<Guid?> SolicitudClinica(ClaimsPrincipal sesion, Cita cita, CancellationToken ct)
     {
-        var solicitud = await db.RegistrosAtencionCita.AsNoTracking().Where(r => r.CitaId == cita.Id)
-            .Select(r => (Guid?)r.SolicitudAtencionId).SingleOrDefaultAsync(ct);
+        var registro = await db.RegistrosAtencionCita.AsNoTracking().Where(r => r.CitaId == cita.Id)
+            .Select(r => new { r.SolicitudAtencionId }).SingleOrDefaultAsync(ct);
+        var solicitud = registro?.SolicitudAtencionId;
         // Cita no tiene solicitud: fijamos la última consentida anterior a su creación.
         // Nunca se enlaza silenciosamente una solicitud futura para habilitar un cierre antiguo.
-        solicitud ??= await db.SolicitudesAtencion.AsNoTracking().Where(s =>
+        if (registro is null) solicitud = await db.SolicitudesAtencion.AsNoTracking().Where(s =>
                 s.PerfilEstudianteId == cita.PerfilEstudianteId && s.FechaSolicitudUtc <= cita.FechaCreacionUtc &&
                 db.ConsentimientosAtencion.Any(c => c.SolicitudAtencionId == s.Id && c.Aceptado))
             .OrderByDescending(s => s.FechaSolicitudUtc).ThenBy(s => s.Id).Select(s => (Guid?)s.Id).FirstOrDefaultAsync(ct);
         if (solicitud is null)
-            throw new AgendaOperacionException("El horario de la atención está guardado. Para completar el registro profesional, el estudiante debe enviar su solicitud de atención y aceptar el consentimiento. No vuelvas a registrar la misma actividad.");
+        {
+            if (!cita.EsImprevista && cita.ProgramadorRol != "Psicologo")
+                throw new AgendaOperacionException("Esta cita requiere revisar su solicitud de atención antes de completar el registro.");
+            // La atención profesional no depende de una solicitud posterior del estudiante.
+            // Revalidar el vínculo y mantener la propiedad histórica de la cita.
+            if (!await EstudiantesParaImprevista(cita.PsicologoUsuarioId).AnyAsync(p => p.Id == cita.PerfilEstudianteId, ct))
+                throw new AgendaAccesoException();
+            return null;
+        }
         if (
             !await db.SolicitudesAtencion.AnyAsync(s => s.Id == solicitud && s.PerfilEstudianteId == cita.PerfilEstudianteId, ct) ||
             !await autorizacion.PuedeConsultarExpedienteAsync(sesion, solicitud.Value, ct))
             throw new AgendaAccesoException();
-        return solicitud.Value;
+        return solicitud;
+    }
+
+    private async Task AuditarRegistroAtencion(Cita cita, Guid? solicitud, string accion, CancellationToken ct)
+    {
+        if (solicitud is { } solicitudId)
+            db.EventosAccesoClinico.Add(new EventoAccesoClinico { UsuarioId = cita.PsicologoUsuarioId,
+                SolicitudAtencionId = solicitudId, FechaUtc = Ahora, TipoAcceso = accion });
+        else {
+            var usuario = await db.PerfilesEstudiante.Where(p => p.Id == cita.PerfilEstudianteId).Select(p => p.UsuarioId).SingleAsync(ct);
+            PrivacidadService.Auditar(db, usuario, cita.PsicologoUsuarioId, accion, reloj, cita.Id);
+        }
     }
 
     public async Task<PrepararAtencionViewModel> PrepararAtencion(ClaimsPrincipal sesion, Guid citaId, CancellationToken ct)
@@ -73,11 +94,7 @@ public sealed partial class AgendaCitasService
             IndicacionesProximaCita = asistio && input.RecomiendaOtraCita ? input.IndicacionesProximaCita!.Trim() : null,
             FechaCierreUtc = Ahora
         });
-        db.EventosAccesoClinico.Add(new EventoAccesoClinico
-        {
-            UsuarioId = cita.PsicologoUsuarioId, SolicitudAtencionId = solicitud,
-            FechaUtc = Ahora, TipoAcceso = "ATENCION_REGISTRADA"
-        });
+        await AuditarRegistroAtencion(cita, solicitud, "ATENCION_REGISTRADA", ct);
     }, ct);
 
     private static string? TextoAtencion(string? texto) => string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
@@ -103,11 +120,7 @@ public sealed partial class AgendaCitasService
                     ResultadoBreveEstudiante = r.ResultadoBreveEstudiante,
                     RecomiendaOtraCita = r.RecomiendaOtraCita, IndicacionesProximaCita = r.IndicacionesProximaCita
                 }).SingleOrDefaultAsync(ct) ?? throw new AgendaAccesoException();
-            db.EventosAccesoClinico.Add(new EventoAccesoClinico
-            {
-                UsuarioId = cita.PsicologoUsuarioId, SolicitudAtencionId = solicitud,
-                FechaUtc = Ahora, TipoAcceso = "ATENCION_CONSULTADA"
-            });
+            await AuditarRegistroAtencion(cita, solicitud, "ATENCION_CONSULTADA", ct);
         }, ct);
         return detalle!;
     }
