@@ -26,7 +26,9 @@ public sealed partial class AgendaCitasService
                 s.PerfilEstudianteId == cita.PerfilEstudianteId && s.FechaSolicitudUtc <= cita.FechaCreacionUtc &&
                 db.ConsentimientosAtencion.Any(c => c.SolicitudAtencionId == s.Id && c.Aceptado))
             .OrderByDescending(s => s.FechaSolicitudUtc).ThenBy(s => s.Id).Select(s => (Guid?)s.Id).FirstOrDefaultAsync(ct);
-        if (solicitud is null ||
+        if (solicitud is null)
+            throw new AgendaOperacionException("El horario de la atención está guardado. Para completar el registro profesional, el estudiante debe enviar su solicitud de atención y aceptar el consentimiento. No vuelvas a registrar la misma actividad.");
+        if (
             !await db.SolicitudesAtencion.AnyAsync(s => s.Id == solicitud && s.PerfilEstudianteId == cita.PerfilEstudianteId, ct) ||
             !await autorizacion.PuedeConsultarExpedienteAsync(sesion, solicitud.Value, ct))
             throw new AgendaAccesoException();

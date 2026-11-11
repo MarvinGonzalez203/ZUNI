@@ -12,7 +12,7 @@ public sealed class ImprevistaInput
     public Guid OperacionId { get; set; } = Guid.NewGuid();
     [BindNever] public IReadOnlyList<EstudianteImprevista> Estudiantes { get; set; } = [];
 }
-public sealed record EstudianteImprevista(Guid Id, string Nombre);
+public sealed record EstudianteImprevista(Guid Id, string Nombre, bool DebeCambiarContrasena = false);
 // Esta proyección no contiene notas privadas ni expediente.
 public sealed record ReporteCompartido(Guid CitaId, string Estudiante, string Carne, string Psicologo, DateTime InicioUtc,
     DateTime FinUtc, bool FinAproximado, string Resultado, string Recomendaciones, bool OtraCita, string? Indicaciones);

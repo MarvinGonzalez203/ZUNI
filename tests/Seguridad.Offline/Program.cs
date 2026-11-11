@@ -18,6 +18,7 @@ using Zuni.Services.Administracion;
 if(args.Contains("--postgres-proteccion")){await ProteccionPostgresChecks.Run(args.Contains("--sembrar-legado"));return;}
 if(args.Contains("--actualizacion-v1")){await ActualizacionV1Solo.Run();return;}
 if(args.Contains("--asignaciones-ficha")){await ActualizacionV1Solo.Run(fichas: true);return;}
+if(args.Contains("--imprevistas")){await ActualizacionV1Solo.Run(imprevistas: true);return;}
 if(args.Contains("--pdf-demo")){var i=Array.IndexOf(args,"--salida");if(i<0||i+1>=args.Length)throw new ArgumentException("Indica --salida para los PDF ficticios.");DocumentosDemo.Crear(args[i+1]);return;}
 
 // Comprobaciones offline del endurecimiento previo al despliegue.
@@ -633,6 +634,7 @@ await EstadisticasPrivacidadChecks.Run(app, opciones, clave, reloj);
 await ProteccionClinicaChecks.Run(opciones);
 await ActualizacionV1Checks.Run(app,opciones,clave,reloj);
 await AsignacionesFichaChecks.Run(app,opciones,clave,reloj);
+await ImprevistasRegistroChecks.Run(app,opciones,clave,reloj);
 
 using (var c = HostPrueba.Cliente(app))
 {

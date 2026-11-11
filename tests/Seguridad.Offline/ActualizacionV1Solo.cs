@@ -5,7 +5,7 @@ using Zuni.Data;
 using Zuni.Models;
 internal static class ActualizacionV1Solo
 {
-    public static async Task Run(bool fichas = false)
+    public static async Task Run(bool fichas = false, bool imprevistas = false)
     {
         await using var connection=new SqliteConnection("Data Source=:memory:");await connection.OpenAsync();
         var options=new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlite(connection).Options;var reloj=new Reloj();var hasher=new HasherContador();
@@ -20,7 +20,8 @@ internal static class ActualizacionV1Solo
             await db.SaveChangesAsync();
         }
         await using var app=await HostPrueba.Crear(options,reloj,hasher,30);
-        if (fichas) await AsignacionesFichaChecks.Run(app,options,password,reloj);
+        if (imprevistas) await ImprevistasRegistroChecks.Run(app,options,password,reloj);
+        else if (fichas) await AsignacionesFichaChecks.Run(app,options,password,reloj);
         else await ActualizacionV1Checks.Run(app,options,password,reloj);
         await app.StopAsync();
     }

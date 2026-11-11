@@ -2,19 +2,27 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Zuni.Models.Agenda;
 using Zuni.Services.Privacidad;
+using Zuni.Models;
 namespace Zuni.Services.Agenda;
 
 public sealed partial class AgendaCitasService
 {
+    // El selector y el POST comparten elegibilidad. La contraseña pendiente se informa
+    // como requisito del estudiante, no como una falta de permisos del psicólogo.
+    private IQueryable<PerfilEstudiante> EstudiantesParaImprevista(string psy) =>
+        db.PerfilesEstudiante.AsNoTracking().Where(p => p.Activo && p.Usuario.IsActive &&
+            db.AsignacionesEstudiantePsicologo.Any(a => a.PerfilEstudianteId == p.Id && a.PsicologoUsuarioId == psy && a.FechaFinalizacionUtc == null) &&
+            db.UserRoles.Any(ur => ur.UserId == p.UsuarioId && db.Roles.Any(r => r.Id == ur.RoleId && r.NormalizedName == "ESTUDIANTE")) &&
+            !db.UserRoles.Any(ur => ur.UserId == p.UsuarioId && db.Roles.Any(r => r.Id == ur.RoleId &&
+                (r.NormalizedName == "SUPERADMIN" || r.NormalizedName == "ADMINISTRADOR" || r.NormalizedName == "DIRECTOR" || r.NormalizedName == "CATEDRATICO"))));
+
     public async Task<ImprevistaInput> PrepararImprevista(ClaimsPrincipal actor, DateOnly? fecha, CancellationToken ct)
     {
         var psy = await Psicologo(actor, ct);
         var dia = fecha ?? AgendaReglas.Hoy(Ahora);
         if (dia > AgendaReglas.Hoy(Ahora)) throw new AgendaOperacionException("Una atención imprevista registra hechos ocurridos, no fechas futuras.");
-        return new() { Fecha = dia, Estudiantes = await (from a in db.AsignacionesEstudiantePsicologo.AsNoTracking()
-            join p in db.PerfilesEstudiante.AsNoTracking() on a.PerfilEstudianteId equals p.Id
-            where a.PsicologoUsuarioId == psy && a.FechaFinalizacionUtc == null && p.Activo && p.Usuario.IsActive
-            orderby p.Usuario.FullName select new EstudianteImprevista(p.Id, p.Usuario.FullName)).ToListAsync(ct) };
+        return new() { Fecha = dia, Estudiantes = await EstudiantesParaImprevista(psy)
+            .OrderBy(p => p.Usuario.FullName).Select(p => new EstudianteImprevista(p.Id, p.Usuario.FullName, p.Usuario.DebeCambiarContrasena)).ToListAsync(ct) };
     }
     public async Task<Guid> RegistrarImprevista(ClaimsPrincipal actor, ImprevistaInput input, CancellationToken ct)
     {
@@ -26,8 +34,10 @@ public sealed partial class AgendaCitasService
             if (inicio >= Ahora) throw new AgendaOperacionException("El inicio de una atención imprevista debe ser anterior a la hora actual.");
             var fin = input.HoraFin is { } horaFin ? AgendaReglas.Utc(input.Fecha.Value, horaFin) : new[] { inicio.AddMinutes(50), Ahora, AgendaReglas.Utc(input.Fecha.Value.AddDays(1), TimeOnly.MinValue).AddTicks(-1) }.Min();
             if (fin <= inicio || fin > Ahora) throw new AgendaOperacionException("Revisa el fin aproximado: debe seguir al inicio y no ser futuro.");
-            if (await Asignado(input.PerfilEstudianteId.Value, ct) != psy || !await db.PerfilesEstudiante.AnyAsync(p => p.Id == input.PerfilEstudianteId && p.Activo && p.Usuario.IsActive, ct)) throw new AgendaAccesoException();
-            await ValidarParticipantes(new Cita { PerfilEstudianteId = input.PerfilEstudianteId.Value, PsicologoUsuarioId = psy }, ct);
+            var pendienteContrasena = await EstudiantesParaImprevista(psy).Where(p => p.Id == input.PerfilEstudianteId.Value)
+                .Select(p => (bool?)p.Usuario.DebeCambiarContrasena).SingleOrDefaultAsync(ct);
+            if (pendienteContrasena is null) throw new AgendaAccesoException();
+            if (pendienteContrasena.Value) throw new AgendaOperacionException("No se guardó la actividad: el estudiante aún debe cambiar su contraseña temporal. Pídele que inicie sesión y defina su contraseña personal. Después vuelve a intentar registrar; los datos del formulario se conservaron.");
             if (await db.Citas.AnyAsync(c => c.Id == id, ct)) throw new AgendaOperacionException("Este registro ya fue guardado. Consúltalo en la agenda.");
             if (await db.Citas.AnyAsync(c => (c.PsicologoUsuarioId == psy || c.PerfilEstudianteId == input.PerfilEstudianteId) && (EstadosActivos.Contains(c.Estado) || c.Estado == EstadoCita.Completada) && c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio, ct)) throw new AgendaOperacionException("El horario se cruza con una atención existente. Revisa los registros antes de duplicarlos.");
             db.Citas.Add(new Cita { Id = id, PerfilEstudianteId = input.PerfilEstudianteId.Value, PsicologoUsuarioId = psy,

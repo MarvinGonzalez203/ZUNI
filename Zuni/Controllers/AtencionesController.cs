@@ -13,11 +13,18 @@ public sealed class AtencionesController(AgendaCitasService agenda) : Controller
     [Authorize(Roles="Psicologo"), HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Imprevista(ImprevistaInput input, CancellationToken ct)
     {
-        var actual = await agenda.PrepararImprevista(User, input.Fecha, ct);
+        var actual = await agenda.PrepararImprevista(User, null, ct);
+        input.Estudiantes = actual.Estudiantes;
         if (!ModelState.IsValid) { input.Estudiantes = actual.Estudiantes; return View(input); }
-        await agenda.RegistrarImprevista(User, input, ct);
-        TempData["Success"] = "Atención imprevista registrada. Selecciona su día para completar el registro clínico cuando los requisitos del expediente estén listos.";
-        return RedirectToAction("Agenda", "Psicologo", new { fecha = input.Fecha?.ToString("yyyy-MM-dd") });
+        Guid citaId;
+        try { citaId = await agenda.RegistrarImprevista(User, input, ct); }
+        catch (AgendaOperacionException ex) {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            Response.StatusCode = StatusCodes.Status409Conflict;
+            return View(input);
+        }
+        TempData["Success"] = "Atención imprevista registrada. El horario quedó guardado; completa el registro profesional cuando el estudiante tenga su solicitud y consentimiento listos.";
+        return RedirectToAction("Agenda", "Psicologo", new { fecha = input.Fecha?.ToString("yyyy-MM-dd"), citaId });
     }
     [HttpGet]
     public async Task<IActionResult> Reporte(Guid citaId, CancellationToken ct) => View(await agenda.ReporteAtencion(User, citaId, false, ct));
