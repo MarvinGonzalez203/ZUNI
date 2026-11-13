@@ -1,8 +1,8 @@
 # Publicación de ZUNI 1.3.3
 
-Estado: paquete subido y verificado; activación pendiente del comando con `sudo`
-en la sesión SSH del operador. No marcar como publicado hasta comprobar el
-manifiesto activo, el servicio y las respuestas HTTPS.
+Estado: publicado y comprobado por SSH y HTTPS. El operador ejecutó el
+actualizador con `sudo`; finalizó el 12/11/2026 a las 22:19:16 de Guatemala
+(13/11/2026, 04:19:16 UTC).
 
 - Sitio: https://zuni.lat/.
 - Código del paquete: `20fcb9e27813ca7b70a615fb21d886a8a5ced494`, rama `feature/director-V2`.
@@ -44,14 +44,20 @@ el servicio anterior sin restaurar ni borrar la base viva. La base temporal se
 elimina al terminar la prueba. Los respaldos quedan privados en
 `/var/backups/zuni/demo/` y la ruta concreta se registra en `respaldo-ruta.txt`.
 
-## Verificación pendiente tras activar
+## Verificación después de activar
 
-- Manifiesto activo con versión 1.3.3 y el commit del paquete.
-- Servicio `zuni-demo` activo y migración comprobada por el script.
-- HTTPS 200 en inicio, acceso y archivos estáticos actualizados.
-- Aviso `COMPLETADO` del actualizador y ruta del respaldo conservado.
-- Revisión manual de los flujos autenticados por el operador.
+- Manifiesto activo con versión 1.3.3 y commit `20fcb9e27813ca7b70a615fb21d886a8a5ced494`.
+- Enlace activo: `/opt/zuni/demo/releases/1.3.3-20fcb9e-zKqQ2g`.
+- Servicio `zuni-demo` activo, confirmado por SSH tras la publicación.
+- HTTPS 200 en `/`, `/Cuenta/IniciarSesion`, `/css/agenda-citas.css` y
+  `/js/requisitos-contrasena.js`, comprobados independientemente tras finalizar.
+- Estado `COMPLETADO`: el actualizador confirmó la migración, la verificación de
+  seguridad y claves y la conservación de los recuentos de usuarios y atenciones.
+- Respaldo privado conservado en
+  `/var/backups/zuni/demo/20261113T041854Z-pre-1.3.3-j40sTK`.
 
-La preparación y carga no hicieron push a GitHub ni modificaron la aplicación
-activa. La política publicada conserva su versión anterior; los cambios locales
+Pendiente: revisión manual de los flujos autenticados por el operador. Las
+comprobaciones de servicio y HTTP no sustituyen esa revisión.
+
+No se hizo push a GitHub. La política publicada conserva su versión anterior; los cambios locales
 de privacidad requieren una revisión y publicación independientes.
