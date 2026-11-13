@@ -7,6 +7,7 @@ namespace Zuni.Data
 {
     public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<PinProfesional> PinesProfesionales => Set<PinProfesional>();
         public DbSet<Zuni.Models.Institucion.PreferenciaVista> PreferenciasVista => Set<Zuni.Models.Institucion.PreferenciaVista>();
         public DbSet<Zuni.Models.Institucion.ConfiguracionTarifas> ConfiguracionTarifas => Set<Zuni.Models.Institucion.ConfiguracionTarifas>();
         public DbSet<Zuni.Models.Agenda.ConfiguracionAlmuerzo> ConfiguracionesAlmuerzo => Set<Zuni.Models.Agenda.ConfiguracionAlmuerzo>();
@@ -54,6 +55,7 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<PinProfesional>().HasOne<ApplicationUser>().WithOne().HasForeignKey<PinProfesional>(p=>p.UsuarioId).OnDelete(DeleteBehavior.Restrict);
             ConfigurarComercial(builder);
             builder.Entity<Zuni.Models.Institucion.PreferenciaVista>(e=>{
                 e.HasKey(p=>new{p.UsuarioId,p.Rol});

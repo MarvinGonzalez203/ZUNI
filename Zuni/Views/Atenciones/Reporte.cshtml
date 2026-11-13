@@ -2,6 +2,7 @@
 @{ ViewData["Title"] = "Reporte compartido de atención"; }
 <section class="dash-card"><h1>@Idioma.Texto("Reporte compartido de atención")</h1><p>@Model.Estudiante · @Zuni.Helpers.CarneHelper.Formatear(Model.Carne)</p><p>@Idioma.Texto("Psicólogo:") @Model.Psicologo</p>
 <p>@Zuni.Services.Agenda.AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") @Idioma.Texto("· Fin") @(Model.FinAproximado ? Idioma.Texto("aproximado") : Idioma.Texto("programado")): @Zuni.Services.Agenda.AgendaReglas.Local(Model.FinUtc).ToString("HH:mm") (Guatemala)</p>
+@if(User.IsInRole("Psicologo")){<partial name="_NotaPrivadaProtegida" model="Model.CitaId" />}
 <h2>@Idioma.Texto("Resultado compartido")</h2><p style="white-space:pre-wrap">@Model.Resultado</p>
 <h2>@Idioma.Texto("Recomendaciones compartidas")</h2><p style="white-space:pre-wrap">@Model.Recomendaciones</p>
 @if(Model.OtraCita) { <h2>@Idioma.Texto("Próxima atención recomendada")</h2><p>@Model.Indicaciones</p> }

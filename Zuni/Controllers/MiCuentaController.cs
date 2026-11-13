@@ -145,6 +145,7 @@ public sealed class MiCuentaController(
         {
             NombreCompleto = usuario.FullName,
             PuedeEditarContacto = true, Correo = usuario.Email, Telefono = usuario.PhoneNumber,
+            TienePinProfesional=roles.Contains("Psicologo")&&await db.PinesProfesionales.AnyAsync(p=>p.UsuarioId==usuario.Id&&p.HashProtegido!=null,ct),
             PuedeEditarEstudiante = permitido,
             Carreras = permitido ? await Zuni.Services.CatalogoCarreras.Opciones(db, usuario.PerfilEstudiante?.Carrera, ct) : [],
             Estudiante = permitido ? usuario.PerfilEstudiante is { } perfil ? Datos(perfil) : new() : null,
@@ -157,6 +158,21 @@ public sealed class MiCuentaController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Editar(EditarMiCuentaViewModel model, CancellationToken ct)
     {
+        // Verify the PIN before opening the profile transaction. PIN failures must remain
+        // committed even when profile editing returns validation errors.
+        var usuarioPrevio=await UsuarioAsync(false,ct);
+        if(usuarioPrevio is null)return Forbid();
+        var rolesPrevios=await RolesAsync(usuarioPrevio.Id,ct);
+        model.TienePinProfesional=rolesPrevios.Contains("Psicologo")&&await db.PinesProfesionales.AnyAsync(p=>p.UsuarioId==usuarioPrevio.Id&&p.HashProtegido!=null,ct);
+        if(model.TienePinProfesional&&Request.Form.ContainsKey(nameof(model.Correo))&&!string.Equals(usuarioPrevio.Email,model.Correo?.Trim(),StringComparison.OrdinalIgnoreCase)){
+            try{await HttpContext.RequestServices.GetRequiredService<Zuni.Services.PinProfesionalService>().Verificar(User,model.PinParaCorreo??"",ct);}
+            catch(UnauthorizedAccessException){return Forbid();}
+            catch(Zuni.Services.Privacidad.DatosOperacionException ex){ModelState.AddModelError(nameof(model.PinParaCorreo),ex.Message);}
+            catch(Exception ex)when(ex is DbUpdateException or NpgsqlException){ModelState.AddModelError(nameof(model.PinParaCorreo),"No se pudo verificar el PIN. Inténtalo nuevamente.");}
+            // Re-read the user and stamp inside the profile transaction, never a cached identity.
+            var tracked=db.ChangeTracker.Entries<ApplicationUser>().FirstOrDefault(e=>e.Entity.Id==usuarioPrevio.Id);
+            if(tracked is not null)tracked.State=EntityState.Detached;
+        }
         // Incluye lectura de permisos, usuario y perfil: detecta escrituras concurrentes.
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         var usuario = await UsuarioAsync(true, ct);

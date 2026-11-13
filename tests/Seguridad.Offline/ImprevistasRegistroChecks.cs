@@ -79,7 +79,7 @@ internal static class ImprevistasRegistroChecks
             Check(await db.AuditoriaUsuarios.AnyAsync(a => a.UsuarioAfectadoId == perfil.UsuarioId && a.AdministradorId == "imprevista-psy" && a.Accion == "ATENCION_REGISTRADA"), "auditoría profesional vinculada a la cita");
         }
         var detalle = await psy.GetStringAsync("/Psicologo/VerAtencion?citaId=" + op);
-        Check(detalle.Contains("NOTA-PRIVADA-IMPREVISTA"), "el profesional puede consultar su registro sin solicitud");
+        Check(!detalle.Contains("NOTA-PRIVADA-IMPREVISTA")&&detalle.Contains("data-pin-unlock"), "el registro profesional independiente exige PIN antes de entregar notas privadas");
         var reporte = await psy.GetStringAsync("/Atenciones/Reporte?citaId=" + op);
         Check(reporte.Contains("Resultado compartido") && !reporte.Contains("NOTA-PRIVADA-IMPREVISTA"), "reporte compartido conserva separación de notas privadas");
         var ajenoDetalle = await otro.GetAsync("/Psicologo/VerAtencion?citaId=" + op);

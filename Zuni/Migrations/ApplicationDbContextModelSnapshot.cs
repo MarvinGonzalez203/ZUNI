@@ -1591,6 +1591,45 @@ namespace Zuni.Migrations
                     b.ToTable("PerfilesEstudiante", (string)null);
                 });
 
+            modelBuilder.Entity("Zuni.Models.PinProfesional", b =>
+                {
+                    b.Property<string>("UsuarioId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<DateTime?>("BloqueadoHastaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("HashProtegido")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("IntentosFallidos")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("RecuperacionExpiraUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RecuperacionHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("RecuperacionSello")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UltimoEnvioUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UsuarioId");
+
+                    b.ToTable("PinesProfesionales");
+                });
+
             modelBuilder.Entity("Zuni.Models.Privacidad.AceptacionPrivacidad", b =>
                 {
                     b.Property<Guid>("PoliticaId")
@@ -11618,6 +11657,15 @@ namespace Zuni.Migrations
                         .IsRequired();
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Zuni.Models.PinProfesional", b =>
+                {
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithOne()
+                        .HasForeignKey("Zuni.Models.PinProfesional", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Zuni.Models.Privacidad.AceptacionPrivacidad", b =>

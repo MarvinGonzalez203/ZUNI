@@ -1,0 +1,17 @@
+@model Guid
+<section class="pin-private-card mb-4" data-private-note>
+    <h2>@Idioma.Texto("Resultado profesional privado")</h2>
+    <p>@Idioma.Texto("Solo el psicólogo responsable puede consultar estas notas. Introduce tu PIN para desbloquear esta atención.")</p>
+    <div data-private-note-body>
+        <form asp-controller="PinProfesional" asp-action="Desbloquear" method="post" data-pin-unlock>
+            <input type="hidden" name="citaId" value="@Model" />
+            <label class="form-label">@Idioma.Texto("PIN de 4 dígitos")<input class="form-control" type="password" name="pin" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" required /></label>
+            <button class="dash-button" type="submit">@Idioma.Texto("Desbloquear notas privadas")</button>
+            <p class="text-danger" role="alert" data-pin-error></p>
+        </form>
+        <p><a asp-controller="PinProfesional" asp-action="Index">@Idioma.Texto("Configurar o recuperar mi PIN")</a></p>
+        <div class="pin-preview" aria-hidden="true">Contenido profesional protegido. Las notas privadas de esta atención solo aparecen después de verificar tu PIN.<br/>Información reservada del profesional responsable.</div>
+    </div>
+</section>
+<link rel="stylesheet" href="~/css/pin-profesional.css" asp-append-version="true" />
+<script src="~/js/pin-profesional.js" asp-append-version="true" defer></script>

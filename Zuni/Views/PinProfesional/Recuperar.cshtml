@@ -1,0 +1,14 @@
+@model Zuni.Models.RecuperarPinInput
+@{ViewData["Title"]="Recuperar PIN profesional";}
+<section class="card dash-card p-4 mx-auto my-4" style="max-width:38rem;border-radius:1rem">
+    <h1>@Idioma.Texto("Recuperar PIN profesional")</h1>
+    <p>@Idioma.Texto("Abre el enlace recibido por correo y define un PIN nuevo de 4 dígitos. El enlace vence en 20 minutos y solo se puede usar una vez.")</p>
+    <form method="post" data-pin-recovery autocomplete="off">
+        <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+        <input asp-for="Usuario" type="hidden" /><input asp-for="Token" type="hidden" />
+        <label asp-for="Pin" class="form-label"></label><input asp-for="Pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" class="form-control mb-3" autocomplete="off" required />
+        <label asp-for="Confirmacion" class="form-label"></label><input asp-for="Confirmacion" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" class="form-control mb-3" autocomplete="off" required />
+        <button type="submit" class="dash-button">@Idioma.Texto("Guardar nuevo PIN")</button>
+    </form>
+</section>
+@section Scripts{<script src="~/js/pin-profesional.js" asp-append-version="true"></script>}

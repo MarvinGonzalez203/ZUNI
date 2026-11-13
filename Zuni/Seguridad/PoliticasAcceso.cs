@@ -17,6 +17,7 @@ public static class PoliticasAcceso
     public const string Login = "cuenta-login";
     public const string Registro = "cuenta-registro";
     public const string Recuperacion = "cuenta-recuperacion";
+    public const string PinProfesional = "pin-profesional";
     public const string PropuestasDirector = "director-propuestas";
 
     public const int LoginPorMinutoPredeterminado = 30;
@@ -41,6 +42,7 @@ public static class PoliticasAcceso
             options.AddPolicy(Login, http => Particion(http, Login, login, TimeSpan.FromMinutes(1)));
             options.AddPolicy(Registro, http => Particion(http, Registro, registro, TimeSpan.FromMinutes(10)));
             options.AddPolicy(Recuperacion, http => Particion(http, Recuperacion, recuperacion, TimeSpan.FromMinutes(10)));
+            options.AddPolicy(PinProfesional, http => Particion(http, PinProfesional, 30, TimeSpan.FromMinutes(1)));
             options.AddPolicy(PropuestasDirector, http => Particion(http, PropuestasDirector, propuestas, TimeSpan.FromMinutes(10)));
             options.OnRejected = async (context, cancellationToken) =>
             {

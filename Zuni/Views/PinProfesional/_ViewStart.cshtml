@@ -1,0 +1,5 @@
+@{
+    Layout=ViewContext.RouteData.Values["action"]?.ToString()=="Recuperar"?"_Layout":"_DashboardLayout";
+    ViewData["DashboardRole"]="Psicologo";ViewData["DashboardController"]="Psicologo";
+    ViewData["DashboardNavigation"]="~/Views/Psicologo/_Navegacion.cshtml";
+}

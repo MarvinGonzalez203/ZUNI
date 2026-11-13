@@ -1,0 +1,4 @@
+.pin-private-card{padding:1.25rem;border:1px solid var(--dash-line,#d4c4e3);border-radius:1rem;background:color-mix(in srgb,var(--institucion-color,#cea2fd) 8%,transparent)}
+.pin-private-card form{display:flex;flex-wrap:wrap;gap:.75rem;align-items:end}.pin-private-card label{max-width:200px}.pin-private-card [data-pin-error]{flex-basis:100%;margin:0}.pin-preview{filter:blur(7px);opacity:.55;user-select:none;pointer-events:none;line-height:1.8;padding:1rem;overflow:hidden}.pin-private-content{overflow-wrap:anywhere}
+@media print{.pin-private-card{display:none!important}}
+.pin-config-form{display:grid;gap:.5rem;max-width:34rem}.pin-config-form .dash-button{justify-self:start;margin-top:.5rem}

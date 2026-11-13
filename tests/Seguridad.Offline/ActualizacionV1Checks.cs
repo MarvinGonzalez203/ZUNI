@@ -22,29 +22,30 @@ internal static class ActualizacionV1Checks
         Check(home.Contains("commercial-grid")&&home.Contains("/SuperAdmin/Centros")&&home.Contains("Colegio Huellitas"),"tablero comercial y ejemplo visible");
         Check(home.Contains("system-version\">ZUNI · v"+VersionSistema.Actual)&&home.Contains("release-control"),"versión y campana disponibles");
         var versiones=Regex.Matches(home,"data-release-version=\"([^\"]+)\"").Select(m=>m.Groups[1].Value).ToArray();
-        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.3.2","1.3.1"}),"campana muestra las tres versiones locales más recientes en orden");
+        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.3.3","1.3.2"}),"campana muestra las tres versiones locales más recientes en orden");
         Check(VersionSistema.Historial.Count>=3&&VersionSistema.Historial[0].Numero==VersionSistema.Actual,"metadatos del historial y versión actual coinciden");
         await using(var db=new OfflineDb(options))Check(!await db.CentrosComerciales.AnyAsync(),"GET no registra el ejemplo automáticamente");
         var example=await super.GetStringAsync("/SuperAdmin/EditarCentro?ejemplo=true");
-        Check(example.Contains("2026-10-28")&&example.Contains("2027-10-27"),"ejemplo con fechas acordadas");
+        var hoyContrato=Zuni.Services.Agenda.AgendaReglas.Hoy(reloj.Ahora.UtcDateTime);
+        Check(example.Contains(hoyContrato.ToString("yyyy-MM-dd"))&&example.Contains(hoyContrato.AddMonths(12).AddDays(-1).ToString("yyyy-MM-dd")),"ejemplo calcula vigencia desde hoy");
         var umg=await super.GetStringAsync("/SuperAdmin/EditarCentro?nombreInicial=UMG&inicioInicial=2026-10-01&mesesInicial=12");
-        Check(umg.Contains("value=\"UMG\"")&&umg.Contains("2027-09-30"),"formulario UMG preparado con vigencia anual, sin guardar");
+        Check(umg.Contains("value=\"UMG\"")&&umg.Contains(hoyContrato.AddMonths(12).AddDays(-1).ToString("yyyy-MM-dd")),"nuevo contrato anual parte de hoy aunque llegue una fecha por query");
         Check((await super.GetAsync("/SuperAdmin/EditarCentro?inicioInicial=9999-12-31")).StatusCode==HttpStatusCode.BadRequest,"prefill rechaza fechas no válidas antes de sumar meses");
         Check((await super.PostAsync("/SuperAdmin/EditarCentro",new FormUrlEncodedContent([]))).StatusCode==HttpStatusCode.BadRequest,"guardar exige antiforgery");
-        Task<HttpResponseMessage> Save(Guid? id,Guid revision,string inicio="2026-10-28",string fin="2027-10-27",string estado="Activo",string importe="2030",string nombre="Colegio Huellitas")=>HostPrueba.Post(super,"/SuperAdmin/EditarCentro?ejemplo=true","/SuperAdmin/EditarCentro",("Id",id?.ToString()??""),("Revision",revision.ToString()),("Nombre",nombre),("MesesPlan","12"),("Inicio",inicio),("Fin",fin),("Estado",estado),("ImporteGtq",importe),("EsDemostracion","true"));
-        Check((await Save(null,Guid.Empty,fin:"2026-10-01")).StatusCode==HttpStatusCode.OK,"fecha inversa se rechaza");
+        Task<HttpResponseMessage> Save(Guid? id,Guid revision,string inicio="2026-10-28",string fin="2027-10-27",string estado="Activo",string importe="2030",string nombre="Colegio Huellitas",int meses=12)=>HostPrueba.Post(super,"/SuperAdmin/EditarCentro?ejemplo=true","/SuperAdmin/EditarCentro",("Id",id?.ToString()??""),("Revision",revision.ToString()),("Nombre",nombre),("MesesPlan",meses.ToString()),("Inicio",inicio),("Fin",fin),("Estado",estado),("ImporteGtq",importe),("EsDemostracion","true"));
+        Check((await Save(null,Guid.Empty,nombre:" ")).StatusCode==HttpStatusCode.OK,"nombre vacío se rechaza");
         await using(var db=new OfflineDb(options))Check(!await db.CentrosComerciales.AnyAsync(),"rechazo no guarda datos");
         Check((await Save(null,Guid.Empty)).StatusCode==HttpStatusCode.Redirect,"creación comercial válida");
         CentroComercial saved;await using(var db=new OfflineDb(options))saved=await db.CentrosComerciales.AsNoTracking().SingleAsync();
         Check(saved.EsDemostracion&&saved.MesesPlan==12&&saved.ImporteGtq==2030,"datos comerciales persistidos");
-        Check((await Save(saved.Id,saved.Revision,fin:"2028-10-27",estado:"Cancelado")).StatusCode==HttpStatusCode.Redirect,"ampliación y cancelación guardadas");
+        Check((await Save(saved.Id,saved.Revision,fin:"2028-10-27",estado:"Cancelado",importe:"1")).StatusCode==HttpStatusCode.Redirect,"cancelación guardada sin aceptar alteraciones de fecha e importe");
         Check((await Save(saved.Id,saved.Revision,fin:"2029-10-27")).StatusCode==HttpStatusCode.Conflict,"revisión vieja no sobrescribe");
-        Check((await Save(null,Guid.Empty,importe:"100.123")).StatusCode==HttpStatusCode.OK,"se rechazan importes con más de dos decimales");
+        Check((await Save(null,Guid.Empty,meses:2)).StatusCode==HttpStatusCode.OK,"se rechazan periodos no disponibles");
         Check((await Save(null,Guid.Empty,nombre:"Centro <script>alert(1)</script>")).StatusCode==HttpStatusCode.Redirect,"nombre tratado como dato");
         var listing=await super.GetStringAsync("/SuperAdmin/Centros");Check(!listing.Contains("<script>alert(1)</script>")&&listing.Contains("&lt;script&gt;"),"HTML de centros está codificado");
         await using(var db=new OfflineDb(options)){
             var current=await db.CentrosComerciales.AsNoTracking().SingleAsync(x=>x.Id==saved.Id);
-            Check(current.Estado==EstadoContrato.Cancelado&&current.Fin==new DateOnly(2028,10,27),"cancelación conserva el registro y la nueva fecha");
+            Check(current.Estado==EstadoContrato.Cancelado&&current.Fin==hoyContrato.AddMonths(12).AddDays(-1)&&current.ImporteGtq==saved.ImporteGtq,"editar metadatos conserva vigencia e importe previos");
             Check(await db.AuditoriaUsuarios.CountAsync(a=>a.Accion.StartsWith("CENTRO_COMERCIAL_"))==3,"cambios comerciales auditados");
         }
         var contratoPdf=await super.GetAsync("/SuperAdmin/PdfCentro?id="+saved.Id);var pdfBytes=await contratoPdf.Content.ReadAsByteArrayAsync();

@@ -157,7 +157,8 @@ internal static class HttpSmoke
         var soloLectura = await client.GetAsync($"/Psicologo/RegistrarAtencion?citaId={cierre.Id}");
         Check(soloLectura.StatusCode == HttpStatusCode.Redirect && soloLectura.Headers.Location!.OriginalString.Contains("VerAtencion"), "Cierre existente redirige a solo lectura");
         var privado = await client.GetAsync($"/Psicologo/VerAtencion?citaId={cierre.Id}");
-        Check(privado.StatusCode == HttpStatusCode.OK && (await privado.Content.ReadAsStringAsync()).Contains("SECRETO-HTTP-PRIVADO") && privado.Headers.CacheControl?.NoStore == true, "Detalle privado autorizado no-store");
+        var privadoHtml=await privado.Content.ReadAsStringAsync();
+        Check(privado.StatusCode == HttpStatusCode.OK && !privadoHtml.Contains("SECRETO-HTTP-PRIVADO") && privadoHtml.Contains("data-pin-unlock") && privado.Headers.CacheControl?.NoStore == true, "Detalle profesional bloqueado por PIN y no-store");
         Check(!(await client.GetStringAsync("/Psicologo/Historial")).Contains("SECRETO-HTTP-PRIVADO"), "Historial no precarga privado");
         Actor("est");
         var publico = await client.GetAsync("/Estudiante/Resultados?PerfilEstudianteId=" + Guid.NewGuid());

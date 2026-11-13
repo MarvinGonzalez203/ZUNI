@@ -1,0 +1,6 @@
+@model Zuni.Models.Agenda.AtencionPrivadaViewModel
+<div class="pin-private-content" data-private-revealed>
+    <p class="atencion-texto" style="white-space:pre-wrap">@Model.ResultadoProfesionalPrivado</p>
+    <button type="button" class="btn btn-outline-secondary" data-pin-lock>@Idioma.Texto("Volver a bloquear")</button>
+    <p class="small">@Idioma.Texto("Las notas se ocultan al cambiar de pestaña o después de dos minutos. No se incluyen en el PDF compartido.")</p>
+</div>

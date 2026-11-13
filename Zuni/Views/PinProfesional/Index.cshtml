@@ -1,0 +1,19 @@
+@model Zuni.Models.ConfigurarPinInput
+@{ViewData["Title"]="PIN profesional";var configurado=ViewData["PinConfigurado"] is true;}
+<section class="dash-card p-4">
+    <h1>@Idioma.Texto("PIN profesional")</h1>
+    <p>@Idioma.Texto("Este PIN protege la consulta de tus notas privadas. No sustituye la contraseña de tu cuenta ni se comparte con el estudiante.")</p>
+    @if(TempData["Error"] is string error){<p role="alert" class="alert alert-danger">@Idioma.Texto(error)</p>}
+    <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+    @if(!configurado){
+        <form asp-action="Configurar" method="post" class="pin-config-form" autocomplete="off">
+            <label asp-for="Contrasena"></label><input asp-for="Contrasena" type="password" autocomplete="current-password" class="form-control" required />
+            <label asp-for="Pin"></label><input asp-for="Pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" class="form-control" required />
+            <label asp-for="Confirmacion"></label><input asp-for="Confirmacion" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" class="form-control" required />
+            <button type="submit" class="dash-button">@Idioma.Texto("Configurar PIN")</button>
+        </form>
+    }else{<p>@Idioma.Texto("Tu PIN está configurado. Si lo olvidaste o deseas cambiarlo, solicita un enlace temporal al correo de tu cuenta.")</p>}
+    <form asp-action="EnviarRecuperacion" method="post" class="mt-4"><button class="btn btn-outline-secondary">@Idioma.Texto("Enviar enlace para recuperar o cambiar el PIN")</button></form>
+    <p class="mt-3"><a asp-controller="MiCuenta" asp-action="Index">@Idioma.Texto("Volver a mi cuenta")</a></p>
+</section>
+@section Styles{<link rel="stylesheet" href="~/css/pin-profesional.css" asp-append-version="true" />}

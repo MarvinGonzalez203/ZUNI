@@ -11,6 +11,9 @@ public sealed class EditarMiCuentaViewModel
     [EmailAddress, StringLength(254)] public string? Correo { get; set; }
     [RegularExpression("^[0-9]{8}$", ErrorMessage = "Ingresa un teléfono de 8 dígitos.")] public string? Telefono { get; set; }
     [BindNever] public bool PuedeEditarContacto { get; set; }
+    [BindNever] public bool TienePinProfesional { get; set; }
+    [DataType(DataType.Password),RegularExpression("^[0-9]{4}$",ErrorMessage="Ingresa exactamente 4 dígitos para el PIN.")]
+    public string? PinParaCorreo { get; set; }
     public DatosEstudianteViewModel? Estudiante { get; set; }
     // Revisión protegida por el servidor: no contiene identificadores editables.
     [Required] public string Revision { get; set; } = string.Empty;

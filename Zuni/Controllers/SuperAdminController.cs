@@ -40,7 +40,7 @@ public sealed class SuperAdminController(ApplicationDbContext db):Controller
         if(id is null){
             var hoy=Zuni.Services.Agenda.AgendaReglas.Hoy(HttpContext.RequestServices.GetRequiredService<TimeProvider>().GetUtcNow().UtcDateTime);
             if(!ModelState.IsValid||nombreInicial?.Length>150||mesesInicial is not (1 or 3 or 6 or 12)||inicioInicial is {} fecha&&(fecha.Year<2000||fecha.Year>2198))return BadRequest();
-            var inicio=ejemplo?new DateOnly(2026,10,28):inicioInicial??hoy;
+            var inicio=hoy;
             var meses=ejemplo?12:mesesInicial;
             var tarifas=await Zuni.Services.Institucion.TarifasService.Obtener(db,ct);
             var importe=meses switch{1=>tarifas.Mensual,3=>tarifas.Trimestral,6=>tarifas.Semestral,_=>tarifas.Anual};
@@ -53,6 +53,8 @@ public sealed class SuperAdminController(ApplicationDbContext db):Controller
     [HttpPost,ValidateAntiForgeryToken] public async Task<IActionResult> EditarCentro(Zuni.Models.Comercial.EditarCentroInput input,CancellationToken ct)
     {
         if(!await Zuni.Services.Institucion.TarifasService.EsSuperAdmin(db,User.FindFirstValue(ClaimTypes.NameIdentifier),ct))return Forbid();
+        await Zuni.Services.Institucion.CentrosComercialesService.AplicarPlan(db,input,HttpContext.RequestServices.GetRequiredService<TimeProvider>(),ct);
+        foreach(var campo in new[]{nameof(input.Inicio),nameof(input.Fin),nameof(input.ImporteGtq)})ModelState.Remove(campo);
         if(!ModelState.IsValid)return View(input);
         try{await Zuni.Services.Institucion.CentrosComercialesService.Guardar(db,User,input,HttpContext.RequestServices.GetRequiredService<TimeProvider>(),ct);}
         catch(UnauthorizedAccessException){return Forbid();}

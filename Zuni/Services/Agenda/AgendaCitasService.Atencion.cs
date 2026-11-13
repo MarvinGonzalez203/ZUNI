@@ -99,7 +99,7 @@ public sealed partial class AgendaCitasService
 
     private static string? TextoAtencion(string? texto) => string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
 
-    public async Task<AtencionPrivadaViewModel> ConsultarAtencion(ClaimsPrincipal sesion, Guid citaId, CancellationToken ct)
+    public async Task<AtencionPrivadaViewModel> ConsultarAtencion(ClaimsPrincipal sesion, Guid citaId, CancellationToken ct, bool incluirPrivado = false)
     {
         AtencionPrivadaViewModel? detalle = null;
         // Si no se confirma la auditoría, nunca se devuelve el contenido privado.
@@ -115,7 +115,7 @@ public sealed partial class AgendaCitasService
                 {
                     Estudiante = p.Usuario.FullName, InicioUtc = c.FechaHoraInicioUtc,
                     Modalidad = c.Modalidad, FechaCierreUtc = r.FechaCierreUtc, Asistio = r.Asistio,
-                    ResultadoProfesionalPrivado = r.ResultadoProfesionalPrivado,
+                    ResultadoProfesionalPrivado = incluirPrivado ? r.ResultadoProfesionalPrivado : null,
                     ResenaRecomendacionesEstudiante = r.ResenaRecomendacionesEstudiante,
                     ResultadoBreveEstudiante = r.ResultadoBreveEstudiante,
                     RecomiendaOtraCita = r.RecomiendaOtraCita, IndicacionesProximaCita = r.IndicacionesProximaCita

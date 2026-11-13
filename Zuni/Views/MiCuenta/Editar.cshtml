@@ -21,6 +21,9 @@
             <div class="col-md-6"><label asp-for="Correo" zuni-required="true" class="form-label">@Idioma.Texto("Correo electrónico")</label><input asp-for="Correo" class="form-control" type="email" required maxlength="254" autocomplete="email" /><span asp-validation-for="Correo" class="text-danger small"></span></div>
             @if(!Model.PuedeEditarEstudiante){<div class="col-md-6"><label asp-for="Telefono" class="form-label">@Idioma.Texto("Teléfono (opcional)")</label><input asp-for="Telefono" class="form-control" type="tel" pattern="[0-9]{8}" maxlength="8" autocomplete="tel" inputmode="numeric" /><span asp-validation-for="Telefono" class="text-danger small"></span></div>}
         </div>
+        @if(Model.TienePinProfesional){
+            <div class="mb-4"><label asp-for="PinParaCorreo" class="form-label">@Idioma.Texto("PIN profesional, solo si cambias el correo")</label><input asp-for="PinParaCorreo" type="password" class="form-control" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" /><span asp-validation-for="PinParaCorreo" class="text-danger"></span><p class="form-text">@Idioma.Texto("El correo permite recuperar tus notas protegidas. Para cambiarlo debes confirmar tu PIN profesional; para editar otros datos puedes dejar este campo vacío.")</p></div>
+        }
     }
     @if (Model.PuedeEditarEstudiante)
     {

@@ -2,6 +2,8 @@
 @{ ViewData["Title"] = "Preparar cita virtual"; }
 <header class="dash-profile-heading"><div><h1>@Idioma.Texto("Preparar cita virtual")</h1><p>@Model.Estudiante · @Zuni.Services.Agenda.AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") (Guatemala)</p></div></header>
 <section class="dash-card p-4">
+    <p><a class="dash-button" href="https://meet.google.com/home" target="_blank" rel="noopener noreferrer">@Idioma.Texto("Abrir Google Meet para crear esta reunión")</a></p>
+    <p>@Idioma.Texto("Crea una reunión nueva para esta cita. Copia su enlace individual, vuelve a esta pestaña de ZUNI y pégalo en el campo de abajo para compartirlo con el estudiante.")</p>
     <p>@Idioma.Texto("Crea una reunión individual en tu cuenta institucional de Google Meet. Invita únicamente al estudiante correspondiente; configura acceso restringido, admisión por el anfitrión y, si tu cuenta lo permite, desactiva las solicitudes de personas no invitadas.")</p>
     <p>@Idioma.Texto("Comprueba con una cuenta externa que no entra sin autorización. ZUNI valida el enlace y quién puede verlo; los permisos de la reunión se configuran en Google. No uses un enlace general ni grabes o transcribas automáticamente.")</p>
     <p><a href="https://support.google.com/a/users/answer/11989526?hl=es" target="_blank" rel="noopener noreferrer">@Idioma.Texto("Consultar controles de acceso de Google Meet")</a></p>

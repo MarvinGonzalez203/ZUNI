@@ -228,8 +228,11 @@ public sealed class PsicologoController(ApplicationDbContext db, IAutorizacionCl
 
     [HttpGet]
     [AgendaExceptionFilter]
-    public async Task<IActionResult> VerAtencion([FromServices] AgendaCitasService agenda, Guid citaId, CancellationToken ct) =>
-        View(await agenda.ConsultarAtencion(User, citaId, ct));
+    public async Task<IActionResult> VerAtencion([FromServices] AgendaCitasService agenda, Guid citaId, CancellationToken ct)
+    {
+        ViewData["CitaId"]=citaId;
+        return View(await agenda.ConsultarAtencion(User,citaId,ct,incluirPrivado:false));
+    }
 
     [HttpGet]
     [AgendaExceptionFilter]

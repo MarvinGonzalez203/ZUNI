@@ -70,7 +70,7 @@ internal static class AtencionChecks
         var json = JsonSerializer.Serialize(resultados);
         Check(json.Contains("Resumen compartido") && !json.Contains("PRIVADO") && !json.Contains("ResultadoProfesionalPrivado"), "DTO público sin propiedad ni contenido privado");
         Check(!JsonSerializer.Serialize(await service.ResultadosAtencion(otroEstudiante, ct)).Contains("Resumen compartido"), "Otro estudiante no recibe resultados");
-        Check((await service.ConsultarAtencion(psicologo, id, ct)).ResultadoProfesionalPrivado == "PRIVADO-NUNCA-ESTUDIANTE", "Detalle privado autorizado");
+        Check((await service.ConsultarAtencion(psicologo, id, ct,incluirPrivado:true)).ResultadoProfesionalPrivado == "PRIVADO-NUNCA-ESTUDIANTE", "Detalle privado autorizado");
         await Denegado<AgendaAccesoException>(() => service.ConsultarAtencion(ajeno, id, ct), "Detalle ajeno denegado");
         await Denegado<AgendaAccesoException>(() => service.ConsultarAtencion(estudiante, id, ct), "Detalle denegado a estudiante");
         var stampViejo = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "otro-psi"),

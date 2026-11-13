@@ -24,6 +24,7 @@ public sealed class EditarCentroInput : IValidatableObject
 {
     public Guid? Id { get; set; }
     public Guid Revision { get; set; }
+    public bool Renovar { get; set; }
     [Required,StringLength(150),Display(Name="Centro educativo")] public string Nombre { get; set; } = "";
     [EmailAddress,StringLength(254),Display(Name="Correo de contacto comercial")] public string? CorreoContacto { get; set; }
     [Display(Name="Periodo del plan")] public int MesesPlan { get; set; } = 12;

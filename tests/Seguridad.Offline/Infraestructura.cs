@@ -67,7 +67,7 @@ internal static class HostPrueba
     // (SesionZuni, PoliticasAcceso, CabecerasSeguridadMiddleware y middlewares de Zuni).
     // No ejecuta Program ni seeds de Zuni, no carga secretos y no abre PostgreSQL.
     public static async Task<WebApplication> Crear(DbContextOptions<ApplicationDbContext> opciones, Reloj reloj,
-        HasherContador hasher, int loginPorMinuto)
+        HasherContador hasher, int loginPorMinuto,Zuni.Services.Correo.ICorreoPin? correoPin=null)
     {
         var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
         { ApplicationName = typeof(CuentaController).Assembly.GetName().Name, EnvironmentName = "Development" });
@@ -96,6 +96,9 @@ internal static class HostPrueba
         builder.Services.AddSingleton<TimeProvider>(reloj);
         builder.Services.AddScoped<IAutorizacionClinicaService, AutorizacionClinicaService>();
         builder.Services.AddScoped<AgendaCitasService>();
+        builder.Services.AddHttpClient<Zuni.Services.Correo.ICorreoPin,Zuni.Services.Correo.CorreoPinBrevo>();
+        if(correoPin is not null)builder.Services.AddSingleton(correoPin);
+        builder.Services.AddScoped<Zuni.Services.PinProfesionalService>();
         builder.Services.AddScoped<Zuni.Services.BigFive.BigFiveService>();
         builder.Services.AddScoped<GestionSolicitudesService>();
 

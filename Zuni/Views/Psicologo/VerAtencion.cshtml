@@ -7,7 +7,7 @@
     <p class="small">@Idioma.Texto("Cierre:") @AgendaReglas.Local(Model.FechaCierreUtc).ToString("dd/MM/yyyy HH:mm") (Guatemala)</p>
     @if (Model.Asistio)
     {
-        <div class="atencion-privada"><h2>@Idioma.Texto("Resultado profesional privado")</h2><p class="small">@Idioma.Texto("Exclusivo del profesional autorizado. No se comparte con el estudiante.")</p><p class="atencion-texto">@Model.ResultadoProfesionalPrivado</p></div>
+        <partial name="_NotaPrivadaProtegida" model="@((Guid)ViewData["CitaId"]!)" />
         <h2>@Idioma.Texto("Resultado breve compartido")</h2><p class="atencion-texto">@Model.ResultadoBreveEstudiante</p>
     }
     @if (!string.IsNullOrWhiteSpace(Model.ResenaRecomendacionesEstudiante))
