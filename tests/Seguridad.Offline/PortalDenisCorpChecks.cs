@@ -45,7 +45,7 @@ internal static class PortalDenisCorpChecks
                     Check(texto.Contains(nombre=="colegios"?(idioma=="es"?"Propuesta para colegios":"School service offering"):(idioma=="es"?"Avances del programa":"Product progress"))&&texto.Contains(PortalDenisCorp.Obtener(nombre).Version),"avances con versión documentada "+nombre+idioma);
                     Check(texto.Contains(idioma=="es"?"En preparación":"In preparation"),"pendientes distinguidos de lo implementado "+nombre+idioma);
                 }
-                if(nombre=="fulleo")Check(texto.Contains("0.9.0")&&texto.Contains("19")&&texto.Contains("88")&&texto.Contains(idioma=="es"?"datos históricos":"historical test data"),"avances de Fulleo no simulan precios actuales "+idioma);
+                if(nombre=="fulleo")Check(texto.Contains("0.9.1")&&texto.Contains("19")&&texto.Contains("88")&&texto.Contains(idioma=="es"?"datos históricos":"historical test data"),"avances de Fulleo no simulan precios actuales "+idioma);
                 if(salida is not null)await File.WriteAllTextAsync(Path.Combine(salida,nombre+"-"+idioma+".html"),html);
             }
             foreach(var nombre in new[]{"blog","contacto"})

@@ -22,7 +22,7 @@ internal static class ActualizacionV1Checks
         Check(home.Contains("commercial-grid")&&home.Contains("/SuperAdmin/Centros")&&home.Contains("Colegio Huellitas"),"tablero comercial y ejemplo visible");
         Check(home.Contains("system-version\">ZUNI · v"+VersionSistema.Actual)&&home.Contains("release-control"),"versión y campana disponibles");
         var versiones=Regex.Matches(home,"data-release-version=\"([^\"]+)\"").Select(m=>m.Groups[1].Value).ToArray();
-        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.5.3","1.5.2"}),"campana muestra las tres versiones locales más recientes en orden");
+        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.6.0","1.5.3"}),"campana muestra las tres versiones locales más recientes en orden");
         Check(VersionSistema.Historial.Count>=3&&VersionSistema.Historial[0].Numero==VersionSistema.Actual,"metadatos del historial y versión actual coinciden");
         await using(var db=new OfflineDb(options))Check(!await db.CentrosComerciales.AnyAsync(),"GET no registra el ejemplo automáticamente");
         var example=await super.GetStringAsync("/SuperAdmin/EditarCentro?ejemplo=true");

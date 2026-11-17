@@ -26,6 +26,8 @@ builder.Services.AddSingleton(rutasSeguridad);
 builder.Services.AddSingleton(ProteccionPersistencia.Cargar(rutasSeguridad.Claves,AislamientoInstalacion.Nombre(builder.Configuration)));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<BitacoraExterna>();
+builder.Services.AddSingleton<InstanciaUnica>();
+builder.Services.AddHostedService(s=>s.GetRequiredService<InstanciaUnica>());
 builder.Services.AddHostedService<ExportadorSeguridad>();
 
 // La cadena de conexión NUNCA se escribe en el repositorio: User Secrets en Development y
@@ -106,6 +108,9 @@ if (proxyInverso)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+// Acquire before seeds/migrations/exporters; maintenance writers must also run alone.
+// Verification-only CLI is read-only and may inspect the active database.
+if(!args.Contains("--verificar-seguridad"))await app.Services.GetRequiredService<InstanciaUnica>().Adquirir();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -171,6 +176,11 @@ app.UseRequestLocalization();
 // Después de UseRouting para respetar [EnableRateLimiting] por endpoint.
 app.UseRateLimiter();
 
+app.Use(async(context,next)=>
+{
+    if(!app.Services.GetRequiredService<InstanciaUnica>().Disponible){context.Response.StatusCode=503;return;}
+    await next();
+});
 app.UseAuthentication();
 app.UseMiddleware<Zuni.Middleware.ContenidoPrivadoNoCacheMiddleware>();
 app.UseMiddleware<Zuni.Middleware.CambioContrasenaObligatorioMiddleware>();

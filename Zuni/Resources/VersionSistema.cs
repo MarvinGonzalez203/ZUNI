@@ -2,10 +2,11 @@ namespace Zuni.Resources;
 public sealed record NovedadVersion(string Numero, IReadOnlyList<string> Cambios);
 public static class VersionSistema
 {
-    public const string Actual="1.6.0";
+    public const string Actual="1.6.1";
     // Historial de entregas locales; la versión de zuni.lat cambia solo al desplegar.
     public static readonly IReadOnlyList<NovedadVersion> Historial=[
-        new(Actual,["Seguridad del navegador reforzada y preparación de rutas independientes por programa.","Prefijo público configurable y enlaces de recuperación compatibles con la dirección de la aplicación."]),
+        new(Actual,["Protección del guardado y preparación de recuperación de datos.","Controles para evitar instancias de escritura incompatibles."]),
+        new("1.6.0",["Seguridad del navegador reforzada y preparación de rutas independientes por programa.","Prefijo público configurable y enlaces de recuperación compatibles con la dirección de la aplicación."]),
         new("1.5.3",["Plataforma actualizada para mantener soporte y parches de seguridad.","Actualización técnica de seguridad sin cambios en las funciones de atención."]),
         new("1.5.2",["Denis Corp Colegios se presenta como propuesta SaaS general, separada de la identidad de sus clientes.","Todos los logos del inicio comparten los dos círculos blancos de cristal.","Blog con guías por programa, búsqueda, temas y artículos desplegables.","Contáctanos con canales directos y preparación de consultas para WhatsApp o correo."]),
         new("1.5.1",["Portal Denis Corp con idioma, modo día y noche y cinco programas con identidad propia.","Botones arena de día y rojos de noche; ZUNI violeta, Academy azul y Fulleo amarillo.","Favicons por programa, círculos de cristal de ZUNI y control en V para avanzar o volver arriba.","Fichas con avances documentados y pendientes de Fulleo, Academy, POS y colegios."]),

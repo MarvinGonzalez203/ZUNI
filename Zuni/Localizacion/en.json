@@ -1,4 +1,7 @@
 {
+  "Protección del guardado y preparación de recuperación de datos.": "Stronger saving protection and preparation for data recovery.",
+  "Controles para evitar instancias de escritura incompatibles.": "Controls to prevent incompatible writer instances.",
+
   "Seguridad del navegador reforzada y preparación de rutas independientes por programa.": "Stronger browser security and preparation for independent application routes.",
   "Prefijo público configurable y enlaces de recuperación compatibles con la dirección de la aplicación.": "Configurable public path and recovery links compatible with the application address.",
 

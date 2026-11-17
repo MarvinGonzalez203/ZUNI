@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Zuni.Seguridad;
 
-// Rate limiting nativo de ASP.NET Core (.NET 8), sin paquetes externos.
+// Rate limiting nativo de ASP.NET Core (.NET 10; una instancia), sin paquetes externos.
 // Se aplica a los POST de Cuenta mediante [EnableRateLimiting]. Además, la búsqueda en el directorio
 // y el envío de propuestas de Dirección usan su propia política para evitar consultas masivas.
 // Particiones por dirección IP y política. Detrás de un proxy inverso, habilitar
@@ -57,7 +57,7 @@ public static class PoliticasAcceso
                     "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>" +
                     "<body style=\"font-family:system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem\">" +
                     "<h1>"+Zuni.Localizacion.Idioma.Texto("Demasiados intentos")+"</h1><p>" + Zuni.Localizacion.Idioma.Texto(MensajeLimite) + "</p>" +
-                    "<p><a href=\"/Cuenta/IniciarSesion\">"+Zuni.Localizacion.Idioma.Texto("Volver a iniciar sesión")+"</a></p></body></html>",
+                    "<p><a href=\""+context.HttpContext.Request.PathBase+"/Cuenta/IniciarSesion\">"+Zuni.Localizacion.Idioma.Texto("Volver a iniciar sesión")+"</a></p></body></html>",
                     cancellationToken);
             };
         });
