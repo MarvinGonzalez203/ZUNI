@@ -15,7 +15,7 @@ public sealed class CorreoPinBrevo(HttpClient http,IConfiguration configuracion)
     public bool Disponible => configuracion["Correo:Brevo:ApiKey"] is {} key && key.Length is >=20 and <=4096 && !key.Any(char.IsControl) && !string.IsNullOrWhiteSpace(key) &&
         MailAddress.TryCreate(configuracion["Correo:Remitente"],out _) &&
         configuracion.GetValue<bool>("Correo:RemitenteVerificado") &&
-        Uri.TryCreate(UrlPublica,UriKind.Absolute,out var uri)&&uri.Scheme=="https"&&uri.AbsolutePath=="/"&&string.IsNullOrEmpty(uri.Query)&&string.IsNullOrEmpty(uri.Fragment)&&string.IsNullOrEmpty(uri.UserInfo);
+        Uri.TryCreate(UrlPublica,UriKind.Absolute,out var uri)&&uri.Scheme=="https"&&System.Text.RegularExpressions.Regex.IsMatch(uri.AbsolutePath,@"^/(?:[a-z0-9-]+/)*$")&&uri.AbsolutePath.TrimEnd('/')==Zuni.Seguridad.BasePublica.Prefijo(configuracion)&&string.IsNullOrEmpty(uri.Query)&&string.IsNullOrEmpty(uri.Fragment)&&string.IsNullOrEmpty(uri.UserInfo);
     public async Task Enviar(string destinatario,string enlace,CancellationToken ct)
     {
         if(!Disponible)throw new InvalidOperationException("El correo de recuperación todavía no está configurado.");

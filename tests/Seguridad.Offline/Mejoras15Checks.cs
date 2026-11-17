@@ -47,9 +47,9 @@ internal static class Mejoras15Checks
         await using var app = await HostPrueba.Crear(options,reloj,hasher,1000);
         using var anon = HostPrueba.Cliente(app); using var psy = HostPrueba.Cliente(app); using var otro = HostPrueba.Cliente(app); using var est = HostPrueba.Cliente(app);
         var home = await anon.GetStringAsync("/");
-        Check(home.Contains("Denis Corp") && home.Contains("/deniscorp/academy/") && home.Contains("/deniscorp/fulleo/") && home.Contains("/deniscorp/zuni/"),"portada y tarjetas de programas");
+        Check(home.Contains("Denis Corp") && home.Contains("/deniscorp/programas/academy/") && home.Contains("/deniscorp/programas/fulleo/") && home.Contains("/deniscorp/zuni/"),"portada y tarjetas de programas");
         Check((await anon.GetAsync("/deniscorp/zuni/")).StatusCode==HttpStatusCode.OK,"portada de ZUNI conserva ruta propia");
-        foreach(var ruta in new[]{"/deniscorp/academy/","/deniscorp/fulleo/"}) Check((await anon.GetAsync(ruta)).StatusCode==HttpStatusCode.OK,"presentación " + ruta);
+        foreach(var ruta in new[]{"/deniscorp/programas/academy/","/deniscorp/programas/fulleo/"}) Check((await anon.GetAsync(ruta)).StatusCode==HttpStatusCode.OK,"presentación " + ruta);
         Check((await anon.GetAsync("/DobleFactor")).StatusCode==HttpStatusCode.Redirect,"configuración requiere sesión");
         await HostPrueba.Login(psy,"mfa-psy@example.com",password);
         using var sesionAnterior = HostPrueba.Cliente(app); await HostPrueba.Login(sesionAnterior,"mfa-psy@example.com",password);
@@ -139,7 +139,7 @@ internal static class Mejoras15Checks
         {
             Directory.CreateDirectory(preview);
             await File.WriteAllTextAsync(Path.Combine(preview,"deniscorp.html"),home);
-            await File.WriteAllTextAsync(Path.Combine(preview,"academy.html"),await anon.GetStringAsync("/deniscorp/academy/"));
+            await File.WriteAllTextAsync(Path.Combine(preview,"academy.html"),await anon.GetStringAsync("/deniscorp/programas/academy/"));
             await File.WriteAllTextAsync(Path.Combine(preview,"ausencia.html"),htmlAusencia);
             await File.WriteAllTextAsync(Path.Combine(preview,"2fa.html"),await psy.GetStringAsync("/DobleFactor"));
             await File.WriteAllTextAsync(Path.Combine(preview,"2fa-preparado.html"),html);

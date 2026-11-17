@@ -73,10 +73,14 @@ builder.Services
     .AddCookie(options => {
         SesionZuni.Configurar(options, builder.Environment.IsDevelopment());
         options.Cookie.Name = Zuni.Seguridad.AislamientoInstalacion.Cookie(builder.Configuration);
+        options.Cookie.Path = BasePublica.Prefijo(builder.Configuration) is {Length:>0} prefix ? prefix : "/";
+        options.Cookie.Domain = null;
     });
 
 builder.Services.AddAntiforgery(options =>
 {
+    options.Cookie.Path = BasePublica.Prefijo(builder.Configuration) is {Length:>0} prefix ? prefix : "/";
+    options.Cookie.Domain = null;
     options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
         ? CookieSecurePolicy.SameAsRequest
         : CookieSecurePolicy.Always;
@@ -92,6 +96,9 @@ if (proxyInverso)
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.ForwardLimit=1;
+        foreach(var ip in builder.Configuration.GetSection("Hosting:KnownProxies").Get<string[]>()??[])
+            options.KnownProxies.Add(System.Net.IPAddress.Parse(ip));
         // Si el proxy no corre en la misma máquina, agregar su IP en KnownProxies.
     });
 }
@@ -145,6 +152,7 @@ using (var scope = app.Services.CreateScope())
 if (proxyInverso)
     app.UseForwardedHeaders();
 
+BasePublica.Aplicar(app);
 // Cabeceras de seguridad en todas las respuestas, incluidas páginas de error.
 app.UseMiddleware<CabecerasSeguridadMiddleware>();
 

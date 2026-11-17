@@ -19,6 +19,7 @@ if(args.Contains("--postgres-proteccion")){await ProteccionPostgresChecks.Run(ar
 if(args.Contains("--actualizacion-v1")){await ActualizacionV1Solo.Run();return;}
 if(args.Contains("--mejoras-14")){await Mejoras14Checks.Run();return;}
 if(args.Contains("--mejoras-15")){await Mejoras15Checks.Run();return;}
+if(args.Contains("--infra-07-13")){await Infra0713Checks.Run();return;}
 if(args.Contains("--portal-denis")){await PortalDenisCorpChecks.Run();return;}
 if(args.Contains("--asignaciones-ficha")){await ActualizacionV1Solo.Run(fichas: true);return;}
 if(args.Contains("--imprevistas")){await ActualizacionV1Solo.Run(imprevistas: true);return;}
@@ -253,11 +254,12 @@ using (var anonimo = HostPrueba.Cliente(app))
     var r = await anonimo.GetAsync("/Cuenta/IniciarSesion");
     Check(r.StatusCode == HttpStatusCode.OK, "GET login responde");
     Check(r.Headers.TryGetValues("X-Content-Type-Options", out var nosniff) && nosniff.Single() == "nosniff", "nosniff");
-    Check(r.Headers.TryGetValues("Referrer-Policy", out var referrer) && referrer.Single() == "strict-origin-when-cross-origin", "Referrer-Policy");
+    Check(r.Headers.TryGetValues("Referrer-Policy", out var referrer) && referrer.Single() == "no-referrer", "Referrer-Policy");
     var csp = r.Headers.TryGetValues("Content-Security-Policy", out var cspValores) ? cspValores.Single() : "";
-    Check(csp.Contains("frame-ancestors 'self'") && csp.Contains("object-src 'none'") && csp.Contains("base-uri 'self'"), "CSP mínima");
+    Check(csp.Contains("frame-ancestors 'none'") && csp.Contains("object-src 'none'") && csp.Contains("base-uri 'self'"), "CSP básica aplicada");
     Check(!csp.Contains("script-src") && !csp.Contains("style-src"), "CSP no rompe scripts/estilos inline actuales");
-    Check(r.Headers.TryGetValues("X-Frame-Options", out var xfo) && xfo.Single() == "SAMEORIGIN", "X-Frame-Options compatible con frame-ancestors");
+    Check(r.Headers.TryGetValues("Content-Security-Policy-Report-Only",out var ampliada)&&ampliada.Single().Contains("script-src 'self' 'nonce-"),"CSP ampliada en observación");
+    Check(r.Headers.TryGetValues("X-Frame-Options", out var xfo) && xfo.Single() == "DENY", "X-Frame-Options compatible con frame-ancestors");
     var mantener = await anonimo.GetAsync("/Cuenta/MantenerSesion");
     Check(mantener.StatusCode == HttpStatusCode.Redirect && mantener.Headers.Location!.OriginalString.Contains("/Cuenta/IniciarSesion"), "MantenerSesion exige sesión");
 }

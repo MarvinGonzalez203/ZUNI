@@ -11,7 +11,7 @@ public sealed record ProductoDenisCorp(string Id, string Nombre, string Icono, s
     string Version, TextoPortal Categoria, TextoPortal Descripcion, TextoPortal Estado,
     IReadOnlyList<AvanceProducto> Avances, IReadOnlyList<TextoPortal> Pendientes)
 {
-    public string Ruta => $"/deniscorp/{Id}/";
+    public string Ruta => Id is "zuni" or "pos" ? $"/deniscorp/{Id}/" : $"/deniscorp/programas/{Id}/";
 }
 public static class PortalDenisCorp
 {
@@ -28,7 +28,7 @@ public static class PortalDenisCorp
             [new(new("Lecciones y actividades", "Lessons and activities"), new("Autoestudio de inglés y español con audios, escritura, repaso y minijuegos.", "English and Spanish self-study with audio, writing, review and mini-games.")),
              new(new("Progreso en el dispositivo", "On-device progress"), new("La aplicación conserva el avance local y permite continuar con contenido preparado para uso sin conexión.", "The app keeps local progress and supports continuing with content prepared for offline use."))],
             [new("Acceso público desde este portal y verificación del despliegue.", "Public access from this portal and deployment verification."),new("Cuentas, sincronización entre dispositivos y tutor de IA conectado.", "Accounts, cross-device synchronization and a connected AI tutor.")]),
-        new("fulleo", "Fulleo", "/images/productos/fulleo.svg", "image/svg+xml", "0.8.1",
+        new("fulleo", "Fulleo", "/images/productos/fulleo.svg", "image/svg+xml", "0.9.0",
             new("Precios de combustibles", "Fuel prices"),
             new("Consulta precios de gasolina con su fecha y fuente para informarte antes de llenar el tanque.", "Check gasoline prices with their date and source before filling your tank."),
             new("Ver avances del programa", "View product progress"),
@@ -50,7 +50,13 @@ public static class PortalDenisCorp
             new("Conoce el programa para colegios", "Explore the school program"),
             [new(new("Organización académica", "Academic organization"),new("La propuesta reúne matrículas, aulas, horarios, notas y asistencia para el trabajo de cada colegio.", "The offering brings together enrollment, classrooms, schedules, grades and attendance for each school.")),
              new(new("Gestión administrativa", "Administrative management"),new("Herramientas previstas para pagos, saldos y expedientes, con funciones según el perfil de cada usuario.", "Planned tools for payments, balances and records, with features based on each user's role."))],
-            [new("Publicación, condiciones comerciales y validación del servicio para varias instituciones.", "Publication, commercial terms and validation of the service for multiple institutions."),new("Configuración y puesta en marcha de cada colegio.", "Configuration and onboarding for each school.")])
+            [new("Publicación, condiciones comerciales y validación del servicio para varias instituciones.", "Publication, commercial terms and validation of the service for multiple institutions."),new("Configuración y puesta en marcha de cada colegio.", "Configuration and onboarding for each school.")]),
+        new("logistica-transporte", "Logística y Transporte", "/images/productos/deniscorp-180.png", "image/png", "0.2.0",
+            new("Operaciones y transporte", "Operations and transport"),
+            new("Proyecto de logística con acceso por permisos y registros limitados al usuario autorizado.", "Logistics project with permission-based access and records limited to authorized users."),
+            new("Ver avances del programa", "View product progress"),
+            [new(new("Acceso protegido", "Protected access"),new("Permisos por acción, verificación en dos pasos y bloqueo por intentos.", "Per-action permissions, two-step verification and login lockout."))],
+            [new("Conectar y verificar una base SQL Server externa compatible antes de publicar.", "Connect and verify a compatible external SQL Server database before publishing.")])
     ];
     public static ProductoDenisCorp Obtener(string id) => Productos.Single(p => p.Id == id);
 }

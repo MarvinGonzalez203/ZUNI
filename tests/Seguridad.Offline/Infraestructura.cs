@@ -67,14 +67,15 @@ internal static class HostPrueba
     // (SesionZuni, PoliticasAcceso, CabecerasSeguridadMiddleware y middlewares de Zuni).
     // No ejecuta Program ni seeds de Zuni, no carga secretos y no abre PostgreSQL.
     public static async Task<WebApplication> Crear(DbContextOptions<ApplicationDbContext> opciones, Reloj reloj,
-        HasherContador hasher, int loginPorMinuto,Zuni.Services.Correo.ICorreoPin? correoPin=null)
+        HasherContador hasher, int loginPorMinuto,Zuni.Services.Correo.ICorreoPin? correoPin=null,string pathBase="",bool cspEnforced=false)
     {
         var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
         { ApplicationName = typeof(CuentaController).Assembly.GetName().Name, EnvironmentName = "Development" });
         builder.WebHost.UseKestrel();
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Zuni:LimitesAcceso:LoginPorMinuto"] = loginPorMinuto.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            ["Zuni:LimitesAcceso:LoginPorMinuto"] = loginPorMinuto.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["Hosting:PathBase"]=pathBase,["Hosting:ApplicationOnly"]=(pathBase.Length>0).ToString(),["Seguridad:CspEnforced"]=cspEnforced.ToString()
         });
         builder.Services.AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));
         builder.Services.AddControllersWithViews().AddApplicationPart(typeof(CuentaController).Assembly);
@@ -86,7 +87,7 @@ internal static class HostPrueba
             options.XmlEncryptor = new Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlEncryptor();
         });
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(options => SesionZuni.Configurar(options, desarrollo: true));
+            .AddCookie(options => {SesionZuni.Configurar(options, desarrollo: true);options.Cookie.Path=pathBase.Length>0?pathBase:"/";});
         builder.Services.AddAuthorization();
         builder.Services.AddZuniLimitesAcceso(builder.Configuration);
         // Un contexto por petición, como en producción (evita entidades obsoletas entre peticiones).
@@ -105,6 +106,7 @@ internal static class HostPrueba
 
         var app = builder.Build();
         app.Urls.Add("http://127.0.0.1:0");
+        BasePublica.Aplicar(app);
         app.UseMiddleware<CabecerasSeguridadMiddleware>();
         app.UseRouting();
         app.UseRequestLocalization();

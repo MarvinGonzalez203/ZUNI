@@ -1,33 +1,26 @@
+using System.Security.Cryptography;
 namespace Zuni.Seguridad;
-
-// Cabeceras de seguridad compatibles con las vistas actuales.
-// La CSP es deliberadamente mínima: NO restringe script-src ni style-src porque las vistas usan
-// scripts y estilos inline (layout del panel, Bootstrap). Solo bloquea embebido en otros sitios,
-// plugins y cambios de <base>.
-public sealed class CabecerasSeguridadMiddleware(RequestDelegate next)
+public sealed class CabecerasSeguridadMiddleware(RequestDelegate next,IConfiguration config)
 {
-    public const string PoliticaContenido =
-        "frame-ancestors 'self'; object-src 'none'; base-uri 'self'";
-
+    public const string NonceKey="Zuni.CspNonce";
+    public const string PoliticaContenido="frame-ancestors 'none'; object-src 'none'; base-uri 'self'";
+    public static string PoliticaEstricta(string nonce)=>$"default-src 'self'; script-src 'self' 'nonce-{nonce}'; script-src-attr 'none'; style-src 'self' 'nonce-{nonce}'; style-src-attr 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self'; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'";
     public Task InvokeAsync(HttpContext context)
     {
-        context.Response.OnStarting(() =>
+        var nonce=Convert.ToBase64String(RandomNumberGenerator.GetBytes(24));
+        context.Items[NonceKey]=nonce;
+        context.Response.OnStarting(()=>
         {
-            var headers = context.Response.Headers;
-            // No se sobrescriben valores que una acción haya establecido explícitamente.
-            Agregar(headers, "X-Content-Type-Options", "nosniff");
-            Agregar(headers, "Referrer-Policy", "strict-origin-when-cross-origin");
-            Agregar(headers, "X-Frame-Options", "SAMEORIGIN"); // equivalente a frame-ancestors 'self' para navegadores antiguos
-            Agregar(headers, "Content-Security-Policy", PoliticaContenido);
-            Agregar(headers, "Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+            var h=context.Response.Headers;
+            h.TryAdd("X-Content-Type-Options","nosniff");h.TryAdd("Referrer-Policy","no-referrer");
+            h["X-Frame-Options"]="DENY";h.TryAdd("Cross-Origin-Opener-Policy","same-origin");
+            h.TryAdd("Cross-Origin-Resource-Policy","same-origin");
+            // Report-Only por defecto: activación explícita tras ensayar todos los roles en staging.
+            if(config.GetValue<bool>("Seguridad:CspEnforced"))h.TryAdd("Content-Security-Policy",PoliticaEstricta(nonce));
+            else {h.TryAdd("Content-Security-Policy",PoliticaContenido);h.TryAdd("Content-Security-Policy-Report-Only",PoliticaEstricta(nonce));}
+            h.TryAdd("Permissions-Policy","camera=(), microphone=(), geolocation=()");
             return Task.CompletedTask;
         });
         return next(context);
-    }
-
-    private static void Agregar(IHeaderDictionary headers, string nombre, string valor)
-    {
-        if (!headers.ContainsKey(nombre))
-            headers[nombre] = valor;
     }
 }

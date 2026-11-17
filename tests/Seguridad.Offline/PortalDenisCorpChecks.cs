@@ -16,13 +16,13 @@ internal static class PortalDenisCorpChecks
         await using var app=await HostPrueba.Crear(options,new Reloj(),new HasherContador(),100);
         using var anon=HostPrueba.Cliente(app);
         var salida=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");if(salida is not null)Directory.CreateDirectory(salida);
-        Check(PortalDenisCorp.Productos.Select(p=>p.Id).SequenceEqual(new[]{"zuni","academy","fulleo","pos","colegios"}),"cinco programas y orden estable");
-        Check(PortalDenisCorp.Productos.Select(p=>p.Icono).Distinct().Count()==5,"identidades propias incluyendo ZUNI");
+        Check(PortalDenisCorp.Productos.Select(p=>p.Id).SequenceEqual(new[]{"zuni","academy","fulleo","pos","colegios","logistica-transporte"}),"cinco programas y orden estable");
+        Check(PortalDenisCorp.Productos.Select(p=>p.Icono).Distinct().Count()==6,"identidades propias incluyendo ZUNI");
         foreach(var idioma in new[]{"es","en"})
         {
-            var cambio=await HostPrueba.Post(anon,"/","/Idioma/Cambiar",("idioma",idioma),("volver","/deniscorp/fulleo/#avances"));
-            Check(cambio.StatusCode==HttpStatusCode.Redirect&&cambio.Headers.Location?.OriginalString=="/deniscorp/fulleo/#avances","idioma conserva producto y sección "+idioma);
-            foreach(var (nombre,ruta) in new[]{("deniscorp","/"),("academy","/deniscorp/academy/"),("fulleo","/deniscorp/fulleo/"),("pos","/deniscorp/pos/"),("colegios","/deniscorp/colegios/")})
+            var cambio=await HostPrueba.Post(anon,"/","/Idioma/Cambiar",("idioma",idioma),("volver","/deniscorp/programas/fulleo/#avances"));
+            Check(cambio.StatusCode==HttpStatusCode.Redirect&&cambio.Headers.Location?.OriginalString=="/deniscorp/programas/fulleo/#avances","idioma conserva producto y sección "+idioma);
+            foreach(var (nombre,ruta) in new[]{("deniscorp","/"),("academy","/deniscorp/programas/academy/"),("fulleo","/deniscorp/programas/fulleo/"),("pos","/deniscorp/pos/"),("colegios","/deniscorp/programas/colegios/")})
             {
                 var r=await anon.GetAsync(ruta);var html=await r.Content.ReadAsStringAsync();var texto=WebUtility.HtmlDecode(html);
                 Check(r.StatusCode==HttpStatusCode.OK&&html.Contains("lang=\""+idioma+"\""),"ruta pública en idioma "+nombre+idioma);
@@ -33,9 +33,9 @@ internal static class PortalDenisCorpChecks
                 Check(!html.Contains("C:\\")&&!html.Contains("SourcePath"),"no exponer rutas internas en fichas públicas "+nombre+idioma);
                 if(nombre=="deniscorp")
                 {
-                    Check(Regex.Matches(html,"data-product=\"").Count==5,"cinco tarjetas "+idioma);
+                    Check(Regex.Matches(html,"data-product=\"").Count==6,"seis tarjetas "+idioma);
                     Check(html.Contains("brand-glass")&&html.Contains("/images/zuni-logo-transparent.png"),"logo ZUNI sobre cristal "+idioma);
-                    Check(Regex.Matches(html,"class=\"([^\"]*)\"").Count(m=>m.Groups[1].Value.Split(' ').Contains("brand-glass"))==7,"cristal en las cinco tarjetas, cabecera y hero "+idioma);
+                    Check(Regex.Matches(html,"class=\"([^\"]*)\"").Count(m=>m.Groups[1].Value.Split(' ').Contains("brand-glass"))==8,"cristal en las seis tarjetas, cabecera y hero "+idioma);
                     Check(!texto.Contains("LSR")&&!html.Contains("colegios.png"),"el cliente LSR no representa al SaaS "+idioma);
                     Check(html.Contains("/deniscorp/blog/")&&html.Contains("/deniscorp/contacto/"),"blog y contacto en navegación "+idioma);
                     Check(texto.Contains(idioma=="es"?"Colegios y gestión escolar":"Schools and administration"),"catálogo traducido "+idioma);
@@ -45,7 +45,7 @@ internal static class PortalDenisCorpChecks
                     Check(texto.Contains(nombre=="colegios"?(idioma=="es"?"Propuesta para colegios":"School service offering"):(idioma=="es"?"Avances del programa":"Product progress"))&&texto.Contains(PortalDenisCorp.Obtener(nombre).Version),"avances con versión documentada "+nombre+idioma);
                     Check(texto.Contains(idioma=="es"?"En preparación":"In preparation"),"pendientes distinguidos de lo implementado "+nombre+idioma);
                 }
-                if(nombre=="fulleo")Check(texto.Contains("0.8.1")&&texto.Contains("19")&&texto.Contains("88")&&texto.Contains(idioma=="es"?"datos históricos":"historical test data"),"avances de Fulleo no simulan precios actuales "+idioma);
+                if(nombre=="fulleo")Check(texto.Contains("0.9.0")&&texto.Contains("19")&&texto.Contains("88")&&texto.Contains(idioma=="es"?"datos históricos":"historical test data"),"avances de Fulleo no simulan precios actuales "+idioma);
                 if(salida is not null)await File.WriteAllTextAsync(Path.Combine(salida,nombre+"-"+idioma+".html"),html);
             }
             foreach(var nombre in new[]{"blog","contacto"})
@@ -76,7 +76,9 @@ internal static class PortalDenisCorpChecks
             }
         }
         Check((await anon.GetAsync("/deniscorp/")).StatusCode==HttpStatusCode.OK,"alias del portal conservado");
-        var zuni=await anon.GetStringAsync("/deniscorp/zuni/");Check(zuni.Contains("favicon-96.png")&&!zuni.Contains("deniscorp-32.png"),"ZUNI mantiene sus propios favicons");
+        var zuni=await anon.GetStringAsync("/deniscorp/zuni/");
+        if(salida is not null)await File.WriteAllTextAsync(Path.Combine(salida,"zuni.html"),zuni);
+        Check(Regex.IsMatch(zuni,"rel=\"icon\"[^>]*href=\"/favicon-96.png"),"ZUNI mantiene su favicon: "+string.Join(";",Regex.Matches(zuni,"<link[^>]*rel=\"icon\"[^>]*>").Select(m=>m.Value)));
         await app.StopAsync();Console.WriteLine($"OK: {checks} comprobaciones HTTP de portal, idiomas, avances e identidades.");
     }
 }

@@ -20,22 +20,29 @@ namespace Zuni.Controllers
             _db = db;
         }
 
-        public IActionResult Index() => View("DenisCorp");
+        public async Task<IActionResult> Index()
+        {
+            if(HttpContext?.RequestServices.GetService<IConfiguration>()?.GetValue<bool>("Hosting:ApplicationOnly")==true)return await Zuni();
+            return View("DenisCorp");
+        }
 
         [HttpGet("deniscorp")]
         public IActionResult DenisCorp() => View();
 
-        [HttpGet("deniscorp/academy")]
+        [HttpGet("deniscorp/programas/academy")]
         public IActionResult Academy() => View("Producto", model: Resources.PortalDenisCorp.Obtener("academy"));
 
-        [HttpGet("deniscorp/fulleo")]
+        [HttpGet("deniscorp/programas/fulleo")]
         public IActionResult Fulleo() => View("Producto", model: Resources.PortalDenisCorp.Obtener("fulleo"));
 
         [HttpGet("deniscorp/pos")]
         public IActionResult Pos() => View("Producto", model: Resources.PortalDenisCorp.Obtener("pos"));
 
-        [HttpGet("deniscorp/colegios")]
+        [HttpGet("deniscorp/programas/colegios")]
         public IActionResult Colegios() => View("Producto", model: Resources.PortalDenisCorp.Obtener("colegios"));
+
+        [HttpGet("deniscorp/programas/logistica-transporte")]
+        public IActionResult Logistica() => View("Producto", model: Resources.PortalDenisCorp.Obtener("logistica-transporte"));
 
         [HttpGet("deniscorp/blog")]
         public IActionResult Blog(string? q,string? tema) => View(Resources.BlogDenisCorp.Buscar(q,tema));
@@ -80,7 +87,7 @@ namespace Zuni.Controllers
                 }
             }
 
-            return View(model);
+            return View("Zuni",model);
         }
 
         public IActionResult Privacy()
