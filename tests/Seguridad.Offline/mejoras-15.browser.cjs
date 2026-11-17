@@ -22,9 +22,9 @@ function check(value,message){assert.ok(value,message);checks++;}
    if(width===390||width===1366)await page.screenshot({path:path.join(dir,name+'-'+width+'.png'),fullPage:true});
   }
   await page.goto('http://zuni.test/deniscorp');
-  check(await page.locator('.product-card').count()===3,'tres programas '+width);
+  check(await page.locator('.product-card').count()===5,'cinco programas '+width);
   const cards=await page.locator('.product-card').evaluateAll(es=>es.map(e=>({x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y})));
-  check(width<700?cards[1].y>cards[0].y:cards.every(c=>c.y===cards[0].y),'tarjetas adaptadas al ancho '+width);
+  check(width<620?cards[1].y>cards[0].y:width<1000?cards[1].y===cards[0].y&&cards[2].y>cards[0].y:cards[2].y===cards[0].y&&cards[3].y>cards[0].y,'tarjetas adaptadas al ancho '+width);
   check(await page.locator('.product-login').getAttribute('href')==='/Cuenta/IniciarSesion','login existente conservado '+width);
   await page.locator('.corp-hero .corp-button').focus();check(await page.locator('.corp-hero .corp-button').evaluate(e=>getComputedStyle(e).outlineStyle!=='none'),'foco de teclado visible '+width);
  }

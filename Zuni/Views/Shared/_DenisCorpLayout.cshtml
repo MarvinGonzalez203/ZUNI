@@ -1,16 +1,30 @@
+@using Zuni.Resources
+@using static Zuni.Resources.PortalDenisCorp
+@{
+    var producto = ViewData["ProductoPortal"] as ProductoDenisCorp;
+    var icono = producto?.Icono ?? "/images/productos/deniscorp-32.png";
+    var tipoIcono = producto?.TipoIcono ?? "image/png";
+}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="@Idioma.Codigo" data-portal="denis-corp">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Denis Corp reúne sus programas en un solo lugar. Conoce ZUNI, Denis Academy y Fulleo." />
+    <meta name="description" content="@T("Denis Corp: ZUNI, Academy, Fulleo, punto de venta y soluciones para colegios.", "Denis Corp: ZUNI, Academy, Fulleo, point of sale and school solutions.")" />
     <title>@ViewData["Title"] · Denis Corp</title>
+    <link rel="icon" type="@tipoIcono" href="@icono" asp-append-version="true" />
+    <link rel="shortcut icon" type="@tipoIcono" href="@icono" asp-append-version="true" />
+    @if(tipoIcono=="image/png"){<link rel="apple-touch-icon" href="@(producto?.Icono??"/images/productos/deniscorp-180.png")" />}
+    <script src="~/js/tema.js" asp-append-version="true" data-view-scope="denis-corp"></script>
     <link rel="stylesheet" href="~/css/deniscorp.css" asp-append-version="true" />
 </head>
 <body>
-    <a class="skip" href="#contenido">Saltar al contenido</a>
-    <header class="corp-header"><a class="brand" href="/">Denis<span>Corp</span><small>Software con propósito</small></a><nav aria-label="Navegación principal"><a href="/#programas">Nuestros programas</a><a href="/deniscorp/zuni/">Conocer ZUNI <span aria-hidden="true">↗</span></a></nav></header>
+    <a class="skip" href="#contenido">@T("Saltar al contenido", "Skip to content")</a>
+    <header class="corp-header"><a class="brand" href="/" aria-label="Denis Corp"><img src="/images/productos/deniscorp.png" width="44" height="44" alt="" /><span>Denis Corp<span class="brand-dot">.</span><small>@T("Software con propósito", "Software with purpose")</small></span></a><nav aria-label="@T("Navegación principal", "Main navigation")"><a href="/#programas">@T("Nuestros programas", "Our programs")</a><a href="/deniscorp/zuni/">@T("Conocer ZUNI", "Explore ZUNI") <span aria-hidden="true">↗</span></a></nav><partial name="_ControlesVista" /></header>
     <main id="contenido">@RenderBody()</main>
-    <footer class="corp-footer"><span>© @DateTime.UtcNow.Year Denis Corp</span><span>Un espacio para cada propósito.</span><a asp-controller="Privacidad" asp-action="Politica">Privacidad de ZUNI</a></footer>
+    <footer class="corp-footer"><div class="footer-intro"><a class="brand" href="/"><span>Denis Corp<span class="brand-dot">.</span></span></a><p>@T("Soluciones web para acompañar, aprender y organizar tu día.", "Web solutions for support, learning and daily organization.")</p></div><nav aria-label="@T("Programas de Denis Corp", "Denis Corp programs")">@foreach(var p in Productos){<a href="@p.Ruta">@p.Nombre</a>}</nav><div class="footer-bottom"><span>© @DateTime.UtcNow.Year Denis Corp. @T("Todos los derechos reservados.", "All rights reserved.")</span><button class="corp-scroll-footer" type="button" data-corp-top aria-label="@T("Volver al principio", "Back to top")"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 15 7-7 7 7" /></svg></button><a asp-controller="Privacidad" asp-action="Politica">@T("Privacidad de ZUNI", "ZUNI privacy")</a></div></footer>
+    <button class="corp-scroll" id="corp-scroll-control" type="button" hidden aria-label="@T("Ver más contenido", "View more content")" data-down-label="@T("Ver más contenido", "View more content")" data-up-label="@T("Volver al principio", "Back to top")"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 9 7 7 7-7" /></svg></button>
+    <partial name="_IdiomaScripts" />
+    <script src="~/js/portal-denis-corp.js" asp-append-version="true"></script>
 </body>
 </html>

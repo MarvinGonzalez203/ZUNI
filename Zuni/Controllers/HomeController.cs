@@ -26,10 +26,16 @@ namespace Zuni.Controllers
         public IActionResult DenisCorp() => View();
 
         [HttpGet("deniscorp/academy")]
-        public IActionResult Academy() => View("Producto", model: "Academy");
+        public IActionResult Academy() => View("Producto", model: Resources.PortalDenisCorp.Obtener("academy"));
 
         [HttpGet("deniscorp/fulleo")]
-        public IActionResult Fulleo() => View("Producto", model: "Fulleo");
+        public IActionResult Fulleo() => View("Producto", model: Resources.PortalDenisCorp.Obtener("fulleo"));
+
+        [HttpGet("deniscorp/pos")]
+        public IActionResult Pos() => View("Producto", model: Resources.PortalDenisCorp.Obtener("pos"));
+
+        [HttpGet("deniscorp/colegios")]
+        public IActionResult Colegios() => View("Producto", model: Resources.PortalDenisCorp.Obtener("colegios"));
 
         [HttpGet("deniscorp/zuni")]
         public async Task<IActionResult> Zuni()

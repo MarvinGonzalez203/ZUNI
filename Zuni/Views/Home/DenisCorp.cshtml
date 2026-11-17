@@ -1,16 +1,26 @@
-@{ Layout = "_DenisCorpLayout"; ViewData["Title"] = "Inicio"; }
+@using Zuni.Resources
+@using static Zuni.Resources.PortalDenisCorp
+@{ Layout = "_DenisCorpLayout"; ViewData["Title"] = T("Inicio", "Home"); }
 <section class="corp-hero" aria-labelledby="corp-title">
-    <p class="eyebrow">IDEAS QUE TOMAN FORMA</p>
-    <h1 id="corp-title">Un mundo de ideas.<br /><span>Una misma casa.</span></h1>
-    <p class="intro">Somos Denis Corp, la empresa matriz de ZUNI, Denis Academy y Fulleo. Creamos programas con identidad propia, reunidos aquí para que encuentres el que necesitas.</p>
-    <a class="corp-button" href="#programas">Explorar nuestros programas <span aria-hidden="true">↓</span></a>
-    <div class="corp-orbit" aria-hidden="true"><span>D<span class="orbit-dot">.</span></span></div>
+    <div><p class="eyebrow">@T("SOLUCIONES WEB DE DENIS CORP", "WEB SOLUTIONS BY DENIS CORP")</p>
+    <h1 id="corp-title">@T("Un mundo de ideas.", "A world of ideas.")<br /><span>@T("Una misma casa.", "One shared home.")</span></h1>
+    <p class="intro">@T("Creamos programas para acompañar, aprender y organizar. Conoce las soluciones de Denis Corp para estudiantes, personas, negocios y colegios.", "We create software for support, learning and organization. Explore Denis Corp solutions for students, individuals, businesses and schools.")</p>
+    <a class="corp-button" href="#programas">@T("Explorar nuestros programas", "Explore our programs") <span aria-hidden="true">↘</span></a></div>
+    <img class="corp-hero-logo" src="/images/productos/deniscorp.png" width="256" height="256" alt="" />
 </section>
 <section class="programs" id="programas" aria-labelledby="programs-title">
-    <p class="eyebrow">NUESTRO ECOSISTEMA</p><h2 id="programs-title">Cada programa, su propio propósito.</h2>
+    <p class="eyebrow">@T("NUESTRO ECOSISTEMA", "OUR ECOSYSTEM")</p><h2 id="programs-title">@T("Cada programa, su propio propósito.", "Each program has its own purpose.")</h2>
     <div class="product-grid">
-        <article class="product-card zuni-card"><div class="product-mark" aria-hidden="true"><img src="/images/zuni-logo-transparent.png" width="48" height="48" alt="" /></div><p class="product-status">Bienestar y acompañamiento</p><h3>ZUNI</h3><p>Un espacio de acompañamiento estudiantil que conecta a estudiantes, psicólogos e instituciones.</p><a class="corp-button" href="/deniscorp/zuni/">Conocer ZUNI <span aria-hidden="true">↗</span></a><a class="product-login" asp-controller="Cuenta" asp-action="IniciarSesion">Ya tengo cuenta en ZUNI</a></article>
-        <article class="product-card academy-card"><div class="product-mark" aria-hidden="true">A</div><p class="product-status">Aprendizaje de idiomas</p><h3>Denis Academy</h3><p>Aprende inglés y español con lecciones y actividades interactivas, a tu ritmo.</p><a class="corp-button" href="/deniscorp/academy/">Conocer Academy <span aria-hidden="true">↗</span></a><span class="availability">Acceso público en preparación</span></article>
-        <article class="product-card fulleo-card"><div class="product-mark" aria-hidden="true">F</div><p class="product-status">Precios de combustibles</p><h3>Fulleo</h3><p>Consulta precios de gasolina y conoce su propuesta para informarte antes de llenar el tanque.</p><a class="corp-button" href="/deniscorp/fulleo/">Conocer Fulleo <span aria-hidden="true">↗</span></a><span class="availability">Acceso público en preparación</span></article>
+        @foreach (var p in Productos)
+        {
+            <article class="product-card @p.Id-card" data-product="@p.Id">
+                <partial name="_MarcaProducto" model="p" />
+                <p class="product-status">@p.Categoria</p><h3>@p.Nombre</h3><p class="product-description">@p.Descripcion</p>
+                <a class="corp-button" href="@p.Ruta">@T("Conocer", "Explore") @p.Nombre <span aria-hidden="true">↗</span></a>
+                @if(p.Id=="zuni"){<a class="product-login" asp-controller="Cuenta" asp-action="IniciarSesion">@T("Ya tengo cuenta en ZUNI", "I already have a ZUNI account")</a>}
+                else {<span class="availability">@p.Estado</span>}
+            </article>
+        }
     </div>
 </section>
+<section class="corp-callout" aria-labelledby="callout-title"><div><p class="eyebrow">@T("TU PRÓXIMO PASO", "YOUR NEXT STEP")</p><h2 id="callout-title">@T("Una solución para lo que haces cada día.", "A solution for what you do every day.")</h2><p>@T("Explora cada programa, conoce sus avances y encuentra el que se adapta a ti.", "Explore each program, follow its progress and find the one that fits your needs.")</p></div><a class="corp-button" href="#programas">@T("Ver los programas", "View the programs") <span aria-hidden="true">↗</span></a></section>

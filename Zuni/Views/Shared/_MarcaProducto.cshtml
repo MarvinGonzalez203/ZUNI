@@ -1,0 +1,4 @@
+@model Zuni.Resources.ProductoDenisCorp
+<div class="product-mark @(Model.Id=="zuni"?"brand-glass":"") @(Model.Id=="colegios"?"school-mark":"")" aria-hidden="true">
+    <img src="@(Model.Id=="zuni"?"/images/zuni-logo-transparent.png":Model.Id=="pos"?"/images/productos/deniscorp.png":Model.Icono)" width="64" height="64" alt="" loading="lazy" />
+</div>

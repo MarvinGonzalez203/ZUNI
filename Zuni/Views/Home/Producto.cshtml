@@ -1,12 +1,17 @@
-@model string
-@{ Layout = "_DenisCorpLayout"; ViewData["Title"] = Model == "Academy" ? "Denis Academy" : "Fulleo"; }
-<section class="product-detail">
-    <a class="back-link" href="/#programas">← Todos los programas</a>
-    <p class="eyebrow">UN PROGRAMA DE DENIS CORP</p>
-    <h1>@ViewData["Title"]</h1>
-    @if (Model == "Academy")
-    { <p class="intro">Aprendizaje de inglés y español con lecciones y actividades interactivas para avanzar a tu ritmo.</p><p>Estamos preparando su acceso público desde esta dirección. Vuelve pronto para conocer las novedades.</p> }
-    else
-    { <p class="intro">Consulta precios de gasolina para informarte antes de llenar el tanque.</p><p>Fulleo forma parte de Denis Corp. Estamos preparando su acceso público desde esta dirección.</p> }
-    <a class="corp-button" href="/">Volver a Denis Corp</a>
+@model Zuni.Resources.ProductoDenisCorp
+@using static Zuni.Resources.PortalDenisCorp
+@{ Layout = "_DenisCorpLayout"; ViewData["Title"] = Model.Nombre; ViewData["ProductoPortal"] = Model; }
+<section class="product-detail @Model.Id-card" data-product-page="@Model.Id">
+    <a class="back-link" href="/#programas">← @T("Todos los programas", "All programs")</a>
+    <header class="product-intro"><partial name="_MarcaProducto" model="Model" /><div><p class="eyebrow">@Model.Categoria</p><h1>@Model.Nombre</h1><p class="intro">@Model.Descripcion</p></div></header>
+    <div class="product-progress-heading" id="avances"><h2>@T("Avances del programa", "Product progress")</h2><span class="release-badge">@T("Versión documentada", "Documented version") @Model.Version</span></div>
+    <p class="progress-note">@T("Estas funciones están implementadas en el proyecto. El acceso a la aplicación desde este portal está en preparación.", "These features are implemented in the project. Access to the application from this portal is being prepared.")</p>
+    <div class="progress-grid">@foreach(var a in Model.Avances){<article class="progress-card"><span class="progress-badge">@T("Implementado", "Implemented")</span><h3>@a.Titulo</h3><p>@a.Descripcion</p></article>}</div>
+    @if(Model.Id=="fulleo")
+    {
+        <aside class="product-evidence"><h2>@T("Datos con contexto, sin confundir fechas", "Data with context and clear dates")</h2><p>@T("La muestra documental incluye 19 estaciones y 88 observaciones del 26 de octubre de 2026. Son datos históricos de prueba y no se presentan como precios actuales. Las estaciones sin coordenadas verificadas no se ubican de forma inventada en el mapa.", "The documented sample includes 19 stations and 88 observations from October 26, 2026. These are historical test data, not current prices. Stations without verified coordinates are not assigned invented map locations.")</p></aside>
+    }
+    <section class="pending-section"><h2>@T("En preparación", "In preparation")</h2><ul>@foreach(var pendiente in Model.Pendientes){<li>@pendiente</li>}</ul></section>
+    <p class="progress-review">@T("Resumen revisado el 17 de noviembre de 2026 a partir de la documentación del proyecto.", "Summary reviewed on November 17, 2026 from the project documentation.")</p>
+    <a class="corp-button" href="/#programas">@T("Volver a los programas", "Back to programs")</a>
 </section>
