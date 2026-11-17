@@ -1,0 +1,36 @@
+@model DobleFactorVista
+@{ Layout = "_Layout"; ViewData["Title"] = "Verificación en dos pasos"; }
+@section Styles { <link rel="stylesheet" href="~/css/seguridad-cuenta.css" asp-append-version="true" /> }
+<section class="container py-5 account-security">
+    <h1>Verificación en dos pasos (2FA)</h1>
+    <p>Protege el acceso a tu cuenta con tu contraseña y un código de una aplicación autenticadora. El PIN de notas profesionales se mantiene como protección adicional.</p>
+    @if(Model.Error is {} error){<div role="alert" class="alert alert-warning">@error</div>}
+    @if(Model.Codigos is {} codigos)
+    {
+        <div role="status" class="alert alert-success">@(Model.Activo ? "2FA activado. Guarda estos códigos de recuperación en un lugar seguro, fuera de este dispositivo. Cada código funciona una sola vez. Esta lista no se volverá a mostrar." : "2FA desactivado. Se cerraron las sesiones abiertas.")</div>
+        <ul aria-label="Códigos de recuperación">@foreach(var c in codigos){<li><code>@c</code></li>}</ul>
+        <p>Se cerraron las sesiones abiertas. Vuelve a iniciar sesión con el autenticador o uno de estos códigos.</p>
+        <a asp-controller="Cuenta" asp-action="IniciarSesion" class="btn btn-zuni">Iniciar sesión</a>
+    }
+    else if(User.Identity?.IsAuthenticated != true)
+    { <p>La configuración se guardó y se cerraron las sesiones abiertas. Vuelve a iniciar sesión.</p><a asp-controller="Cuenta" asp-action="IniciarSesion">Iniciar sesión</a> }
+    else
+    {
+        <p><strong>Estado: @(Model.Activo ? "Activado" : "Desactivado")</strong></p>
+        @if(Model.Clave is {} clave)
+        {
+            <h2>Configura tu autenticador</h2><ol><li>En tu aplicación autenticadora agrega una cuenta con clave manual.</li><li>Nombre: ZUNI. Tipo: basado en tiempo.</li><li>Introduce esta clave: <code style="overflow-wrap:anywhere">@clave</code></li><li>Escribe el código de seis dígitos para terminar. Esta configuración vence en 10 minutos.</li></ol>
+        }
+        <form asp-action="Gestionar" method="post" autocomplete="off">
+            <label for="Contrasena">Contraseña actual</label><input class="form-control mb-3" type="password" name="Contrasena" id="Contrasena" required maxlength="128" autocomplete="current-password" />
+            @if(Model.Activo || Model.Clave is not null)
+            { <label for="Codigo">@(Model.Activo ? "Código del autenticador o de recuperación" : "Código del autenticador")</label><input class="form-control mb-3" type="text" name="Codigo" id="Codigo" maxlength="32" required autocomplete="one-time-code" autocapitalize="off" spellcheck="false" /> }
+            @if(Model.Activo)
+            { <p>Para cambiar la protección necesitas tu contraseña y un código válido. Se cerrarán tus sesiones y los códigos anteriores quedarán invalidados.</p><button class="btn btn-zuni me-2 mb-2" name="operacion" value="Renovar">Renovar códigos de recuperación</button><button class="btn btn-outline-danger mb-2" name="operacion" value="Desactivar">Desactivar 2FA</button> }
+            else
+            { <button class="btn btn-zuni" name="operacion" value="@(Model.Clave is null ? "Preparar" : "Activar")">@(Model.Clave is null ? "Preparar autenticador" : "Activar 2FA")</button> }
+        </form>
+    }
+    <p class="mt-4">Si pierdes el autenticador, inicia sesión usando uno de tus códigos de recuperación. Si pierdes ambos, contacta con Administración para verificar tu identidad; cambiar la contraseña no elimina el 2FA.</p>
+    <a asp-controller="MiCuenta" asp-action="Index">Volver a Mi cuenta</a>
+</section>

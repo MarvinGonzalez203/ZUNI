@@ -99,6 +99,7 @@ internal static class HostPrueba
         builder.Services.AddHttpClient<Zuni.Services.Correo.ICorreoPin,Zuni.Services.Correo.CorreoPinBrevo>();
         if(correoPin is not null)builder.Services.AddSingleton(correoPin);
         builder.Services.AddScoped<Zuni.Services.PinProfesionalService>();
+        builder.Services.AddScoped<Zuni.Services.DobleFactorService>();
         builder.Services.AddScoped<Zuni.Services.BigFive.BigFiveService>();
         builder.Services.AddScoped<GestionSolicitudesService>();
 

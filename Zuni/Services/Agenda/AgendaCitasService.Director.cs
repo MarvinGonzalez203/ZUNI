@@ -27,7 +27,7 @@ public sealed partial class AgendaCitasService
         static string? EstadoBloque(EstadoCita estado) => estado switch
         {
             EstadoCita.Solicitada => "Pendiente de revisar",
-            EstadoCita.Reservada or EstadoCita.Confirmada or EstadoCita.Completada or EstadoCita.NoAsistio => "Ocupado",
+            EstadoCita.Reservada or EstadoCita.Confirmada or EstadoCita.Completada or EstadoCita.NoAsistio or EstadoCita.AusenciaProfesional => "Ocupado",
             _ => null
         };
         foreach (var d in calendario.Dias)
@@ -38,7 +38,7 @@ public sealed partial class AgendaCitasService
             citas.Count(c => c.Estado is EstadoCita.Reservada or EstadoCita.Confirmada),
             citas.Count(c => c.Estado == EstadoCita.Solicitada),
             citas.Count(c => c.Estado is EstadoCita.Completada or EstadoCita.NoAsistio),
-            citas.Count(c => c.Estado is EstadoCita.Cancelada or EstadoCita.Rechazada));
+            citas.Count(c => c.Estado is EstadoCita.Cancelada or EstadoCita.Rechazada or EstadoCita.AusenciaProfesional));
         return new(calendario, profesionales) { Metricas = metricas };
     }
     // La respuesta a propuestas de Dirección (avisos administrativos y auditoría) está en

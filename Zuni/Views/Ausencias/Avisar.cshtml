@@ -1,0 +1,22 @@
+@model Zuni.Models.Agenda.CitaResumen
+@using Zuni.Models.Agenda
+@using Zuni.Services.Agenda
+@{ Layout = "_DashboardLayout"; ViewData["Title"] = "Avisar que no podré asistir"; ViewData["DashboardController"] = "Psicologo"; ViewData["DashboardRole"] = "Psicologo"; }
+<section class="dash-card">
+    <h1>Avisar que no podré asistir</h1><p>@Model.Nombre · @AgendaReglas.Local(Model.InicioUtc).ToString("dd/MM/yyyy HH:mm") (Guatemala)</p>
+    @if(Model.Estado == EstadoCita.AusenciaProfesional)
+    {
+        <div role="status">El aviso está guardado en las notificaciones del estudiante. No se le ha marcado como ausente. La cita original conserva su historial.</div>
+        <p>Cuando puedas atender, registra una nueva fecha y ZUNI enviará otra notificación.</p>
+        <a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@Model.Id" class="dash-button">Programar nueva fecha y notificar</a>
+    }
+    else if(AgendaReglas.Activa(Model.Estado) && !Model.EsImprevista && !Model.TieneRegistroAtencion)
+    {
+        <p>Si una situación médica, personal u otro imprevisto te impide atender, avisa al estudiante desde aquí. No necesitas revelar detalles personales.</p>
+        <p>Al confirmar, se notificará que no podrás atender y que la cita necesita una nueva fecha. El horario original quedará bloqueado para otras reservas del profesional.</p>
+        <p>No se creará un registro clínico ni una inasistencia del estudiante. Si tienes varias citas afectadas, envía el aviso en cada una; puedes bloquear el resto del día desde tu calendario.</p>
+        <form asp-action="Confirmar" method="post"><input type="hidden" name="citaId" value="@Model.Id"/><input type="hidden" name="revision" value="@Model.Revision"/><button class="dash-button">Confirmar ausencia y notificar al estudiante</button></form>
+    }
+    else { <p>Esta actividad ya no permite registrar una ausencia del profesional.</p> }
+    <p class="mt-4"><a asp-controller="Psicologo" asp-action="Agenda">Volver a mi agenda</a></p>
+</section>

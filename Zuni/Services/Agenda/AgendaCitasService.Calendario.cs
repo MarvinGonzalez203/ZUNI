@@ -37,10 +37,11 @@ public sealed partial class AgendaCitasService
                 where c.PerfilEstudianteId == perfilId && c.FechaHoraInicioUtc >= inicio && c.FechaHoraInicioUtc < fin
                 orderby c.FechaHoraInicioUtc select new CitaResumen { DireccionAtencion=c.DireccionAtencion, Id=c.Id, Nombre=u.FullName, InicioUtc=c.FechaHoraInicioUtc, FinUtc=c.FechaHoraFinUtc, Estado=c.Estado, Modalidad=c.Modalidad, FinAproximado=c.FinAproximado }).ToListAsync(ct);
         // Solo horas y pertenencia propia: nunca proyectar la identidad de otra persona al calendario.
-        var ocupadas = await db.Citas.AsNoTracking().Where(c => EstadosActivos.Contains(c.Estado) &&
+        var ocupadas = await db.Citas.AsNoTracking().Where(c => (EstadosActivos.Contains(c.Estado) || c.Estado == EstadoCita.AusenciaProfesional && c.PsicologoUsuarioId == id) &&
             (c.PsicologoUsuarioId == id || c.PerfilEstudianteId == perfilId) && c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio)
             .Select(c => new { Inicio = c.FechaHoraInicioUtc, Fin = c.FechaHoraFinUtc,
-                Propia = c.PerfilEstudianteId == perfilId, Profesional = c.PsicologoUsuarioId == id }).ToListAsync(ct);
+                Propia = c.PerfilEstudianteId == perfilId && c.Estado != EstadoCita.AusenciaProfesional,
+                Profesional = c.PsicologoUsuarioId == id && c.Estado != EstadoCita.AusenciaProfesional }).ToListAsync(ct);
         var dias = new List<DiaAgendaViewModel>();
         for (var dia = mes; dia < siguiente; dia = dia.AddDays(1))
         {

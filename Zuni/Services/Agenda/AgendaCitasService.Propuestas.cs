@@ -144,7 +144,7 @@ public sealed partial class AgendaCitasService
         if (await db.ConfiguracionesAgendaDia.AnyAsync(d => d.PsicologoUsuarioId == psicologo && d.Fecha == fecha && d.Bloqueado, ct))
             throw new AgendaOperacionException("El psicólogo tiene ese día bloqueado.");
         await ValidarAlmuerzo(psicologo, inicio, fin, ct);
-        if (await db.Citas.AnyAsync(c => c.PsicologoUsuarioId == psicologo && EstadosActivos.Contains(c.Estado) &&
+        if (await db.Citas.AnyAsync(c => c.PsicologoUsuarioId == psicologo && EstadosOcupadosProfesional.Contains(c.Estado) &&
                 c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio, ct))
             throw new AgendaOperacionException("El psicólogo ya tiene ocupado ese horario. Revisa la carga de psicólogos y elige otra franja.");
     }
@@ -203,7 +203,7 @@ public sealed partial class AgendaCitasService
     private async Task NotificarRespuestaDirector(Cita c, CancellationToken ct, string? actorId = null, string actorRol = "Psicologo")
     {
         if (c.ProgramadorRol != "Director" || c.ProgramadorUsuarioId is null ||
-            c.Estado is not (EstadoCita.Confirmada or EstadoCita.Rechazada or EstadoCita.Cancelada)) return;
+              c.Estado is not (EstadoCita.Confirmada or EstadoCita.Rechazada or EstadoCita.Cancelada or EstadoCita.AusenciaProfesional)) return;
         var actor = actorId ?? c.PsicologoUsuarioId;
         var nombre = await db.Users.Where(u => u.Id == c.PsicologoUsuarioId).Select(u => u.FullName).SingleAsync(ct);
         var estudiante = await db.PerfilesEstudiante.Where(p => p.Id == c.PerfilEstudianteId).Select(p => p.UsuarioId).SingleAsync(ct);
@@ -252,6 +252,7 @@ public sealed partial class AgendaCitasService
         EstadoCita.Confirmada or EstadoCita.Reservada => reprogramada ? "Reprogramada · confirmada" : "Aceptada · confirmada",
         EstadoCita.Rechazada => "Rechazada",
         EstadoCita.Cancelada => "Cancelada",
+        EstadoCita.AusenciaProfesional => "Cancelada · pendiente de nueva programación",
         _ => "Fecha concluida"
     };
 

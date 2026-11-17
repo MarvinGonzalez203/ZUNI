@@ -131,7 +131,7 @@ internal static class InstitucionChecks
         Check(forged.StatusCode == HttpStatusCode.Forbidden, "POST con formulario anterior tampoco abre registro cerrado");
         var loginRaw = await publicClient.GetStringAsync("/Cuenta/IniciarSesion");
         Check(!loginRaw.Contains("href=\"/Cuenta/Registro\"") && loginRaw.Contains("soporte@colegio.test"), "login muestra contacto y no ofrece registro cerrado");
-        var homeRaw = await publicClient.GetStringAsync("/");
+        var homeRaw = await publicClient.GetStringAsync("/deniscorp/zuni/");
         Check(!homeRaw.Contains("href=\"/Cuenta/Registro\"") && homeRaw.Contains("Solicita tu cuenta"), "Inicio también respeta el cierre del registro");
         Check((await Add("director-administrado@personal.test")).StatusCode == HttpStatusCode.Redirect, "Administrador crea cuentas cuando el registro público está cerrado");
         await using (var db = Db())

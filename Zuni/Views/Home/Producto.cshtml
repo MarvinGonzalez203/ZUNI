@@ -1,0 +1,12 @@
+@model string
+@{ Layout = "_DenisCorpLayout"; ViewData["Title"] = Model == "Academy" ? "Denis Academy" : "Fulleo"; }
+<section class="product-detail">
+    <a class="back-link" href="/#programas">← Todos los programas</a>
+    <p class="eyebrow">UN PROGRAMA DE DENIS CORP</p>
+    <h1>@ViewData["Title"]</h1>
+    @if (Model == "Academy")
+    { <p class="intro">Aprendizaje de inglés y español con lecciones y actividades interactivas para avanzar a tu ritmo.</p><p>Estamos preparando su acceso público desde esta dirección. Vuelve pronto para conocer las novedades.</p> }
+    else
+    { <p class="intro">Consulta precios de gasolina para informarte antes de llenar el tanque.</p><p>Fulleo forma parte de Denis Corp. Estamos preparando su acceso público desde esta dirección.</p> }
+    <a class="corp-button" href="/">Volver a Denis Corp</a>
+</section>

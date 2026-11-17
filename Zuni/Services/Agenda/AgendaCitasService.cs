@@ -14,7 +14,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
     private DateTime Ahora => reloj.GetUtcNow().UtcDateTime;
     private const int TamanoPagina = 20;
     private static readonly EstadoCita[] EstadosActivos = [EstadoCita.Reservada, EstadoCita.Solicitada, EstadoCita.Confirmada];
-    private static readonly EstadoCita[] EstadosFinales = [EstadoCita.Cancelada, EstadoCita.Completada, EstadoCita.NoAsistio, EstadoCita.Rechazada];
+    private static readonly EstadoCita[] EstadosFinales = [EstadoCita.Cancelada, EstadoCita.Completada, EstadoCita.NoAsistio, EstadoCita.Rechazada, EstadoCita.AusenciaProfesional];
 
     private async Task<string> Psicologo(ClaimsPrincipal sesion, CancellationToken ct) =>
         await autorizacion.ObtenerPsicologoAutorizadoAsync(sesion, ct) ?? throw new AgendaAccesoException();
@@ -219,7 +219,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
         // El fin pertenece a ESTA cita (inicio + duración); nunca al fin de la disponibilidad.
         var fin = AgendaReglas.FinCita(horario, inicio, input.DuracionMinutos);
         await ValidarAlmuerzo(psicologo,inicio,fin,ct);
-        if (await db.Citas.AnyAsync(c => EstadosActivos.Contains(c.Estado) &&
+        if (await db.Citas.AnyAsync(c => (EstadosActivos.Contains(c.Estado) || c.Estado == EstadoCita.AusenciaProfesional && c.PsicologoUsuarioId == psicologo) &&
             (c.PsicologoUsuarioId == psicologo ||
              (c.PerfilEstudianteId == perfil.Id && !(c.Estado == EstadoCita.Solicitada && c.ProgramadorRol == "Director"))) &&
             c.FechaHoraInicioUtc < fin && c.FechaHoraFinUtc > inicio, ct))
@@ -301,7 +301,7 @@ public sealed partial class AgendaCitasService(ApplicationDbContext db,
     public async Task<HistorialCitasViewModel> Historial(ClaimsPrincipal sesion, string? busqueda, EstadoCita? estado, int pagina, CancellationToken ct)
     {
         var id = await Psicologo(sesion, ct);
-        if (estado.HasValue && estado is not (EstadoCita.Cancelada or EstadoCita.Completada or EstadoCita.NoAsistio or EstadoCita.Rechazada))
+        if (estado.HasValue && estado is not (EstadoCita.Cancelada or EstadoCita.Completada or EstadoCita.NoAsistio or EstadoCita.Rechazada or EstadoCita.AusenciaProfesional))
             throw new AgendaOperacionException("Selecciona un estado de historial válido.");
         var texto = (busqueda ?? string.Empty).Trim();
         if (texto.Length > 80) throw new AgendaOperacionException("La búsqueda admite hasta 80 caracteres.");

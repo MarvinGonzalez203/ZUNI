@@ -33,7 +33,7 @@
         <div class="table-responsive"><table><thead><tr><th>@Idioma.Texto("Fecha y hora")</th><th>@Idioma.Texto("Psicólogo")</th><th>@Idioma.Texto("Modalidad")</th><th>@Idioma.Texto("Estado")</th><th>@Idioma.Texto("Acciones")</th></tr></thead><tbody>
         @foreach (var cita in Model.Citas)
         {
-            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@Idioma.Texto(Convert.ToString(cita.Modalidad))@if(cita.Modalidad==ModalidadCita.Presencial){<small class="d-block text-break">@(cita.DireccionAtencion??Idioma.Texto("Lugar pendiente de indicar por el psicólogo"))</small>}</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? Idioma.Texto("No asistió") : cita.Estado.ToString())</span>@if (cita.ProgramadorRol == "Director") { <small class="d-block" data-propuesta-direccion>@Idioma.Texto("Propuesta de Dirección")@(cita.Estado == EstadoCita.Solicitada ? " · " + Idioma.Texto("pendiente de revisión del psicólogo") : "")</small> }</td><td>
+            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@Idioma.Texto(Convert.ToString(cita.Modalidad))@if(cita.Modalidad==ModalidadCita.Presencial){<small class="d-block text-break">@(cita.DireccionAtencion??Idioma.Texto("Lugar pendiente de indicar por el psicólogo"))</small>}</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? Idioma.Texto("No asistió") : (cita.Estado == EstadoCita.AusenciaProfesional ? "Ausencia del profesional" : cita.Estado.ToString()))</span>@if (cita.ProgramadorRol == "Director") { <small class="d-block" data-propuesta-direccion>@Idioma.Texto("Propuesta de Dirección")@(cita.Estado == EstadoCita.Solicitada ? " · " + Idioma.Texto("pendiente de revisión del psicólogo") : "")</small> }</td><td>
             @if (AgendaReglas.Activa(cita.Estado) && cita.InicioUtc > Reloj.GetUtcNow().UtcDateTime)
             {
                 <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelar-cita-@cita.Id">@Idioma.Texto("Cancelar cita")</button>
@@ -46,6 +46,7 @@
             {
                 <p class="small text-muted text-break mb-0">@Idioma.Texto("Motivo de cancelación:") @(string.IsNullOrWhiteSpace(cita.MotivoCancelacion) ? Idioma.Texto("Motivo no registrado") : cita.MotivoCancelacion)</p>
             }
+            @if(cita.Estado == EstadoCita.AusenciaProfesional){<p class="small mb-0">El profesional avisó que no podrá atender esta cita. Recibirás una notificación cuando se registre la nueva fecha. No se te ha marcado como ausente.</p>}
             </td></tr>
         }
         </tbody></table></div>

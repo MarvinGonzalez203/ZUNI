@@ -220,6 +220,9 @@ namespace Zuni.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("SustituyeCitaId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DisponibilidadPsicologoId");
@@ -228,6 +231,9 @@ namespace Zuni.Migrations
                         .IsUnique();
 
                     b.HasIndex("ProgramadorUsuarioId");
+
+                    b.HasIndex("SustituyeCitaId")
+                        .IsUnique();
 
                     b.HasIndex("PerfilEstudianteId", "FechaHoraInicioUtc")
                         .IsUnique()
@@ -245,7 +251,7 @@ namespace Zuni.Migrations
                         {
                             t.HasCheckConstraint("CK_Citas_Disponibilidad", "\"EsImprevista\" OR \"ProgramadaDirectamente\" OR \"DisponibilidadPsicologoId\" IS NOT NULL");
 
-                            t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3, 4, 5, 6)");
+                            t.HasCheckConstraint("CK_Citas_Estado", "\"Estado\" IN (0, 1, 2, 3, 4, 5, 6, 7)");
 
                             t.HasCheckConstraint("CK_Citas_Fechas", "\"FechaHoraFinUtc\" > \"FechaHoraInicioUtc\"");
 
@@ -1130,6 +1136,60 @@ namespace Zuni.Migrations
                     b.HasKey("UsuarioId", "Version");
 
                     b.ToTable("LecturasVersion", (string)null);
+                });
+
+            modelBuilder.Entity("Zuni.Models.DobleFactor", b =>
+                {
+                    b.Property<string>("UsuarioId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("BloqueadoHastaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CodigosHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Fallos")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("PendienteHastaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PendienteProtegido")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Recordar")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RetoHash")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RetoHastaUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RetoStamp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Retorno")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SecretoProtegido")
+                        .HasColumnType("text");
+
+                    b.Property<long>("UltimoPaso")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("UsuarioId");
+
+                    b.HasIndex("RetoHash")
+                        .IsUnique();
+
+                    b.ToTable("DobleFactor");
                 });
 
             modelBuilder.Entity("Zuni.Models.EstadoProteccion", b =>
@@ -11374,6 +11434,11 @@ namespace Zuni.Migrations
                         .HasForeignKey("PsicologoUsuarioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Zuni.Models.Agenda.Cita", null)
+                        .WithMany()
+                        .HasForeignKey("SustituyeCitaId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Zuni.Models.Agenda.ConfiguracionAgendaDia", b =>
@@ -11561,6 +11626,15 @@ namespace Zuni.Migrations
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Zuni.Models.DobleFactor", b =>
+                {
+                    b.HasOne("Zuni.Models.ApplicationUser", null)
+                        .WithOne()
+                        .HasForeignKey("Zuni.Models.DobleFactor", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

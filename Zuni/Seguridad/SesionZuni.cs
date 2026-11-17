@@ -46,6 +46,13 @@ public static class SesionZuni
             ? CookieSecurePolicy.SameAsRequest
             : CookieSecurePolicy.Always;
         options.Events.OnValidatePrincipal = ValidarPrincipalAsync;
+        // Consultar avisos en segundo plano no cuenta como actividad de la persona.
+        options.Events.OnCheckSlidingExpiration = context =>
+        {
+            if(context.HttpContext.Request.Path.Equals(new PathString("/CitasProgramadas/Pendientes")))
+                context.ShouldRenew = false;
+            return Task.CompletedTask;
+        };
     }
 
     public static async Task ValidarPrincipalAsync(CookieValidatePrincipalContext context)

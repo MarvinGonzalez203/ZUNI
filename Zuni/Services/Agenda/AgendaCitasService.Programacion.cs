@@ -41,6 +41,11 @@ public sealed partial class AgendaCitasService
         }
         if(id is null)return input;
         var c=await db.Citas.AsNoTracking().SingleOrDefaultAsync(c=>c.Id==id&&(a.Rol=="Director"||c.PsicologoUsuarioId==a.Id),ct)??throw new AgendaAccesoException();
+        if(c.Estado==EstadoCita.AusenciaProfesional){
+            await ProfesionalProgramacion(a,c.PerfilEstudianteId,ct);
+            if(await db.Citas.AnyAsync(n=>n.SustituyeCitaId==c.Id,ct))throw new AgendaOperacionException("Ya existe una nueva cita para esta ausencia. Consulta tu agenda.");
+            input.SustituyeCitaId=c.Id;input.PerfilEstudianteId=c.PerfilEstudianteId;input.Modalidad=c.Modalidad;input.DireccionAtencion=c.DireccionAtencion;return input;
+        }
         if(c.EsImprevista||!AgendaReglas.Activa(c.Estado)||c.FechaHoraInicioUtc<=Ahora)throw new AgendaOperacionException("Solo se reprograman citas activas futuras; las atenciones pasadas conservan su historial.");
         await ProfesionalProgramacion(a,c.PerfilEstudianteId,ct);
         input.DireccionAtencion=c.DireccionAtencion;input.CitaId=c.Id;input.Revision=c.Revision;input.PerfilEstudianteId=c.PerfilEstudianteId;input.Fecha=AgendaReglas.Hoy(c.FechaHoraInicioUtc);input.HoraInicio=TimeOnly.FromDateTime(AgendaReglas.Local(c.FechaHoraInicioUtc));input.HoraFin=TimeOnly.FromDateTime(AgendaReglas.Local(c.FechaHoraFinUtc));input.DuracionMinutos=(int)Math.Clamp((c.FechaHoraFinUtc-c.FechaHoraInicioUtc).TotalMinutes,15,120);input.Modalidad=c.Modalidad;return input;
@@ -52,7 +57,7 @@ public sealed partial class AgendaCitasService
         var desde=AgendaReglas.Utc(fecha,TimeOnly.MinValue);var hasta=AgendaReglas.Utc(fecha.AddDays(1),TimeOnly.MinValue);
         if(inicio<=Ahora||fin<=inicio||AgendaReglas.Hoy(fin)!=fecha||TimeOnly.FromDateTime(AgendaReglas.Local(inicio))<new TimeOnly(8,0)||TimeOnly.FromDateTime(AgendaReglas.Local(fin))>new TimeOnly(18,0))throw new AgendaOperacionException("Usa una franja futura entre las 08:00 y 18:00 del mismo día.");
         if(await db.ConfiguracionesAgendaDia.AnyAsync(d=>d.PsicologoUsuarioId==psy&&d.Fecha==fecha&&d.Bloqueado,ct))throw new AgendaOperacionException("El psicólogo tiene ese día bloqueado.");
-        if(await db.Citas.AnyAsync(c=>c.Id!=except&&c.PsicologoUsuarioId==psy&&EstadosActivos.Contains(c.Estado)&&c.FechaHoraInicioUtc<fin&&c.FechaHoraFinUtc>inicio,ct)
+        if(await db.Citas.AnyAsync(c=>c.Id!=except&&c.PsicologoUsuarioId==psy&&EstadosOcupadosProfesional.Contains(c.Estado)&&c.FechaHoraInicioUtc<fin&&c.FechaHoraFinUtc>inicio,ct)
             ||await OtraCitaDelEstudiante(perfil,inicio,fin,except,ct))throw new AgendaOperacionException("Hay una cita activa o superpuesta para el estudiante o profesional. Elige otra franja.");
     }
     private async Task NotificarProgramacion(Cita c,(string Id,string Rol) actor,bool cambio,CancellationToken ct)
@@ -101,11 +106,17 @@ public sealed partial class AgendaCitasService
             var fin=input.HoraFin is {}h?AgendaReglas.Utc(input.Fecha.Value,h):inicio.AddMinutes(input.DuracionMinutos);
             if(inicio.Ticks%(5*TimeSpan.TicksPerMinute)!=0||fin.Ticks%(5*TimeSpan.TicksPerMinute)!=0)throw new AgendaOperacionException("Usa horas en múltiplos de cinco minutos.");
             Cita c;string? origenDirector=null;DateTime inicioAnterior=default;
+            if(input.SustituyeCitaId is {} origen){
+                if(input.CitaId is not null)throw new AgendaOperacionException("Abre una nueva programación para esta ausencia.");
+                if(!await db.Citas.AnyAsync(c=>c.Id==origen&&c.PsicologoUsuarioId==psy&&c.PerfilEstudianteId==input.PerfilEstudianteId&&c.Estado==EstadoCita.AusenciaProfesional,ct))throw new AgendaAccesoException();
+                if(await db.Citas.AnyAsync(c=>c.SustituyeCitaId==origen,ct))throw new AgendaOperacionException("Ya se programó una nueva fecha para esta cita. Consulta tu agenda.");
+            }
             if(input.CitaId is {}id){c=await db.Citas.SingleOrDefaultAsync(c=>c.Id==id&&(a.Rol=="Director"||c.PsicologoUsuarioId==a.Id),ct)??throw new AgendaAccesoException();if(c.PerfilEstudianteId!=input.PerfilEstudianteId||c.PsicologoUsuarioId!=psy)throw new AgendaAccesoException();if(c.EsImprevista||!AgendaReglas.Activa(c.Estado)||c.FechaHoraInicioUtc<=Ahora||c.Revision!=input.Revision)throw new AgendaOperacionException("La cita cambió o ya no se puede reprogramar. Abre su versión actual.");
                 // Una propuesta de Dirección reprogramada por el psicólogo conserva su origen: Dirección sigue viendo
                 // su propuesta (con la nueva fecha) y queda la traza de la fecha anterior.
                 if(c.ProgramadorRol=="Director"&&c.ProgramadorUsuarioId is not null){origenDirector=c.ProgramadorUsuarioId;inicioAnterior=c.FechaHoraInicioUtc;}}
             else{if(input.OperacionId==Guid.Empty||await db.Citas.AnyAsync(c=>c.Id==input.OperacionId,ct))throw new AgendaOperacionException("Esta programación ya se guardó. Consulta tu agenda.");c=new(){Id=input.OperacionId,PerfilEstudianteId=input.PerfilEstudianteId.Value,PsicologoUsuarioId=psy,FechaCreacionUtc=Ahora};db.Citas.Add(c);}
+            c.SustituyeCitaId=input.SustituyeCitaId??c.SustituyeCitaId;
             await ValidarFranjaProgramada(c.PerfilEstudianteId,psy,inicio,fin,input.CitaId,ct);
             if(a.Rol=="Psicologo"&&input.Modalidad==ModalidadCita.Presencial)c.DireccionAtencion=DireccionValida(input.DireccionAtencion??c.DireccionAtencion);
             if(input.Modalidad==ModalidadCita.Virtual)c.DireccionAtencion=null;
@@ -142,4 +153,11 @@ public sealed partial class AgendaCitasService
     }
     public async Task LeerNotificacion(ClaimsPrincipal actor,Guid id,CancellationToken ct)
     {if(SinAccesoANotificaciones(actor))throw new AgendaAccesoException();var user=await PrivacidadService.UsuarioAsync(db,actor,ct);var n=await NotificacionesVisibles(db,actor,user).SingleOrDefaultAsync(n=>n.Id==id,ct)??throw new AgendaAccesoException();n.Leida=true;await db.SaveChangesAsync(ct);}
+    public async Task<int> ContarNotificaciones(ClaimsPrincipal actor,CancellationToken ct)
+    {
+        if(SinAccesoANotificaciones(actor))throw new AgendaAccesoException();
+        var id=actor.FindFirstValue(ClaimTypes.NameIdentifier);var stamp=actor.FindFirstValue("Zuni.SecurityStamp");
+        if(id is null||stamp is null||!await db.Users.AnyAsync(u=>u.Id==id&&u.IsActive&&!u.DebeCambiarContrasena&&u.SecurityStamp==stamp,ct))throw new AgendaAccesoException();
+        return await NotificacionesVisibles(db,actor,id).AsNoTracking().CountAsync(n=>!n.Leida,ct);
+    }
 }

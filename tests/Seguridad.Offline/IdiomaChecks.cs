@@ -10,9 +10,9 @@ internal static class IdiomaChecks
     {
         int checks=0; void Check(bool ok,string label){if(!ok)throw new Exception("Idioma: "+label);checks++;}
         string Decode(string s)=>WebUtility.HtmlDecode(s);
-        async Task<HttpResponseMessage> Switch(HttpClient client,string language,string path="/")=>await HostPrueba.Post(client,"/","/Idioma/Cambiar",("idioma",language),("volver",path));
+        async Task<HttpResponseMessage> Switch(HttpClient client,string language,string path="/")=>await HostPrueba.Post(client,"/deniscorp/zuni/","/Idioma/Cambiar",("idioma",language),("volver",path));
         using var anon=HostPrueba.Cliente(app);
-        var inicio=await anon.GetStringAsync("/");Check(inicio.Contains("lang=\"es\"")&&inicio.Contains("Bienvenido a"),"español predeterminado");
+        var inicio=await anon.GetStringAsync("/deniscorp/zuni/");Check(inicio.Contains("lang=\"es\"")&&inicio.Contains("Bienvenido a"),"español predeterminado");
         Check(inicio.Contains("class=\"zuni-language\"")&&inicio.Contains("value=\"en\""),"selector público renderizado");
         var change=await Switch(anon,"en","/Home/Guia?tema=privacidad");
         Check(change.StatusCode==HttpStatusCode.Redirect&&change.Headers.Location!.OriginalString=="/Home/Guia?tema=privacidad","conserva ruta y filtros");
@@ -23,11 +23,11 @@ internal static class IdiomaChecks
             var response=await Switch(ajax,"en","/Home/Guia?tema=privacidad");
             using var json=System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             Check(response.StatusCode==HttpStatusCode.OK&&json.RootElement.GetProperty("volver").GetString()=="/Home/Guia?tema=privacidad","selector asíncrono confirma idioma sin redirigir");
-            Check((await ajax.GetStringAsync("/")).Contains("lang=\"en\""),"la petición posterior usa la nueva cookie");
+            Check((await ajax.GetStringAsync("/deniscorp/zuni/")).Contains("lang=\"en\""),"la petición posterior usa la nueva cookie");
             var unsafeReturn=await Switch(ajax,"es","https://otro.example/");using var safe=System.Text.Json.JsonDocument.Parse(await unsafeReturn.Content.ReadAsStringAsync());
             Check(safe.RootElement.GetProperty("volver").GetString()=="/","modo asíncrono tampoco permite retorno externo");
         }
-        var english=await anon.GetStringAsync("/");Check(english.Contains("lang=\"en\"")&&english.Contains("Welcome to")&&english.Contains("Sign in"),"home y acceso en inglés");
+        var english=await anon.GetStringAsync("/deniscorp/zuni/");Check(english.Contains("lang=\"en\"")&&english.Contains("Welcome to")&&english.Contains("Sign in"),"home y acceso en inglés");
         var guide=Decode(await anon.GetStringAsync("/Home/Guia?tema=privacidad"));
         Check(guide.Contains("Decide how your information is used")&&guide.Contains("What is shared and what stays private"),"guías completas y tarjetas traducidas");
         Check((await Switch(anon,"fr")).StatusCode==HttpStatusCode.BadRequest,"idioma no admitido rechazado");

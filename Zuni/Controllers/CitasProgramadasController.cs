@@ -18,5 +18,7 @@ public sealed class CitasProgramadasController(AgendaCitasService agenda):Contro
     [Authorize(Roles="Psicologo"),HttpPost,ValidateAntiForgeryToken]
     public async Task<IActionResult> Guardar(ProgramarCitaInput input,CancellationToken ct){var actual=await agenda.PrepararProgramacion(User,input.CitaId,input.Fecha,ct);if(!ModelState.IsValid){input.Estudiantes=actual.Estudiantes;return View("Editar",input);}await agenda.GuardarProgramacion(User,input,ct);TempData["Success"]=input.CitaId is null?"Cita programada y notificación guardada para el estudiante.":"Cita reprogramada. El estudiante recibió una notificación con la nueva fecha.";return RedirectToAction(nameof(Index));}
     [HttpGet]public async Task<IActionResult> Notificaciones(CancellationToken ct)=>View(await agenda.Notificaciones(User,ct));
+    [HttpGet,Authorize(Roles="Psicologo,Estudiante")]
+    public async Task<IActionResult> Pendientes(CancellationToken ct)=>Json(new{cantidad=await agenda.ContarNotificaciones(User,ct)});
     [HttpPost,ValidateAntiForgeryToken]public async Task<IActionResult> Leida(Guid id,CancellationToken ct){await agenda.LeerNotificacion(User,id,ct);return RedirectToAction(nameof(Notificaciones));}
 }

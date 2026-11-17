@@ -55,6 +55,8 @@ namespace Zuni.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<DobleFactor>().HasOne<ApplicationUser>().WithOne().HasForeignKey<DobleFactor>(p => p.UsuarioId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<DobleFactor>().HasIndex(p => p.RetoHash).IsUnique();
             builder.Entity<PinProfesional>().HasOne<ApplicationUser>().WithOne().HasForeignKey<PinProfesional>(p=>p.UsuarioId).OnDelete(DeleteBehavior.Restrict);
             ConfigurarComercial(builder);
             builder.Entity<Zuni.Models.Institucion.PreferenciaVista>(e=>{

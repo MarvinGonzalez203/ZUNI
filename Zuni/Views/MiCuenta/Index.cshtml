@@ -5,6 +5,7 @@
 }
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("TU INFORMACIÓN")</span><h1>@Idioma.Texto("Mi cuenta")</h1><p>@Idioma.Texto("Consulta tus datos y mantén tu información actualizada.")</p></div><a class="dash-button" asp-action="Editar">@Idioma.Texto("Editar mis datos") <partial name="_DashboardIcon" model='@("arrow")' /></a></header>
 <section class="dash-card dash-account-card" aria-labelledby="datos-generales">
+    <p><a asp-controller="DobleFactor" asp-action="Index" class="btn btn-outline-primary">Configurar verificación en dos pasos (2FA)</a></p>
     @if(Model.Roles.Contains("Psicologo")){<p><a asp-controller="PinProfesional" asp-action="Index" class="btn btn-outline-primary">@Idioma.Texto("Configurar o recuperar mi PIN profesional")</a></p>}
     <h2 id="datos-generales">@Idioma.Texto("Datos generales")</h2>
     <dl class="dash-account-details">

@@ -3,7 +3,7 @@ namespace Zuni.Models.Agenda;
 public enum ModalidadDisponibilidad { Presencial, Virtual, Ambas }
 public enum ModalidadCita { Presencial, Virtual }
 // Los valores 0..3 ya están persistidos: nunca renumerarlos.
-public enum EstadoCita { Reservada = 0, Cancelada = 1, Completada = 2, NoAsistio = 3, Solicitada = 4, Confirmada = 5, Rechazada = 6 }
+public enum EstadoCita { Reservada = 0, Cancelada = 1, Completada = 2, NoAsistio = 3, Solicitada = 4, Confirmada = 5, Rechazada = 6, AusenciaProfesional = 7 }
 
 // Horario semanal en America/Guatemala. No representa una cita ni un expediente.
 public sealed class DisponibilidadPsicologo

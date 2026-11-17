@@ -20,7 +20,19 @@ namespace Zuni.Controllers
             _db = db;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index() => View("DenisCorp");
+
+        [HttpGet("deniscorp")]
+        public IActionResult DenisCorp() => View();
+
+        [HttpGet("deniscorp/academy")]
+        public IActionResult Academy() => View("Producto", model: "Academy");
+
+        [HttpGet("deniscorp/fulleo")]
+        public IActionResult Fulleo() => View("Producto", model: "Fulleo");
+
+        [HttpGet("deniscorp/zuni")]
+        public async Task<IActionResult> Zuni()
         {
             var model = new HomeViewModel
             {

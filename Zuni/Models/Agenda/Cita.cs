@@ -21,6 +21,7 @@ public sealed class Cita
     [System.ComponentModel.DataAnnotations.MaxLength(500)] public string? DireccionAtencion { get; set; }
     public DateTime? FechaEnlaceUtc { get; set; }
     public Guid Revision { get; set; } = Guid.NewGuid();
+    public Guid? SustituyeCitaId { get; set; }
 }
 
 public sealed class EnlaceReunionUsado

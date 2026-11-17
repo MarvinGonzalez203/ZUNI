@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Denis Corp reúne sus programas en un solo lugar. Conoce ZUNI, Denis Academy y Fulleo." />
+    <title>@ViewData["Title"] · Denis Corp</title>
+    <link rel="stylesheet" href="~/css/deniscorp.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="skip" href="#contenido">Saltar al contenido</a>
+    <header class="corp-header"><a class="brand" href="/">Denis<span>Corp</span><small>Software con propósito</small></a><nav aria-label="Navegación principal"><a href="/#programas">Nuestros programas</a><a href="/deniscorp/zuni/">Conocer ZUNI <span aria-hidden="true">↗</span></a></nav></header>
+    <main id="contenido">@RenderBody()</main>
+    <footer class="corp-footer"><span>© @DateTime.UtcNow.Year Denis Corp</span><span>Un espacio para cada propósito.</span><a asp-controller="Privacidad" asp-action="Politica">Privacidad de ZUNI</a></footer>
+</body>
+</html>

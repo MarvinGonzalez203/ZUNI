@@ -1,4 +1,8 @@
 {
+  "Verificación en dos pasos con aplicación autenticadora, códigos de recuperación y bloqueo por intentos.": "Two-step verification with an authenticator app, recovery codes and failed-attempt lockout.",
+  "Aviso de ausencia del profesional con notificación al estudiante y nueva programación vinculada al historial.": "Professional absence notices with student notifications and replacement appointments linked to their history.",
+  "Portada de Denis Corp con tarjetas de ZUNI, Denis Academy y Fulleo; accesos actuales de ZUNI conservados.": "Denis Corp home page with ZUNI, Denis Academy and Fulleo cards; existing ZUNI access preserved.",
+  "Guías ampliadas con seguridad del acceso y ausencias del profesional.": "Expanded guides covering account security and professional absences.",
   "PIN profesional, solo si cambias el correo": "Professional PIN, only when changing email",
   "El correo permite recuperar tus notas protegidas. Para cambiarlo debes confirmar tu PIN profesional; para editar otros datos puedes dejar este campo vacío.": "Email allows recovery of your protected notes. Confirm your professional PIN to change it; leave this field blank when editing other details.",
   "No se pudo verificar el PIN. Inténtalo nuevamente.": "The PIN could not be verified. Try again.",

@@ -1,0 +1,7 @@
+@{ ViewData["Title"] = "Verificar acceso"; }
+@section Styles { <link rel="stylesheet" href="~/css/seguridad-cuenta.css" asp-append-version="true" /> }
+<section class="container py-5 account-security account-verification">
+    <h1>Verifica tu acceso</h1><p>Escribe el código de seis dígitos de tu autenticador o un código de recuperación. Tu sesión se abrirá después de verificarlo.</p>
+    <form asp-action="VerificarDobleFactor" method="post"><div asp-validation-summary="All" class="text-danger" role="alert"></div><label for="codigo">Código de verificación</label><input id="codigo" name="codigo" type="text" maxlength="32" required class="form-control mb-3" autocomplete="one-time-code" autocapitalize="off" spellcheck="false" autofocus /><button class="btn btn-zuni">Verificar e iniciar sesión</button></form>
+    <p class="mt-3">El acceso pendiente vence en cinco minutos. Si el código ya se usó, espera el siguiente o utiliza uno de recuperación.</p><a asp-action="IniciarSesion">Volver a iniciar sesión</a>
+</section>

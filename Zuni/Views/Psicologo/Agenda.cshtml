@@ -46,7 +46,7 @@
         <div class="table-responsive mt-3"><table><thead><tr><th>@Idioma.Texto("Horario")</th><th>@Idioma.Texto("Estudiante")</th><th>@Idioma.Texto("Modalidad")</th><th>@Idioma.Texto("Estado")</th><th>@Idioma.Texto("Gestionar")</th></tr></thead><tbody>
         @foreach (var cita in Model.Citas)
         {
-            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@Idioma.Texto(Convert.ToString(cita.Modalidad))</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? Idioma.Texto("No asistió") : cita.Estado.ToString())</span></td><td>
+            <tr><td>@AgendaReglas.Local(cita.InicioUtc).ToString("dd/MM/yyyy HH:mm") – @AgendaReglas.Local(cita.FinUtc).ToString("HH:mm")</td><td>@cita.Nombre</td><td>@Idioma.Texto(Convert.ToString(cita.Modalidad))</td><td><span class="agenda-status">@(cita.Estado == EstadoCita.NoAsistio ? Idioma.Texto("No asistió") : (cita.Estado == EstadoCita.AusenciaProfesional ? "Ausencia del profesional" : cita.Estado.ToString()))</span></td><td>
             @if (cita.Estado == EstadoCita.Solicitada)
             {
                 <form asp-action="GestionarCita" method="post" class="agenda-actions">
@@ -60,6 +60,7 @@
                     <button type="submit" name="Estado" value="Rechazada" class="btn btn-outline-secondary">@Idioma.Texto("Rechazar")</button>
                 </form>
             }
+            @if((AgendaReglas.Activa(cita.Estado)&&!cita.EsImprevista&&!cita.TieneRegistroAtencion)||cita.Estado==EstadoCita.AusenciaProfesional){<a asp-controller="Ausencias" asp-action="Avisar" asp-route-citaId="@cita.Id" class="btn btn-outline-secondary">@(cita.Estado==EstadoCita.AusenciaProfesional?"Consultar aviso y nueva fecha":"No podré asistir")</a>}
             @if (AgendaReglas.Activa(cita.Estado))
             {
                 @if(cita.InicioUtc>Reloj.GetUtcNow().UtcDateTime&&!cita.EsImprevista){<a asp-controller="CitasProgramadas" asp-action="Editar" asp-route-citaId="@cita.Id" class="btn btn-outline-primary">@Idioma.Texto("Reprogramar cita")</a>}

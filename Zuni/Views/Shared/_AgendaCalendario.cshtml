@@ -59,8 +59,8 @@
                     <h3 class="h5">@Idioma.Texto("Mis citas de este día")</h3>
                     @if (dia.Citas.Count == 0) { <p>@Idioma.Texto("No hay citas registradas para esta fecha.")</p> }
                     @foreach (var c in dia.Citas) {
-                        <article class="agenda-slot" id="cita-agenda-@c.Id"><strong>@c.Nombre</strong><p>@AgendaReglas.Local(c.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(c.FinUtc).ToString("HH:mm") · @Idioma.Texto(Convert.ToString(c.Modalidad)) · @Idioma.Texto(Convert.ToString(c.Estado))</p>
-                        @if(c.Modalidad==ModalidadCita.Presencial){<p class="text-break">@(c.DireccionAtencion??Idioma.Texto("Lugar pendiente de indicar por el psicólogo"))</p>}else{<a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@c.Id">@Idioma.Texto("Consejos y acceso a tu cita virtual")</a>}
+                        <article class="agenda-slot" id="cita-agenda-@c.Id"><strong>@c.Nombre</strong><p>@AgendaReglas.Local(c.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(c.FinUtc).ToString("HH:mm") · @Idioma.Texto(Convert.ToString(c.Modalidad)) · @Idioma.Texto((c.Estado == Zuni.Models.Agenda.EstadoCita.AusenciaProfesional ? "Ausencia del profesional" : Convert.ToString(c.Estado)))</p>
+                        @if(c.Modalidad==ModalidadCita.Presencial){<p class="text-break">@(c.DireccionAtencion??Idioma.Texto("Lugar pendiente de indicar por el psicólogo"))</p>}else if(AgendaReglas.Activa(c.Estado)){<a asp-controller="Reuniones" asp-action="Detalle" asp-route-citaId="@c.Id">@Idioma.Texto("Consejos y acceso a tu cita virtual")</a>}
                         </article>
                     }
                     @if(!Model.PuedeReservar) { <p class="agenda-hint">@Idioma.Texto("Puedes consultar tus citas. Para reservar, completa el perfil, la verificación de edad y la asignación de psicólogo.")</p> }
@@ -69,8 +69,9 @@
                     <h3 class="h5">@Idioma.Texto("Citas y actividades de este día")</h3>
                     @if (dia.Citas.Count == 0) { <p>@Idioma.Texto("No hay citas registradas para esta fecha.")</p> }
                     @foreach (var cita in dia.Citas) {
-                        <article class="agenda-slot" id="cita-agenda-@cita.Id"><strong>@cita.Nombre</strong><p>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(cita.FinUtc).ToString("HH:mm") · @Idioma.Texto(Convert.ToString(cita.Estado)) @(cita.EsImprevista ? Idioma.Texto("· Atención imprevista") : "") @(cita.FinAproximado ? Idioma.Texto("· Fin aproximado") : "")</p>
+                        <article class="agenda-slot" id="cita-agenda-@cita.Id"><strong>@cita.Nombre</strong><p>@AgendaReglas.Local(cita.InicioUtc).ToString("HH:mm")–@AgendaReglas.Local(cita.FinUtc).ToString("HH:mm") · @Idioma.Texto((cita.Estado == Zuni.Models.Agenda.EstadoCita.AusenciaProfesional ? "Ausencia del profesional" : Convert.ToString(cita.Estado))) @(cita.EsImprevista ? Idioma.Texto("· Atención imprevista") : "") @(cita.FinAproximado ? Idioma.Texto("· Fin aproximado") : "")</p>
                         <partial name="_ResponderCitaPendiente" model="cita" />
+                        @if((AgendaReglas.Activa(cita.Estado)&&!cita.EsImprevista&&!cita.TieneRegistroAtencion)||cita.Estado==EstadoCita.AusenciaProfesional){<a asp-controller="Ausencias" asp-action="Avisar" asp-route-citaId="@cita.Id" class="btn btn-outline-secondary">@(cita.Estado==EstadoCita.AusenciaProfesional?"Consultar aviso y nueva fecha":"No podré asistir")</a>}
                         @if(cita.Modalidad==ModalidadCita.Presencial && AgendaReglas.Activa(cita.Estado) && cita.InicioUtc>Model.AhoraUtc){<a asp-controller="Ubicaciones" asp-action="Editar" asp-route-citaId="@cita.Id">@Idioma.Texto("Definir o actualizar lugar de atención")</a>}
                         @if (cita.TieneRegistroAtencion && cita.Estado == EstadoCita.Completada) { <a asp-controller="Atenciones" asp-action="Reporte" asp-route-citaId="@cita.Id" class="dash-button">@Idioma.Texto("Ver reporte compartido y reimprimir")</a> }
                         else if (cita.TieneRegistroAtencion) { <a asp-controller="Psicologo" asp-action="VerAtencion" asp-route-citaId="@cita.Id">@Idioma.Texto("Consultar registro")</a> }

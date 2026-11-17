@@ -34,7 +34,7 @@ internal static class ContinuidadChecks
                     await HostPrueba.Post(client,"/MiCuenta/Editar","/Idioma/Cambiar",("idioma","es"),("volver","/MiCuenta/Editar"));
                 }
                 Check(html.Contains("/PruebasAplicadas/Habilitar")&&html.Contains("Asignar cuestionario"),"asignación visible en menú del psicólogo");
-                var home=await client.GetStringAsync("/");Check(home.Contains("home-session-entry")&&home.Contains("href=\"/Psicologo\""),"ingresar desde sesión activa");
+                var home=await client.GetStringAsync("/deniscorp/zuni/");Check(home.Contains("home-session-entry")&&home.Contains("href=\"/Psicologo\""),"ingresar desde sesión activa");
             }
             else{
                 Guid instrumento;Guid revision;
@@ -54,7 +54,7 @@ internal static class ContinuidadChecks
             }
         }
         await using(var db=new OfflineDb(options)){var institucion=(await db.ConfiguracionInstitucion.FindAsync(1))!;institucion.ColorPrincipal="#F9DB5C";await db.SaveChangesAsync();}
-        using(var anonimo=HostPrueba.Cliente(app)){var home=await anonimo.GetStringAsync("/");Check(home.Contains("--institucion-color: #cea2fd"),"home anónimo violeta aunque la institución tenga otro color");}
+        using(var anonimo=HostPrueba.Cliente(app)){var home=await anonimo.GetStringAsync("/deniscorp/zuni/");Check(home.Contains("--institucion-color: #cea2fd"),"home anónimo violeta aunque la institución tenga otro color");}
         Console.WriteLine($"OK: {checks} comprobaciones de contacto, acceso a cuestionarios y portada pública.");
     }
 }

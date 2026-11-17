@@ -21,7 +21,7 @@ using Zuni.Seguridad;
 namespace Zuni.Controllers;
 
 [Route("Cuenta")]
-public sealed class CuentaController(
+public sealed partial class CuentaController(
     IWebHostEnvironment environment,
     ApplicationDbContext db,
     IPasswordHasher<ApplicationUser> passwordHasher,
@@ -147,6 +147,18 @@ public sealed class CuentaController(
                 return View(model);
             }
             return CredencialesInvalidas(model);
+        }
+
+        if (dbUser.TwoFactorEnabled)
+        {
+            var servicio = HttpContext.RequestServices.GetRequiredService<Zuni.Services.DobleFactorService>();
+            string? token;
+            try { token = await servicio.CrearReto(dbUser, model.RememberMe, Url.IsLocalUrl(model.ReturnUrl) ? model.ReturnUrl : null); }
+            catch (Zuni.Services.DobleFactorOperacionException)
+            { ModelState.AddModelError("", "La verificación cambió mientras iniciabas sesión. Actualiza la página e inténtalo de nuevo."); return View(model); }
+            if (token is null) { ModelState.AddModelError("", "No se pudo iniciar la verificación. Espera 15 minutos o usa tus códigos de recuperación después del bloqueo."); return View(model); }
+            Response.Cookies.Append(CookieReto, token, OpcionesReto());
+            return RedirectToAction(nameof(VerificarDobleFactor));
         }
 
         await SignInAsync(
@@ -719,6 +731,7 @@ public sealed class CuentaController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CerrarSesion()
     {
+        Response.Cookies.Delete(CookieReto, OpcionesReto());
         await HttpContext.SignOutAsync(
             CookieAuthenticationDefaults.AuthenticationScheme);
 

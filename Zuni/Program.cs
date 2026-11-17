@@ -51,6 +51,7 @@ builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddScoped<Zuni.Services.Agenda.AgendaCitasService>();
 builder.Services.AddHttpClient<Zuni.Services.Correo.ICorreoPin,Zuni.Services.Correo.CorreoPinBrevo>(c=>c.Timeout=TimeSpan.FromSeconds(15));
 builder.Services.AddScoped<Zuni.Services.PinProfesionalService>();
+builder.Services.AddScoped<Zuni.Services.DobleFactorService>();
 builder.Services.AddScoped<Zuni.Services.Administracion.GestionSolicitudesService>();
 
 // Claves de Data Protection: carpeta persistente configurable (DataProtection:KeysPath o

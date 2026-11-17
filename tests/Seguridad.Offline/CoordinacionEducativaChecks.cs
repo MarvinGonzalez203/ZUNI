@@ -44,7 +44,7 @@ internal static class CoordinacionEducativaChecks
         Check(WebUtility.HtmlDecode(await student.GetStringAsync("/CitasProgramadas/Notificaciones")).Contains("Antes de la cita virtual: procura estar a solas"),"notificación de creación virtual incluye preparación");
         var consejos=WebUtility.HtmlDecode(await student.GetStringAsync("/Reuniones/Detalle?citaId="+virtualId));
         Check(consejos.Contains("Procura estar a solas")&&consejos.Contains("sin ruido")&&consejos.Contains("No compartas el enlace"),"consejos antes de que se habilite el ingreso");
-        var home=WebUtility.HtmlDecode(await anon.GetStringAsync("/"));
+        var home=WebUtility.HtmlDecode(await anon.GetStringAsync("/deniscorp/zuni/"));
         Check(home.Contains("Nuestra misión")&&home.Contains("Nuestra visión")&&home.Contains("No sustituye al profesional"),"misión y visión de apoyo educativo");
         var preview=Environment.GetEnvironmentVariable("ZUNI_FORMS_PREVIEW_DIR");if(!string.IsNullOrEmpty(preview)){
             await File.WriteAllTextAsync(Path.Combine(preview,"tarifas.html"),await admin.GetStringAsync("/Tarifas"));

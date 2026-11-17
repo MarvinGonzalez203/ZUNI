@@ -6,6 +6,7 @@ public sealed class ProgramarCitaInput
 {
     [StringLength(500), Display(Name="Dirección o lugar de atención presencial")] public string? DireccionAtencion { get; set; }
     public Guid? CitaId { get; set; }
+    public Guid? SustituyeCitaId { get; set; }
     public Guid Revision { get; set; }
     public Guid OperacionId { get; set; } = Guid.NewGuid();
     [Required, Display(Name="Estudiante vinculado")] public Guid? PerfilEstudianteId { get; set; }
