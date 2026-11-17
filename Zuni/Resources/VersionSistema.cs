@@ -2,10 +2,11 @@ namespace Zuni.Resources;
 public sealed record NovedadVersion(string Numero, IReadOnlyList<string> Cambios);
 public static class VersionSistema
 {
-    public const string Actual="1.5.2";
+    public const string Actual="1.5.3";
     // Historial de entregas locales; la versión de zuni.lat cambia solo al desplegar.
     public static readonly IReadOnlyList<NovedadVersion> Historial=[
-        new(Actual,["Denis Corp Colegios se presenta como propuesta SaaS general, separada de la identidad de sus clientes.","Todos los logos del inicio comparten los dos círculos blancos de cristal.","Blog con guías por programa, búsqueda, temas y artículos desplegables.","Contáctanos con canales directos y preparación de consultas para WhatsApp o correo."]),
+        new(Actual,["Plataforma actualizada para mantener soporte y parches de seguridad.","Actualización técnica de seguridad sin cambios en las funciones de atención."]),
+        new("1.5.2",["Denis Corp Colegios se presenta como propuesta SaaS general, separada de la identidad de sus clientes.","Todos los logos del inicio comparten los dos círculos blancos de cristal.","Blog con guías por programa, búsqueda, temas y artículos desplegables.","Contáctanos con canales directos y preparación de consultas para WhatsApp o correo."]),
         new("1.5.1",["Portal Denis Corp con idioma, modo día y noche y cinco programas con identidad propia.","Botones arena de día y rojos de noche; ZUNI violeta, Academy azul y Fulleo amarillo.","Favicons por programa, círculos de cristal de ZUNI y control en V para avanzar o volver arriba.","Fichas con avances documentados y pendientes de Fulleo, Academy, POS y colegios."]),
         new("1.5.0",["Verificación en dos pasos con aplicación autenticadora, códigos de recuperación y bloqueo por intentos.","Aviso de ausencia del profesional con notificación al estudiante y nueva programación vinculada al historial.","Portada de Denis Corp con tarjetas de ZUNI, Denis Academy y Fulleo; accesos actuales de ZUNI conservados.","Guías ampliadas con seguridad del acceso y ausencias del profesional."]),
         new("1.4.0",["Guías con búsqueda tolerante a faltas, abreviaturas y periodos, y accesos en todas las funciones disponibles.","Planes de centros con tarifa y vigencia calculadas desde hoy al contratar o renovar.","Acceso directo a Google Meet para crear enlaces individuales por cita.","Notas profesionales privadas protegidas por un PIN de cuatro dígitos, bloqueo por intentos y recuperación por Brevo.","Separación corregida entre las tarjetas del tablero del Director."]),

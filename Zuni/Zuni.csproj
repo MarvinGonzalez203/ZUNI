@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Version>1.5.2</Version>
+    <TargetFramework>net10.0</TargetFramework>
+    <Version>1.5.3</Version>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>df74818a-cd0f-4ce3-9d60-29cf450de409</UserSecretsId>
@@ -10,13 +10,13 @@
 
   <ItemGroup>
     <PackageReference Include="PDFsharp-MigraDoc" Version="6.2.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.31" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.31">
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.15">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.2" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.15" />
   </ItemGroup>
   <ItemGroup><EmbeddedResource Include="Resources/Fonts/*.ttf" /></ItemGroup>
   <ItemGroup><EmbeddedResource Include="Localizacion/en.json" LogicalName="Zuni.Localizacion.en.json" /></ItemGroup>

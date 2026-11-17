@@ -7,12 +7,12 @@ públicos. Actualizar el catálogo y este documento al incorporar nuevas entrega
 
 | Programa | Propósito | Proyecto local | Fuente de estado revisada | Versión |
 | --- | --- | --- | --- | --- |
-| ZUNI | Acompañamiento estudiantil y atención profesional | `C:\Users\Lenovo\source\repos\ZUNI` | `docs/actualizacion-1.5.2.md`, `VersionSistema.cs` | 1.5.2 |
+| ZUNI | Acompañamiento estudiantil y atención profesional | `C:\Users\Lenovo\source\repos\ZUNI` | `docs/actualizacion-1.5.3.md`, `VersionSistema.cs` | 1.5.3 |
 | Denis Academy | Autoestudio de inglés y español | `C:\traslate` | `estado del sistema.md`, `docs/AUDITORIA-CIA-1.2.1.md` | 1.2.1 |
-| Fulleo | Consulta de precios de combustibles con fecha y fuente | `C:\U\10mo\Proyect G II\fulleo-web` | `README.md`, `CHANGELOG.md`, `docs/REPORTE-NAS.md` | 0.8.0 |
+| Fulleo | Consulta de precios de combustibles con fecha y fuente | `C:\U\10mo\Proyect G II\fulleo-web` | `README.md`, `CHANGELOG.md`, `docs/REPORTE-NAS.md` | 0.8.1 |
 | Denis Corp POS | Ventas, inventario, caja y cuentas de negocios | `C:\pos-local` | `package.json`, `public/system-release.json` | 1.22.0 |
 | Denis Corp Colegios | Propuesta SaaS para varios colegios que contratan el servicio | Catálogo de este portal; servicio general por validar | Aclaración del propietario y `PortalDenisCorp.cs` | SaaS en preparación |
-| LSR · cliente | Implementación escolar de un cliente de Denis Corp | `C:\Sistem Liceo` | `ESTADO_DEL_SISTEMA.md`, `README.md` | 1.4.2 del cliente |
+| LSR · cliente | Implementación escolar de un cliente de Denis Corp | `C:\Sistem Liceo` | `ESTADO_DEL_SISTEMA.md`, `README.md` | 1.4.3 del cliente |
 
 ## Rutas y responsabilidades
 

@@ -28,7 +28,7 @@ public static class PortalDenisCorp
             [new(new("Lecciones y actividades", "Lessons and activities"), new("Autoestudio de inglés y español con audios, escritura, repaso y minijuegos.", "English and Spanish self-study with audio, writing, review and mini-games.")),
              new(new("Progreso en el dispositivo", "On-device progress"), new("La aplicación conserva el avance local y permite continuar con contenido preparado para uso sin conexión.", "The app keeps local progress and supports continuing with content prepared for offline use."))],
             [new("Acceso público desde este portal y verificación del despliegue.", "Public access from this portal and deployment verification."),new("Cuentas, sincronización entre dispositivos y tutor de IA conectado.", "Accounts, cross-device synchronization and a connected AI tutor.")]),
-        new("fulleo", "Fulleo", "/images/productos/fulleo.svg", "image/svg+xml", "0.8.0",
+        new("fulleo", "Fulleo", "/images/productos/fulleo.svg", "image/svg+xml", "0.8.1",
             new("Precios de combustibles", "Fuel prices"),
             new("Consulta precios de gasolina con su fecha y fuente para informarte antes de llenar el tanque.", "Check gasoline prices with their date and source before filling your tank."),
             new("Ver avances del programa", "View product progress"),

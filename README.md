@@ -5,6 +5,7 @@ La portada reúne cinco programas con su identidad, descripción y avances:
 ZUNI, Denis Academy, Fulleo, Denis Corp POS y Denis Corp Colegios como propuesta SaaS.
 
 - [Contexto común y ubicación de cada proyecto](docs/denis-corp/contexto-productos.md).
+- [Actualización de seguridad y .NET 10 — 1.5.3](docs/actualizacion-1.5.3.md).
 - [Organización privada en GitHub y ramas](docs/denis-corp/github-privado.md).
 - [Correcciones del portal 1.5.2](docs/actualizacion-1.5.2.md).
 - [Inicio local desde Visual Studio](docs/desarrollo-local.md).

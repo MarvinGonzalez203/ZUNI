@@ -9,7 +9,12 @@ entre `<...>` son marcadores que debes reemplazar en el servidor, nunca en el re
   - Activa la cookie de sesión y la cookie antiforgery con `Secure` (solo HTTPS).
   - Activa `UseExceptionHandler` y HSTS.
   - Desactiva la generación de enlaces de recuperación de contraseña (solo existen en Development).
-- Runtime: ASP.NET Core 8 (`net8.0`).
+- Runtime desde 1.5.3: ASP.NET Core 10 LTS (`net10.0`), con EF Core 10 y Npgsql 10.
+  Instalar el SDK .NET 10 para compilar y el runtime ASP.NET Core 10 para ejecutar fuera
+  de contenedores. Un runtime 8/9 no ejecuta esta publicación. El contenedor usa
+  `mcr.microsoft.com/dotnet/aspnet:10.0-noble` y debe recibir un publish para su arquitectura.
+  Probar sobre una restauración aislada antes de activar la actualización; no ejecutar
+  migraciones contra producción durante las pruebas. Ver `docs/actualizacion-1.5.3.md`.
 - Publicar con: `dotnet publish Zuni/Zuni.csproj -c Release -o <carpeta-de-publicacion>`.
 
 ## 2. Cadena de conexión
