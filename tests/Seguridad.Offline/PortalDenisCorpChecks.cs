@@ -35,14 +35,43 @@ internal static class PortalDenisCorpChecks
                 {
                     Check(Regex.Matches(html,"data-product=\"").Count==5,"cinco tarjetas "+idioma);
                     Check(html.Contains("brand-glass")&&html.Contains("/images/zuni-logo-transparent.png"),"logo ZUNI sobre cristal "+idioma);
+                    Check(Regex.Matches(html,"class=\"([^\"]*)\"").Count(m=>m.Groups[1].Value.Split(' ').Contains("brand-glass"))==7,"cristal en las cinco tarjetas, cabecera y hero "+idioma);
+                    Check(!texto.Contains("LSR")&&!html.Contains("colegios.png"),"el cliente LSR no representa al SaaS "+idioma);
+                    Check(html.Contains("/deniscorp/blog/")&&html.Contains("/deniscorp/contacto/"),"blog y contacto en navegación "+idioma);
                     Check(texto.Contains(idioma=="es"?"Colegios y gestión escolar":"Schools and administration"),"catálogo traducido "+idioma);
                 }
                 else
                 {
-                    Check(texto.Contains(idioma=="es"?"Avances del programa":"Product progress")&&texto.Contains(PortalDenisCorp.Obtener(nombre).Version),"avances con versión documentada "+nombre+idioma);
+                    Check(texto.Contains(nombre=="colegios"?(idioma=="es"?"Propuesta para colegios":"School service offering"):(idioma=="es"?"Avances del programa":"Product progress"))&&texto.Contains(PortalDenisCorp.Obtener(nombre).Version),"avances con versión documentada "+nombre+idioma);
                     Check(texto.Contains(idioma=="es"?"En preparación":"In preparation"),"pendientes distinguidos de lo implementado "+nombre+idioma);
                 }
                 if(nombre=="fulleo")Check(texto.Contains("0.8.0")&&texto.Contains("19")&&texto.Contains("88")&&texto.Contains(idioma=="es"?"datos históricos":"historical test data"),"avances de Fulleo no simulan precios actuales "+idioma);
+                if(salida is not null)await File.WriteAllTextAsync(Path.Combine(salida,nombre+"-"+idioma+".html"),html);
+            }
+            foreach(var nombre in new[]{"blog","contacto"})
+            {
+                var html=await anon.GetStringAsync("/deniscorp/"+nombre+"/");var texto=WebUtility.HtmlDecode(html);
+                Check(html.Contains("lang=\""+idioma+"\"")&&html.Contains("data-view-scope=\"denis-corp\""),"nuevas páginas bilingües y con tema "+nombre+idioma);
+                Check(!texto.Contains("LSR")&&!html.Contains("localhost:3000"),"páginas propias sin identidad de cliente ni dependencia de otro localhost "+nombre+idioma);
+                if(nombre=="blog")
+                {
+                    Check(Regex.Matches(html,"data-blog-article").Count==8&&html.Contains("<details>"),"biblioteca de ocho guías desplegables "+idioma);
+                    var filtrado=await anon.GetStringAsync("/deniscorp/blog/?tema=fulleo");
+                    Check(Regex.Matches(filtrado,"data-blog-article[^>]*hidden").Count==7,"filtro por programa también funciona en servidor "+idioma);
+                    var buscado=await anon.GetStringAsync("/deniscorp/blog/?q="+(idioma=="es"?"recuperacion":"recovery"));
+                    Check(Regex.Matches(buscado,"data-blog-article[^>]*hidden").Count==7,"búsqueda tolera acentos "+idioma);
+                    Check((await anon.GetAsync("/deniscorp/blog/?q="+Uri.EscapeDataString(new string('a',79)+"😀"))).StatusCode==HttpStatusCode.OK,"búsqueda larga con Unicode no produce error "+idioma);
+                    var inyeccion=await anon.GetStringAsync("/deniscorp/blog/?q="+Uri.EscapeDataString("<script>alert(1)</script>"));
+                    Check(!inyeccion.Contains("<script>alert(1)</script>"),"consulta no se interpreta como HTML "+idioma);
+                }
+                else
+                {
+                    Check(texto.Contains("+502 3039 0175")&&texto.Contains("corporation.denis@gmail.com"),"canales corporativos de la referencia "+idioma);
+                    Check(!html.Contains("name=\"contact-message\"")&&!html.Contains("name=\"contact-name\""),"el borrador no se serializa al servidor "+idioma);
+                    var escolar=await anon.GetStringAsync("/deniscorp/contacto/?programa=colegios&tema=contratacion");
+                    Check(Regex.IsMatch(escolar,"value=\"colegios\" selected")&&Regex.IsMatch(escolar,"value=\"contratacion\" selected"),"consulta de colegio conserva programa y tema "+idioma);
+                    Check((await anon.PostAsync("/deniscorp/contacto/",new FormUrlEncodedContent([]))).StatusCode==HttpStatusCode.MethodNotAllowed,"no existe un envío silencioso al servidor "+idioma);
+                }
                 if(salida is not null)await File.WriteAllTextAsync(Path.Combine(salida,nombre+"-"+idioma+".html"),html);
             }
         }

@@ -7,11 +7,12 @@ públicos. Actualizar el catálogo y este documento al incorporar nuevas entrega
 
 | Programa | Propósito | Proyecto local | Fuente de estado revisada | Versión |
 | --- | --- | --- | --- | --- |
-| ZUNI | Acompañamiento estudiantil y atención profesional | `C:\Users\Lenovo\source\repos\ZUNI` | `docs/actualizacion-1.5.1.md`, `VersionSistema.cs` | 1.5.1 |
+| ZUNI | Acompañamiento estudiantil y atención profesional | `C:\Users\Lenovo\source\repos\ZUNI` | `docs/actualizacion-1.5.2.md`, `VersionSistema.cs` | 1.5.2 |
 | Denis Academy | Autoestudio de inglés y español | `C:\traslate` | `estado del sistema.md`, `docs/AUDITORIA-CIA-1.2.1.md` | 1.2.1 |
 | Fulleo | Consulta de precios de combustibles con fecha y fuente | `C:\U\10mo\Proyect G II\fulleo-web` | `README.md`, `CHANGELOG.md`, `docs/REPORTE-NAS.md` | 0.8.0 |
 | Denis Corp POS | Ventas, inventario, caja y cuentas de negocios | `C:\pos-local` | `package.json`, `public/system-release.json` | 1.22.0 |
-| System LSR · colegios | Matrículas, pagos, notas, asistencia y expediente escolar | `C:\Sistem Liceo` | `ESTADO_DEL_SISTEMA.md`, `README.md` | 1.4.2 |
+| Denis Corp Colegios | Propuesta SaaS para varios colegios que contratan el servicio | Catálogo de este portal; servicio general por validar | Aclaración del propietario y `PortalDenisCorp.cs` | SaaS en preparación |
+| LSR · cliente | Implementación escolar de un cliente de Denis Corp | `C:\Sistem Liceo` | `ESTADO_DEL_SISTEMA.md`, `README.md` | 1.4.2 del cliente |
 
 ## Rutas y responsabilidades
 
@@ -23,7 +24,9 @@ públicos. Actualizar el catálogo y este documento al incorporar nuevas entrega
 | `/deniscorp/academy/` | Identidad y avances documentados de Academy |
 | `/deniscorp/fulleo/` | Avances de Fulleo, muestra histórica y pendientes |
 | `/deniscorp/pos/` | Identidad y capacidades documentadas del POS |
-| `/deniscorp/colegios/` | Identidad y capacidades documentadas de System LSR |
+| `/deniscorp/colegios/` | Propuesta SaaS general Denis Corp Colegios |
+| `/deniscorp/blog/` | Biblioteca pública de guías, temas y búsqueda |
+| `/deniscorp/contacto/` | Canales corporativos y borradores para WhatsApp o correo |
 
 Estas fichas no contienen cuentas, claves ni datos de los otros programas.
 Los accesos a aplicaciones independientes requieren su despliegue, configuración
@@ -34,7 +37,8 @@ ni se ha trasladado ningún proyecto o historial de Git.
 
 - Denis Corp, POS y colegios: botones arena `#e3d5ca` de día y rojos `#e8031b`
   de noche. Las tarjetas conservan fondo oscuro y destellos rojo y arena.
-- ZUNI: violeta `#cea2fd`; logo sobre dos círculos elípticos blancos de cristal.
+- Todos los logos del inicio comparten dos círculos elípticos blancos de cristal.
+- ZUNI: violeta `#cea2fd`.
 - Academy: azul `#2965c7`.
 - Fulleo: amarillo `#f2ca48`.
 - El tema del portal se guarda en su propio ámbito de almacenamiento, separado
@@ -45,8 +49,8 @@ ni se ha trasladado ningún proyecto o historial de Git.
 Los archivos de `Zuni/wwwroot/images/productos/` se copiaron de los recursos locales
 de los productos. Denis Corp y POS comparten el icono corporativo del POS.
 Academy y Fulleo conservan la forma de sus SVG y adaptan su color al azul y amarillo
-solicitados. Colegios utiliza el logo LSR propio, no el favicon corporativo heredado
-de su proyecto. La presentación de ZUNI mantiene sus favicons originales.
+solicitados. Colegios utiliza un símbolo general de gestión escolar. El logo y favicon de un
+cliente no representan el servicio SaaS. La presentación de ZUNI mantiene sus favicons originales.
 Los cambios visuales de este portal no modifican los archivos de los otros proyectos.
 
 ## Alcance real de los avances
@@ -65,8 +69,12 @@ portal, el suministro diario automatizado, cobros, historial Plus y predicciones
 La versión 1.22.0 incluye ampliaciones para baterías y garantías. Su ficha en este
 portal no afirma que el servidor del POS esté publicado o disponible.
 
-**Colegios:** funciones escolares conectadas en local. Su estado 1.4.2 indica
-infraestructura formal de producción pendiente; conservar esa distinción.
+**Colegios:** propuesta SaaS general de Denis Corp para varias instituciones. LSR
+es un cliente y no da nombre ni identidad al producto. Su código escolar es una
+referencia de implementación; su versión 1.4.2 no acredita disponibilidad comercial,
+aislamiento entre instituciones, contratación ni infraestructura del SaaS general.
+La ficha pública presenta capacidades previstas y pendientes, sin afirmar que la
+plataforma SaaS ya esté lista para contratar.
 
 ## Mantenimiento del contexto
 

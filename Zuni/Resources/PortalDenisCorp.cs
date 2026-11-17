@@ -44,13 +44,13 @@ public static class PortalDenisCorp
             [new(new("Venta e inventario", "Sales and inventory"),new("Punto de venta, productos, existencias, clientes y proveedores.", "Point of sale, products, stock, customers and suppliers.")),
              new(new("Caja y cuentas", "Cash and accounts"),new("Control de caja, saldos y comprobantes, con funciones por tipo de negocio.", "Cash control, balances and receipts, with business-specific features."))],
             [new("Integración del acceso público desde este portal.", "Integration of public access from this portal.")]),
-        new("colegios", "System LSR", "/images/productos/colegios.png", "image/png", "1.4.2",
+        new("colegios", "Denis Corp Colegios", "/images/productos/colegios.svg", "image/svg+xml", "SaaS",
             new("Colegios y gestión escolar", "Schools and administration"),
-            new("Gestiona matrículas, pagos, notas, asistencia y expedientes escolares con funciones por perfil.", "Manage enrollment, payments, grades, attendance and school records with role-based features."),
+            new("Una propuesta SaaS para que distintos colegios contraten la gestión académica y administrativa de su institución.", "A SaaS offering for different schools to subscribe to academic and administrative management for their institution."),
             new("Conoce el programa para colegios", "Explore the school program"),
-            [new(new("Organización académica", "Academic organization"),new("Matrículas, aulas, horarios, notas y asistencia vinculados al expediente del alumno.", "Enrollment, classrooms, schedules, grades and attendance linked to student records.")),
-             new(new("Gestión administrativa", "Administrative management"),new("Consulta de pagos, saldos y ficha del estudiante, con permisos según el perfil.", "Payments, balances and student profiles with role-based permissions."))],
-            [new("Preparación y verificación de infraestructura formal de producción.", "Preparation and verification of formal production infrastructure."),new("Integración del acceso desde este portal.", "Integration of access from this portal.")])
+            [new(new("Organización académica", "Academic organization"),new("La propuesta reúne matrículas, aulas, horarios, notas y asistencia para el trabajo de cada colegio.", "The offering brings together enrollment, classrooms, schedules, grades and attendance for each school.")),
+             new(new("Gestión administrativa", "Administrative management"),new("Herramientas previstas para pagos, saldos y expedientes, con funciones según el perfil de cada usuario.", "Planned tools for payments, balances and records, with features based on each user's role."))],
+            [new("Publicación, condiciones comerciales y validación del servicio para varias instituciones.", "Publication, commercial terms and validation of the service for multiple institutions."),new("Configuración y puesta en marcha de cada colegio.", "Configuration and onboarding for each school.")])
     ];
     public static ProductoDenisCorp Obtener(string id) => Productos.Single(p => p.Id == id);
 }

@@ -1,0 +1,26 @@
+@model Zuni.Resources.BlogPortalVista
+@using Zuni.Resources
+@using static Zuni.Resources.PortalDenisCorp
+@{ Layout="_DenisCorpLayout";ViewData["Title"]=T("Blog y centro de ayuda","Blog and help center");var destacada=BlogDenisCorp.Articulos[0]; }
+<section class="editorial-heading"><p class="eyebrow">@T("DENIS CORP · BLOG Y CENTRO DE AYUDA","DENIS CORP · BLOG AND HELP CENTER")</p><h1>@T("Aprende, consulta y encuentra tu camino.","Learn, find answers and find your way.")</h1><p>@T("Guías prácticas para conocer nuestros programas y aprovechar las funciones disponibles.","Practical guides to explore our programs and make the most of available features.")</p></section>
+<section class="blog-featured"><div><p class="eyebrow">@T("GUÍA DESTACADA · PRIMEROS PASOS","FEATURED GUIDE · GETTING STARTED")</p><h2>@destacada.Titulo</h2><p>@destacada.Resumen</p><a class="corp-button" data-blog-featured href="/deniscorp/blog/#guia-elegir-programa">@T("Explorar la guía","Explore the guide") <span aria-hidden="true">↗</span></a></div><ol class="featured-steps"><li>@T("Conoce cada programa","Explore each program")</li><li>@T("Revisa sus avances","Review its progress")</li><li>@T("Consulta lo que necesitas","Ask about your needs")</li></ol></section>
+<div class="blog-library" data-blog-library>
+    <aside class="blog-categories"><h2>@T("Explorar temas","Explore topics")</h2><nav aria-label="@T("Temas del blog","Blog topics")">
+        @foreach(var tema in new[]{"todos","general"}.Concat(Productos.Select(p=>p.Id)))
+        {
+            var titulo=tema=="todos"?T("Todas las guías","All guides"):tema=="general"?T("Primeros pasos","Getting started"):Obtener(tema).Nombre;
+            <a href="?tema=@tema" data-blog-topic="@tema" aria-current="@(Model.Tema==tema?"true":null)"><span>@titulo</span><span class="topic-count">@(tema=="todos"?BlogDenisCorp.Articulos.Count:BlogDenisCorp.Articulos.Count(a=>a.Programa==tema))</span></a>
+        }
+    </nav></aside>
+    <section class="blog-results"><form class="blog-search" action="/deniscorp/blog/" method="get" role="search"><label for="blog-search">@T("Buscar en las guías","Search the guides")</label><div><input id="blog-search" name="q" type="search" maxlength="80" value="@Model.Consulta" autocomplete="off"/><input type="hidden" name="tema" id="blog-topic" value="@Model.Tema"/><button class="corp-button" type="submit">@T("Buscar","Search")</button></div></form>
+        <p data-blog-count role="status" aria-live="polite">@Model.Coincidencias.Count @T("guía(s) disponibles","guide(s) available")</p>
+        <div class="blog-grid">@foreach(var a in BlogDenisCorp.Articulos){
+            <article class="blog-card" id="guia-@a.Id" data-blog-article data-topic="@a.Programa" hidden="@(!Model.Coincidencias.Contains(a.Id))">
+                @if(a.Programa=="general"){<div class="product-mark brand-glass" aria-hidden="true"><img src="/images/productos/deniscorp.png" width="64" height="64" alt="" loading="lazy"/></div>}else{<partial name="_MarcaProducto" model="Obtener(a.Programa)"/>}
+                <p class="eyebrow">@(a.Programa=="general"?T("PRIMEROS PASOS","GETTING STARTED"):Obtener(a.Programa).Nombre)</p><h3>@a.Titulo</h3><p data-blog-summary>@a.Resumen</p><span class="blog-author">@T("Equipo Denis Corp","Denis Corp team")</span><details><summary>@T("Leer guía","Read guide")</summary><ol>@foreach(var paso in a.Pasos){<li>@paso</li>}</ol><a href="@a.Enlace">@T("Abrir el acceso relacionado","Open the related page") →</a></details>
+            </article>
+        }</div><p class="blog-empty" data-blog-empty hidden="@(Model.Coincidencias.Count!=0)">@T("No encontramos una guía. Prueba otra palabra o cambia de tema.","No guides found. Try another word or choose another topic.")</p>
+    </section>
+</div>
+<aside class="help-support"><div><h2>@T("¿Necesitas ayuda con un programa?","Need help with a program?")</h2><p>@T("Escríbenos e indica qué necesitas resolver.","Write to us and tell us what you need help with.")</p></div><a class="corp-button" href="/deniscorp/contacto/">@T("Contáctanos","Contact us") →</a></aside>
+<script src="~/js/blog-denis-corp.js" asp-append-version="true" defer></script>

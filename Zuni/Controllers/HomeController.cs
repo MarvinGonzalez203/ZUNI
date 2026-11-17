@@ -37,6 +37,17 @@ namespace Zuni.Controllers
         [HttpGet("deniscorp/colegios")]
         public IActionResult Colegios() => View("Producto", model: Resources.PortalDenisCorp.Obtener("colegios"));
 
+        [HttpGet("deniscorp/blog")]
+        public IActionResult Blog(string? q,string? tema) => View(Resources.BlogDenisCorp.Buscar(q,tema));
+
+        [HttpGet("deniscorp/contacto")]
+        public IActionResult Contacto(string? programa,string? tema)
+        {
+            ViewData["ProgramaContacto"]=Resources.PortalDenisCorp.Productos.Any(p=>p.Id==programa)?programa:"general";
+            ViewData["TemaContacto"]=tema=="contratacion"?tema:"consulta";
+            return View();
+        }
+
         [HttpGet("deniscorp/zuni")]
         public async Task<IActionResult> Zuni()
         {

@@ -24,6 +24,9 @@ const contrast=(a,b)=>{a=luminance(rgb(a));b=luminance(rgb(b));return (Math.max(
   });
   await page.goto('http://denis.test/');
   check(await page.locator('.product-card').count()===5,'cinco tarjetas '+width);
+  check(await page.locator('.corp-header nav a').allTextContents().then(t=>t.some(x=>x==='Blog')&&t.some(x=>x.includes('Contáctanos'))&&!t.some(x=>x.includes('ZUNI'))),'navegación corporativa '+width);
+  check(await page.locator('.brand-glass').count()===7,'cristal en todos los logos del inicio '+width);
+  check(!(await page.locator('main').innerText()).includes('LSR'),'la propuesta escolar no usa la marca del cliente '+width);
   for(const theme of ['light','dark']){
    if(await page.locator('html').getAttribute('data-theme')!==theme)await page.locator('#zuni-theme-control').click();
    check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desbordamiento '+width+theme);
@@ -33,8 +36,8 @@ const contrast=(a,b)=>{a=luminance(rgb(a));b=luminance(rgb(b));return (Math.max(
     const style=await button.evaluate(e=>({bg:getComputedStyle(e).backgroundColor,fg:getComputedStyle(e).color,filter:getComputedStyle(e).filter}));
     check(style.bg===color,'paleta '+id+width+theme);check(contrast(style.bg,style.fg)>=4.5&&style.filter==='none','contraste al pasar cursor '+id+width+theme);
    }
-   const crystal=await page.locator('.brand-glass').evaluate(e=>({before:getComputedStyle(e,'::before').backgroundImage,after:getComputedStyle(e,'::after').borderTopColor}));
-   check(crystal.before!=='none'&&crystal.after.includes('255'),'círculos blancos de cristal '+width+theme);
+   const crystal=await page.locator('.brand-glass').evaluateAll(es=>es.every(e=>getComputedStyle(e,'::before').backgroundImage!=='none'&&getComputedStyle(e,'::after').borderTopColor.includes('255')));
+   check(crystal,'círculos blancos de cristal en todos los logos '+width+theme);
    if(width===390||width===1366){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(dir,'portal-'+width+'-'+theme+'.png'),fullPage:true});}
   }
   await page.reload();check(await page.locator('html').getAttribute('data-theme')==='dark','tema persiste '+width);
@@ -54,7 +57,7 @@ const contrast=(a,b)=>{a=luminance(rgb(a));b=luminance(rgb(b));return (Math.max(
    await page.goto('http://denis.test/deniscorp/'+id+'/');
    iconos.push((await page.locator('link[rel=icon]').getAttribute('href')).split('?')[0]);
    check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'ficha sin desbordamiento '+id+width);
-   check(await page.locator('h2').first().innerText()==='Product progress','avances traducidos '+id+width);
+   check(await page.locator('h2').first().innerText()===(id==='colegios'?'School service offering':'Product progress'),'avances traducidos '+id+width);
    if(id==='fulleo'){
     check(await page.locator('.release-badge').innerText().then(t=>t.includes('0.8.0')),'versión Fulleo '+width);
     check(await page.locator('.progress-card').count()===4,'avances reales Fulleo '+width);
@@ -63,6 +66,30 @@ const contrast=(a,b)=>{a=luminance(rgb(a));b=luminance(rgb(b));return (Math.max(
   }
   check(new Set(iconos).size===4,'favicons propios '+width);
   check(iconos[2]==='/images/productos/deniscorp-32.png','POS usa Denis Corp '+width);
+  await page.goto('http://denis.test/deniscorp/blog/');
+  check(await page.locator('[data-blog-article]:visible').count()===8,'biblioteca de guías '+width);
+  await page.locator('#blog-search').fill('recovery');check(await page.locator('[data-blog-article]:visible').count()===1,'búsqueda de guía '+width);
+  await page.locator('#blog-search').fill('');await page.locator('[data-blog-topic=fulleo]').click();check(await page.locator('[data-blog-article]:visible').count()===1,'filtro por programa '+width);
+  await page.locator('#blog-search').fill('zzzz-no-resultados');check(await page.locator('[data-blog-empty]').isVisible(),'resultado vacío claro '+width);
+  await page.locator('[data-blog-featured]').click();check(await page.locator('#guia-elegir-programa details').getAttribute('open')!==null&&await page.locator('[data-blog-article]:visible').count()===8,'guía destacada reinicia filtros y se abre '+width);
+  await page.locator('[data-blog-topic=fulleo]').click();await page.locator('#blog-search').fill('Fulleo');
+  await page.locator('form.zuni-language').evaluate(f=>f.requestSubmit());await page.waitForFunction(()=>document.documentElement.lang==='es');
+  check(await page.locator('#blog-search').inputValue()==='Fulleo'&&await page.locator('[data-blog-article]:visible').count()===1,'idioma conserva búsqueda y tema '+width);
+  await page.locator('[data-blog-featured]').click();
+  for(const theme of ['light','dark']){if(await page.locator('html').getAttribute('data-theme')!==theme)await page.locator('#zuni-theme-control').click();check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'blog sin desbordamiento '+width+theme);if(width===390||width===1366){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(dir,'blog-'+width+'-'+theme+'.png'),fullPage:true});}}
+  await page.goto('http://denis.test/deniscorp/contacto/');
+  check(await page.locator('[data-corp-contact] .required-description').evaluateAll(es=>es.length===2&&es.every(e=>e.getBoundingClientRect().width<=1)),'descripciones accesibles no rompen alineación de etiquetas '+width);
+  let popups=0;page.on('popup',()=>popups++);await page.locator('[data-contact-channel=whatsapp]').click();
+  check(popups===0&&await page.locator('#contact-name').evaluate(e=>!e.validity.valid),'formulario vacío no abre canal '+width);
+  await page.locator('#contact-name').fill('Persona ficticia');await page.locator('#contact-organization').fill('Colegio de prueba');await page.locator('#contact-program').selectOption('colegios');await page.locator('#contact-topic').selectOption('contratacion');await page.locator('#contact-message').fill('Consulta ficticia de disponibilidad & requisitos');
+  const wa=new URL(await page.locator('[data-contact-channel=whatsapp]').getAttribute('href')),mail=new URL(await page.locator('[data-contact-channel=email]').getAttribute('href'));
+  check(wa.hostname==='wa.me'&&wa.pathname==='/50230390175'&&wa.searchParams.get('text').includes('Persona ficticia')&&wa.searchParams.get('text').includes('Denis Corp Colegios'),'WhatsApp prepara el borrador correcto sin enviarlo '+width);
+  check(mail.protocol==='mailto:'&&mail.pathname==='corporation.denis@gmail.com'&&mail.searchParams.get('body').includes('& requisitos'),'correo conserva mensaje y caracteres '+width);
+  check(await page.locator('[data-corp-contact]').evaluate(f=>[...new FormData(f)].length)===0,'datos del borrador no se envían al servidor '+width);
+  for(const theme of ['light','dark']){if(await page.locator('html').getAttribute('data-theme')!==theme)await page.locator('#zuni-theme-control').click();check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'contacto sin desbordamiento '+width+theme);if(width===390||width===1366){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(dir,'contacto-'+width+'-'+theme+'.png'),fullPage:true});}}
+  await page.locator('form.zuni-language').evaluate(f=>f.requestSubmit());await page.waitForFunction(()=>document.documentElement.lang==='en');
+  check(await page.locator('#contact-name').inputValue()==='Persona ficticia'&&await page.locator('#contact-message').inputValue()==='Consulta ficticia de disponibilidad & requisitos','idioma conserva el borrador '+width);
+  check(new URL(await page.locator('[data-contact-channel=whatsapp]').getAttribute('href')).searchParams.get('text').includes('Name: Persona ficticia'),'borrador se adapta al idioma '+width);
   check(errors.length===0,'sin errores JavaScript '+errors.join(';'));
   await context.close();
  }
