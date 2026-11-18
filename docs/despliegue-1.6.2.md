@@ -38,7 +38,7 @@ sudo bash /home/marlon/zuni-subida/actualizacion-1.6.2/actualizar.sh --aplicar
 - Restauración en una base temporal nueva, permisos restringidos y migración; copia privada de claves y auditoría; arranque de la versión candidata solo en loopback con correo deshabilitado. Verificación de integridad y ocho rutas antes de aplicar SQL al esquema vivo. Al terminar se retira únicamente el clon creado por esa ejecución.
 - SQL de PIN, 2FA y ausencias idempotente, sin transacciones internas: `psql --single-transaction` aplica la unidad completa. Permisos nuevos `SELECT/INSERT/UPDATE`, sin abrir auditorías ni ampliar permisos del esquema vivo.
 - Se comprueban conteos previos a la activación y hashes de las claves originales; después enlace atómico, servicio activo, rutas HTTPS 200 y portada Denis Corp. Los accesos existentes de ZUNI conservan sus direcciones.
-- No hay restauración automática de la base. Una reversión de código a 1.3.3/1.4.0 se bloquea si existen estados nuevos de PIN, 2FA o ausencias; nunca se elude el segundo factor para reiniciar código antiguo. La reversión manual valida el respaldo y candidato activo y conserva base, claves y entorno.
+- No hay restauración automática de la base. Una reversión se bloquea si el código anterior no admite los estados existentes: PIN para 1.3.3; 2FA/ausencias para 1.3.3 y 1.4.0; nunca se elude el segundo factor para reiniciar código antiguo. La reversión manual valida el respaldo y candidato activo y conserva base, claves y entorno.
 
 ## Pruebas de preparación
 
