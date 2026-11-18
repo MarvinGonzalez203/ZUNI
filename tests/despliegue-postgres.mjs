@@ -7,7 +7,7 @@ function run(exe,args,input){return new Promise((resolve,reject)=>{const child=s
 const executable=name=>path.join(pg,name+(process.platform==='win32'?'.exe':''));
 const sql=(db,text)=>run(executable('psql'),[...connection,'-X','-Atq','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate','-d',db],text);
 const check=(value,message)=>{assert.ok(value,message);checks++;};
-const migrate=(db,files)=>run(executable('psql'),[...connection,'-X','-q','-1','-v','ON_ERROR_STOP=1','-d',db,'-c','SET ROLE '+owner,...files.flatMap(file=>['-f',file])]);
+const migrate=async(db,files)=>run(executable('psql'),[...connection,'-X','-q','-1','-v','ON_ERROR_STOP=1','-d',db,'-c','SET ROLE '+owner,'-f','-'],(await Promise.all(files.map(file=>readFile(file,'utf8')))).join(''));
 async function rejected(db,text,state){let blocked=false;try{await sql(db,text);}catch(error){blocked=error.stderr.includes(state);}check(blocked,'Expected SQLSTATE '+state);}
 try{
  const location=(await sql('postgres','SHOW data_directory')).replaceAll('\\','/').toLowerCase();check(location===path.join(repo,'.visual-check/remediacion-01-06/pg-upgrade/data').replaceAll('\\','/').toLowerCase(),'Refuse non-lab PostgreSQL');

@@ -192,8 +192,10 @@ clone_created=1
 sql postgres -q -c "REVOKE ALL ON DATABASE \"$clone\" FROM PUBLIC; GRANT CONNECT ON DATABASE \"$clone\" TO zuni_app;"
 pgtool pg_restore -d "$clone" --exit-on-error --single-transaction --no-owner --no-privileges --role=zuni_migrador < "$backup/zuni.dump"
 # Restore omits ACLs: recreate the existing restricted permissions inside the clone only.
-sql "$clone" -q -1 -c 'SET ROLE zuni_migrador' -f "$work/permisos-clon.sql"
-sql "$clone" -q -1 -c 'SET ROLE zuni_migrador' -f "$work/migraciones.sql" -f "$work/permisos-nuevos.sql"
+# Root opens private package files; postgres receives SQL over stdin, without
+# granting it access to the deployment directory. Keep one transaction per call.
+sql "$clone" -q -1 -c 'SET ROLE zuni_migrador' -f - < "$work/permisos-clon.sql"
+cat -- "$work/migraciones.sql" "$work/permisos-nuevos.sql" | sql "$clone" -q -1 -c 'SET ROLE zuni_migrador' -f -
 [[ $(counts "$clone") == "$before" ]]
 install -d -m 711 -o root -g root /var/lib/zuni/ensayos-demo
 [[ ! -L /var/lib/zuni/ensayos-demo ]]
@@ -208,7 +210,7 @@ cp -- "$clone_state/http.log" "$backup/ensayo-http.log"
 cp -- "$clone_state/integridad.log" "$backup/ensayo-integridad.log"
 cleanup_clone
 status 'MIGRACIÓN: ensayo aprobado; aplicando únicamente PIN/2FA/ausencias pendientes y permisos mínimos.'
-sql "$database" -q -1 -c 'SET ROLE zuni_migrador' -f "$work/migraciones.sql" -f "$work/permisos-nuevos.sql"
+cat -- "$work/migraciones.sql" "$work/permisos-nuevos.sql" | sql "$database" -q -1 -c 'SET ROLE zuni_migrador' -f -
 migrated=1
 [[ $(counts "$database") == "$before" ]]
 [[ $(sql "$database" -Atq -c 'SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY "MigrationId" DESC LIMIT 1') == "$target" ]]
