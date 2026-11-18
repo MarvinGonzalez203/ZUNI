@@ -57,7 +57,7 @@ Espera el estado `COMPLETADO`, conserva las rutas de respaldo y registro y revis
 
 ## 5. Si falla
 
-El actualizador conserva el respaldo y nunca restaura ni borra la base viva. Intenta iniciar el código previo cuando es compatible. Si ya existen cuentas con 2FA o citas con estados nuevos y el código anterior no los entiende, conserva la versión nueva detenida para revisión; no evade el segundo factor para recuperar disponibilidad.
+El actualizador conserva el respaldo y nunca restaura ni borra la base viva. Intenta iniciar el código previo cuando es compatible. Si ya existen PIN configurado, cuentas con 2FA o citas con estados nuevos y el código anterior no los entiende, conserva la versión nueva detenida para revisión; no evade el segundo factor para recuperar disponibilidad.
 
 Para una reversión manual **solo del código**, usando la ruta exacta del respaldo impresa al terminar:
 

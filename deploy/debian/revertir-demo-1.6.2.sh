@@ -26,11 +26,13 @@ sql() { runuser -u postgres -- env -u PGSERVICE -u PGOPTIONS -u PGPASSFILE /usr/
 compatible() {
     case "$version" in
       1.5.*|1.6.*) return 0;;
-      1.3.3|1.4.0) [[ $(sql 'SELECT EXISTS(SELECT 1 FROM "AspNetUsers" WHERE "TwoFactorEnabled") OR EXISTS(SELECT 1 FROM "Citas" WHERE "Estado"=7 OR "SustituyeCitaId" IS NOT NULL)') == f ]];;
+      1.3.3|1.4.0)
+        if [[ $version == 1.3.3 ]]; then [[ $(sql 'SELECT EXISTS(SELECT 1 FROM "PinesProfesionales" WHERE "HashProtegido" IS NOT NULL)') == f ]] || return 1; fi
+        [[ $(sql 'SELECT EXISTS(SELECT 1 FROM "AspNetUsers" WHERE "TwoFactorEnabled") OR EXISTS(SELECT 1 FROM "Citas" WHERE "Estado"=7 OR "SustituyeCitaId" IS NOT NULL)') == f ]];;
       *) return 1;;
     esac
 }
-compatible || { echo 'DETENIDO: no se puede volver a ese código porque existen datos de 2FA/ausencias que requiere la versión nueva. No se cambia el servicio ni se desactiva 2FA.'; exit 1; }
+compatible || { echo 'DETENIDO: existen datos de PIN/2FA/ausencias que requieren la versión nueva. No se cambia el servicio ni se evaden protecciones.'; exit 1; }
 [[ $(systemctl show zuni-demo -p WorkingDirectory --value) == "$current" ]]
 changed=0
 on_error() {

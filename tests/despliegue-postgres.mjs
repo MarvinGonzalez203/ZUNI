@@ -30,6 +30,8 @@ try{
   check(await sql(database,`SELECT has_table_privilege('${app}','public."${table}"','SELECT'),has_table_privilege('${app}','public."${table}"','INSERT'),has_table_privilege('${app}','public."${table}"','UPDATE'),has_table_privilege('${app}','public."${table}"','DELETE')`)==='t|t|t|f','Minimal rights '+table);
  }
  await rejected(database,`SET ROLE ${app};INSERT INTO "DobleFactor" ("UsuarioId","CodigosHash","UltimoPaso","Fallos","Recordar","Revision") VALUES ('missing-user','[]',-1,0,false,'33333333-3333-4333-8333-333333333333');`,'23503');
+ await sql(database,`SET ROLE ${app};INSERT INTO "PinesProfesionales" ("UsuarioId","HashProtegido","IntentosFallidos","Revision") VALUES ('deploy-psychologist','only-a-fictional-envelope',0,'55555555-5555-4555-8555-555555555555');`);
+ check(await sql(database,'SELECT EXISTS(SELECT 1 FROM "PinesProfesionales" WHERE "HashProtegido" IS NOT NULL)')==='t','Rollback to pre-PIN version must be blocked');
  await sql(database,`SET ROLE ${owner};UPDATE "Citas" SET "Estado"=7 WHERE "Id"='22222222-2222-4222-8222-222222222222';`);
  check(await sql(database,'SELECT "Estado" FROM "Citas"')==='7','New absence state accepted');
  await rejected(database,`SET ROLE ${owner};UPDATE "Citas" SET "SustituyeCitaId"='44444444-4444-4444-8444-444444444444';`,'23503');

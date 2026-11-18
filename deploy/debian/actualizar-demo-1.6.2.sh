@@ -35,6 +35,9 @@ old_can_run() {
     case "$version" in
       1.5.*|1.6.*) return 0;;
       1.3.3|1.4.0)
+        if [[ $version == 1.3.3 && $(sql "$database" -Atq -c 'SELECT to_regclass($$public."PinesProfesionales"$$) IS NOT NULL') == t ]]; then
+            [[ $(sql "$database" -Atq -c 'SELECT EXISTS(SELECT 1 FROM "PinesProfesionales" WHERE "HashProtegido" IS NOT NULL)') == f ]] || return 1
+        fi
         [[ $(sql "$database" -Atq -c 'SELECT EXISTS(SELECT 1 FROM "AspNetUsers" WHERE "TwoFactorEnabled") OR EXISTS(SELECT 1 FROM "Citas" WHERE "Estado"=7)') == f ]] || return 1
         if [[ $(sql "$database" -Atq -c 'SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema=$$public$$ AND table_name=$$Citas$$ AND column_name=$$SustituyeCitaId$$)') == t ]]; then
             [[ $(sql "$database" -Atq -c 'SELECT EXISTS(SELECT 1 FROM "Citas" WHERE "SustituyeCitaId" IS NOT NULL)') == f ]] || return 1
@@ -74,7 +77,7 @@ on_error() {
             systemctl start "$service"
             if systemctl is-active --quiet "$service"; then status 'REVERSIÓN: versión anterior iniciada; datos originales conservados.'; fi
         else
-            status 'MANTENIMIENTO: ya existen estados de 2FA o ausencias incompatibles con el código anterior. Se conserva el código nuevo y el respaldo. Requiere revisión; no se desactiva 2FA ni se restaura una base automáticamente.'
+            status 'MANTENIMIENTO: existen estados de PIN, 2FA o ausencias incompatibles con el código anterior. Se conserva el código nuevo y el respaldo. Requiere revisión; no se evaden protecciones ni se restaura una base automáticamente.'
         fi
     fi
     exit "$code"
