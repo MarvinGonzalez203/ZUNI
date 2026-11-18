@@ -59,7 +59,7 @@ const contrast=(a,b)=>{a=luminance(rgb(a));b=luminance(rgb(b));return (Math.max(
    check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'ficha sin desbordamiento '+id+width);
    check(await page.locator('h2').first().innerText()===(id==='colegios'?'School service offering':'Product progress'),'avances traducidos '+id+width);
    if(id==='fulleo'){
-    check(await page.locator('.release-badge').innerText().then(t=>t.includes('0.9.1')),'versión Fulleo '+width);
+    check(await page.locator('.release-badge').innerText().then(t=>t.includes('0.10.0')),'versión Fulleo '+width);
     check(await page.locator('.progress-card').count()===4,'avances reales Fulleo '+width);
     if(width===390||width===1366)await page.screenshot({path:path.join(dir,'fulleo-'+width+'-dark-en.png'),fullPage:true});
    }
