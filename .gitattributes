@@ -1,0 +1,4 @@
+deploy/debian/*.sh text eol=lf
+deploy/debian/*.sql text eol=lf
+tools/Despliegue/*.cs text eol=lf
+tests/despliegue-postgres.mjs text eol=lf

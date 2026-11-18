@@ -39,7 +39,7 @@ Todo lo demás usa el usuario de ejecución.
 
 Los comandos son de referencia para el servidor de la institución. Revisa cada valor antes de ejecutarlo. No copies claves, bases ni `App_Data` desde un PC de desarrollo.
 
-1. **Servidor.** Debian 12 con ASP.NET Core Runtime 8, PostgreSQL, Nginx y Certbot según sus instrucciones oficiales. Abre solo SSH y 80/443; PostgreSQL y Kestrel escuchan en loopback.
+1. **Servidor.** Debian 13 con ASP.NET Core Runtime 10, PostgreSQL, Nginx y Certbot según sus instrucciones oficiales. Abre solo SSH y 80/443; PostgreSQL y Kestrel escuchan en loopback. Para actualizar la instalación existente de Linode mediante MobaXterm, usa el perfil y las comprobaciones de [despliegue 1.6.2](despliegue-1.6.2.md).
 2. **Usuario de sistema y carpetas.** Crea `zuni-institucion-a` sin inicio de sesión, `/opt/zuni/institucion-a/current` y `/var/lib/zuni/institucion-a/{dataprotection,seguridad,auditoria}` con propietario `zuni-institucion-a` y modo 700.
 3. **PostgreSQL.** Como administrador de PostgreSQL crea los dos usuarios con `LOGIN` y sin privilegios especiales, y asigna sus contraseñas de forma interactiva con `\password`. Crea la base `zuni_institucion_a` con propietario `zuni_institucion_a_migrador`. Revoca `CONNECT` de `PUBLIC` y concédelo solo a los dos usuarios.
 4. **Publicación.** `dotnet publish Zuni/Zuni.csproj -c Release -o <salida>` en la máquina de compilación. Copia solo `<salida>` a `/opt/zuni/institucion-a/current`.
