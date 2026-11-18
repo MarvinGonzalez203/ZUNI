@@ -17,3 +17,11 @@ Validación r1: sintaxis Bash correcta; 17 comprobaciones PostgreSQL 18 aprobada
 - SHA-256 ZIP: `3d91d5c5ce0763dbef38824a15a79a2b69838f8460c2202956b2def1da1bbc7b`.
 - SHA-256 manifiesto: `93ed68ab3b844f3ab9af3730b0d84a7e70a22c9bed4bd84ee2cb012ddf10ef66`.
 - Esta entrega reemplaza el ZIP anterior de commit `9386dc1`; no reutilizar el instalador anterior.
+
+## Activación confirmada en Linode
+
+18/11/2026, 18:00:28 UTC (12:00:28 Guatemala): el registro compartido por el usuario finaliza en COMPLETADO. Declara ensayo aprobado, migración aplicada, ZUNI 1.6.2 y portada activos, HTTPS y claves comprobados. El respaldo y el registro privado quedaron en las rutas que imprime el instalador. Otras aplicaciones no fueron activadas.
+
+Comprobación independiente posterior: HTTPS 200 en `/`, `/Cuenta/IniciarSesion`, `/deniscorp/zuni`, `/deniscorp/blog` y `/deniscorp/contacto`. La portada contiene `data-portal="denis-corp"`. Estas comprobaciones son públicas; no verifican flujos autenticados ni envío de correo.
+
+Las dos advertencias de transacción provienen del SQL de permisos del clon: el ejemplo ya contiene BEGIN/COMMIT y se ejecuta con psql -1. Se limitaron a ese paso del ensayo y no impidieron terminar. La migración final utiliza SQL sin transacciones internas. Pendiente de limpieza del instalador para próximos despliegues: omitir el envoltorio redundante del ejemplo en el clon; no se requiere repetir esta actualización.
