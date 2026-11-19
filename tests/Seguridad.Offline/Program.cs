@@ -247,6 +247,15 @@ await using (var db = Nuevo())
     await db.SaveChangesAsync();
 }
 await using var app = await HostPrueba.Crear(opciones, reloj, hasher, loginPorMinuto: 1000);
+if(args.Contains("--exportar-acceso-ui")){
+ var destino=Environment.GetEnvironmentVariable("DENIS_UI_EVIDENCE_DIR")??throw new InvalidOperationException("Evidence directory required");Directory.CreateDirectory(destino);
+ using var cliente=HostPrueba.Cliente(app);
+ foreach(var idioma in new[]{"es","en"})foreach(var vista in new[]{"Registro","IniciarSesion"}){
+  using var peticion=new HttpRequestMessage(HttpMethod.Get,"/Cuenta/"+vista);peticion.Headers.Add("Cookie",".AspNetCore.Cookies.Idioma=c="+(idioma=="en"?"en-US":"es-GT")+"|uic="+idioma);var respuesta=await cliente.SendAsync(peticion);
+  Check(respuesta.StatusCode==HttpStatusCode.OK,"exportación UI aislada");await File.WriteAllTextAsync(Path.Combine(destino,vista+"-"+idioma+".html"),await respuesta.Content.ReadAsStringAsync());
+ }
+ Console.WriteLine("UI aislada exportada: 4 páginas con política ficticia; base local sin cambios.");return;
+}
 
 // --- Cabeceras de seguridad
 using (var anonimo = HostPrueba.Cliente(app))

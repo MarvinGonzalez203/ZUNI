@@ -1,29 +1,13 @@
+@inject Zuni.Data.ApplicationDbContext DbAuth
 @{
-    Layout = "_Layout";
-    ViewData["BodyClass"] = "auth-page";
+ Layout=null;
+ var configAuth=ViewData["Institucion"] as Zuni.Models.Institucion.ConfiguracionInstitucion ?? await Zuni.Services.Institucion.ConfiguracionInstitucionService.ObtenerAsync(DbAuth);
+ var registroAuth=configAuth.PoliticaCorreo != Zuni.Models.Institucion.PoliticaCorreoInstitucion.SoloAltasAdministradas;
+ var accionAuth=ViewContext.RouteData.Values["action"]?.ToString();
 }
-<div class="auth-shell row g-0 overflow-hidden">
-    <aside class="col-lg-5 auth-brand d-flex flex-column justify-content-center p-5 text-white">
-        <span class="auth-liquid auth-liquid-one" aria-hidden="true"></span>
-        <span class="auth-liquid auth-liquid-two" aria-hidden="true"></span>
-        <div class="auth-network" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        <div class="auth-brand-copy">
-            <span class="auth-eyebrow">@Idioma.Texto("Tu espacio, a tu manera")</span>
-            <h2>@Idioma.Texto("Todo comienza con una cuenta segura.")</h2>
-            <p>@Idioma.Texto("Accede a tus herramientas y mantén tu información disponible cuando la necesites.")</p>
-            <div class="auth-trust"><span>@Idioma.Texto("Privado")</span><span>@Idioma.Texto("Humano")</span><span>@Idioma.Texto("Seguro")</span></div>
-        </div>
-        <small class="auth-copyright position-absolute bottom-0 mb-4">© @DateTime.Now.Year ZUNI</small>
-    </aside>
-    <div class="col-lg-7 auth-panel p-4 p-md-5 d-flex align-items-center">
-        <div class="auth-form mx-auto w-100">
-            @RenderBody()
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script src="~/js/requisitos-contrasena.js" asp-append-version="true"></script>
-    <partial name="_ValidationScriptsPartial" />
-    @await RenderSectionAsync("PageScripts", required: false)
-}
+<!DOCTYPE html><html lang="@Idioma.Codigo" data-dc-product="zuni"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>@Idioma.Texto(ViewData["Title"]?.ToString()) · ZUNI</title><partial name="_IconosSitio"/><link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/><link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/><link rel="stylesheet" href="~/css/corporate-home.css" asp-append-version="true"/><link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true"/><partial name="_TemaHead"/><link rel="stylesheet" href="~/css/denis-ui.css" asp-append-version="true"/></head>
+<body class="dc-auth-page"><header class="dc-auth-header"><a class="dc-auth-brand" asp-controller="Home" asp-action="Zuni"><img class="zuni-logo-disc" src="~/images/zuni-logo-transparent.png" alt=""/>ZUNI.</a><div class="dc-auth-controls"><partial name="_ControlesVista"/><a class="dc-back" asp-controller="Home" asp-action="Zuni">@Idioma.Texto("← Volver al inicio")</a></div></header>
+<main class="dc-auth"><aside class="dc-auth-story"><span class="eyebrow">@Idioma.Texto("Tu espacio, a tu manera")</span><h2>@Idioma.Texto("Todo comienza con una cuenta segura.")</h2><p>@Idioma.Texto("Acompañamiento, organización y seguimiento educativo en un espacio pensado para tu bienestar.")</p><div class="dc-auth-preview"><small>@Idioma.Texto("Explora ZUNI")</small><div class="dc-auth-preview-grid"><div><strong>@Idioma.Texto("Solicitar y organizar citas")</strong><p>@Idioma.Texto("Tu espacio. Tu ritmo.")</p></div><div><strong>@Idioma.Texto("Seguimiento y reportes")</strong><p>@Idioma.Texto("Privado") · @Idioma.Texto("Seguro")</p></div></div></div></aside><section class="dc-auth-panel"><div class="dc-auth-form auth-form">
+@if(accionAuth is "IniciarSesion" or "Registro"){<nav class="dc-auth-tabs" aria-label="@Idioma.Texto("Mi cuenta")"><a asp-action="IniciarSesion" aria-current="@(accionAuth=="IniciarSesion"?"page":null)">@Idioma.Texto("Iniciar sesión")</a>@if(registroAuth){<a asp-action="Registro" aria-current="@(accionAuth=="Registro"?"page":null)">@Idioma.Texto("Crear cuenta")</a>}</nav>}
+@RenderBody()</div></section></main><footer class="dc-auth-footer"><partial name="_CorporateHome"/></footer>
+<script src="~/lib/jquery/dist/jquery.min.js"></script><script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script><partial name="_IdiomaScripts"/><script src="~/js/requisitos-contrasena.js" asp-append-version="true"></script><script src="~/js/denis-ui.js" asp-append-version="true"></script><partial name="_ValidationScriptsPartial"/>@await RenderSectionAsync("PageScripts",required:false)<partial name="_ControlesDesplazamiento"/></body></html>

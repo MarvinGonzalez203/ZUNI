@@ -19,7 +19,7 @@
     var navegacion = rolActivo is not null ? $"~/Views/{rolActivo}/_Navegacion.cshtml" : ViewData["DashboardNavigation"] as string;
 }
 <!DOCTYPE html>
-<html lang="@Idioma.Codigo">
+<html data-dc-product="zuni" lang="@Idioma.Codigo">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -36,6 +36,7 @@
     <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
     <partial name="_TemaHead" />
     <link rel="stylesheet" href="~/css/actualizacion.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/denis-ui.css" asp-append-version="true" />
 </head>
 <body class="dashboard-app">
     <a href="#dashboard-main" class="dash-skip">@Idioma.Texto("Saltar al contenido")</a>
@@ -113,5 +114,6 @@
         <script src="~/js/sesion-activa.js" asp-append-version="true" data-url="@Url.Action("MantenerSesion", "Cuenta")"></script>
     }
     @await RenderSectionAsync("Scripts", required: false)
+<script src="~/js/denis-ui.js" asp-append-version="true"></script>
 </body>
 </html>

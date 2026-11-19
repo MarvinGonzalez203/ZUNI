@@ -9,7 +9,7 @@
     if(User.Identity?.IsAuthenticated==true && panelCuenta is not null && User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value is string idVista)
         configuracionInstitucion.ColorPrincipal=(await Zuni.Services.Institucion.PreferenciasVistaService.Obtener(DbInstitucion,idVista,panelCuenta,"#cea2fd",Context.RequestAborted)).ColorPrincipal;
 }
-<html lang="@Idioma.Codigo">
+<html data-dc-product="zuni" lang="@Idioma.Codigo">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="~/css/idioma.css" asp-append-version="true" />
     <partial name="_TemaHead" />
     <link rel="stylesheet" href="~/css/actualizacion.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/denis-ui.css" asp-append-version="true" />
 </head>
 <body class="public-shell @ViewData["BodyClass"]">
     <header>
@@ -93,5 +94,6 @@
     <script src="~/js/campos-obligatorios.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <partial name="_ControlesDesplazamiento" />
+<script src="~/js/denis-ui.js" asp-append-version="true"></script>
 </body>
 </html>
