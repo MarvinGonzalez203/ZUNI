@@ -1,0 +1,3 @@
+.corporate-home{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:44px;max-width:100%;padding:8px 12px;border-radius:12px;color:inherit;text-decoration:underline;text-underline-offset:4px;overflow-wrap:anywhere}.corporate-home:focus-visible{outline:3px solid currentColor;outline-offset:3px}.dash-footer{flex-wrap:wrap;gap:12px}.corporate-home:hover{color:inherit;text-decoration-thickness:2px}
+
+footer a.corporate-home[data-corporate-home]{font-size:14px;line-height:1.4}

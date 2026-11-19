@@ -1,3 +1,4 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration PortalConfiguration
 @model Zuni.Resources.ProductoDenisCorp
 @using static Zuni.Resources.PortalDenisCorp
 @{ Layout = "_DenisCorpLayout"; ViewData["Title"] = Model.Nombre; ViewData["ProductoPortal"] = Model; }
@@ -13,5 +14,6 @@
     }
     <section class="pending-section"><h2>@T("En preparación", "In preparation")</h2><ul>@foreach(var pendiente in Model.Pendientes){<li>@pendiente</li>}</ul></section>
     <p class="progress-review">@T("Resumen revisado el 17 de noviembre de 2026 a partir de la documentación del proyecto.", "Summary reviewed on November 17, 2026 from the project documentation.")</p>
+    @if(Zuni.Resources.EnlacesCorporativos.Producto(PortalConfiguration,Model.Id) is string inicioProducto){<a class="corp-button" href="@inicioProducto">@T("Abrir", "Open") @Model.Nombre ↗</a>}
     <a class="corp-button" href="/#programas">@T("Volver a los programas", "Back to programs")</a>
 </section>

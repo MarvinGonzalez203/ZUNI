@@ -26,6 +26,14 @@ namespace Zuni.Controllers
             return View("DenisCorp");
         }
 
+        [HttpGet("deniscorp/{producto:regex(^(academy|fulleo|colegios|logistica-transporte)$)}")]
+        public IActionResult AbrirProducto(string producto)
+        {
+            var config=HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+            var destino=Resources.EnlacesCorporativos.Producto(config,producto);
+            return destino is null?View("Producto",model:Resources.PortalDenisCorp.Obtener(producto)):Redirect(destino);
+        }
+
         [HttpGet("deniscorp")]
         public IActionResult DenisCorp() => View();
 

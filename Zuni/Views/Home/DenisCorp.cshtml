@@ -16,7 +16,7 @@
             <article class="product-card @p.Id-card" data-product="@p.Id">
                 <partial name="_MarcaProducto" model="p" />
                 <p class="product-status">@p.Categoria</p><h3>@p.Nombre</h3><p class="product-description">@p.Descripcion</p>
-                <a class="corp-button" href="@p.Ruta">@T("Conocer", "Explore") @p.Nombre <span aria-hidden="true">↗</span></a>
+                <a class="corp-button" href="@p.Ruta">@(p.Id=="pos"?T("Conocer", "Explore"):T("Abrir", "Open")) @p.Nombre <span aria-hidden="true">↗</span></a>
                 @if(p.Id=="zuni"){<a class="product-login" asp-controller="Cuenta" asp-action="IniciarSesion">@T("Ya tengo cuenta en ZUNI", "I already have a ZUNI account")</a>}
                 else {<span class="availability">@p.Estado</span>}
             </article>

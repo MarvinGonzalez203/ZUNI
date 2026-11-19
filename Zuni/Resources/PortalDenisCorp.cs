@@ -11,7 +11,7 @@ public sealed record ProductoDenisCorp(string Id, string Nombre, string Icono, s
     string Version, TextoPortal Categoria, TextoPortal Descripcion, TextoPortal Estado,
     IReadOnlyList<AvanceProducto> Avances, IReadOnlyList<TextoPortal> Pendientes)
 {
-    public string Ruta => Id is "zuni" or "pos" ? $"/deniscorp/{Id}/" : $"/deniscorp/programas/{Id}/";
+    public string Ruta => $"/deniscorp/{Id}/";
 }
 public static class PortalDenisCorp
 {
@@ -21,14 +21,14 @@ public static class PortalDenisCorp
             new("Bienestar y acompañamiento", "Wellbeing and support"),
             new("Acompañamiento estudiantil que conecta a estudiantes, psicólogos e instituciones.", "Student support connecting students, psychologists and institutions."),
             new("Conoce el programa y accede a tu cuenta", "Explore the program and access your account"), [], []),
-        new("academy", "Denis Academy", "/images/productos/academy.svg", "image/svg+xml", "1.3.0",
+        new("academy", "Denis Academy", "/images/productos/academy.svg", "image/svg+xml", "1.4.1",
             new("Aprendizaje de idiomas", "Language learning"),
             new("Aprende inglés y español con lecciones y actividades interactivas, a tu ritmo.", "Learn English and Spanish with interactive lessons and activities at your own pace."),
             new("Avances disponibles · publicación pendiente", "Progress available · publication pending"),
             [new(new("Lecciones y actividades", "Lessons and activities"), new("Autoestudio de inglés y español con audios, escritura, repaso y minijuegos.", "English and Spanish self-study with audio, writing, review and mini-games.")),
-             new(new("Progreso en el dispositivo", "On-device progress"), new("La aplicación conserva el avance local y permite continuar con contenido preparado para uso sin conexión.", "The app keeps local progress and supports continuing with content prepared for offline use."))],
-            [new("Acceso público desde este portal y verificación del despliegue.", "Public access from this portal and deployment verification."),new("Cuentas, sincronización entre dispositivos y tutor de IA conectado.", "Accounts, cross-device synchronization and a connected AI tutor.")]),
-        new("fulleo", "Fulleo", "/images/productos/fulleo.svg", "image/svg+xml", "0.10.0",
+             new(new("Progreso por cuenta", "Account progress"), new("El progreso se guarda en PostgreSQL por cuenta y conserva cambios pendientes cuando se interrumpe la conexión.", "Progress is stored in PostgreSQL per account, with pending changes preserved when the connection is interrupted."))],
+            [new("Acceso público desde este portal y verificación del despliegue.", "Public access from this portal and deployment verification."),new("Tutor de IA conectado y acceso externo de producción.", "A connected AI tutor and external production access.")]),
+        new("fulleo", "Fulleo", "/images/productos/fulleo.svg", "image/svg+xml", "0.11.1",
             new("Precios de combustibles", "Fuel prices"),
             new("Consulta precios de gasolina con su fecha y fuente para informarte antes de llenar el tanque.", "Check gasoline prices with their date and source before filling your tank."),
             new("Ver avances del programa", "View product progress"),
@@ -44,19 +44,19 @@ public static class PortalDenisCorp
             [new(new("Venta e inventario", "Sales and inventory"),new("Punto de venta, productos, existencias, clientes y proveedores.", "Point of sale, products, stock, customers and suppliers.")),
              new(new("Caja y cuentas", "Cash and accounts"),new("Control de caja, saldos y comprobantes, con funciones por tipo de negocio.", "Cash control, balances and receipts, with business-specific features."))],
             [new("Integración del acceso público desde este portal.", "Integration of public access from this portal.")]),
-        new("colegios", "Denis Corp Colegios", "/images/productos/colegios.svg", "image/svg+xml", "1.7.0",
+        new("colegios", "Denis Corp Colegios", "/images/productos/colegios.svg", "image/svg+xml", "1.8.1",
             new("Colegios y gestión escolar", "Schools and administration"),
             new("Gestión escolar con roles y centros independientes, matrícula, notas, horarios y registro manual de pagos. Publicación comercial pendiente.", "School management with roles and independent centers, enrollment, grades, schedules and manual payment records. Commercial publication pending."),
             new("Conoce el programa para colegios", "Explore the school program"),
             [new(new("Organización académica", "Academic organization"),new("El proyecto incluye matrículas, aulas, horarios, notas y asistencia con permisos por centro.", "The project includes enrollment, classrooms, schedules, grades and attendance with permissions scoped to each school.")),
-             new(new("Gestión administrativa", "Administrative management"),new("Registro manual de pagos, saldos y expedientes según permisos. La persistencia actual requiere un único escritor; la migración transaccional sigue pendiente.", "Manual payments, balances and records based on permissions. Current persistence requires a single writer; transactional migration is pending."))],
+             new(new("Gestión administrativa", "Administrative management"),new("Registro manual de pagos, saldos y expedientes según permisos. La persistencia usa PostgreSQL JSONB con transacciones y una sola instancia de API.", "Manual payments, balances and records based on permissions. Storage uses PostgreSQL JSONB transactions with a single API instance."))],
             [new("Publicación, condiciones comerciales y validación del servicio para varias instituciones.", "Publication, commercial terms and validation of the service for multiple institutions."),new("Configuración y puesta en marcha de cada colegio.", "Configuration and onboarding for each school.")]),
-        new("logistica-transporte", "Logística y Transporte", "/images/productos/deniscorp-180.png", "image/png", "0.3.0",
+        new("logistica-transporte", "Logística y Transporte", "/images/productos/deniscorp-180.png", "image/png", "0.4.2",
             new("Operaciones y transporte", "Operations and transport"),
             new("Proyecto de logística con acceso por permisos y registros limitados al usuario autorizado.", "Logistics project with permission-based access and records limited to authorized users."),
             new("Ver avances del programa", "View product progress"),
             [new(new("Acceso protegido", "Protected access"),new("Permisos por acción, verificación en dos pasos y bloqueo por intentos.", "Per-action permissions, two-step verification and login lockout."))],
-            [new("Conectar y verificar una base SQL Server externa compatible antes de publicar.", "Connect and verify a compatible external SQL Server database before publishing.")])
+            [new("Validar el despliegue externo y sus cuentas de producción.", "Validate external deployment and production accounts.")])
     ];
     public static ProductoDenisCorp Obtener(string id) => Productos.Single(p => p.Id == id);
 }

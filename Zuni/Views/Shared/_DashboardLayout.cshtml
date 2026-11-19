@@ -26,6 +26,7 @@
     <partial name="_IconosSitio" />
     <title>@(ViewData["TituloEsDato"] is true ? ViewData["Title"]?.ToString() : Idioma.Texto(ViewData["Title"]?.ToString())) · ZUNI</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/corporate-home.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/campos-obligatorios.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/modales.css" asp-append-version="true" />
@@ -86,7 +87,7 @@
                 <div class="dash-notice" role="status">@Idioma.Texto(mensaje)</div>
             }
             @RenderBody()
-            <footer class="dash-footer"><span>@Idioma.Texto("ZUNI · Bienestar y acompañamiento estudiantil")</span><span>@Idioma.Texto("Tu espacio. Tu ritmo.")</span></footer>
+            <footer class="dash-footer"><span>@Idioma.Texto("ZUNI · Bienestar y acompañamiento estudiantil")</span><span>@Idioma.Texto("Tu espacio. Tu ritmo.")</span><partial name="_CorporateHome" /></footer>
         </main>
     </div>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
