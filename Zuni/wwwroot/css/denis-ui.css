@@ -106,3 +106,10 @@ html[data-dc-product] .dc-account-page .skip{top:-100px!important}.dc-account-pa
 html[data-dc-product] .dc-auth-panel .dc-auth-form>h1+form>h2{font-size:18px;font-weight:400;color:#d5d1d6;margin-top:0}
 
 .dc-auth input::-ms-reveal,.dc-auth input::-ms-clear{display:none}
+
+/* Native scroll controls also work in the standalone access layout. */
+.page-scroll-down,.page-scroll-top{position:fixed;bottom:max(18px,env(safe-area-inset-bottom));z-index:1020;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;color:#563571;background:transparent;cursor:pointer}
+.page-scroll-down{left:50%;transform:translateX(-50%)}.page-scroll-top{right:18px;border:1px solid #8e67b147;border-radius:16px;background:#f8f5ebed;backdrop-filter:blur(14px)}.page-scroll-down svg,.page-scroll-top svg{width:26px;height:26px}.page-scroll-down svg{animation:dc-scroll-down 1.8s ease-in-out infinite}
+html[data-theme=dark] .page-scroll-down,html[data-theme=dark] .page-scroll-top{color:#f0dfff}html[data-theme=dark] .page-scroll-top{background:#2a2332e6}
+html[data-dc-product] .dc-auth-panel .carne-fieldset legend{color:#fff}
+@keyframes dc-scroll-down{0%,100%{translate:0 -3px}50%{translate:0 3px}}@media(prefers-reduced-motion:reduce){.page-scroll-down svg{animation:none}}
