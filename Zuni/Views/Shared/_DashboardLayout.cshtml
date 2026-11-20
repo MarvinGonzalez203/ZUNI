@@ -47,7 +47,8 @@
             <div class="dash-top-account">@if(!esProveedor){@await Component.InvokeAsync("AvisoEdad")@await Component.InvokeAsync("AvisoDerechos")@await Component.InvokeAsync("AvisoCitas")}<span class="dash-session"><partial name="_DashboardIcon" model='@("shield")' />@Idioma.Texto("Sesión activa")</span><a class="dash-top-profile" asp-controller="MiCuenta" asp-action="Index" aria-label="@Idioma.Texto("Ver mi cuenta: {0}", corto)"><span class="dash-avatar dash-avatar-small" aria-hidden="true">@corto[..1]</span><span>@corto</span></a><partial name="_ControlesVista" /></div>
         </header>
     <aside class="dashboard-sidebar offcanvas offcanvas-start" tabindex="-1" id="dashboard-sidebar" aria-labelledby="sidebar-title" data-nav-key="@navegacion">
-        <div class="sidebar-scroll-region" data-sidebar-scroll>
+        <div class="dc-sidebar-identity"><a class="dc-parent-brand" href="@Url.Action("Index","Home")">Denis Corp.</a><div class="dc-client-identity">@(esProveedor?"ZUNI":identidadInstitucion.Nombre)<small>@nombre · @Idioma.Roles(rol)</small></div></div>
+<div class="sidebar-scroll-region" data-sidebar-scroll>
         <div class="dash-brand-row d-lg-none">
             <a class="dash-brand" asp-controller="@inicio" asp-action="Index" id="sidebar-title"><span class="dash-logo-mark" aria-hidden="true"><i class="dash-logo-glass"></i><i class="dash-logo-glass dash-logo-glass-second"></i><img src="~/images/zuni-logo-transparent.png" alt="" /></span><span class="dash-brand-name">@Idioma.Texto("ZUNI")<span>.</span></span></a>
             <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" aria-label="@Idioma.Texto("Cerrar menú")"></button>
@@ -58,7 +59,8 @@
         {
             @await Html.PartialAsync(navegacion)
         }
-        <div class="dash-sidebar-bottom"><div data-dc-assistant-slot></div>
+        </div>
+<div class="dash-sidebar-bottom">
             <a class="dash-nav-link sidebar-guides @(ViewContext.RouteData.Values["controller"]?.ToString()=="Guias" || ViewContext.RouteData.Values["action"]?.ToString()=="Guias" ? "is-active":"")" href="@(esProveedor?Url.Action("Guias","SuperAdmin"):Url.Action("Index","Guias"))" title="@Idioma.Texto("Guías y funciones")"><partial name="_DashboardIcon" model='@("search")'/><span>@Idioma.Texto("Guías y funciones")</span></a>
             <div class="dash-support-note"><partial name="_DashboardIcon" model='@("spark")' /><p>@Idioma.Texto("Tu bienestar también")<br />@Idioma.Texto("forma parte del camino.")</p></div>
             <div class="dash-bottom-controls">
@@ -75,8 +77,7 @@
                 <span class="dash-round-control" aria-hidden="true"><partial name="_DashboardIcon" model='@("logout")'/></span><span class="dash-bottom-label">@Idioma.Texto("Cerrar sesión")</span>
             </button></form>
             </div>
-            <span class="system-version">ZUNI · v@(Zuni.Resources.VersionSistema.Actual)</span>
-        </div>
+            <div data-dc-assistant-slot></div><span class="system-version">ZUNI · v@(Zuni.Resources.VersionSistema.Actual)</span>
         </div>
         <button type="button" class="sidebar-scroll-cue" hidden aria-label="@Idioma.Texto("Desplazarse para ver más opciones")"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m5 9 7 7 7-7"/></svg></button>
     </aside>

@@ -11,8 +11,9 @@
         }
         const root = document.scrollingElement, viewport = window.visualViewport?.height || innerHeight;
         const obstructed = !!document.querySelector('.modal.show,.offcanvas.show');
-        down.hidden = obstructed || root.scrollHeight - viewport - root.scrollTop <= 24;
-        up.hidden = obstructed || root.scrollTop < 100;
+        const more = root.scrollHeight - viewport - root.scrollTop > 24;
+        down.hidden = obstructed || !more;
+        up.hidden = obstructed || more || root.scrollTop < 100;
         const nav = document.querySelector('.test-navigation:not([hidden])')?.getBoundingClientRect();
         down.style.bottom = nav && nav.top < innerHeight && nav.bottom > 0 ? Math.max(18, innerHeight - nav.top + 8) + 'px' : '';
     };
