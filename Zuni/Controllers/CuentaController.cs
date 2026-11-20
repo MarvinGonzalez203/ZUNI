@@ -735,7 +735,7 @@ public sealed partial class CuentaController(
         await HttpContext.SignOutAsync(
             CookieAuthenticationDefaults.AuthenticationScheme);
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Zuni", "Home");
     }
 
     // ============================================================

@@ -22,7 +22,7 @@ internal static class ActualizacionV1Checks
         Check(home.Contains("commercial-grid")&&home.Contains("/SuperAdmin/Centros")&&home.Contains("Colegio Huellitas"),"tablero comercial y ejemplo visible");
         Check(home.Contains("system-version\">ZUNI · v"+VersionSistema.Actual)&&home.Contains("release-control"),"versión y campana disponibles");
         var versiones=Regex.Matches(home,"data-release-version=\"([^\"]+)\"").Select(m=>m.Groups[1].Value).ToArray();
-        Check(versiones.SequenceEqual(new[]{VersionSistema.Actual,"1.6.1","1.6.0"}),"campana muestra las tres versiones locales más recientes en orden");
+        Check(versiones.Length==3&&versiones[0]==VersionSistema.Actual&&versiones.Zip(versiones.Skip(1)).All(v=>Version.Parse(v.First)>Version.Parse(v.Second))&&versiones.SequenceEqual(VersionSistema.Historial.Take(3).Select(v=>v.Numero)),"campana muestra las tres versiones más recientes, en orden descendente y según el historial vigente");
         Check(VersionSistema.Historial.Count>=3&&VersionSistema.Historial[0].Numero==VersionSistema.Actual,"metadatos del historial y versión actual coinciden");
         await using(var db=new OfflineDb(options))Check(!await db.CentrosComerciales.AnyAsync(),"GET no registra el ejemplo automáticamente");
         var example=await super.GetStringAsync("/SuperAdmin/EditarCentro?ejemplo=true");
@@ -70,7 +70,7 @@ internal static class ActualizacionV1Checks
         Check((await admin.GetStringAsync("/MiCuenta")).Contains("/Privacidad/Solicitudes"),"Administrador recibe enlace a peticiones pendientes");
         foreach(var tema in new[]{"seguridad","apariencia","avisos"})Check((await anon.GetAsync("/Home/Guia?tema="+tema)).StatusCode==HttpStatusCode.OK,"guía pública extra: "+tema);
         var search=await super.GetStringAsync("/SuperAdmin/Guias?q=renovar&rol=SuperAdmin");Check(search.Contains("Ampliar o renovar un contrato")&&!search.Contains("<h2>Responder un cuestionario indicado</h2>"),"búsqueda por tema y rol");
-        var login=await anon.GetStringAsync("/Cuenta/IniciarSesion");Check(!login.Contains("auth-mobile-logo")&&login.Contains("auth-brand d-flex"),"entrada móvil conserva título y elimina logo repetido");
+        var login=await anon.GetStringAsync("/Cuenta/IniciarSesion");Check(!login.Contains("auth-mobile-logo")&&Regex.Matches(login,"<h1\\b").Count==1&&Regex.Matches(login,"class=\"dc-auth-brand\"").Count==1,"entrada minimalista conserva un título principal y una marca de cabecera sin logo móvil duplicado");
         Check(login.Contains("favicon-96.png")&&login.Contains("page-scroll-top"),"favicon y desplazamiento compartidos");
         Check(VersionSistema.Actual==typeof(VersionSistema).Assembly.GetName().Version!.ToString(3),"versión visual y ensamblado coinciden");
         // Each guide endpoint computes its audience from the authenticated role, never the query string.

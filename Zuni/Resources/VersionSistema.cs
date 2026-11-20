@@ -2,10 +2,11 @@ namespace Zuni.Resources;
 public sealed record NovedadVersion(string Numero, IReadOnlyList<string> Cambios);
 public static class VersionSistema
 {
-    public const string Actual="1.7.0";
+    public const string Actual="1.8.0";
     // Historial de entregas locales; la versión de zuni.lat cambia solo al desplegar.
     public static readonly IReadOnlyList<NovedadVersion> Historial=[
-        new(Actual,["Diseño minimalista común en botones, controles y pantallas de acceso.","Registro y cambio de contraseña con requisitos visibles y controles accesibles."]),
+        new(Actual,["Primeros pasos de siete avisos y asistente por cuenta, con preguntas, pasos y accesos autorizados.","Botones y selección de archivos coherentes; cerrar sesión regresa al inicio del programa."]),
+        new("1.7.0",["Diseño minimalista común en botones, controles y pantallas de acceso.","Registro y cambio de contraseña con requisitos visibles y controles accesibles."]),
         new("1.6.3",["Accesos locales desde Denis Corp al inicio de cada programa.","Enlace by Denis Corp en los pies de página y navegación móvil revisada."]),
         new("1.6.2",["Coherencia visual y revisión de traducciones y guías de los programas.", "Catálogo actualizado con avances verificados y límites de publicación."]),
         new("1.6.1",["Protección del guardado y preparación de recuperación de datos.","Controles para evitar instancias de escritura incompatibles."]),

@@ -4,6 +4,7 @@
     string Mostrar(string? valor) => string.IsNullOrWhiteSpace(valor) ? "Pendiente" : valor;
 }
 <header class="dash-profile-heading"><div><span class="dash-eyebrow">@Idioma.Texto("TU INFORMACIÓN")</span><h1>@Idioma.Texto("Mi cuenta")</h1><p>@Idioma.Texto("Consulta tus datos y mantén tu información actualizada.")</p></div><a class="dash-button" asp-action="Editar">@Idioma.Texto("Editar mis datos") <partial name="_DashboardIcon" model='@("arrow")' /></a></header>
+<section class="dash-card"><h2>@(Idioma.EsIngles?"General settings":"Ajustes generales")</h2><button type="button" class="btn btn-zuni" data-dc-replay-tour>@(Idioma.EsIngles?"Replay the 7 first steps":"Reproducir los 7 primeros pasos")</button></section>
 <section class="dash-card dash-account-card" aria-labelledby="datos-generales">
     <p><a asp-controller="DobleFactor" asp-action="Index" class="btn btn-outline-primary">Configurar verificación en dos pasos (2FA)</a></p>
     @if(Model.Roles.Contains("Psicologo")){<p><a asp-controller="PinProfesional" asp-action="Index" class="btn btn-outline-primary">@Idioma.Texto("Configurar o recuperar mi PIN profesional")</a></p>}

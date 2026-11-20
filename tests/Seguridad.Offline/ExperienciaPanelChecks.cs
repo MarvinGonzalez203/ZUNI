@@ -39,7 +39,7 @@ internal static class ExperienciaPanelChecks
         }
         foreach(var (correo,rol) in new[]{("est@miumg.edu.gt","Estudiante"),("admin@miumg.edu.gt","Administrador"),("psi2@miumg.edu.gt","Psicologo"),("director@miumg.edu.gt","Director"),("proveedor-ficticio@example.com","SuperAdmin")}){
             using var c=HostPrueba.Cliente(app);await HostPrueba.Login(c,correo,clave);var response=await HostPrueba.Post(c,"/MiCuenta","/Cuenta/CerrarSesion");
-            Check(response.Headers.Location?.OriginalString=="/","cerrar sesión lleva a home "+rol);
+            Check(response.Headers.Location?.OriginalString.TrimEnd('/')=="/deniscorp/zuni","cerrar sesión lleva al inicio de ZUNI para "+rol);
             Check((await c.GetAsync("/MiCuenta")).StatusCode==HttpStatusCode.Redirect,"sesión invalidada "+rol);
         }
         Console.WriteLine($"OK: {checks} comprobaciones de preferencias personales, traducción y cierre de sesión.");

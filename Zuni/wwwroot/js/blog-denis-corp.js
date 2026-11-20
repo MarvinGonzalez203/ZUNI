@@ -1,3 +1,4 @@
+import {fuzzyScore} from './assistant-language.js';
 (() => {
     'use strict';
     const library = document.querySelector('[data-blog-library]');
@@ -10,7 +11,7 @@
         const words = normalize(input.value.slice(0,80)).trim().split(/\s+/).filter(Boolean);
         let count = 0;
         for (const article of articles) {
-            const match = (topicField.value === 'todos' || article.dataset.topic === topicField.value) && words.every(w => normalize([...article.querySelectorAll('h3,[data-blog-summary],details li')].map(e=>e.textContent).join(' ')).includes(w));
+            const match = (topicField.value === 'todos' || article.dataset.topic === topicField.value) && (!input.value.trim() || fuzzyScore(input.value,[...article.querySelectorAll('h3,[data-blog-summary],details li')].map(e=>e.textContent).join(' '))>0);
             article.hidden = !match; if (match) count++;
         }
         for (const link of links) {

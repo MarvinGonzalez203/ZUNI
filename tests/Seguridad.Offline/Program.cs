@@ -334,6 +334,23 @@ using (var c = HostPrueba.Cliente(app))
     Check(desbloqueado.LockoutEnd is null && desbloqueado.AccessFailedCount == 0, "Login correcto limpia el bloqueo");
 }
 
+// --- Help catalog uses the authenticated role; logout returns to the child home.
+using(var ayudaAnonima=HostPrueba.Cliente(app)){Check((await ayudaAnonima.GetAsync("/Guias/Asistente")).StatusCode==HttpStatusCode.Redirect,"asistente requiere sesión");}
+foreach(var perfilAyuda in new[]{("admin",correoAdmin),("est",correoEst)}){
+ using var ayuda=HostPrueba.Cliente(app);Check((await HostPrueba.Login(ayuda,perfilAyuda.Item2,clave)).StatusCode==HttpStatusCode.Redirect,"sesión ficticia para ayuda");
+ var respuesta=await ayuda.GetAsync("/Guias/Asistente");Check(respuesta.StatusCode==HttpStatusCode.OK,"catálogo autorizado de ayuda");var json=await respuesta.Content.ReadAsStringAsync();
+ Check(!json.Contains("MOTIVO-CLINICO-PRIVADO")&&!json.Contains("CONTACTO-PRIVADO"),"catálogo sin datos de atenciones");
+ using var catalogo=System.Text.Json.JsonDocument.Parse(json);var temas=catalogo.RootElement.GetProperty("topics").EnumerateArray().ToArray();Check(temas.Length>0,"guías disponibles para el perfil");
+ if(perfilAyuda.Item1=="est")Check(temas.All(t=>!t.GetProperty("href").GetString()!.StartsWith("/Administrador")&&!t.GetProperty("href").GetString()!.StartsWith("/Psicologo")),"estudiante sin accesos de administración o profesional");
+ var cifras=await ayuda.GetAsync("/Guias/Cifras?desde=2026-11-01&hasta=2026-11-30");
+ if(perfilAyuda.Item1=="admin")Check(cifras.StatusCode!=HttpStatusCode.OK,"Administrador no consulta cifras clínicas del asistente");
+ else{Check(cifras.StatusCode==HttpStatusCode.OK,"Estudiante consulta solo sus cifras");var propio=await cifras.Content.ReadAsStringAsync();var ajeno=await (await ayuda.GetAsync("/Guias/Cifras?desde=2026-11-01&hasta=2026-11-30&usuario=psi1")).Content.ReadAsStringAsync();Check(propio==ajeno,"parámetro de usuario no cambia el alcance de cifras");Check((await ayuda.GetAsync("/Guias/Cifras?desde=no-es-fecha")).StatusCode==HttpStatusCode.BadRequest,"cifras rechazan fechas inválidas");}
+ if(args.Contains("--exportar-experiencia-ui")){var destino=Environment.GetEnvironmentVariable("DENIS_UI_EVIDENCE_DIR")??throw new InvalidOperationException("Evidence directory required");Directory.CreateDirectory(destino);await File.WriteAllTextAsync(Path.Combine(destino,"zuni-"+perfilAyuda.Item1+".json"),json);await File.WriteAllTextAsync(Path.Combine(destino,"zuni-"+perfilAyuda.Item1+".html"),await ayuda.GetStringAsync("/MiCuenta"));await HostPrueba.Post(ayuda,"/MiCuenta","/Idioma/Cambiar",("idioma","en"),("volver","/MiCuenta"));await File.WriteAllTextAsync(Path.Combine(destino,"zuni-"+perfilAyuda.Item1+"-en.json"),await ayuda.GetStringAsync("/Guias/Asistente"));await File.WriteAllTextAsync(Path.Combine(destino,"zuni-"+perfilAyuda.Item1+"-en.html"),await ayuda.GetStringAsync("/MiCuenta"));}
+ var cerrar=await HostPrueba.Post(ayuda,"/MiCuenta","/Cuenta/CerrarSesion");Check(cerrar.StatusCode==HttpStatusCode.Redirect&&cerrar.Headers.Location!.ToString().TrimEnd('/')=="/deniscorp/zuni","cierre regresa al home de ZUNI");
+ Check((await ayuda.GetAsync("/Guias/Asistente")).StatusCode==HttpStatusCode.Redirect,"asistente inaccesible al cerrar sesión");
+}
+if(args.Contains("--exportar-experiencia-ui")){await app.StopAsync();Console.WriteLine($"OK: {checks} controles previos y de experiencia; UI ficticia exportada, PostgreSQL intacto.");return;}
+
 // --- Autorregistro pendiente de activación
 using var admin = HostPrueba.Cliente(app);
 Check((await HostPrueba.Login(admin, correoAdmin, clave)).StatusCode == HttpStatusCode.Redirect, "Administrador inicia sesión");
