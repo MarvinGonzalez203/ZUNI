@@ -3106,5 +3106,9 @@
   "¿Cómo asigno estudiantes desde la ficha del psicólogo?": "How do I assign students from the psychologist's profile?",
   "Alineación única a 1.11.0; después cada producto vuelve a evolucionar de forma independiente.": "One-time alignment to 1.11.0; each product will then evolve independently again.",
   "Identidad y navegación fijas, opciones móviles y asistente al pie del menú.": "Fixed identity and navigation, mobile options and assistant in the menu footer.",
-  "Homes públicos de Academy y Fulleo; accesos iniciales privados con cambio obligatorio de contraseña en Academy, Fulleo y Logística.": "Public Academy and Fulleo homes; private initial access with mandatory password change in Academy, Fulleo and Logistics."
+  "Homes públicos de Academy y Fulleo; accesos iniciales privados con cambio obligatorio de contraseña en Academy, Fulleo y Logística.": "Public Academy and Fulleo homes; private initial access with mandatory password change in Academy, Fulleo and Logistics.",
+  "Si ya activaste 2FA, se solicitará el código después de tu contraseña.": "If you enabled 2FA, your code will be requested after your password.",
+  "Configurar verificación en dos pasos (2FA)": "Set up two-step verification (2FA)",
+  "Acceso visible para configurar 2FA y explicación del segundo paso al iniciar sesión.": "Visible 2FA setup access and explanation of the second sign-in step.",
+  "Herramientas locales de iniciar, reiniciar y cerrar Denis Corp verificadas sin modificar POS.": "Verified local start, restart and stop tools for Denis Corp without modifying POS."
 }

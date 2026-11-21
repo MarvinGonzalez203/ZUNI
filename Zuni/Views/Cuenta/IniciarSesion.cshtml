@@ -51,3 +51,5 @@ else
 {
     <p class="text-center mt-3">@Idioma.Texto("Contacto institucional:") <a href="mailto:@institucion.CorreoSoporte">@institucion.CorreoSoporte</a></p>
 }
+
+<p class="text-center"><a asp-controller="DobleFactor" asp-action="Index">@Idioma.Texto("Configurar verificación en dos pasos (2FA)")</a></p><p class="text-center text-secondary">@Idioma.Texto("Si ya activaste 2FA, se solicitará el código después de tu contraseña.")</p>

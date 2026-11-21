@@ -2,10 +2,11 @@ namespace Zuni.Resources;
 public sealed record NovedadVersion(string Numero, IReadOnlyList<string> Cambios);
 public static class VersionSistema
 {
-    public const string Actual="1.11.0";
+    public const string Actual="1.11.1";
     // Historial de entregas locales; la versión de zuni.lat cambia solo al desplegar.
     public static readonly IReadOnlyList<NovedadVersion> Historial=[
-        new(Actual,["Alineación única a 1.11.0; después cada producto vuelve a evolucionar de forma independiente.","Identidad y navegación fijas, opciones móviles y asistente al pie del menú.","Homes públicos de Academy y Fulleo; accesos iniciales privados con cambio obligatorio de contraseña en Academy, Fulleo y Logística."]),
+        new(Actual,["Acceso visible para configurar 2FA y explicación del segundo paso al iniciar sesión.","Herramientas locales de iniciar, reiniciar y cerrar Denis Corp verificadas sin modificar POS."]),
+        new("1.11.0",["Alineación única a 1.11.0; después cada producto vuelve a evolucionar de forma independiente.","Identidad y navegación fijas, opciones móviles y asistente al pie del menú.","Homes públicos de Academy y Fulleo; accesos iniciales privados con cambio obligatorio de contraseña en Academy, Fulleo y Logística."]),
         new("1.8.0",["Primeros pasos de siete avisos y asistente por cuenta, con preguntas, pasos y accesos autorizados.","Botones y selección de archivos coherentes; cerrar sesión regresa al inicio del programa."]),
         new("1.7.0",["Diseño minimalista común en botones, controles y pantallas de acceso.","Registro y cambio de contraseña con requisitos visibles y controles accesibles."]),
         new("1.6.3",["Accesos locales desde Denis Corp al inicio de cada programa.","Enlace by Denis Corp en los pies de página y navegación móvil revisada."]),
